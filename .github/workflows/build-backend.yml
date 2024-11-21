@@ -23,6 +23,10 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ !startsWith(github.ref, 'refs/heads/dependabot') }}
 
+    permissions:
+      contents: read
+      packages: write
+
     strategy:
       matrix:
         platforms: [ "linux/amd64", "linux/arm64" ]
