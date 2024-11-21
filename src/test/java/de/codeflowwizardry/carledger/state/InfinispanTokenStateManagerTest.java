@@ -35,7 +35,7 @@ public class InfinispanTokenStateManagerTest
 		RoutingContext routingContext = mock(RoutingContext.class);
 		Mockito.when(routingContext.get("session-max-age")).thenReturn(9999999L);
 
-		AuthorizationCodeTokens act = new AuthorizationCodeTokens("a", "b", "c");
+		AuthorizationCodeTokens act = new AuthorizationCodeTokens("a2", "b2", "c2");
 
 		// when
 		Uni<String> tokenState = manager.createTokenState(routingContext, null, act, null);
@@ -45,7 +45,7 @@ public class InfinispanTokenStateManagerTest
 				.subscribe()
 				.withSubscriber(UniAssertSubscriber.create());
 
-		String id = withSubscriber.assertCompleted().getItem();
+		String id = withSubscriber.awaitItem(Duration.ofSeconds(3)).assertCompleted().getItem();
 
 		assertNotNull(authTokenCache.get(id));
 	}

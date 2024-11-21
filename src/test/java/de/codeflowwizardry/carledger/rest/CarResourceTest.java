@@ -108,7 +108,7 @@ class CarResourceTest
 				.body(body)
 				.accept(ContentType.JSON)
 				.contentType(ContentType.JSON)
-				.put("/api/car/my")
+				.put()
 				.then()
 				.statusCode(202);
 	}
@@ -125,7 +125,7 @@ class CarResourceTest
 				.body(body)
 				.accept(ContentType.JSON)
 				.contentType(ContentType.JSON)
-				.put("/api/car/my")
+				.put()
 				.then()
 				.statusCode(202);
 
@@ -136,7 +136,7 @@ class CarResourceTest
 				.body(body)
 				.accept(ContentType.JSON)
 				.contentType(ContentType.JSON)
-				.put("/api/car/my")
+				.put()
 				.then()
 				.statusCode(400);
 	}
