@@ -19,42 +19,40 @@ import 'dayjs/locale/de';
 import 'react-toastify/dist/ReactToastify.css';
 
 export const Route = createRootRoute({
-	component: () => (
-		<>
-			<ThemeProvider theme={theme}>
-				<LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
-					<CssBaseline />
-					<Navigation />
-					<QueryClientProvider client={queryClient}>
-						<Box
-							flexGrow={1}
-							display="flex"
-							flexDirection="column"
-							justifyContent="center"
-							alignItems="center"
-							marginY={4}
-							overflow="auto"
-							position="relative"
-						>
-							<Outlet />
-						</Box>
-					</QueryClientProvider>
-					<Copyright />
-					<ToastContainer
-						autoClose={2500}
-						position="bottom-left"
-						pauseOnHover
-						transition={Slide}
-						theme="colored"
-					/>
-					<TanStackRouterDevtools />
-				</LocalizationProvider>
-			</ThemeProvider>
-		</>
-	),
-	errorComponent: () => (
-		<div>
-			Nothing to see here, the frontend is broken please reload
-		</div>
-	)
+  component: () => (
+    <>
+      <ThemeProvider theme={theme}>
+        <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
+          <CssBaseline />
+          <Navigation />
+          <QueryClientProvider client={queryClient}>
+            <Box
+              flexGrow={1}
+              display="flex"
+              flexDirection="column"
+              justifyContent="center"
+              alignItems="center"
+              marginY={4}
+              overflow="auto"
+              position="relative"
+            >
+              <Outlet />
+            </Box>
+          </QueryClientProvider>
+          <Copyright />
+          <ToastContainer
+            autoClose={2500}
+            position="bottom-left"
+            pauseOnHover
+            transition={Slide}
+            theme="colored"
+          />
+          <TanStackRouterDevtools />
+        </LocalizationProvider>
+      </ThemeProvider>
+    </>
+  ),
+  errorComponent: () => (
+    <div>Nothing to see here, the frontend is broken please reload</div>
+  ),
 });

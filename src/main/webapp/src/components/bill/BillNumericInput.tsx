@@ -1,20 +1,20 @@
-import { TextField } from "@mui/material";
-import { NumericFormat } from "react-number-format";
+import { TextField } from '@mui/material';
+import { NumericFormat } from 'react-number-format';
 
 export interface BillNumericInputProps {
-  maxInput: number,
-  label: string,
-  name: string,
-  required?: boolean,
-  suffix?: string,
-  decimalScale?: number
+  maxInput: number;
+  label: string;
+  name: string;
+  required?: boolean;
+  suffix?: string;
+  decimalScale?: number;
 }
 
 export default function BillNumericInput(props: BillNumericInputProps) {
   return (
     <NumericFormat
       sx={{
-        margin: 1
+        margin: 1,
       }}
       label={props.label}
       name={props.name}
@@ -25,9 +25,9 @@ export default function BillNumericInput(props: BillNumericInputProps) {
       fixedDecimalScale
       isAllowed={(values) => {
         const { floatValue } = values;
-        return (floatValue ?? 0) < props.maxInput
+        return (floatValue ?? 0) < props.maxInput;
       }}
       required={props.required}
     />
-  )
+  );
 }
