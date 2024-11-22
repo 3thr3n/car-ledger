@@ -14,13 +14,11 @@ import de.codeflowwizardry.carledger.rest.records.BillInputPojo;
 import de.codeflowwizardry.carledger.rest.records.BillPojo;
 import de.codeflowwizardry.carledger.rest.records.BillPojoPaged;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
-import io.quarkus.security.Authenticated;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
-@Authenticated
 @Path("bill/{carId}")
 public class BillResource extends AbstractResource
 {

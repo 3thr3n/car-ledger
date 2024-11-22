@@ -15,14 +15,12 @@ import de.codeflowwizardry.carledger.data.Car;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import de.codeflowwizardry.carledger.rest.processors.CsvProcessor;
 import de.codeflowwizardry.carledger.rest.records.CsvOrder;
-import io.quarkus.security.Authenticated;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
-@Authenticated
 @Path("import/{carId}")
 public class ImportResource extends AbstractResource
 {
