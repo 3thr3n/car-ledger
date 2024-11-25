@@ -291,14 +291,7 @@
   dependencies:
     "@babel/helper-plugin-utils" "^7.25.9"
 
-"@babel/runtime@^7.12.5", "@babel/runtime@^7.18.3", "@babel/runtime@^7.5.5", "@babel/runtime@^7.8.7":
-  version "7.25.7"
-  resolved "https://registry.npmjs.org/@babel/runtime/-/runtime-7.25.7.tgz"
-  integrity sha512-FjoyLe754PMiYsFaN5C94ttGiOmBNYTf6pLr4xXHAT5uctHb092PBszndLDR5XA/jghQvn4n7JMHl7dmTgbm9w==
-  dependencies:
-    regenerator-runtime "^0.14.0"
-
-"@babel/runtime@^7.25.7", "@babel/runtime@^7.26.0":
+"@babel/runtime@^7.12.5", "@babel/runtime@^7.18.3", "@babel/runtime@^7.25.7", "@babel/runtime@^7.26.0", "@babel/runtime@^7.5.5", "@babel/runtime@^7.8.7":
   version "7.26.0"
   resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.26.0.tgz#8600c2f595f277c60815256418b85356a65173c1"
   integrity sha512-FDSOghenHTiToteC/QRlv2q3DhPZ/oOXTBoirfWNx1Cx3TMVcGWQtMMmQcSvb/JjpNeGzx8Pq/b4fKEJuWm1sw==
@@ -901,29 +894,12 @@
     csstype "^3.1.3"
     prop-types "^15.8.1"
 
-"@mui/types@^7.2.18":
-  version "7.2.18"
-  resolved "https://registry.npmjs.org/@mui/types/-/types-7.2.18.tgz"
-  integrity sha512-uvK9dWeyCJl/3ocVnTOS6nlji/Knj8/tVqVX03UVTpdmTJYu/s4jtDd9Kvv0nRGE0CUSNW1UYAci7PYypjealg==
-
 "@mui/types@^7.2.19":
   version "7.2.19"
   resolved "https://registry.yarnpkg.com/@mui/types/-/types-7.2.19.tgz#c941954dd24393fdce5f07830d44440cf4ab6c80"
   integrity sha512-6XpZEM/Q3epK9RN8ENoXuygnqUQxE+siN/6rGRi2iwJPgBUR25mphYQ9ZI87plGh58YoZ5pp40bFvKYOCDJ3tA==
 
-"@mui/utils@^5.16.6 || ^6.0.0":
-  version "6.1.5"
-  resolved "https://registry.npmjs.org/@mui/utils/-/utils-6.1.5.tgz"
-  integrity sha512-vp2WfNDY+IbKUIGg+eqX1Ry4t/BilMjzp6p9xO1rfqpYjH1mj8coQxxDfKxcQLzBQkmBJjymjoGOak5VUYwXug==
-  dependencies:
-    "@babel/runtime" "^7.25.7"
-    "@mui/types" "^7.2.18"
-    "@types/prop-types" "^15.7.13"
-    clsx "^2.1.1"
-    prop-types "^15.8.1"
-    react-is "^18.3.1"
-
-"@mui/utils@^6.1.7":
+"@mui/utils@^5.16.6 || ^6.0.0", "@mui/utils@^6.1.7":
   version "6.1.7"
   resolved "https://registry.yarnpkg.com/@mui/utils/-/utils-6.1.7.tgz#0959d9772ae13c6ceac984a493e06aebb9087e71"
   integrity sha512-Gr7cRZxBoZ0BIa3Xqf/2YaUrBLyNPJvXPQH3OsD9WMZukI/TutibbQBVqLYpgqJn8pKSjbD50Yq2auG0wI1xOw==
@@ -947,10 +923,10 @@
     prop-types "^15.8.1"
     reselect "^5.1.1"
 
-"@mui/x-date-pickers@^7.22.2":
-  version "7.22.2"
-  resolved "https://registry.yarnpkg.com/@mui/x-date-pickers/-/x-date-pickers-7.22.2.tgz#99ebf6ff3d5f926c8bceb43324c9d91022d79852"
-  integrity sha512-1KHSlIlnSoY3oHm820By8X344pIdGYqPvCCvfVHrEeeIQ/pHdxDD8tjZFWkFl4Jgm9oVFK90fMcqNZAzc+WaCw==
+"@mui/x-date-pickers@^7.22.3":
+  version "7.22.3"
+  resolved "https://registry.yarnpkg.com/@mui/x-date-pickers/-/x-date-pickers-7.22.3.tgz#bd1cf8f18aff58c7ff964c3b552a757947dc8c87"
+  integrity sha512-shNp92IrST5BiVy2f4jbrmRaD32QhyUthjh1Oexvpcn0v6INyuWgxfodoTi5ZCnE5Ue5UVFSs4R9Xre0UbJ5DQ==
   dependencies:
     "@babel/runtime" "^7.25.7"
     "@mui/utils" "^5.16.6 || ^6.0.0"
