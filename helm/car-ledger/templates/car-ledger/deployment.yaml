@@ -1,0 +1,92 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: car-ledger
+  labels:
+    app: car-ledger
+spec:
+  replicas: {{ .Values.carLedger.replicas }}
+  selector:
+    matchLabels:
+      app: car-ledger
+  template:
+    metadata:
+      labels:
+        app: car-ledger
+    spec:
+      automountServiceAccountToken: false
+      serviceAccountName: "car-ledger-sa"
+      containers:
+        - name: car-ledger
+          image: "{{ .Values.carLedger.image.repository }}:{{ .Values.carLedger.image.tag }}"
+          securityContext:
+            {{- toYaml .Values.carLedger.securityContext | nindent 12 }}
+          ports:
+            - name: access
+              containerPort: 8080
+            - name: management
+              containerPort: 9000
+          env:
+            - name: QUARKUS_OIDC_AUTH_SERVER_URL
+              value: "http://keycloak.{{ .Values.ingress.host }}/realms/car-ledger"
+            - name: QUARKUS_OIDC_CLIENT_ID
+              value: {{ .Values.carLedger.auth.clientId }}
+            - name: QUARKUS_OIDC_CREDENTIALS_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak
+                  key: secret
+            - name: QUARKUS_OIDC_AUTHENTICATION_SCOPES
+              value: {{ .Values.carLedger.auth.scopes }}
+            - name: QUARKUS_OIDC_TOKEN_STATE_MANAGER_ENCRYPTION_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak
+                  key: state-secret
+            - name: QUARKUS_INFINISPAN_CLIENT_HOSTS
+              value: "http://car-ledger-infinispan"
+            - name: QUARKUS_INFINISPAN_CLIENT_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.infinispan.deploy.security.secretName }}
+                  key: username
+            - name: QUARKUS_INFINISPAN_CLIENT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.infinispan.deploy.security.secretName }}
+                  key: password
+            - name: QUARKUS_DATASOURCE_JDBC_URL
+              value: "jdbc:postgresql://car-ledger-postgresql:5432/car-ledger"
+            - name: QUARKUS_DATASOURCE_USERNAME
+              value: "postgres"
+            - name: QUARKUS_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.carledgerpostgres.auth.existingSecret }}
+                  key: {{ .Values.carledgerpostgres.auth.secretKeys.adminPasswordKey }}
+          livenessProbe:
+            httpGet:
+              port: management
+              path: /q/health/live
+            failureThreshold: 3
+            periodSeconds: 20
+            successThreshold: 1
+            timeoutSeconds: 2
+          readinessProbe:
+            httpGet:
+              port: management
+              path: /q/health
+            failureThreshold: 10
+            periodSeconds: 5
+            initialDelaySeconds: 15
+            successThreshold: 1
+            timeoutSeconds: 1
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+              ephemeral-storage: 100Mi
+            limits:
+              cpu: 250m
+              memory: 1Gi
+              ephemeral-storage: 500Mi

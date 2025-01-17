@@ -1,0 +1,13 @@
+keycloak:
+  auth:
+    adminUser: car-ledger
+    adminPassword: car-ledger
+  resourcesPreset: small
+  metrics:
+    enabled: false
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    annotations:
+      kubernetes.io/ingress.class: "nginx"
+    hostname:

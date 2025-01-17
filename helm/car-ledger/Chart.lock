@@ -1,0 +1,9 @@
+dependencies:
+- name: postgresql
+  repository: https://charts.bitnami.com/bitnami
+  version: 16.2.1
+- name: infinispan
+  repository: https://charts.openshift.io/
+  version: 0.4.1
+digest: sha256:5ff773b1fc4a088aa3cb6f6017143f5ef313ce8ded0e906e69943c13d39c4bf1
+generated: "2025-01-17T16:48:29.476971465+01:00"
