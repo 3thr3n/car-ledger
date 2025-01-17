@@ -1,0 +1,21 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: car-ledger-ingress
+  annotations:
+    kubernetes.io/ingress.class: {{ .Values.ingress.className }}
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "http://car-ledger.{{ .Values.ingress.host }}"
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  rules:
+    - host: car-ledger.{{ .Values.ingress.host }}
+      http:
+        paths:
+          - backend:
+              service:
+                name: car-ledger-sv
+                port:
+                  name: http
+            path: "/"
+            pathType: Prefix

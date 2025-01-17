@@ -1,0 +1,28 @@
+ingress:
+  className: nginx
+  host:
+
+carLedger:
+  replicas: 1
+  image:
+    repository: ghcr.io/3thr3n/car-ledger
+    tag: 1-linux-amd64
+  securityContext:
+    runAsNonRoot: true
+  auth:
+    clientId: car-ledger
+    scopes: "offline_access,email,profile"
+
+carledgerpostgres:
+  nameOverride: postgresql
+  backup:
+    enabled: false
+  auth:
+    database: "car-ledger"
+    existingSecret: postgresql
+
+infinispan:
+  deploy:
+    nameOverride: car-ledger-infinispan
+    security:
+      secretName: infinispan
