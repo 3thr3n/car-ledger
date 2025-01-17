@@ -8,6 +8,8 @@ keycloak:
   ingress:
     enabled: true
     ingressClassName: nginx
+    tls: true
     annotations:
       kubernetes.io/ingress.class: "nginx"
+      cert-manager.io/cluster-issuer: lets-encrypt
     hostname:

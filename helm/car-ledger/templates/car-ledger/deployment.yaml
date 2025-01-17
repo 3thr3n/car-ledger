@@ -28,7 +28,7 @@ spec:
               containerPort: 9000
           env:
             - name: QUARKUS_OIDC_AUTH_SERVER_URL
-              value: "http://keycloak.{{ .Values.ingress.host }}/realms/car-ledger"
+              value: "https://keycloak.{{ .Values.ingress.host }}/realms/car-ledger"
             - name: QUARKUS_OIDC_CLIENT_ID
               value: {{ .Values.carLedger.auth.clientId }}
             - name: QUARKUS_OIDC_CREDENTIALS_SECRET
@@ -44,7 +44,7 @@ spec:
                   name: keycloak
                   key: state-secret
             - name: QUARKUS_INFINISPAN_CLIENT_HOSTS
-              value: "http://car-ledger-infinispan"
+              value: "car-ledger-infinispan"
             - name: QUARKUS_INFINISPAN_CLIENT_USERNAME
               valueFrom:
                 secretKeyRef:

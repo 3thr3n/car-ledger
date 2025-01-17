@@ -5,9 +5,14 @@ metadata:
   annotations:
     kubernetes.io/ingress.class: {{ .Values.ingress.className }}
     nginx.ingress.kubernetes.io/enable-cors: "true"
-    nginx.ingress.kubernetes.io/cors-allow-origin: "http://car-ledger.{{ .Values.ingress.host }}"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "https://car-ledger.{{ .Values.ingress.host }}"
+    cert-manager.io/cluster-issuer: {{ .Values.ingress.certManager }}
 spec:
   ingressClassName: {{ .Values.ingress.className }}
+  tls:
+    - hosts:
+        - car-ledger.{{ .Values.ingress.host }}
+      secretName: car-ledger-ingress-tls
   rules:
     - host: car-ledger.{{ .Values.ingress.host }}
       http:
@@ -18,4 +23,4 @@ spec:
                 port:
                   name: http
             path: "/"
-            pathType: Prefix
+            pathType: ImplementationSpecific

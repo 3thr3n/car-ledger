@@ -3,7 +3,9 @@ kind: Service
 metadata:
   name: car-ledger-sv
 spec:
-  type: LoadBalancer
+  selector:
+    app: car-ledger
+  type: ClusterIP
   ports:
     - port: 80
       targetPort: access
