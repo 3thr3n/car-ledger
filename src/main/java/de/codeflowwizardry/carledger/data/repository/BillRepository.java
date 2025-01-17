@@ -5,21 +5,22 @@ import java.util.Optional;
 import de.codeflowwizardry.carledger.data.Bill;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
+import io.quarkus.panache.common.Page;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 
 @ApplicationScoped
 public class BillRepository implements PanacheRepository<Bill>
 {
-	public PanacheQuery<Bill> getBills(long carId, String name, int page, int size)
+	public PanacheQuery<Bill> getBills(long carId, String username, Page page)
 	{
-		return find("car.id = ?1 and car.user.userId = ?2 order by day desc", carId, name)
-				.page(page - 1, size);
+		return find("car.id = ?1 and car.user.userId = ?2 order by day desc", carId, username)
+				.page(page);
 	}
 
-	public Optional<Bill> getBillById(long billId, long carId, String name)
+	public Optional<Bill> getBillById(long billId, long carId, String username)
 	{
-		return find("id = ?1 and car.id = ?2 and car.user.userId = ?3 order by day desc", billId, carId, name)
+		return find("id = ?1 and car.id = ?2 and car.user.userId = ?3 order by day desc", billId, carId, username)
 				.firstResultOptional();
 	}
 
