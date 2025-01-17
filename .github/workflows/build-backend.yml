@@ -22,7 +22,7 @@ jobs:
 
     strategy:
       matrix:
-        platforms: [ "linux/amd64", "linux/arm64" ]
+        platform: [ "linux/amd64", "linux/arm64" ]
 
     steps:
       - uses: actions/checkout@v4
@@ -49,8 +49,8 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=ref,event=tag
-            type=raw,value=${{ github.job }}
+            type=ref,event=tag-${{ matrix.platform }}
+            type=raw,value=${{ github.run_attempt }}-${{ matrix.platform }}
 
       - name: Build and push Docker image
         id: push
@@ -58,7 +58,7 @@ jobs:
         with:
           context: .
           file: ./src/main/docker/Dockerfile.jvm
-          platforms: ${{ matrix.platforms }}
+          platforms: ${{ matrix.platform }}
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
