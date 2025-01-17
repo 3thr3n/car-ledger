@@ -14,6 +14,7 @@ import de.codeflowwizardry.carledger.rest.records.BillInputPojo;
 import de.codeflowwizardry.carledger.rest.records.BillPojo;
 import de.codeflowwizardry.carledger.rest.records.BillPojoPaged;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
+import io.quarkus.panache.common.Page;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -43,8 +44,9 @@ public class BillResource extends AbstractResource
 		{
 			page = 1;
 		}
+		Page queryPage = new Page(page - 1, size);
 
-		PanacheQuery<Bill> billQuery = billRepository.getBills(carId, context.getName(), page, size);
+		PanacheQuery<Bill> billQuery = billRepository.getBills(carId, context.getName(), queryPage);
 		return new BillPojoPaged(billQuery.count(), page, size, BillPojo.convert(billQuery.list()));
 	}
 

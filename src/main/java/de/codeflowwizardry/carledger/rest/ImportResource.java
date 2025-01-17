@@ -5,7 +5,6 @@ import java.io.File;
 import org.apache.commons.lang3.ObjectUtils;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
-import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.jboss.resteasy.reactive.PartType;
 import org.jboss.resteasy.reactive.RestForm;
 import org.slf4j.Logger;
@@ -32,22 +31,22 @@ public class ImportResource extends AbstractResource
 	@Inject
 	CsvProcessor processor;
 
-	@Operation(operationId = "ImportCsv", description = """
-				This is the description for the import of an csv of your bills.
-
-				You need to add the csv and optionally the order in the csv (starts with 0).
+	@Operation(operationId = "importCsv", description = """
+				This is the description for the import of an csv of your bills.<br />
+				<br />
+				You need to add the csv and optionally the order in the csv (starts with 0).<br />
 				If you're not adding the order, the default is: day, unit, pricePerUnit, distance, estimate
-				Seperator between columns is ',' (comma)
+				separator between columns is ',' (comma)
 			""")
 	@POST
 	@Transactional
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	@APIResponses(value = {
-			@APIResponse(responseCode = "202", description = "CSV was imported."),
-			@APIResponse(responseCode = "400", description = "- Order is invalid\n- Car not found"),
-			@APIResponse(responseCode = "500", description = "- CSV was not set\n- Something went wrong while importing. Please ask the server admin for help.")
-	})
-	public Response importCsv(@PathParam("carId") long carId, @RestForm("file") @PartType("text/csv") File csv,
+	@APIResponse(responseCode = "202", description = "CSV was imported.")
+	@APIResponse(responseCode = "400", description = "- Order is invalid\n- Car not found")
+	@APIResponse(responseCode = "500", description = "- CSV was not set\n- Something went wrong while importing. Please ask the server admin for help.")
+	public Response importCsv(
+			@PathParam("carId") long carId,
+			@RestForm("file") @PartType("text/csv") File csv,
 			@RestForm("order") @PartType(MediaType.APPLICATION_JSON) CsvOrder order,
 			@QueryParam("skipHeader") boolean skipHeader)
 	{
