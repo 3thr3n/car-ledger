@@ -1,16 +1,17 @@
 ingress:
   className: nginx
   host:
+  certManager: lets-encrypt
 
 carLedger:
   replicas: 1
   image:
     repository: ghcr.io/3thr3n/car-ledger
-    tag: 1-linux-amd64
+    tag: 12836065350-linux-amd64
   securityContext:
     runAsNonRoot: true
   auth:
-    clientId: car-ledger
+    clientId: carLedger
     scopes: "offline_access,email,profile"
 
 carledgerpostgres:
@@ -19,10 +20,12 @@ carledgerpostgres:
     enabled: false
   auth:
     database: "car-ledger"
-    existingSecret: postgresql
+    existingSecret: car-ledger-postgresql
 
 infinispan:
   deploy:
+    expose:
+      type: ""
     nameOverride: car-ledger-infinispan
     security:
       secretName: infinispan
