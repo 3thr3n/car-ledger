@@ -2,7 +2,7 @@ import { AppBar, Box, Container, Toolbar, Typography } from '@mui/material';
 import { QueryClientProvider } from '@tanstack/react-query';
 import Login from './Login';
 import queryClient from '@/utils/QueryClient';
-import productLogo from '@/assets/pump-pal.png';
+import productLogo from '@/assets/car-ledger.png';
 import { useNavigate } from '@tanstack/react-router';
 
 export default function Navigation() {

@@ -25,7 +25,7 @@ export default function NewCar(props: NewCarProps) {
   };
 
   useEffect(() => {
-    if (maxCars >= currentCarSize) {
+    if (maxCars <= currentCarSize) {
       setDisabled(true);
     } else {
       setDisabled(false);
