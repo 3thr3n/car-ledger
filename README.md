@@ -17,6 +17,7 @@ spending and usage patterns.
     - [Data Aggregation & Summarization](#data-aggregation--summarization)
 - [CSV Format](#csv-format)
 - [Contributing](#contributing)
+- [Helm](#helm)
 - [License](#license)
 
 ## Features
@@ -125,6 +126,17 @@ Contributions are welcome! Please follow these steps to contribute:
 3. Commit your changes (`git commit -m 'Add YourFeature'`).
 4. Push to the branch (`git push origin feature/YourFeature`).
 5. Open a Pull Request.
+
+## Helm
+
+For using the helm chart, you can add this as a dependency and update the values as needed.
+
+```yaml
+dependencies:
+  - name: helm
+    version: 0.1.0
+    repository: oci://ghcr.io/3thr3n/car-ledger
+```
 
 ## License
 
