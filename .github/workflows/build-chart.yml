@@ -1,0 +1,48 @@
+name: Build Chart
+
+on:
+  push:
+    paths:
+      - 'helm/**'
+    branches: [ "main", "helm" ]
+
+jobs:
+  build:
+    if: ${{ github.actor != 'dependabot[bot]' }}
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.x
+
+      - name: Install Python dependencies
+        run: pip install pyyaml yq
+
+      - name: Get latest release version
+        id: get_latest_release
+        run: |
+          VERSION=$(yq '.version' helm/car-ledger/Chart.yaml)
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Chart | push
+        uses: appany/helm-oci-chart-releaser@v0.4.2
+        with:
+          # configure helm chart properties
+          name: helm
+          repository: ${{ github.repository }}
+          path: helm/car-ledger
+          tag: ${{ steps.get_latest_release.outputs.VERSION }}
+          # update helm dependencies before packaging
+          update_dependencies: 'true'
+          # configure helm oci registry
+          registry: ghcr.io
+          registry_username: ${{ github.actor }}
+          registry_password: ${{ secrets.GITHUB_TOKEN }}

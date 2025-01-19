@@ -50,8 +50,10 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
             type=ref,event=tag,suffix=-${{ matrix.platform }}
-            type=raw,value=${{ github.run_id }}-${{ matrix.platform }}
+            type=raw,value=${{ github.run_number  }}-${{ matrix.platform }}
             type=ref,event=branch,suffix=-${{ matrix.platform }}
+          labels:
+            - "${{ matrix.platform }}"
 
       - name: Build and push Docker image
         id: push
