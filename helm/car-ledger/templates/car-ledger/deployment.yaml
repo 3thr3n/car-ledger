@@ -28,7 +28,11 @@ spec:
               containerPort: 9000
           env:
             - name: QUARKUS_OIDC_AUTH_SERVER_URL
+            {{ if .Values.carLedger.auth.url }}
+              value: {{ .Values.carLedger.auth.url }}
+            {{ else }}
               value: "https://keycloak.{{ .Values.ingress.host }}/realms/car-ledger"
+            {{ end }}
             - name: QUARKUS_OIDC_CLIENT_ID
               value: {{ .Values.carLedger.auth.clientId }}
             - name: QUARKUS_OIDC_CREDENTIALS_SECRET
@@ -44,7 +48,7 @@ spec:
                   name: keycloak
                   key: state-secret
             - name: QUARKUS_INFINISPAN_CLIENT_HOSTS
-              value: "car-ledger-infinispan"
+              value: {{ .Values.carLedger.infinispan.hosts }}
             - name: QUARKUS_INFINISPAN_CLIENT_USERNAME
               valueFrom:
                 secretKeyRef:
@@ -56,14 +60,18 @@ spec:
                   name: {{ .Values.infinispan.deploy.security.secretName }}
                   key: password
             - name: QUARKUS_DATASOURCE_JDBC_URL
-              value: "jdbc:postgresql://car-ledger-postgresql:5432/car-ledger"
+            {{ if .Values.carLedger.postgres.jdbc }}
+              value: {{ .Values.carLedger.postgres.jdbc }}
+            {{ else }}
+              value: "jdbc:postgresql://{{ .Values.carLedger.postgres.host }}:{{ .Values.carLedger.postgres.port }}/{{ .Values.carLedger.postgres.database }}"
+            {{ end }}
             - name: QUARKUS_DATASOURCE_USERNAME
-              value: "postgres"
+              value: {{ .Values.carLedger.postgres.auth.username }}
             - name: QUARKUS_DATASOURCE_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.carledgerpostgres.auth.existingSecret }}
-                  key: {{ .Values.carledgerpostgres.auth.secretKeys.adminPasswordKey }}
+                  name: {{ .Values.carLedger.postgres.auth.secret }}
+                  key: {{ .Values.carLedger.postgres.auth.secretPasswordKey }}
           livenessProbe:
             httpGet:
               port: management
@@ -87,6 +95,6 @@ spec:
               memory: 256Mi
               ephemeral-storage: 100Mi
             limits:
-              cpu: 250m
-              memory: 1Gi
+              cpu: 350m
+              memory: 768Mi
               ephemeral-storage: 500Mi
