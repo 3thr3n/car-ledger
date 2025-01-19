@@ -1,7 +1,7 @@
 ingress:
   className: nginx
   host:
-  certManager: lets-encrypt
+  certManager:
 
 carLedger:
   replicas: 1
@@ -11,21 +11,36 @@ carLedger:
   securityContext:
     runAsNonRoot: true
   auth:
-    clientId: carLedger
+    url:
+    clientId: "carLedger"
     scopes: "offline_access,email,profile"
+  infinispan:
+    hosts: "car-ledger-infinispan"
+  postgres:
+    jdbc:
+    host: "car-ledger-postgresql"
+    port: 5432
+    database: car-ledger
+    auth:
+      username: "postgres"
+      secret: "car-ledger-postgresql"
+      secretPasswordKey: "adminPostgres"
+      secretUsernameKey:
 
 carledgerpostgres:
+  enabled: true
   nameOverride: postgresql
   backup:
     enabled: false
   auth:
     database: "car-ledger"
-    existingSecret: car-ledger-postgresql
+    existingSecret: "car-ledger-postgresql"
 
 infinispan:
+  enabled: true
   deploy:
     expose:
       type: ""
-    nameOverride: car-ledger-infinispan
+    nameOverride: "car-ledger-infinispan"
     security:
       secretName: infinispan

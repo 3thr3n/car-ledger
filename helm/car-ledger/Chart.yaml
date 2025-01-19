@@ -8,9 +8,11 @@ appVersion: "1.16.0"
 
 dependencies:
   - alias: carledgerpostgres
+    condition: carledgerpostgres.enabled
     name: postgresql
     version: 16.2.1
     repository: https://charts.bitnami.com/bitnami
   - name: infinispan
+    condition: infinispan.enabled
     version: 0.4.1
     repository: https://charts.openshift.io/

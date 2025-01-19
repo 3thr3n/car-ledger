@@ -6,7 +6,9 @@ metadata:
     kubernetes.io/ingress.class: {{ .Values.ingress.className }}
     nginx.ingress.kubernetes.io/enable-cors: "true"
     nginx.ingress.kubernetes.io/cors-allow-origin: "https://car-ledger.{{ .Values.ingress.host }}"
+{{ if .Values.ingress.certManager }}
     cert-manager.io/cluster-issuer: {{ .Values.ingress.certManager }}
+{{ end }}
 spec:
   ingressClassName: {{ .Values.ingress.className }}
   tls:

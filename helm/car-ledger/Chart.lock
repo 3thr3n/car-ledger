@@ -5,5 +5,5 @@ dependencies:
 - name: infinispan
   repository: https://charts.openshift.io/
   version: 0.4.1
-digest: sha256:5ff773b1fc4a088aa3cb6f6017143f5ef313ce8ded0e906e69943c13d39c4bf1
-generated: "2025-01-17T16:48:29.476971465+01:00"
+digest: sha256:26311509f93da09a2ac63248ad9088c96c9ebabb54899f3933b9670f5588cdcd
+generated: "2025-01-19T13:46:13.573939742+01:00"
