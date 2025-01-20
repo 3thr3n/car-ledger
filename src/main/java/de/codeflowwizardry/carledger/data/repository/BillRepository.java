@@ -1,5 +1,9 @@
 package de.codeflowwizardry.carledger.data.repository;
 
+import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import de.codeflowwizardry.carledger.data.Bill;
@@ -12,6 +16,36 @@ import jakarta.transaction.Transactional;
 @ApplicationScoped
 public class BillRepository implements PanacheRepository<Bill>
 {
+	public List<Bill> getBills(long carId, String username, Optional<LocalDate> from, Optional<LocalDate> to)
+	{
+		Map<String, Object> params = new HashMap<>();
+		params.put("carId", carId);
+		params.put("userId", username);
+
+		String query = "car.id = :carId and car.user.userId = :userId";
+
+		if (from.isPresent() && to.isPresent())
+		{
+			query += " and day >= :from and day <= :to";
+			params.put("from", from.get());
+			params.put("to", to.get());
+
+		} else if (from.isPresent())
+		{
+			query += " and day >= :from";
+			params.put("from", from.get());
+
+		} else if (to.isPresent())
+		{
+			query += " and day <= :to";
+			params.put("to", to.get());
+		}
+
+		query += " order by day desc";
+
+		return find(query, params).list();
+	}
+
 	public PanacheQuery<Bill> getBills(long carId, String username, Page page)
 	{
 		return find("car.id = ?1 and car.user.userId = ?2 order by day desc", carId, username)

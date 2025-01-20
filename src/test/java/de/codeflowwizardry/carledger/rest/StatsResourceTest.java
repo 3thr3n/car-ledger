@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.is;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -101,12 +102,49 @@ class StatsResourceTest
 	void shouldGetAllStats()
 	{
 		given()
-				.when()
 				.pathParam("carId", car.getId())
+				.when()
 				.get()
 				.then()
 				.statusCode(200)
 				.body(is("1380.00"));
+	}
 
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldGetAllStatsAfter2022()
+	{
+		String localDateString = LocalDate.of(2023, 1, 1).atStartOfDay().format(DateTimeFormatter.ISO_LOCAL_DATE);
+
+		given()
+				.pathParam("carId", car.getId())
+				.queryParam("from", localDateString)
+				.when()
+				.get()
+				.then()
+				.statusCode(200)
+				.body(is("980.00"));
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldGetAllStatsOf2023()
+	{
+		String fromLocalDate = LocalDate.of(2023, 1, 1).atStartOfDay().format(DateTimeFormatter.ISO_LOCAL_DATE);
+		String toLocalDate = LocalDate.of(2023, 12, 31).atStartOfDay().format(DateTimeFormatter.ISO_LOCAL_DATE);
+
+		given()
+				.pathParam("carId", car.getId())
+				.queryParam("from", fromLocalDate)
+				.queryParam("to", toLocalDate)
+				.when()
+				.get()
+				.then()
+				.statusCode(200)
+				.body(is("480.00"));
 	}
 }

@@ -15,7 +15,7 @@ import jakarta.ws.rs.core.UriInfo;
 
 public class RestHandler
 {
-	private final static Logger LOG = LoggerFactory.getLogger(RestHandler.class);
+	private static final Logger LOG = LoggerFactory.getLogger(RestHandler.class);
 
 	private final UriInfo uriInfo;
 
