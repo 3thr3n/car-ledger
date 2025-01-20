@@ -8,8 +8,8 @@ import java.util.Optional;
 
 import de.codeflowwizardry.carledger.data.Bill;
 import de.codeflowwizardry.carledger.data.repository.BillRepository;
-import io.quarkus.panache.common.Page;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.BeanParam;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
@@ -27,14 +27,23 @@ public class StatsResource extends AbstractResource
 	}
 
 	@GET
-	public String getAllStats(@PathParam("carId") Long carId,
-			@QueryParam("start") Optional<LocalDate> start,
-			@QueryParam("end") Optional<LocalDate> end)
+	public String getTotalDistance(@BeanParam DefaultParams params)
 	{
-		Page page = new Page(0, 999);
-		List<Bill> list = billRepository.getBills(carId, context.getName(), page).list();
+		List<Bill> list = billRepository.getBills(params.carId, context.getName(), params.from, params.to);
 
 		BigDecimal totalDistance = list.stream().map(Bill::getDistance).reduce(BigDecimal.ZERO, BigDecimal::add);
 		return totalDistance.setScale(2, RoundingMode.HALF_UP).toString();
+	}
+
+	public static class DefaultParams
+	{
+		@PathParam("carId")
+		Long carId;
+
+		@QueryParam("from")
+		Optional<LocalDate> from;
+
+		@QueryParam("to")
+		Optional<LocalDate> to;
 	}
 }
