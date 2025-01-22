@@ -73,6 +73,8 @@ class StatsResourceTest
 		bill.setDistance(BigDecimal.valueOf(500));
 		bill.setUnit(BigDecimal.valueOf(28d));
 		bill.setPricePerUnit(BigDecimal.valueOf(199.9d));
+		// 55,972
+		// 5.6
 		bill.setCar(car);
 		billRepository.persist(bill);
 
@@ -82,6 +84,8 @@ class StatsResourceTest
 		bill.setDistance(BigDecimal.valueOf(400));
 		bill.setUnit(BigDecimal.valueOf(20d));
 		bill.setPricePerUnit(BigDecimal.valueOf(189.9d));
+		// 37,98
+		// 5.0
 		bill.setCar(car);
 		billRepository.persist(bill);
 
@@ -91,6 +95,8 @@ class StatsResourceTest
 		bill.setDistance(BigDecimal.valueOf(480));
 		bill.setUnit(BigDecimal.valueOf(28d));
 		bill.setPricePerUnit(BigDecimal.valueOf(196.9d));
+		// 55,132
+		// 5.83
 		bill.setCar(car);
 		billRepository.persist(bill);
 	}
@@ -99,22 +105,24 @@ class StatsResourceTest
 	@TestSecurity(user = "peter", roles = {
 			"user"
 	})
-	void shouldGetAllStats()
+	void shouldGetAllTotalStats()
 	{
 		given()
 				.pathParam("carId", car.getId())
 				.when()
-				.get()
+				.get("/total")
 				.then()
 				.statusCode(200)
-				.body(is("1380.00"));
+				.body("distance", is("1380.00"))
+				.body("unit", is("76.00"))
+				.body("calculatedPrice", is("149.08"));
 	}
 
 	@Test
 	@TestSecurity(user = "peter", roles = {
 			"user"
 	})
-	void shouldGetAllStatsAfter2022()
+	void shouldGetAllTotalStatsAfter2022()
 	{
 		String localDateString = LocalDate.of(2023, 1, 1).atStartOfDay().format(DateTimeFormatter.ISO_LOCAL_DATE);
 
@@ -122,17 +130,19 @@ class StatsResourceTest
 				.pathParam("carId", car.getId())
 				.queryParam("from", localDateString)
 				.when()
-				.get()
+				.get("/total")
 				.then()
 				.statusCode(200)
-				.body(is("980.00"));
+				.body("distance", is("980.00"))
+				.body("unit", is("56.00"))
+				.body("calculatedPrice", is("111.10"));
 	}
 
 	@Test
 	@TestSecurity(user = "peter", roles = {
 			"user"
 	})
-	void shouldGetAllStatsOf2023()
+	void shouldGetAllTotalStatsOf2023()
 	{
 		String fromLocalDate = LocalDate.of(2023, 1, 1).atStartOfDay().format(DateTimeFormatter.ISO_LOCAL_DATE);
 		String toLocalDate = LocalDate.of(2023, 12, 31).atStartOfDay().format(DateTimeFormatter.ISO_LOCAL_DATE);
@@ -142,9 +152,29 @@ class StatsResourceTest
 				.queryParam("from", fromLocalDate)
 				.queryParam("to", toLocalDate)
 				.when()
-				.get()
+				.get("/total")
 				.then()
 				.statusCode(200)
-				.body(is("480.00"));
+				.body("distance", is("480.00"))
+				.body("unit", is("28.00"))
+				.body("calculatedPrice", is("55.13"));
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldGetAllAverageStats()
+	{
+		given()
+				.pathParam("carId", car.getId())
+				.when()
+				.get("/average")
+				.then()
+				.statusCode(200)
+				.body("ppu", is("195.57"))
+				.body("distance", is("460.00"))
+				.body("calculated", is("5.67"))
+				.body("calculatedPrice", is("49.69"));
 	}
 }

@@ -1,38 +1,48 @@
 package de.codeflowwizardry.carledger.rest;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
+import java.security.Principal;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Optional;
 
-import de.codeflowwizardry.carledger.data.Bill;
-import de.codeflowwizardry.carledger.data.repository.BillRepository;
+import de.codeflowwizardry.carledger.StatsCalculator;
+import de.codeflowwizardry.carledger.data.repository.AccountRepository;
+import de.codeflowwizardry.carledger.rest.records.stats.AverageStats;
+import de.codeflowwizardry.carledger.rest.records.stats.TotalStats;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.BeanParam;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.MediaType;
 
 @Path("stats/{carId}")
 public class StatsResource extends AbstractResource
 {
-	private final BillRepository billRepository;
+	private final StatsCalculator statsCalculator;
 
 	@Inject
-	public StatsResource(BillRepository billRepository)
+	public StatsResource(Principal context, AccountRepository accountRepository, StatsCalculator statsCalculator)
 	{
-		this.billRepository = billRepository;
+		super(context, accountRepository);
+		this.statsCalculator = statsCalculator;
 	}
 
 	@GET
-	public String getTotalDistance(@BeanParam DefaultParams params)
+	@Path("total")
+	@Produces(MediaType.APPLICATION_JSON)
+	public TotalStats getTotal(@BeanParam DefaultParams params)
 	{
-		List<Bill> list = billRepository.getBills(params.carId, context.getName(), params.from, params.to);
+		return statsCalculator.calculateTotal(params.carId, context.getName(), params.from, params.to);
+	}
 
-		BigDecimal totalDistance = list.stream().map(Bill::getDistance).reduce(BigDecimal.ZERO, BigDecimal::add);
-		return totalDistance.setScale(2, RoundingMode.HALF_UP).toString();
+	@GET
+	@Path("average")
+	@Produces(MediaType.APPLICATION_JSON)
+	public AverageStats getAverage(@BeanParam DefaultParams params)
+	{
+		return statsCalculator.calculateAverage(params.carId, context.getName(), params.from, params.to);
 	}
 
 	public static class DefaultParams

@@ -1,5 +1,6 @@
 package de.codeflowwizardry.carledger.rest;
 
+import java.security.Principal;
 import java.util.List;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -7,19 +8,32 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
 import de.codeflowwizardry.carledger.data.Account;
 import de.codeflowwizardry.carledger.data.Car;
+import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import de.codeflowwizardry.carledger.rest.records.CarInputPojo;
 import de.codeflowwizardry.carledger.rest.records.CarPojo;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.*;
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 @Path("car/my")
 public class CarResource extends AbstractResource
 {
+	private final CarRepository carRepository;
+
 	@Inject
-	CarRepository carRepository;
+	public CarResource(Principal context, AccountRepository accountRepository, CarRepository carRepository)
+	{
+		super(context, accountRepository);
+		this.carRepository = carRepository;
+	}
 
 	@GET
 	@Operation(operationId = "getMyCars")
