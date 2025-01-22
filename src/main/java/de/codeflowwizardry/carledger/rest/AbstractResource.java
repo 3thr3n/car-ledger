@@ -8,11 +8,15 @@ import jakarta.inject.Inject;
 
 public abstract class AbstractResource
 {
-	@Inject
-	protected Principal context;
+	protected final Principal context;
+	protected final AccountRepository accountRepository;
 
 	@Inject
-	protected AccountRepository accountRepository;
+	protected AbstractResource(Principal context, AccountRepository accountRepository)
+	{
+		this.context = context;
+		this.accountRepository = accountRepository;
+	}
 
 	protected Account getAccount()
 	{

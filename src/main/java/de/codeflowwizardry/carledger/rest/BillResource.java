@@ -8,6 +8,7 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
 import de.codeflowwizardry.carledger.data.Bill;
 import de.codeflowwizardry.carledger.data.Car;
+import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.BillRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import de.codeflowwizardry.carledger.rest.records.BillInputPojo;
@@ -16,21 +17,34 @@ import de.codeflowwizardry.carledger.rest.records.BillPojoPaged;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.panache.common.Page;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.*;
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.DefaultValue;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.InternalServerErrorException;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 @Path("bill/{carId}")
 public class BillResource extends AbstractResource
 {
-	@Inject
-	Principal context;
+	private final BillRepository billRepository;
+	private final CarRepository carRepository;
 
 	@Inject
-	BillRepository billRepository;
-
-	@Inject
-	CarRepository carRepository;
+	public BillResource(Principal context, AccountRepository accountRepository, BillRepository billRepository,
+			CarRepository carRepository)
+	{
+		super(context, accountRepository);
+		this.billRepository = billRepository;
+		this.carRepository = carRepository;
+	}
 
 	@GET
 	@Path("all")

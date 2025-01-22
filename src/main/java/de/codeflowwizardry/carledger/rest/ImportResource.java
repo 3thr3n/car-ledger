@@ -1,6 +1,7 @@
 package de.codeflowwizardry.carledger.rest;
 
 import java.io.File;
+import java.security.Principal;
 
 import org.apache.commons.lang3.ObjectUtils;
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -11,32 +12,45 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.codeflowwizardry.carledger.data.Car;
+import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import de.codeflowwizardry.carledger.rest.processors.CsvProcessor;
 import de.codeflowwizardry.carledger.rest.records.CsvOrder;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import jakarta.ws.rs.*;
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.InternalServerErrorException;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 @Path("import/{carId}")
 public class ImportResource extends AbstractResource
 {
-	private final static Logger LOG = LoggerFactory.getLogger(ImportResource.class);
+	private static final Logger LOG = LoggerFactory.getLogger(ImportResource.class);
+
+	private final CarRepository carRepository;
+	private final CsvProcessor processor;
 
 	@Inject
-	CarRepository carRepository;
-
-	@Inject
-	CsvProcessor processor;
+	public ImportResource(Principal context, AccountRepository accountRepository, CarRepository carRepository,
+			CsvProcessor processor)
+	{
+		super(context, accountRepository);
+		this.carRepository = carRepository;
+		this.processor = processor;
+	}
 
 	@Operation(operationId = "importCsv", description = """
-				This is the description for the import of an csv of your bills.<br />
-				<br />
-				You need to add the csv and optionally the order in the csv (starts with 0).<br />
-				If you're not adding the order, the default is: day, unit, pricePerUnit, distance, estimate
-				separator between columns is ',' (comma)
+			This is the description for the import of an csv of your bills.<br />
+			<br />
+			You need to add the csv and optionally the order in the csv (starts with 0).<br />
+			If you're not adding the order, the default is: day, unit, pricePerUnit, distance, estimate
+			separator between columns is ',' (comma)
 			""")
 	@POST
 	@Transactional
