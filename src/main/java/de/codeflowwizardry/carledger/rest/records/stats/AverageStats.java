@@ -5,12 +5,13 @@ import java.math.RoundingMode;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 
-public record AverageStats(BigDecimal ppu, BigDecimal distance, BigDecimal calculated, BigDecimal calculatedPrice)
+public record AverageStats(BigDecimal pricePerUnit, BigDecimal distance, BigDecimal calculated,
+		BigDecimal calculatedPrice)
 {
-	@JsonGetter("ppu")
-	public String getPpu()
+	@JsonGetter("pricePerUnit")
+	public String getPricePerUnit()
 	{
-		return ppu.setScale(2, RoundingMode.HALF_UP).toString();
+		return pricePerUnit.setScale(1, RoundingMode.HALF_UP).toString();
 	}
 
 	@JsonGetter("distance")

@@ -74,33 +74,33 @@ public final class BillPojo
 		return day;
 	}
 
-	public BigDecimal getDistance()
+	public String getDistance()
 	{
-		return distance;
+		return distance.setScale(2, RoundingMode.HALF_UP).toString();
 	}
 
-	public BigDecimal getUnit()
+	public String getUnit()
 	{
-		return unit;
+		return unit.setScale(2, RoundingMode.HALF_UP).toString();
 	}
 
-	public BigDecimal getPricePerUnit()
+	public String getPricePerUnit()
 	{
-		return pricePerUnit;
+		return pricePerUnit.setScale(2, RoundingMode.HALF_UP).toString();
 	}
 
-	public BigDecimal getEstimate()
+	public String getEstimate()
 	{
-		return estimate;
+		return estimate.setScale(2, RoundingMode.HALF_UP).toString();
 	}
 
-	public BigDecimal getCalculated()
+	public String getCalculated()
 	{
-		return calculated;
+		return calculated.setScale(2, RoundingMode.HALF_UP).toString();
 	}
 
-	public BigDecimal getCalculatedPrice()
+	public String getCalculatedPrice()
 	{
-		return calculatedPrice;
+		return calculatedPrice.setScale(2, RoundingMode.HALF_UP).toString();
 	}
 }

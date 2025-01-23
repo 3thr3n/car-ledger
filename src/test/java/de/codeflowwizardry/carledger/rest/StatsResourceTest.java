@@ -172,9 +172,33 @@ class StatsResourceTest
 				.get("/average")
 				.then()
 				.statusCode(200)
-				.body("ppu", is("195.57"))
+				.body("pricePerUnit", is("195.6"))
 				.body("distance", is("460.00"))
-				.body("calculated", is("5.67"))
+				.body("calculated", is("5.48"))
 				.body("calculatedPrice", is("49.69"));
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldGetAllHiLoStats()
+	{
+		given()
+				.pathParam("carId", car.getId())
+				.when()
+				.get("/hi_lo")
+				.then()
+				.statusCode(200)
+				.body("distance.max", is("500.00"))
+				.body("distance.min", is("400.00"))
+				.body("unit.max", is("28.00"))
+				.body("unit.min", is("20.00"))
+				.body("calculatedPrice.max", is("55.97"))
+				.body("calculatedPrice.min", is("37.98"))
+				.body("calculated.max", is("5.83"))
+				.body("calculated.min", is("5.00"))
+				.body("pricePerUnit.max", is("199.9"))
+				.body("pricePerUnit.min", is("189.9"));
 	}
 }
