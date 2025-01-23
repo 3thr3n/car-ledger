@@ -3,13 +3,17 @@ package de.codeflowwizardry.carledger;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import de.codeflowwizardry.carledger.data.Bill;
 import de.codeflowwizardry.carledger.data.repository.BillRepository;
 import de.codeflowwizardry.carledger.rest.records.stats.AverageStats;
+import de.codeflowwizardry.carledger.rest.records.stats.HiLo;
+import de.codeflowwizardry.carledger.rest.records.stats.HiLoStats;
 import de.codeflowwizardry.carledger.rest.records.stats.TotalStats;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -53,7 +57,8 @@ public class StatsCalculator
 	private BigDecimal calculateTotalCalculatedPrice(List<Bill> bills)
 	{
 		Stream<BigDecimal> totalCost = bills.stream()
-				.map(bill -> bill.getUnit().multiply(bill.getPricePerUnit()).divide(ONE_HUNDRED, RoundingMode.HALF_UP));
+				.map(bill -> bill.getUnit().multiply(bill.getPricePerUnit()).divide(ONE_HUNDRED, 2,
+						RoundingMode.HALF_UP));
 		return handleReduceTotalResult(totalCost);
 	}
 
@@ -72,7 +77,7 @@ public class StatsCalculator
 	{
 		List<Bill> bills = billRepository.getBills(carId, username, from, to);
 
-		BigDecimal averagePricePerUnit = calculateAveragePpu(bills);
+		BigDecimal averagePricePerUnit = calculateAveragePricePerUnit(bills);
 		BigDecimal averageDistance = calculateAverageDistance(bills);
 		BigDecimal averageCalculated = calculateAverageCalculated(bills);
 		BigDecimal averageCalculatedPrice = calculateAverageCalculatedPrice(bills);
@@ -80,37 +85,33 @@ public class StatsCalculator
 		return new AverageStats(averagePricePerUnit, averageDistance, averageCalculated, averageCalculatedPrice);
 	}
 
-	private BigDecimal calculateAverageDistance(List<Bill> bills)
+	private static BigDecimal calculateAverageDistance(List<Bill> bills)
 	{
-		Stream<BigDecimal> bigDecimalStream = bills.stream()
-				.map(Bill::getDistance);
-		return handleReduceAverageResult(bigDecimalStream);
+		return handleReduceAverageResult(bills, Bill::getDistance);
 	}
 
-	private BigDecimal calculateAveragePpu(List<Bill> bills)
+	private static BigDecimal calculateAveragePricePerUnit(List<Bill> bills)
 	{
-		Stream<BigDecimal> bigDecimalStream = bills.stream()
-				.map(Bill::getPricePerUnit);
-		return handleReduceAverageResult(bigDecimalStream);
+		return handleReduceAverageResult(bills, Bill::getPricePerUnit);
 	}
 
-	private BigDecimal calculateAverageCalculated(List<Bill> bills)
+	private static BigDecimal calculateAverageCalculated(List<Bill> bills)
 	{
-		Stream<BigDecimal> bigDecimalStream = bills.stream()
-				.map(bill -> bill.getUnit().divide(bill.getDistance(), RoundingMode.HALF_UP).multiply(ONE_HUNDRED));
-		return handleReduceAverageResult(bigDecimalStream);
+		return handleReduceAverageResult(bills,
+				bill -> bill.getUnit().divide(bill.getDistance(), 6, RoundingMode.HALF_UP).multiply(ONE_HUNDRED));
 	}
 
-	private BigDecimal calculateAverageCalculatedPrice(List<Bill> bills)
+	private static BigDecimal calculateAverageCalculatedPrice(List<Bill> bills)
 	{
-		Stream<BigDecimal> bigDecimalStream = bills.stream()
-				.map(bill -> bill.getUnit().multiply(bill.getPricePerUnit()).divide(ONE_HUNDRED, RoundingMode.HALF_UP));
-		return handleReduceAverageResult(bigDecimalStream);
+		return handleReduceAverageResult(bills,
+				bill -> bill.getUnit().multiply(bill.getPricePerUnit()).divide(ONE_HUNDRED, 2, RoundingMode.HALF_UP));
 	}
 
-	private static BigDecimal handleReduceAverageResult(Stream<BigDecimal> bigDecimalStream)
+	private static BigDecimal handleReduceAverageResult(List<Bill> bills,
+			Function<Bill, BigDecimal> bigDecimalMapFunction)
 	{
-		Optional<BigDecimal[]> optionalBigDecimal = bigDecimalStream
+		Optional<BigDecimal[]> optionalBigDecimal = bills.stream()
+				.map(bigDecimalMapFunction)
 				.map(bd -> new BigDecimal[] {
 						bd, BigDecimal.ONE
 				})
@@ -126,4 +127,63 @@ public class StatsCalculator
 		return totalWithCount[0].divide(totalWithCount[1], RoundingMode.HALF_UP);
 	}
 
+	public HiLoStats calculateHighLow(Long carId, String username, Optional<LocalDate> from, Optional<LocalDate> to)
+	{
+		List<Bill> bills = billRepository.getBills(carId, username, from, to);
+
+		HiLo hiLoDistance = calculateHiLoDistance(bills);
+		HiLo hiLoUnit = calculateHiLoUnit(bills);
+		HiLo hiLoPricePerUnit = calculateHiLoPricePerUnit(bills);
+		HiLo hiLoCalculated = calculateHiLoCalculated(bills);
+		HiLo hiLoCalculatedPrice = calculateHiLoCalculatedPrice(bills);
+
+		return new HiLoStats(hiLoCalculatedPrice, hiLoCalculated, hiLoDistance, hiLoUnit, hiLoPricePerUnit);
+	}
+
+	private static HiLo calculateHiLoDistance(List<Bill> bills)
+	{
+		return calculateHiLo(bills, Bill::getDistance);
+	}
+
+	private static HiLo calculateHiLoUnit(List<Bill> bills)
+	{
+		return calculateHiLo(bills, Bill::getUnit);
+	}
+
+	private static HiLo calculateHiLoPricePerUnit(List<Bill> bills)
+	{
+		return calculateHiLo(bills, Bill::getPricePerUnit, 1);
+	}
+
+	private static HiLo calculateHiLoCalculated(List<Bill> bills)
+	{
+		return calculateHiLo(bills,
+				bill -> bill.getUnit().divide(bill.getDistance(), 6, RoundingMode.HALF_UP).multiply(ONE_HUNDRED));
+	}
+
+	private static HiLo calculateHiLoCalculatedPrice(List<Bill> bills)
+	{
+		return calculateHiLo(bills,
+				bill -> bill.getUnit().multiply(bill.getPricePerUnit()).divide(ONE_HUNDRED, 2, RoundingMode.HALF_UP));
+	}
+
+	private static HiLo calculateHiLo(List<Bill> bills, Function<Bill, BigDecimal> bigDecimalFunction, int scale)
+	{
+		BigDecimal min = bills.stream()
+				.map(bigDecimalFunction)
+				.min(Comparator.naturalOrder())
+				.orElse(BigDecimal.ZERO);
+
+		BigDecimal max = bills.stream()
+				.map(bigDecimalFunction)
+				.max(Comparator.naturalOrder())
+				.orElse(BigDecimal.ZERO);
+
+		return new HiLo(min, max, scale);
+	}
+
+	private static HiLo calculateHiLo(List<Bill> bills, Function<Bill, BigDecimal> bigDecimalFunction)
+	{
+		return calculateHiLo(bills, bigDecimalFunction, 2);
+	}
 }

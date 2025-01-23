@@ -111,11 +111,11 @@ class BillResourceTest
 				.body("page", is(1))
 				.body("size", is(10))
 				.body("data.size()", is(3))
-				.body("data[0].distance", is(500f))
+				.body("data[0].distance", is("500.00"))
 				.body("data[0].day", is("2024-08-16"))
-				.body("data[1].distance", is(480f))
+				.body("data[1].distance", is("480.00"))
 				.body("data[1].day", is("2023-06-02"))
-				.body("data[2].distance", is(400f))
+				.body("data[2].distance", is("400.00"))
 				.body("data[2].day", is("2022-05-22"));
 	}
 

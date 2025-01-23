@@ -7,6 +7,7 @@ import java.util.Optional;
 import de.codeflowwizardry.carledger.StatsCalculator;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.rest.records.stats.AverageStats;
+import de.codeflowwizardry.carledger.rest.records.stats.HiLoStats;
 import de.codeflowwizardry.carledger.rest.records.stats.TotalStats;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.BeanParam;
@@ -43,6 +44,14 @@ public class StatsResource extends AbstractResource
 	public AverageStats getAverage(@BeanParam DefaultParams params)
 	{
 		return statsCalculator.calculateAverage(params.carId, context.getName(), params.from, params.to);
+	}
+
+	@GET
+	@Path("hi_lo")
+	@Produces(MediaType.APPLICATION_JSON)
+	public HiLoStats getHiLo(@BeanParam DefaultParams params)
+	{
+		return statsCalculator.calculateHighLow(params.carId, context.getName(), params.from, params.to);
 	}
 
 	public static class DefaultParams
