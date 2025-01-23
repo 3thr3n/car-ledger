@@ -1,17 +1,13 @@
 import { BillPojo } from '@/generated';
 import { Box, IconButton } from '@mui/material';
-import {
-  DataGrid,
-  GridColDef,
-  GridPaginationModel,
-  GridRenderCellParams,
-} from '@mui/x-data-grid';
+import { DataGrid, GridColDef, GridPaginationModel, GridRenderCellParams } from '@mui/x-data-grid';
 import { DeleteOutline } from '@mui/icons-material';
 import useBillPagination from '@/hooks/useBillPagination';
 import { forwardRef, useImperativeHandle } from 'react';
 
 export interface BillTableProps {
   carId: number;
+  delete: (id: number | string) => void;
 }
 
 export interface BillTableRef {
@@ -26,7 +22,7 @@ const BillTable = forwardRef<BillTableRef, BillTableProps>((props, ref) => {
       field: 'id',
       headerName: 'ID',
       width: 80,
-      hideSortIcons: true,
+      hideSortIcons: true
     },
     {
       field: 'day',
@@ -36,25 +32,25 @@ const BillTable = forwardRef<BillTableRef, BillTableProps>((props, ref) => {
       type: 'date',
       flex: 1,
       minWidth: 100,
-      valueGetter: (value) => new Date(value),
+      valueGetter: (value) => new Date(value)
     },
     {
       field: 'distance',
       headerName: 'Distance',
       align: 'right',
       valueFormatter: (value: number) => {
-        return `${value.toFixed(2)} km`;
+        return `${value} km`;
       },
-      hideSortIcons: true,
+      hideSortIcons: true
     },
     {
       field: 'unit',
       headerName: 'Unit',
       align: 'right',
       valueFormatter: (value: number) => {
-        return `${value.toFixed(2)} l`;
+        return `${value} l`;
       },
-      hideSortIcons: true,
+      hideSortIcons: true
     },
     {
       field: 'pricePerUnit',
@@ -62,9 +58,9 @@ const BillTable = forwardRef<BillTableRef, BillTableProps>((props, ref) => {
       description: 'Price payed per unit',
       align: 'right',
       valueFormatter: (value: number) => {
-        return `${value.toFixed(1)} ct`;
+        return `${value} ct`;
       },
-      hideSortIcons: true,
+      hideSortIcons: true
     },
     {
       field: 'estimate',
@@ -73,9 +69,9 @@ const BillTable = forwardRef<BillTableRef, BillTableProps>((props, ref) => {
       align: 'right',
       width: 130,
       valueFormatter: (value: number) => {
-        return `${value.toFixed(2)} l/100km`;
+        return `${value} l/100km`;
       },
-      hideSortIcons: true,
+      hideSortIcons: true
     },
     {
       field: 'calculated',
@@ -85,9 +81,9 @@ const BillTable = forwardRef<BillTableRef, BillTableProps>((props, ref) => {
       align: 'right',
       width: 130,
       valueFormatter: (value: number) => {
-        return `${value.toFixed(2)} l/100km`;
+        return `${value} l/100km`;
       },
-      hideSortIcons: true,
+      hideSortIcons: true
     },
     {
       field: 'calculatedPrice',
@@ -95,9 +91,9 @@ const BillTable = forwardRef<BillTableRef, BillTableProps>((props, ref) => {
       description: 'Calculated price payed (based on unit and price per unit)',
       align: 'right',
       valueFormatter: (value: number) => {
-        return `${value.toFixed(2)} €`;
+        return `${value} €`;
       },
-      hideSortIcons: true,
+      hideSortIcons: true
     },
     {
       field: 'delete',
@@ -111,23 +107,23 @@ const BillTable = forwardRef<BillTableRef, BillTableProps>((props, ref) => {
         <IconButton onClick={() => deleteBill(params.id)}>
           <DeleteOutline color="error" />
         </IconButton>
-      ),
-    },
+      )
+    }
   ];
 
   const deleteBill = (billId: number | string) => {
     console.log('delete bill', billId);
+    props.delete(billId);
   };
 
   const updatePagination = (pagination: GridPaginationModel) => {
-    console.log('update pagination', pagination);
     setPagination(pagination);
   };
 
   useImperativeHandle(ref, () => ({
     async refresh() {
       await refetch();
-    },
+    }
   }));
 
   return (
@@ -144,19 +140,19 @@ const BillTable = forwardRef<BillTableRef, BillTableProps>((props, ref) => {
             sortModel: [
               {
                 field: 'day',
-                sort: 'desc',
-              },
-            ],
+                sort: 'desc'
+              }
+            ]
           },
           pagination: {
             paginationModel: {
               page: data?.page ? data.page - 1 : 0,
-              pageSize: data?.size ?? 20,
-            },
-          },
+              pageSize: data?.size ?? 20
+            }
+          }
         }}
         columnVisibilityModel={{
-          id: false,
+          id: false
         }}
       />
     </Box>

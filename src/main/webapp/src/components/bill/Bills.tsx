@@ -2,6 +2,10 @@ import React, { createRef, useState } from 'react';
 import BillToolbar from './BillToolbar';
 import BillGridList, { BillGridRef } from './BillGridList';
 import BillTable, { BillTableRef } from '@/components/bill/BillTable';
+import { useMutation } from '@tanstack/react-query';
+import { deleteBillMutation } from '@/generated/@tanstack/react-query.gen';
+import { localClient } from '@/utils/QueryClient';
+import { toast } from 'react-toastify';
 
 export interface BillParams {
   carId: number;
@@ -21,11 +25,36 @@ export default function Bill(props: BillParams) {
     }
   };
 
+  const { mutate } = useMutation(({
+    ...deleteBillMutation({
+      client: localClient
+    }),
+    onSuccess: () => {
+      toast.info('Bill deleted!');
+    },
+    onSettled: () => {
+      refresh();
+    },
+    onError: () => {
+      toast.error('Backend failed!');
+    }
+  }));
+
+  const deleteBill = (id: string | number) => {
+    // TODO: Popup if you are sure
+    mutate({
+      path: {
+        carId: props.carId,
+        billId: id as number
+      }
+    });
+  };
+
   const renderTableOrGrid = () => {
     if (grid) {
       return <BillGridList ref={billGrid} carId={props.carId} />;
     } else {
-      return <BillTable ref={table} carId={props.carId} />;
+      return <BillTable ref={table} carId={props.carId} delete={(id) => deleteBill(id)} />;
     }
   };
 
