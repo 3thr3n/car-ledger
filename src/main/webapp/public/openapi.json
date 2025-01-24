@@ -1,482 +1,679 @@
 {
-  "openapi": "3.0.3",
-  "info": {
-    "title": "pump-pal API",
-    "version": "0.1.0-SNAPSHOT"
-  },
-  "servers": [
-    {
-      "url": "http://localhost:8080",
-      "description": "Auto generated value"
+  "openapi" : "3.1.0",
+  "components" : {
+    "schemas" : {
+      "AccountPojo" : {
+        "type" : "object",
+        "properties" : {
+          "maxCars" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "name" : {
+            "type" : "string"
+          }
+        }
+      },
+      "AverageStats" : {
+        "type" : "object",
+        "properties" : {
+          "pricePerUnit" : {
+            "type" : "number"
+          },
+          "distance" : {
+            "type" : "number"
+          },
+          "calculated" : {
+            "type" : "number"
+          },
+          "calculatedPrice" : {
+            "type" : "number"
+          }
+        }
+      },
+      "BillInputPojo" : {
+        "type" : "object",
+        "properties" : {
+          "day" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          },
+          "distance" : {
+            "type" : "number"
+          },
+          "unit" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "pricePerUnit" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "estimate" : {
+            "type" : "number",
+            "format" : "double"
+          }
+        }
+      },
+      "BillPojo" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "day" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          },
+          "distance" : {
+            "type" : "number"
+          },
+          "unit" : {
+            "type" : "number"
+          },
+          "pricePerUnit" : {
+            "type" : "number"
+          },
+          "estimate" : {
+            "type" : "number"
+          },
+          "calculated" : {
+            "type" : "number"
+          },
+          "calculatedPrice" : {
+            "type" : "number"
+          }
+        }
+      },
+      "BillPojoPaged" : {
+        "type" : "object",
+        "properties" : {
+          "total" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "page" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "data" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/BillPojo"
+            }
+          }
+        }
+      },
+      "CarInputPojo" : {
+        "type" : "object",
+        "properties" : {
+          "description" : {
+            "type" : "string"
+          }
+        }
+      },
+      "CarPojo" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "amountBills" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "CsvOrder" : {
+        "type" : "object",
+        "properties" : {
+          "day" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "unit" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "pricePerUnit" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "distance" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "estimate" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "HiLo" : {
+        "type" : "object",
+        "properties" : {
+          "min" : {
+            "type" : "number"
+          },
+          "max" : {
+            "type" : "number"
+          },
+          "scale" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "HiLoStats" : {
+        "type" : "object",
+        "properties" : {
+          "calculatedPrice" : {
+            "$ref" : "#/components/schemas/HiLo"
+          },
+          "calculated" : {
+            "$ref" : "#/components/schemas/HiLo"
+          },
+          "distance" : {
+            "$ref" : "#/components/schemas/HiLo"
+          },
+          "unit" : {
+            "$ref" : "#/components/schemas/HiLo"
+          },
+          "pricePerUnit" : {
+            "$ref" : "#/components/schemas/HiLo"
+          }
+        }
+      },
+      "LocalDate" : {
+        "type" : "string",
+        "format" : "date",
+        "examples" : [ "2022-03-10" ]
+      },
+      "TotalStats" : {
+        "type" : "object",
+        "properties" : {
+          "unit" : {
+            "type" : "number"
+          },
+          "distance" : {
+            "type" : "number"
+          },
+          "calculatedPrice" : {
+            "type" : "number"
+          }
+        }
+      }
     },
-    {
-      "url": "http://0.0.0.0:8080",
-      "description": "Auto generated value"
+    "securitySchemes" : {
+      "SecurityScheme" : {
+        "type" : "openIdConnect",
+        "description" : "Authentication"
+      }
     }
-  ],
-  "paths": {
-    "/api/auth/callback": {
-      "get": {
-        "tags": ["Auth Resource"],
-        "description": "This only for redirect purposes of oauth!",
-        "operationId": "callback",
-        "responses": {
-          "200": {
-            "description": "OK"
+  },
+  "paths" : {
+    "/api/auth/callback" : {
+      "get" : {
+        "description" : "This only for redirect purposes of oauth!",
+        "operationId" : "callback",
+        "responses" : {
+          "200" : {
+            "description" : "OK"
           }
-        }
+        },
+        "summary" : "Callback",
+        "tags" : [ "Auth Resource" ]
       }
     },
-    "/api/auth/login": {
-      "get": {
-        "tags": ["Auth Resource"],
-        "description": "Here should the browser redirect, when 'login' is pressed",
-        "operationId": "login",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "string"
+    "/api/auth/login" : {
+      "get" : {
+        "description" : "Here should the browser redirect, when 'login' is pressed",
+        "operationId" : "login",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "text/plain" : {
+                "schema" : {
+                  "type" : "string"
                 }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/bill/{carId}": {
-      "put": {
-        "tags": ["Bill Resource"],
-        "operationId": "AddNewBill",
-        "parameters": [
-          {
-            "name": "carId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "format": "int64",
-              "type": "integer"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/BillInputPojo"
               }
             }
           }
         },
-        "responses": {
-          "200": {
-            "description": "Bill created."
-          },
-          "400": {
-            "description": "Car is not for your user."
-          },
-          "500": {
-            "description": "Something went wrong while saving. Please ask the server admin for help."
-          }
-        }
+        "summary" : "Login",
+        "tags" : [ "Auth Resource" ]
       }
     },
-    "/api/bill/{carId}/all": {
-      "get": {
-        "tags": ["Bill Resource"],
-        "description": "Gets all bills for specified car",
-        "operationId": "getAllBills",
-        "parameters": [
-          {
-            "name": "carId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "format": "int64",
-              "type": "integer"
-            }
-          },
-          {
-            "name": "page",
-            "in": "query",
-            "schema": {
-              "format": "int32",
-              "default": 1,
-              "type": "integer"
-            }
-          },
-          {
-            "name": "size",
-            "in": "query",
-            "schema": {
-              "format": "int32",
-              "default": 10,
-              "type": "integer"
-            }
+    "/api/auth/logout" : {
+      "get" : {
+        "description" : "Logout current user",
+        "operationId" : "logout",
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
           }
-        ],
-        "responses": {
-          "200": {
-            "description": "Bills found.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/BillPojoPaged"
+        },
+        "summary" : "Logout",
+        "tags" : [ "Auth Resource" ]
+      }
+    },
+    "/api/bill/{carId}" : {
+      "put" : {
+        "operationId" : "addNewBill",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/BillInputPojo"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Bill created."
+          },
+          "400" : {
+            "description" : "Car is not for your user."
+          },
+          "500" : {
+            "description" : "Something went wrong while saving. Please ask the server admin for help."
+          }
+        },
+        "summary" : "Add New Bill",
+        "tags" : [ "Bill Resource" ]
+      }
+    },
+    "/api/bill/{carId}/all" : {
+      "get" : {
+        "description" : "Gets all bills for specified car",
+        "operationId" : "getAllBills",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "page",
+          "in" : "query",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 1
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 10
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Bills found.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/BillPojoPaged"
                 }
               }
             }
           }
-        }
+        },
+        "summary" : "Get All My Bills",
+        "tags" : [ "Bill Resource" ]
       }
     },
-    "/api/bill/{carId}/{billId}": {
-      "delete": {
-        "tags": ["Bill Resource"],
-        "operationId": "deleteBill",
-        "parameters": [
-          {
-            "name": "billId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "format": "int64",
-              "type": "integer"
-            }
-          },
-          {
-            "name": "carId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "format": "int64",
-              "type": "integer"
-            }
+    "/api/bill/{carId}/{billId}" : {
+      "delete" : {
+        "operationId" : "deleteBill",
+        "parameters" : [ {
+          "name" : "billId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
           }
-        ],
-        "responses": {
-          "202": {
-            "description": "Bill deleted."
-          },
-          "400": {
-            "description": "Bill not found on the specified car."
-          },
-          "500": {
-            "description": "Something went wrong while deleting. Please ask the server admin for help."
+        }, {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
           }
-        }
+        } ],
+        "responses" : {
+          "202" : {
+            "description" : "Bill deleted."
+          },
+          "400" : {
+            "description" : "Bill not found on the specified car."
+          },
+          "500" : {
+            "description" : "Something went wrong while deleting. Please ask the server admin for help."
+          }
+        },
+        "summary" : "Delete Bill",
+        "tags" : [ "Bill Resource" ]
       }
     },
-    "/api/car/my": {
-      "get": {
-        "tags": ["Car Resource"],
-        "operationId": "getMyCars",
-        "responses": {
-          "200": {
-            "description": "Get all cars.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/CarPojo"
+    "/api/car/my" : {
+      "get" : {
+        "operationId" : "getMyCars",
+        "responses" : {
+          "200" : {
+            "description" : "Get all cars.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/CarPojo"
                   }
                 }
               }
             }
           }
-        }
+        },
+        "summary" : "Get My Cars",
+        "tags" : [ "Car Resource" ]
       },
-      "put": {
-        "tags": ["Car Resource"],
-        "operationId": "createCar",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CarInputPojo"
+      "put" : {
+        "operationId" : "createCar",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CarInputPojo"
               }
             }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "202" : {
+            "description" : "Car created."
+          },
+          "400" : {
+            "description" : "Maximal amount of cars created."
+          },
+          "500" : {
+            "description" : "Something went wrong while saving. Please ask the server admin for help."
           }
         },
-        "responses": {
-          "202": {
-            "description": "Car created."
-          },
-          "400": {
-            "description": "Maximal amount of cars created."
-          },
-          "500": {
-            "description": "Something went wrong while saving. Please ask the server admin for help."
-          }
-        }
+        "summary" : "Create Car",
+        "tags" : [ "Car Resource" ]
       }
     },
-    "/api/car/my/{id}": {
-      "get": {
-        "tags": ["Car Resource"],
-        "operationId": "getMyCar",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "format": "int64",
-              "type": "integer"
-            }
+    "/api/car/my/{id}" : {
+      "get" : {
+        "operationId" : "getMyCar",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
           }
-        ],
-        "responses": {
-          "200": {
-            "description": "Car found.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CarPojo"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Car found.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CarPojo"
                 }
               }
             }
           },
-          "204": {
-            "description": "Id was not found."
+          "204" : {
+            "description" : "Id was not found."
           }
-        }
+        },
+        "summary" : "Get My Car",
+        "tags" : [ "Car Resource" ]
       }
     },
-    "/api/import/{carId}": {
-      "post": {
-        "tags": ["Import Resource"],
-        "description": "\tThis is the description for the import of an csv of your bills.\n\n\tYou need to add the csv and optionally the order in the csv (starts with 0).\n\tIf you're not adding the order, the default is: day, unit, pricePerUnit, distance, estimate\n\tSeperator between columns is ',' (comma)\n",
-        "operationId": "ImportCsv",
-        "parameters": [
-          {
-            "name": "carId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "format": "int64",
-              "type": "integer"
-            }
-          },
-          {
-            "name": "skipHeader",
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
+    "/api/import/{carId}" : {
+      "post" : {
+        "description" : "This is the description for the import of an csv of your bills.<br />\n<br />\nYou need to add the csv and optionally the order in the csv (starts with 0).<br />\nIf you're not adding the order, the default is: day, unit, pricePerUnit, distance, estimate\nseparator between columns is ',' (comma)\n",
+        "operationId" : "importCsv",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
           }
-        ],
-        "requestBody": {
-          "content": {
-            "multipart/form-data": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "file": {
-                    "format": "binary",
-                    "type": "string"
+        }, {
+          "name" : "skipHeader",
+          "in" : "query",
+          "schema" : {
+            "type" : "boolean"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "multipart/form-data" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "file" : {
+                    "type" : "string",
+                    "format" : "binary"
                   },
-                  "order": {
-                    "$ref": "#/components/schemas/CsvOrder"
+                  "order" : {
+                    "$ref" : "#/components/schemas/CsvOrder"
                   }
                 }
               },
-              "encoding": {
-                "file": {
-                  "contentType": "text/csv"
+              "encoding" : {
+                "file" : {
+                  "contentType" : "text/csv"
                 },
-                "order": {
-                  "contentType": "application/json"
+                "order" : {
+                  "contentType" : "application/json"
+                }
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "202" : {
+            "description" : "CSV was imported."
+          },
+          "400" : {
+            "description" : "- Order is invalid\n- Car not found"
+          },
+          "500" : {
+            "description" : "- CSV was not set\n- Something went wrong while importing. Please ask the server admin for help."
+          }
+        },
+        "summary" : "Import Csv",
+        "tags" : [ "Import Resource" ]
+      }
+    },
+    "/api/stats/{carId}/average" : {
+      "get" : {
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "from",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          },
+          "required" : false
+        }, {
+          "name" : "to",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          },
+          "required" : false
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AverageStats"
                 }
               }
             }
           }
         },
-        "responses": {
-          "202": {
-            "description": "CSV was imported."
-          },
-          "400": {
-            "description": "- Order is invalid\n- Car not found"
-          },
-          "500": {
-            "description": "- CSV was not set\n- Something went wrong while importing. Please ask the server admin for help."
-          }
-        }
+        "summary" : "Get Average",
+        "tags" : [ "Stats Resource" ]
       }
     },
-    "/api/user/me": {
-      "get": {
-        "tags": ["Account Resource"],
-        "operationId": "getMyself",
-        "responses": {
-          "200": {
-            "description": "User found.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AccountPojo"
+    "/api/stats/{carId}/hi_lo" : {
+      "get" : {
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "from",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          },
+          "required" : false
+        }, {
+          "name" : "to",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          },
+          "required" : false
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/HiLoStats"
                 }
               }
             }
           }
-        }
+        },
+        "summary" : "Get Hi Lo",
+        "tags" : [ "Stats Resource" ]
+      }
+    },
+    "/api/stats/{carId}/total" : {
+      "get" : {
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "from",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          },
+          "required" : false
+        }, {
+          "name" : "to",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          },
+          "required" : false
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TotalStats"
+                }
+              }
+            }
+          }
+        },
+        "summary" : "Get Total",
+        "tags" : [ "Stats Resource" ]
+      }
+    },
+    "/api/user/me" : {
+      "get" : {
+        "operationId" : "getMyself",
+        "responses" : {
+          "200" : {
+            "description" : "User found.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AccountPojo"
+                }
+              }
+            }
+          }
+        },
+        "summary" : "Get Me",
+        "tags" : [ "Account Resource" ]
       }
     }
   },
-  "components": {
-    "schemas": {
-      "AccountPojo": {
-        "type": "object",
-        "properties": {
-          "maxCars": {
-            "format": "int32",
-            "type": "integer"
-          },
-          "name": {
-            "type": "string"
-          }
-        }
-      },
-      "BillInputPojo": {
-        "type": "object",
-        "properties": {
-          "day": {
-            "$ref": "#/components/schemas/LocalDate"
-          },
-          "distance": {
-            "type": "number"
-          },
-          "unit": {
-            "format": "double",
-            "type": "number"
-          },
-          "pricePerUnit": {
-            "format": "double",
-            "type": "number"
-          },
-          "estimate": {
-            "format": "double",
-            "type": "number"
-          }
-        }
-      },
-      "BillPojo": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "format": "int64",
-            "type": "integer"
-          },
-          "day": {
-            "$ref": "#/components/schemas/LocalDate"
-          },
-          "distance": {
-            "type": "number"
-          },
-          "unit": {
-            "type": "number"
-          },
-          "pricePerUnit": {
-            "type": "number"
-          },
-          "estimate": {
-            "type": "number"
-          },
-          "calculated": {
-            "type": "number"
-          },
-          "calculatedPrice": {
-            "type": "number"
-          }
-        }
-      },
-      "BillPojoPaged": {
-        "type": "object",
-        "properties": {
-          "total": {
-            "format": "int64",
-            "type": "integer"
-          },
-          "page": {
-            "format": "int32",
-            "type": "integer"
-          },
-          "size": {
-            "format": "int32",
-            "type": "integer"
-          },
-          "data": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/BillPojo"
-            }
-          }
-        }
-      },
-      "CarInputPojo": {
-        "type": "object",
-        "properties": {
-          "description": {
-            "type": "string"
-          }
-        }
-      },
-      "CarPojo": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "format": "int64",
-            "type": "integer"
-          },
-          "description": {
-            "type": "string"
-          },
-          "amountBills": {
-            "format": "int32",
-            "type": "integer"
-          }
-        }
-      },
-      "CsvOrder": {
-        "type": "object",
-        "properties": {
-          "day": {
-            "format": "int32",
-            "type": "integer"
-          },
-          "unit": {
-            "format": "int32",
-            "type": "integer"
-          },
-          "pricePerUnit": {
-            "format": "int32",
-            "type": "integer"
-          },
-          "distance": {
-            "format": "int32",
-            "type": "integer"
-          },
-          "estimate": {
-            "format": "int32",
-            "type": "integer"
-          }
-        }
-      },
-      "LocalDate": {
-        "format": "date",
-        "type": "string",
-        "example": "2022-03-10"
-      }
-    },
-    "securitySchemes": {
-      "SecurityScheme": {
-        "type": "openIdConnect",
-        "description": "Authentication",
-        "openIdConnectUrl": "http://192.168.0.5:8085/realms/pump-pal/.well-known/openid-configuration"
-      }
-    }
-  }
+  "info" : {
+    "title" : "car-ledger API",
+    "version" : "0.1.0-SNAPSHOT"
+  },
+  "servers" : [ {
+    "url" : "http://localhost:8080",
+    "description" : "Auto generated value"
+  }, {
+    "url" : "http://0.0.0.0:8080",
+    "description" : "Auto generated value"
+  } ]
 }
