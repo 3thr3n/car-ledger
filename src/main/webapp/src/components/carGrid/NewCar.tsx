@@ -42,21 +42,23 @@ export default function NewCar(props: NewCarProps) {
   return (
     <React.Fragment>
       <Tooltip title={tooltip}>
-        <Fab
-          disabled={disabled}
-          variant="extended"
-          size="medium"
-          color="primary"
-          onClick={handleOpen}
-          sx={{
-            position: 'absolute',
-            top: 0,
-            pointerEvents: 'all !important',
-          }}
-        >
-          <Add sx={{ mr: 1 }} />
-          New car
-        </Fab>
+        <span>
+          <Fab
+            disabled={disabled}
+            variant="extended"
+            size="medium"
+            color="primary"
+            onClick={handleOpen}
+            sx={{
+              position: 'absolute',
+              top: 0,
+              pointerEvents: 'all !important'
+            }}
+          >
+            <Add sx={{ mr: 1 }} />
+            New car
+          </Fab>
+        </span>
       </Tooltip>
 
       <NewCarDialog onSave={handleSave} />
