@@ -1,7 +1,10 @@
 import { Box, Button, Typography } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
 
-import { getMyselfOptions, logoutOptions } from '@/generated/@tanstack/react-query.gen';
+import {
+  getMyselfOptions,
+  logoutOptions,
+} from '@/generated/@tanstack/react-query.gen';
 import { baseUrl, localClient } from '@/utils/QueryClient';
 import { useEffect } from 'react';
 import useUserStore from '@/store/UserStore';
@@ -12,19 +15,19 @@ export default function Login() {
 
   const logoutQuery = useQuery({
     ...logoutOptions({
-      client: localClient
+      client: localClient,
     }),
     enabled: false,
-    retry: false
+    retry: false,
   });
 
   const { isError, isLoading, data, refetch } = useQuery({
     ...getMyselfOptions({
-      client: localClient
+      client: localClient,
     }),
     retry: false,
     refetchIntervalInBackground: true,
-    refetchInterval: 5 * 60 * 1000
+    refetchInterval: 5 * 60 * 1000,
   });
 
   if (isError) {
@@ -63,4 +66,3 @@ export default function Login() {
     </Box>
   );
 }
-

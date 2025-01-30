@@ -1,6 +1,11 @@
 import { BillPojo } from '@/generated';
 import { Box, IconButton } from '@mui/material';
-import { DataGrid, GridColDef, GridPaginationModel, GridRenderCellParams } from '@mui/x-data-grid';
+import {
+  DataGrid,
+  GridColDef,
+  GridPaginationModel,
+  GridRenderCellParams,
+} from '@mui/x-data-grid';
 import { DeleteOutline } from '@mui/icons-material';
 import useBillPagination from '@/hooks/useBillPagination';
 import { forwardRef, useImperativeHandle } from 'react';
@@ -22,7 +27,7 @@ const BillTable = forwardRef<BillTableRef, BillTableProps>((props, ref) => {
       field: 'id',
       headerName: 'ID',
       width: 80,
-      hideSortIcons: true
+      hideSortIcons: true,
     },
     {
       field: 'day',
@@ -32,7 +37,7 @@ const BillTable = forwardRef<BillTableRef, BillTableProps>((props, ref) => {
       type: 'date',
       flex: 1,
       minWidth: 100,
-      valueGetter: (value) => new Date(value)
+      valueGetter: (value) => new Date(value),
     },
     {
       field: 'distance',
@@ -41,7 +46,7 @@ const BillTable = forwardRef<BillTableRef, BillTableProps>((props, ref) => {
       valueFormatter: (value: number) => {
         return `${value} km`;
       },
-      hideSortIcons: true
+      hideSortIcons: true,
     },
     {
       field: 'unit',
@@ -50,7 +55,7 @@ const BillTable = forwardRef<BillTableRef, BillTableProps>((props, ref) => {
       valueFormatter: (value: number) => {
         return `${value} l`;
       },
-      hideSortIcons: true
+      hideSortIcons: true,
     },
     {
       field: 'pricePerUnit',
@@ -60,7 +65,7 @@ const BillTable = forwardRef<BillTableRef, BillTableProps>((props, ref) => {
       valueFormatter: (value: number) => {
         return `${value} ct`;
       },
-      hideSortIcons: true
+      hideSortIcons: true,
     },
     {
       field: 'estimate',
@@ -71,7 +76,7 @@ const BillTable = forwardRef<BillTableRef, BillTableProps>((props, ref) => {
       valueFormatter: (value: number) => {
         return `${value} l/100km`;
       },
-      hideSortIcons: true
+      hideSortIcons: true,
     },
     {
       field: 'calculated',
@@ -83,7 +88,7 @@ const BillTable = forwardRef<BillTableRef, BillTableProps>((props, ref) => {
       valueFormatter: (value: number) => {
         return `${value} l/100km`;
       },
-      hideSortIcons: true
+      hideSortIcons: true,
     },
     {
       field: 'calculatedPrice',
@@ -93,7 +98,7 @@ const BillTable = forwardRef<BillTableRef, BillTableProps>((props, ref) => {
       valueFormatter: (value: number) => {
         return `${value} €`;
       },
-      hideSortIcons: true
+      hideSortIcons: true,
     },
     {
       field: 'delete',
@@ -107,8 +112,8 @@ const BillTable = forwardRef<BillTableRef, BillTableProps>((props, ref) => {
         <IconButton onClick={() => deleteBill(params.id)}>
           <DeleteOutline color="error" />
         </IconButton>
-      )
-    }
+      ),
+    },
   ];
 
   const deleteBill = (billId: number | string) => {
@@ -123,7 +128,7 @@ const BillTable = forwardRef<BillTableRef, BillTableProps>((props, ref) => {
   useImperativeHandle(ref, () => ({
     async refresh() {
       await refetch();
-    }
+    },
   }));
 
   return (
@@ -140,19 +145,19 @@ const BillTable = forwardRef<BillTableRef, BillTableProps>((props, ref) => {
             sortModel: [
               {
                 field: 'day',
-                sort: 'desc'
-              }
-            ]
+                sort: 'desc',
+              },
+            ],
           },
           pagination: {
             paginationModel: {
               page: data?.page ? data.page - 1 : 0,
-              pageSize: data?.size ?? 20
-            }
-          }
+              pageSize: data?.size ?? 20,
+            },
+          },
         }}
         columnVisibilityModel={{
-          id: false
+          id: false,
         }}
       />
     </Box>

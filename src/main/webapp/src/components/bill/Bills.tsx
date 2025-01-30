@@ -25,9 +25,9 @@ export default function Bill(props: BillParams) {
     }
   };
 
-  const { mutate } = useMutation(({
+  const { mutate } = useMutation({
     ...deleteBillMutation({
-      client: localClient
+      client: localClient,
     }),
     onSuccess: () => {
       toast.info('Bill deleted!');
@@ -37,16 +37,16 @@ export default function Bill(props: BillParams) {
     },
     onError: () => {
       toast.error('Backend failed!');
-    }
-  }));
+    },
+  });
 
   const deleteBill = (id: string | number) => {
     // TODO: Popup if you are sure
     mutate({
       path: {
         carId: props.carId,
-        billId: id as number
-      }
+        billId: id as number,
+      },
     });
   };
 
@@ -54,7 +54,13 @@ export default function Bill(props: BillParams) {
     if (grid) {
       return <BillGridList ref={billGrid} carId={props.carId} />;
     } else {
-      return <BillTable ref={table} carId={props.carId} delete={(id) => deleteBill(id)} />;
+      return (
+        <BillTable
+          ref={table}
+          carId={props.carId}
+          delete={(id) => deleteBill(id)}
+        />
+      );
     }
   };
 

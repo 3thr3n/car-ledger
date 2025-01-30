@@ -52,7 +52,7 @@ export default function NewCar(props: NewCarProps) {
             sx={{
               position: 'absolute',
               top: 0,
-              pointerEvents: 'all !important'
+              pointerEvents: 'all !important',
             }}
           >
             <Add sx={{ mr: 1 }} />
