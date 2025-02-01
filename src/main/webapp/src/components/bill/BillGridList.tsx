@@ -1,4 +1,3 @@
-import BillGrid from './BillGrid';
 import { Box, CircularProgress, Grid2, Typography } from '@mui/material';
 import useBillPagination from '@/hooks/useBillPagination';
 import {
@@ -11,6 +10,7 @@ import {
 } from 'react';
 import { BillPojo } from '@/generated';
 import { useScrollNeeded } from '@/hooks/useScrollNeeded';
+import BillGridGroup from './BillGridGroup';
 
 export interface BillGridListProps {
   carId: number;
@@ -20,7 +20,7 @@ export interface BillGridRef {
   refresh: () => void;
 }
 
-const defaultPageSize = 50;
+const defaultPageSize = 30;
 const defaultPagination = { page: 0, pageSize: defaultPageSize };
 
 const BillGridList = forwardRef<BillGridRef, BillGridListProps>(
@@ -43,9 +43,19 @@ const BillGridList = forwardRef<BillGridRef, BillGridListProps>(
     }));
 
     function renderComponent() {
-      return gridData.map((bill) => {
-        return <BillGrid bill={bill} key={bill.id} />;
-      });
+      const groupedByYearUnsorted = Object.groupBy(
+        gridData,
+        ({ day }) => day?.split('-')[0] ?? '1970',
+      );
+
+      return Object.entries(groupedByYearUnsorted)
+        .sort()
+        .reverse()
+        .map(([key, val]) => {
+          if (val) {
+            return <BillGridGroup bills={val} year={key} key={key} />;
+          }
+        });
     }
 
     useEffect(() => {
@@ -58,6 +68,14 @@ const BillGridList = forwardRef<BillGridRef, BillGridListProps>(
       if (!scrollNeeded || gridData.length == data?.total) return;
       loadData(data?.page ?? 0);
     }, [scrollNeeded]);
+
+    useEffect(() => {
+      return () => {
+        console.log('Cleanup');
+        setGridData([]);
+        setLoading(false);
+      };
+    }, []);
 
     const loadData = (page: number) => {
       setLoading(true);
