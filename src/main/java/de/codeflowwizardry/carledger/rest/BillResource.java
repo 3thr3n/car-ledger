@@ -77,7 +77,9 @@ public class BillResource extends AbstractResource
 
 		if (car == null)
 		{
-			throw new BadRequestException("Car cannot be found under your user!");
+			throw new BadRequestException(Response.status(Response.Status.BAD_REQUEST)
+					.entity("Car cannot be found under your user!")
+					.build());
 		}
 
 		Bill bill = new Bill(billPojo);
@@ -86,7 +88,9 @@ public class BillResource extends AbstractResource
 
 		if (!billRepository.isPersistent(bill))
 		{
-			throw new InternalServerErrorException("Could not save bill!");
+			throw new InternalServerErrorException(Response.status(Response.Status.BAD_REQUEST)
+					.entity("Could not save Bill")
+					.build());
 		}
 
 		return Response.accepted(BillPojo.convert(bill)).build();

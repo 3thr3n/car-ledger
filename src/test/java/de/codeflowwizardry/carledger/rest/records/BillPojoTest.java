@@ -4,8 +4,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 
 import org.junit.jupiter.api.Test;
+
+import de.codeflowwizardry.carledger.data.Bill;
 
 class BillPojoTest
 {
@@ -26,7 +29,9 @@ class BillPojoTest
 	@Test
 	void shouldCalculatePrice()
 	{
-		assertEquals(BigDecimal.valueOf(20.00).setScale(2, RoundingMode.HALF_UP),
-				BillPojo.calculatePrice(BigDecimal.valueOf(10), BigDecimal.valueOf(200)));
+		BillPojo billPojo = BillPojo.convert(new Bill(new BillInputPojo(LocalDate.now(), BigDecimal.ZERO,
+				BigDecimal.valueOf(10), BigDecimal.valueOf(200), BigDecimal.ZERO)));
+
+		assertEquals("20.00", billPojo.getCalculatedPrice());
 	}
 }
