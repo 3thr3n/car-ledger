@@ -1,11 +1,22 @@
 package de.codeflowwizardry.carledger.data;
 
+import static de.codeflowwizardry.carledger.StatsCalculator.ONE_HUNDRED;
+
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.Objects;
 
 import de.codeflowwizardry.carledger.rest.records.BillInputPojo;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
 @Entity
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = {
@@ -38,9 +49,9 @@ public class Bill
 	{
 		this.day = billPojo.day();
 		this.distance = Objects.requireNonNullElse(billPojo.distance(), BigDecimal.ZERO);
-		this.estimate = Objects.requireNonNullElse(billPojo.distance(), BigDecimal.ZERO);
-		this.pricePerUnit = Objects.requireNonNullElse(billPojo.distance(), BigDecimal.ZERO);
-		this.unit = Objects.requireNonNullElse(billPojo.distance(), BigDecimal.ZERO);
+		this.estimate = Objects.requireNonNullElse(billPojo.estimate(), BigDecimal.ZERO);
+		this.pricePerUnit = Objects.requireNonNullElse(billPojo.pricePerUnit(), BigDecimal.ZERO);
+		this.unit = Objects.requireNonNullElse(billPojo.unit(), BigDecimal.ZERO);
 	}
 
 	public Long getId()
@@ -111,5 +122,14 @@ public class Bill
 	public Long getCarId()
 	{
 		return car.getId();
+	}
+
+	public BigDecimal getCalculatedPrice(BigDecimal mwst)
+	{
+		return pricePerUnit
+				.divide(mwst, 4, RoundingMode.HALF_UP)
+				.multiply(unit)
+				.multiply(mwst)
+				.divide(ONE_HUNDRED, 2, RoundingMode.HALF_UP);
 	}
 }

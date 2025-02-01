@@ -37,7 +37,7 @@ public final class BillPojo
 		return new BillPojoBuilder().setId(bill.getId()).setDay(bill.getDay()).setDistance(bill.getDistance())
 				.setUnit(bill.getUnit()).setPricePerUnit(bill.getPricePerUnit()).setEstimate(bill.getEstimate())
 				.setCalculated(calculateConsumption(bill.getUnit(), bill.getDistance()))
-				.setCalculatedPrice(calculatePrice(bill.getPricePerUnit(), bill.getUnit())).createBillPojo();
+				.setCalculatedPrice(bill.getCalculatedPrice(BigDecimal.valueOf(1.19))).createBillPojo();
 	}
 
 	public static List<BillPojo> convert(List<Bill> billList)
@@ -46,13 +46,8 @@ public final class BillPojo
 				.map(t -> new BillPojoBuilder().setId(t.getId()).setDay(t.getDay()).setDistance(t.getDistance())
 						.setUnit(t.getUnit()).setPricePerUnit(t.getPricePerUnit()).setEstimate(t.getEstimate())
 						.setCalculated(calculateConsumption(t.getUnit(), t.getDistance()))
-						.setCalculatedPrice(calculatePrice(t.getPricePerUnit(), t.getUnit())).createBillPojo())
+						.setCalculatedPrice(t.getCalculatedPrice(BigDecimal.valueOf(1.19))).createBillPojo())
 				.toList();
-	}
-
-	static BigDecimal calculatePrice(BigDecimal pricePerUnit, BigDecimal unit)
-	{
-		return pricePerUnit.divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP).multiply(unit);
 	}
 
 	static BigDecimal calculateConsumption(BigDecimal unit, BigDecimal distance)

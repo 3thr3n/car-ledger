@@ -21,7 +21,7 @@ import jakarta.inject.Inject;
 @ApplicationScoped
 public class StatsCalculator
 {
-	private static final BigDecimal ONE_HUNDRED = BigDecimal.valueOf(100);
+	public static final BigDecimal ONE_HUNDRED = BigDecimal.valueOf(100);
 
 	private final BillRepository billRepository;
 
@@ -57,8 +57,7 @@ public class StatsCalculator
 	private BigDecimal calculateTotalCalculatedPrice(List<Bill> bills)
 	{
 		Stream<BigDecimal> totalCost = bills.stream()
-				.map(bill -> bill.getUnit().multiply(bill.getPricePerUnit()).divide(ONE_HUNDRED, 2,
-						RoundingMode.HALF_UP));
+				.map(bill -> bill.getCalculatedPrice(BigDecimal.valueOf(1.19)));
 		return handleReduceTotalResult(totalCost);
 	}
 
@@ -104,7 +103,7 @@ public class StatsCalculator
 	private static BigDecimal calculateAverageCalculatedPrice(List<Bill> bills)
 	{
 		return handleReduceAverageResult(bills,
-				bill -> bill.getUnit().multiply(bill.getPricePerUnit()).divide(ONE_HUNDRED, 2, RoundingMode.HALF_UP));
+				bill -> bill.getCalculatedPrice(BigDecimal.valueOf(1.19)));
 	}
 
 	private static BigDecimal handleReduceAverageResult(List<Bill> bills,
@@ -164,7 +163,7 @@ public class StatsCalculator
 	private static HiLo calculateHiLoCalculatedPrice(List<Bill> bills)
 	{
 		return calculateHiLo(bills,
-				bill -> bill.getUnit().multiply(bill.getPricePerUnit()).divide(ONE_HUNDRED, 2, RoundingMode.HALF_UP));
+				bill -> bill.getCalculatedPrice(BigDecimal.valueOf(1.19)));
 	}
 
 	private static HiLo calculateHiLo(List<Bill> bills, Function<Bill, BigDecimal> bigDecimalFunction, int scale)
