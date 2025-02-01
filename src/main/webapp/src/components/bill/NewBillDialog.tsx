@@ -13,7 +13,7 @@ import React from 'react';
 import { toast } from 'react-toastify';
 import { BackendError } from '@/utils/BackendError';
 import { DatePicker } from '@mui/x-date-pickers';
-import dayjs from 'dayjs';
+import dayjs, { ConfigType } from 'dayjs';
 import BillNumericInput from '@/components/bill/BillNumericInput';
 
 const MAX_NUMBER_INPUT = 10000;
@@ -23,6 +23,14 @@ export interface NewBillDialogProps {
   open: boolean;
   onClose: () => void;
   onSave: () => void;
+}
+
+interface NewBillDialogField {
+  day: ConfigType;
+  distance: string;
+  unit: string;
+  pricePerUnit: string;
+  estimate: string;
 }
 
 export default function NewBillDialog(props: NewBillDialogProps) {
@@ -66,7 +74,9 @@ export default function NewBillDialog(props: NewBillDialogProps) {
         onSubmit: (event: React.FormEvent<HTMLFormElement>) => {
           event.preventDefault();
           const formData = new FormData(event.currentTarget);
-          const formJson = Object.fromEntries(formData.entries()) as any;
+          const formJson = Object.fromEntries(
+            formData.entries(),
+          ) as unknown as NewBillDialogField;
           handleSave({
             ...formJson,
             day: dayjs(formJson.day, 'DD.MM.YYYY').format('YYYY-MM-DD'),
