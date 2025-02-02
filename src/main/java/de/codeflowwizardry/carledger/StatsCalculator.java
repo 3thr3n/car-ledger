@@ -14,6 +14,7 @@ import de.codeflowwizardry.carledger.data.repository.BillRepository;
 import de.codeflowwizardry.carledger.rest.records.stats.AverageStats;
 import de.codeflowwizardry.carledger.rest.records.stats.HiLo;
 import de.codeflowwizardry.carledger.rest.records.stats.HiLoStats;
+import de.codeflowwizardry.carledger.rest.records.stats.MinimalStats;
 import de.codeflowwizardry.carledger.rest.records.stats.TotalStats;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -97,7 +98,8 @@ public class StatsCalculator
 	private static BigDecimal calculateAverageCalculated(List<Bill> bills)
 	{
 		return handleReduceAverageResult(bills,
-				bill -> bill.getUnit().divide(bill.getDistance(), 6, RoundingMode.HALF_UP).multiply(ONE_HUNDRED));
+				bill -> bill.getUnit().divide(bill.getDistance(), 6, RoundingMode.HALF_UP)
+						.multiply(ONE_HUNDRED));
 	}
 
 	private static BigDecimal calculateAverageCalculatedPrice(List<Bill> bills)
@@ -110,6 +112,7 @@ public class StatsCalculator
 			Function<Bill, BigDecimal> bigDecimalMapFunction)
 	{
 		Optional<BigDecimal[]> optionalBigDecimal = bills.stream()
+				.filter(Bill::isDistanceSet)
 				.map(bigDecimalMapFunction)
 				.map(bd -> new BigDecimal[] {
 						bd, BigDecimal.ONE
@@ -157,7 +160,8 @@ public class StatsCalculator
 	private static HiLo calculateHiLoCalculated(List<Bill> bills)
 	{
 		return calculateHiLo(bills,
-				bill -> bill.getUnit().divide(bill.getDistance(), 6, RoundingMode.HALF_UP).multiply(ONE_HUNDRED));
+				bill -> bill.getUnit().divide(bill.getDistance(), 6, RoundingMode.HALF_UP)
+						.multiply(ONE_HUNDRED));
 	}
 
 	private static HiLo calculateHiLoCalculatedPrice(List<Bill> bills)
@@ -169,11 +173,13 @@ public class StatsCalculator
 	private static HiLo calculateHiLo(List<Bill> bills, Function<Bill, BigDecimal> bigDecimalFunction, int scale)
 	{
 		BigDecimal min = bills.stream()
+				.filter(Bill::isDistanceSet)
 				.map(bigDecimalFunction)
 				.min(Comparator.naturalOrder())
 				.orElse(BigDecimal.ZERO);
 
 		BigDecimal max = bills.stream()
+				.filter(Bill::isDistanceSet)
 				.map(bigDecimalFunction)
 				.max(Comparator.naturalOrder())
 				.orElse(BigDecimal.ZERO);
@@ -184,5 +190,17 @@ public class StatsCalculator
 	private static HiLo calculateHiLo(List<Bill> bills, Function<Bill, BigDecimal> bigDecimalFunction)
 	{
 		return calculateHiLo(bills, bigDecimalFunction, 2);
+	}
+
+	public MinimalStats getMinimalStats(Long carId, String username, Optional<LocalDate> from, Optional<LocalDate> to)
+	{
+		List<Bill> bills = billRepository.getBills(carId, username, from, to);
+
+		BigDecimal calculatedPrice = calculateTotalCalculatedPrice(bills);
+		BigDecimal averageCalculated = calculateAverageCalculated(bills);
+		HiLo hiLoCalculated = calculateHiLoCalculated(bills);
+		BigDecimal averageDistance = calculateAverageDistance(bills);
+
+		return new MinimalStats(calculatedPrice, averageCalculated, hiLoCalculated, averageDistance);
 	}
 }

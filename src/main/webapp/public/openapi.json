@@ -41,16 +41,13 @@
             "type" : "number"
           },
           "unit" : {
-            "type" : "number",
-            "format" : "double"
+            "type" : "number"
           },
           "pricePerUnit" : {
-            "type" : "number",
-            "format" : "double"
+            "type" : "number"
           },
           "estimate" : {
-            "type" : "number",
-            "format" : "double"
+            "type" : "number"
           }
         }
       },
@@ -196,6 +193,23 @@
         "format" : "date",
         "examples" : [ "2022-03-10" ]
       },
+      "MinimalStats" : {
+        "type" : "object",
+        "properties" : {
+          "total" : {
+            "type" : "number"
+          },
+          "avgFuelConsumption" : {
+            "type" : "number"
+          },
+          "minMaxFuelConsumption" : {
+            "$ref" : "#/components/schemas/HiLo"
+          },
+          "avgDistance" : {
+            "type" : "number"
+          }
+        }
+      },
       "TotalStats" : {
         "type" : "object",
         "properties" : {
@@ -238,14 +252,7 @@
         "operationId" : "login",
         "responses" : {
           "200" : {
-            "description" : "OK",
-            "content" : {
-              "text/plain" : {
-                "schema" : {
-                  "type" : "string"
-                }
-              }
-            }
+            "description" : "OK"
           }
         },
         "summary" : "Login",
@@ -524,6 +531,8 @@
     },
     "/api/stats/{carId}/average" : {
       "get" : {
+        "description" : "Gets the average stats for Distance/Cost/PricePerUnit/Fuel Consumption",
+        "operationId" : "getStatsAverage",
         "parameters" : [ {
           "name" : "carId",
           "in" : "path",
@@ -565,6 +574,8 @@
     },
     "/api/stats/{carId}/hi_lo" : {
       "get" : {
+        "description" : "Gets the highes and lowest stats for Unit/Distance/Cost/PricePerUnit/Fuel Consumption",
+        "operationId" : "getStatsHiLo",
         "parameters" : [ {
           "name" : "carId",
           "in" : "path",
@@ -604,8 +615,53 @@
         "tags" : [ "Stats Resource" ]
       }
     },
+    "/api/stats/{carId}/minimal" : {
+      "get" : {
+        "description" : "Gets a small amount of stats to show in a dashboard",
+        "operationId" : "getStatsMinimal",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "from",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          },
+          "required" : false
+        }, {
+          "name" : "to",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          },
+          "required" : false
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MinimalStats"
+                }
+              }
+            }
+          }
+        },
+        "summary" : "Get Minimal Stats",
+        "tags" : [ "Stats Resource" ]
+      }
+    },
     "/api/stats/{carId}/total" : {
       "get" : {
+        "description" : "Gets the accumulated stats for Unit/Distance/Cost",
+        "operationId" : "getStatsTotal",
         "parameters" : [ {
           "name" : "carId",
           "in" : "path",

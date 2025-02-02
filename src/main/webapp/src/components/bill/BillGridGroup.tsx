@@ -24,10 +24,10 @@ export default function BillGridGroup(props: BillGridGroupProps) {
       }}
     >
       <Card
+        className="background-card"
         variant="elevation"
         sx={{
           width: '100%',
-          background: '#2d2d2d',
         }}
       >
         <CardHeader title={props.year} />

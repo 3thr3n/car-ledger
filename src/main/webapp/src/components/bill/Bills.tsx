@@ -6,6 +6,7 @@ import { useMutation } from '@tanstack/react-query';
 import { deleteBillMutation } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
 import { toast } from 'react-toastify';
+import { MinimalStatistics } from '../stats/MinimalStatistics';
 
 export interface BillParams {
   carId: number;
@@ -13,6 +14,7 @@ export interface BillParams {
 
 export default function Bill(props: BillParams) {
   const [grid, setGrid] = useState(false);
+  const [expanded, setExpanded] = useState(false);
 
   const table = createRef<BillTableRef>();
   const billGrid = createRef<BillGridRef>();
@@ -23,6 +25,11 @@ export default function Bill(props: BillParams) {
     } else {
       table.current?.refresh();
     }
+  };
+
+  const updateGrid = (state: boolean) => {
+    setExpanded(false);
+    setGrid(state);
   };
 
   const { mutate } = useMutation({
@@ -70,7 +77,12 @@ export default function Bill(props: BillParams) {
         carId={props.carId}
         refresh={refresh}
         gridEnabled={grid}
-        setGridEnabled={setGrid}
+        setGridEnabled={updateGrid}
+      />
+      <MinimalStatistics
+        carId={props.carId}
+        expandend={expanded}
+        setExpanded={setExpanded}
       />
       {renderTableOrGrid()}
     </React.Fragment>

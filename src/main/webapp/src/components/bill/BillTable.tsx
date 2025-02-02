@@ -132,7 +132,7 @@ const BillTable = forwardRef<BillTableRef, BillTableProps>((props, ref) => {
   }));
 
   return (
-    <Box maxWidth={'100%'} minWidth={400} padding={4} overflow={'auto'} mt={2}>
+    <Box maxWidth={'100%'} minWidth={400} padding={4} pt={0} overflow={'auto'}>
       <DataGrid
         columns={columns}
         rows={data?.data}

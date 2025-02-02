@@ -19,9 +19,10 @@ import {
   createCar,
   getMyCar,
   importCsv,
-  getApiStatsByCarIdAverage,
-  getApiStatsByCarIdHiLo,
-  getApiStatsByCarIdTotal,
+  getStatsAverage,
+  getStatsHiLo,
+  getStatsMinimal,
+  getStatsTotal,
   getMyself,
 } from '../services.gen';
 import type {
@@ -41,9 +42,10 @@ import type {
   ImportCsvData,
   ImportCsvError,
   ImportCsvResponse,
-  GetApiStatsByCarIdAverageData,
-  GetApiStatsByCarIdHiLoData,
-  GetApiStatsByCarIdTotalData,
+  GetStatsAverageData,
+  GetStatsHiLoData,
+  GetStatsMinimalData,
+  GetStatsTotalData,
 } from '../types.gen';
 
 type QueryKey<TOptions extends Options> = [
@@ -230,10 +232,10 @@ export const getAllBillsInfiniteOptions = (
         'body' | 'headers' | 'path' | 'query'
       >
   >(
-    // @ts-expect-error meep
+    // @ts-expect-error generated
     {
       queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-expect-error meep
+        // @ts-expect-error generated
         const page: Pick<
           QueryKey<Options<GetAllBillsData>>[0],
           'body' | 'headers' | 'path' | 'query'
@@ -376,16 +378,16 @@ export const importCsvMutation = (
   return mutationOptions;
 };
 
-export const getApiStatsByCarIdAverageQueryKey = (
-  options: Options<GetApiStatsByCarIdAverageData>,
-) => [createQueryKey('getApiStatsByCarIdAverage', options)];
+export const getStatsAverageQueryKey = (
+  options: Options<GetStatsAverageData>,
+) => [createQueryKey('getStatsAverage', options)];
 
-export const getApiStatsByCarIdAverageOptions = (
-  options: Options<GetApiStatsByCarIdAverageData>,
+export const getStatsAverageOptions = (
+  options: Options<GetStatsAverageData>,
 ) => {
   return queryOptions({
     queryFn: async ({ queryKey, signal }) => {
-      const { data } = await getApiStatsByCarIdAverage({
+      const { data } = await getStatsAverage({
         ...options,
         ...queryKey[0],
         signal,
@@ -393,20 +395,18 @@ export const getApiStatsByCarIdAverageOptions = (
       });
       return data;
     },
-    queryKey: getApiStatsByCarIdAverageQueryKey(options),
+    queryKey: getStatsAverageQueryKey(options),
   });
 };
 
-export const getApiStatsByCarIdHiLoQueryKey = (
-  options: Options<GetApiStatsByCarIdHiLoData>,
-) => [createQueryKey('getApiStatsByCarIdHiLo', options)];
+export const getStatsHiLoQueryKey = (options: Options<GetStatsHiLoData>) => [
+  createQueryKey('getStatsHiLo', options),
+];
 
-export const getApiStatsByCarIdHiLoOptions = (
-  options: Options<GetApiStatsByCarIdHiLoData>,
-) => {
+export const getStatsHiLoOptions = (options: Options<GetStatsHiLoData>) => {
   return queryOptions({
     queryFn: async ({ queryKey, signal }) => {
-      const { data } = await getApiStatsByCarIdHiLo({
+      const { data } = await getStatsHiLo({
         ...options,
         ...queryKey[0],
         signal,
@@ -414,20 +414,20 @@ export const getApiStatsByCarIdHiLoOptions = (
       });
       return data;
     },
-    queryKey: getApiStatsByCarIdHiLoQueryKey(options),
+    queryKey: getStatsHiLoQueryKey(options),
   });
 };
 
-export const getApiStatsByCarIdTotalQueryKey = (
-  options: Options<GetApiStatsByCarIdTotalData>,
-) => [createQueryKey('getApiStatsByCarIdTotal', options)];
+export const getStatsMinimalQueryKey = (
+  options: Options<GetStatsMinimalData>,
+) => [createQueryKey('getStatsMinimal', options)];
 
-export const getApiStatsByCarIdTotalOptions = (
-  options: Options<GetApiStatsByCarIdTotalData>,
+export const getStatsMinimalOptions = (
+  options: Options<GetStatsMinimalData>,
 ) => {
   return queryOptions({
     queryFn: async ({ queryKey, signal }) => {
-      const { data } = await getApiStatsByCarIdTotal({
+      const { data } = await getStatsMinimal({
         ...options,
         ...queryKey[0],
         signal,
@@ -435,7 +435,26 @@ export const getApiStatsByCarIdTotalOptions = (
       });
       return data;
     },
-    queryKey: getApiStatsByCarIdTotalQueryKey(options),
+    queryKey: getStatsMinimalQueryKey(options),
+  });
+};
+
+export const getStatsTotalQueryKey = (options: Options<GetStatsTotalData>) => [
+  createQueryKey('getStatsTotal', options),
+];
+
+export const getStatsTotalOptions = (options: Options<GetStatsTotalData>) => {
+  return queryOptions({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await getStatsTotal({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: getStatsTotalQueryKey(options),
   });
 };
 

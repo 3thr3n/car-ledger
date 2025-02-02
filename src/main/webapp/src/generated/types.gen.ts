@@ -72,6 +72,13 @@ export type HiLoStats = {
 
 export type LocalDate = string;
 
+export type MinimalStats = {
+  total?: number;
+  avgFuelConsumption?: number;
+  minMaxFuelConsumption?: HiLo;
+  avgDistance?: number;
+};
+
 export type TotalStats = {
   unit?: number;
   distance?: number;
@@ -82,7 +89,7 @@ export type CallbackResponse = unknown;
 
 export type CallbackError = unknown;
 
-export type LoginResponse = string;
+export type LoginResponse = unknown;
 
 export type LoginError = unknown;
 
@@ -165,7 +172,7 @@ export type ImportCsvResponse = unknown;
 
 export type ImportCsvError = unknown;
 
-export type GetApiStatsByCarIdAverageData = {
+export type GetStatsAverageData = {
   path: {
     carId: number;
   };
@@ -175,11 +182,11 @@ export type GetApiStatsByCarIdAverageData = {
   };
 };
 
-export type GetApiStatsByCarIdAverageResponse = AverageStats;
+export type GetStatsAverageResponse = AverageStats;
 
-export type GetApiStatsByCarIdAverageError = unknown;
+export type GetStatsAverageError = unknown;
 
-export type GetApiStatsByCarIdHiLoData = {
+export type GetStatsHiLoData = {
   path: {
     carId: number;
   };
@@ -189,11 +196,11 @@ export type GetApiStatsByCarIdHiLoData = {
   };
 };
 
-export type GetApiStatsByCarIdHiLoResponse = HiLoStats;
+export type GetStatsHiLoResponse = HiLoStats;
 
-export type GetApiStatsByCarIdHiLoError = unknown;
+export type GetStatsHiLoError = unknown;
 
-export type GetApiStatsByCarIdTotalData = {
+export type GetStatsMinimalData = {
   path: {
     carId: number;
   };
@@ -203,9 +210,23 @@ export type GetApiStatsByCarIdTotalData = {
   };
 };
 
-export type GetApiStatsByCarIdTotalResponse = TotalStats;
+export type GetStatsMinimalResponse = MinimalStats;
 
-export type GetApiStatsByCarIdTotalError = unknown;
+export type GetStatsMinimalError = unknown;
+
+export type GetStatsTotalData = {
+  path: {
+    carId: number;
+  };
+  query?: {
+    from?: LocalDate;
+    to?: LocalDate;
+  };
+};
+
+export type GetStatsTotalResponse = TotalStats;
+
+export type GetStatsTotalError = unknown;
 
 export type GetMyselfResponse = AccountPojo;
 

@@ -33,15 +33,18 @@ import type {
   ImportCsvData,
   ImportCsvError,
   ImportCsvResponse,
-  GetApiStatsByCarIdAverageData,
-  GetApiStatsByCarIdAverageError,
-  GetApiStatsByCarIdAverageResponse,
-  GetApiStatsByCarIdHiLoData,
-  GetApiStatsByCarIdHiLoError,
-  GetApiStatsByCarIdHiLoResponse,
-  GetApiStatsByCarIdTotalData,
-  GetApiStatsByCarIdTotalError,
-  GetApiStatsByCarIdTotalResponse,
+  GetStatsAverageData,
+  GetStatsAverageError,
+  GetStatsAverageResponse,
+  GetStatsHiLoData,
+  GetStatsHiLoError,
+  GetStatsHiLoResponse,
+  GetStatsMinimalData,
+  GetStatsMinimalError,
+  GetStatsMinimalResponse,
+  GetStatsTotalData,
+  GetStatsTotalError,
+  GetStatsTotalResponse,
   GetMyselfError,
   GetMyselfResponse,
 } from './types.gen';
@@ -225,13 +228,14 @@ export const importCsv = <ThrowOnError extends boolean = false>(
 
 /**
  * Get Average
+ * Gets the average stats for Distance/Cost/PricePerUnit/Fuel Consumption
  */
-export const getApiStatsByCarIdAverage = <ThrowOnError extends boolean = false>(
-  options: Options<GetApiStatsByCarIdAverageData, ThrowOnError>,
+export const getStatsAverage = <ThrowOnError extends boolean = false>(
+  options: Options<GetStatsAverageData, ThrowOnError>,
 ) => {
   return (options?.client ?? client).get<
-    GetApiStatsByCarIdAverageResponse,
-    GetApiStatsByCarIdAverageError,
+    GetStatsAverageResponse,
+    GetStatsAverageError,
     ThrowOnError
   >({
     ...options,
@@ -241,13 +245,14 @@ export const getApiStatsByCarIdAverage = <ThrowOnError extends boolean = false>(
 
 /**
  * Get Hi Lo
+ * Gets the highes and lowest stats for Unit/Distance/Cost/PricePerUnit/Fuel Consumption
  */
-export const getApiStatsByCarIdHiLo = <ThrowOnError extends boolean = false>(
-  options: Options<GetApiStatsByCarIdHiLoData, ThrowOnError>,
+export const getStatsHiLo = <ThrowOnError extends boolean = false>(
+  options: Options<GetStatsHiLoData, ThrowOnError>,
 ) => {
   return (options?.client ?? client).get<
-    GetApiStatsByCarIdHiLoResponse,
-    GetApiStatsByCarIdHiLoError,
+    GetStatsHiLoResponse,
+    GetStatsHiLoError,
     ThrowOnError
   >({
     ...options,
@@ -256,14 +261,32 @@ export const getApiStatsByCarIdHiLo = <ThrowOnError extends boolean = false>(
 };
 
 /**
- * Get Total
+ * Get Minimal Stats
+ * Gets a small amount of stats to show in a dashboard
  */
-export const getApiStatsByCarIdTotal = <ThrowOnError extends boolean = false>(
-  options: Options<GetApiStatsByCarIdTotalData, ThrowOnError>,
+export const getStatsMinimal = <ThrowOnError extends boolean = false>(
+  options: Options<GetStatsMinimalData, ThrowOnError>,
 ) => {
   return (options?.client ?? client).get<
-    GetApiStatsByCarIdTotalResponse,
-    GetApiStatsByCarIdTotalError,
+    GetStatsMinimalResponse,
+    GetStatsMinimalError,
+    ThrowOnError
+  >({
+    ...options,
+    url: '/api/stats/{carId}/minimal',
+  });
+};
+
+/**
+ * Get Total
+ * Gets the accumulated stats for Unit/Distance/Cost
+ */
+export const getStatsTotal = <ThrowOnError extends boolean = false>(
+  options: Options<GetStatsTotalData, ThrowOnError>,
+) => {
+  return (options?.client ?? client).get<
+    GetStatsTotalResponse,
+    GetStatsTotalError,
     ThrowOnError
   >({
     ...options,

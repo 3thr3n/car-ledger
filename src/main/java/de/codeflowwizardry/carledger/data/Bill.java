@@ -94,6 +94,11 @@ public class Bill
 		return distance;
 	}
 
+	public boolean isDistanceSet()
+	{
+		return !BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP).equals(distance);
+	}
+
 	public void setDistance(BigDecimal distance)
 	{
 		this.distance = distance;
