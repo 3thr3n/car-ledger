@@ -7,7 +7,7 @@ carLedger:
   replicas: 1
   image:
     repository: ghcr.io/3thr3n/car-ledger
-    tag: 12836065350-linux-amd64
+    tag: 97
   securityContext:
     runAsNonRoot: true
   auth:

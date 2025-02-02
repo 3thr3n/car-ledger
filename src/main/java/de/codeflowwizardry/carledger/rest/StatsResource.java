@@ -4,10 +4,13 @@ import java.security.Principal;
 import java.time.LocalDate;
 import java.util.Optional;
 
+import org.eclipse.microprofile.openapi.annotations.Operation;
+
 import de.codeflowwizardry.carledger.StatsCalculator;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.rest.records.stats.AverageStats;
 import de.codeflowwizardry.carledger.rest.records.stats.HiLoStats;
+import de.codeflowwizardry.carledger.rest.records.stats.MinimalStats;
 import de.codeflowwizardry.carledger.rest.records.stats.TotalStats;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.BeanParam;
@@ -33,6 +36,7 @@ public class StatsResource extends AbstractResource
 	@GET
 	@Path("total")
 	@Produces(MediaType.APPLICATION_JSON)
+	@Operation(operationId = "getStatsTotal", description = "Gets the accumulated stats for Unit/Distance/Cost")
 	public TotalStats getTotal(@BeanParam DefaultParams params)
 	{
 		return statsCalculator.calculateTotal(params.carId, context.getName(), params.from, params.to);
@@ -41,6 +45,7 @@ public class StatsResource extends AbstractResource
 	@GET
 	@Path("average")
 	@Produces(MediaType.APPLICATION_JSON)
+	@Operation(operationId = "getStatsAverage", description = "Gets the average stats for Distance/Cost/PricePerUnit/Fuel Consumption")
 	public AverageStats getAverage(@BeanParam DefaultParams params)
 	{
 		return statsCalculator.calculateAverage(params.carId, context.getName(), params.from, params.to);
@@ -49,9 +54,19 @@ public class StatsResource extends AbstractResource
 	@GET
 	@Path("hi_lo")
 	@Produces(MediaType.APPLICATION_JSON)
+	@Operation(operationId = "getStatsHiLo", description = "Gets the highes and lowest stats for Unit/Distance/Cost/PricePerUnit/Fuel Consumption")
 	public HiLoStats getHiLo(@BeanParam DefaultParams params)
 	{
 		return statsCalculator.calculateHighLow(params.carId, context.getName(), params.from, params.to);
+	}
+
+	@GET
+	@Path("minimal")
+	@Produces(MediaType.APPLICATION_JSON)
+	@Operation(operationId = "getStatsMinimal", description = "Gets a small amount of stats to show in a dashboard")
+	public MinimalStats getMinimalStats(@BeanParam DefaultParams params)
+	{
+		return statsCalculator.getMinimalStats(params.carId, context.getName(), params.from, params.to);
 	}
 
 	public static class DefaultParams

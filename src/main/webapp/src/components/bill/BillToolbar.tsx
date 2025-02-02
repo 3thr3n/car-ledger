@@ -1,8 +1,9 @@
-import { Add, Grid3x3, Home, TableChart } from '@mui/icons-material';
+import { Add, Grid3x3, Home, TableChart, Upload } from '@mui/icons-material';
 import { Box, Fab } from '@mui/material';
 import React, { Dispatch, useState } from 'react';
 import NewBillDialog from './NewBillDialog';
 import { useNavigate } from '@tanstack/react-router';
+import useCsvStore from '@/store/CsvStore';
 
 export interface BillToolbarProps {
   carId: number;
@@ -34,6 +35,13 @@ export default function BillToolbar(props: BillToolbarProps) {
 
   const toggleGrid = () => {
     props.setGridEnabled(!props.gridEnabled);
+  };
+
+  const openCsvDialog = useCsvStore((state) => state.openDialog);
+
+  const handleOpenCsvImport = () => {
+    console.log('open csv import dialog');
+    openCsvDialog(props.carId);
   };
 
   return (
@@ -70,6 +78,17 @@ export default function BillToolbar(props: BillToolbarProps) {
         >
           <Add sx={{ mr: 1 }} />
           New bill
+        </Fab>
+        <Fab
+          variant="extended"
+          size="medium"
+          color="primary"
+          onClick={handleOpenCsvImport}
+          sx={{
+            mr: 1,
+          }}
+        >
+          <Upload />
         </Fab>
         <Fab
           variant="extended"

@@ -9,7 +9,6 @@ import { getMyCarsOptions } from '@/generated/@tanstack/react-query.gen';
 import { useNavigate } from '@tanstack/react-router';
 import NewCar from './NewCar';
 import CarGridMenu from './CarGridMenu';
-import CsvUploadDialog from '@/components/csv/CsvUploadDialog';
 import useCarStore from '@/store/CarStore';
 
 export default function CarGridList() {
@@ -89,7 +88,6 @@ export default function CarGridList() {
   return (
     <React.Fragment>
       <NewCar refetch={refetch} />
-      <CsvUploadDialog />
       <Grid2
         container
         spacing={2}

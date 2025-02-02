@@ -101,7 +101,6 @@ const BillGridList = forwardRef<BillGridRef, BillGridListProps>(
           ref={gridRef}
           container
           spacing={2}
-          mt={6}
           px={2}
           columns={{ xl: 14, md: 8, sm: 6, xs: 4 }}
           sx={{

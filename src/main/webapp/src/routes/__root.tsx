@@ -17,6 +17,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import 'dayjs/locale/de';
 
 import 'react-toastify/dist/ReactToastify.css';
+import CsvUploadDialog from '@/components/csv/CsvUploadDialog';
 
 export const Route = createRootRoute({
   component: () => (
@@ -26,6 +27,7 @@ export const Route = createRootRoute({
           <CssBaseline />
           <Navigation />
           <QueryClientProvider client={queryClient}>
+            <CsvUploadDialog />
             <Box
               flexGrow={1}
               display="flex"

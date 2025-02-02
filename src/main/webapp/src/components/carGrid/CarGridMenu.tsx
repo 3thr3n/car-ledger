@@ -1,5 +1,5 @@
 import { Theme } from '@emotion/react';
-import { MoreVert } from '@mui/icons-material';
+import { MoreVert, Upload } from '@mui/icons-material';
 import { IconButton, Menu, MenuItem, SxProps } from '@mui/material';
 import React, { MouseEvent, useState } from 'react';
 import useCsvStore from '@/store/CsvStore';
@@ -46,6 +46,7 @@ export default function CarGridMenu(props: CarGridMenuProps) {
       </IconButton>
       <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
         <MenuItem onClick={handleCsvImport} key="import">
+          <Upload sx={{ mr: 1 }} />
           Import CSV
         </MenuItem>
       </Menu>
