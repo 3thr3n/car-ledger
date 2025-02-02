@@ -36,7 +36,6 @@
   "devDependencies": {
     "@eslint/js": "^9.15.0",
     "@hey-api/openapi-ts": "^0.55.3",
-    "@tanstack/router-devtools": "^1.82.8",
     "@tanstack/router-plugin": "^1.81.9",
     "@types/node": "^22",
     "@types/papaparse": "^5.3.15",
