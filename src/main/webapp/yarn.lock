@@ -973,10 +973,10 @@
   resolved "https://registry.npmjs.org/@rushstack/eslint-patch/-/eslint-patch-1.10.4.tgz"
   integrity sha512-WJgX9nzTqknM393q1QJDJmoW28kUfEnybeTfVNcNAPnIx210RXm2DiXiHzfNPJNIUUb1tJnz/l4QGtJ30PgWmA==
 
-"@tanstack/history@1.81.9":
-  version "1.81.9"
-  resolved "https://registry.npmjs.org/@tanstack/history/-/history-1.81.9.tgz"
-  integrity sha512-9MPknhhnvZKifK4jSvva6NDqYQwsNaptrRzO4ejk6yCLyi4koVG4u3C4VCeClYZY5etLEQbO8wXU9knEFZpMeg==
+"@tanstack/history@1.99.13":
+  version "1.99.13"
+  resolved "https://registry.yarnpkg.com/@tanstack/history/-/history-1.99.13.tgz#51f9832ce7e9c08d38ff61509313c508eb78ae54"
+  integrity sha512-JMd7USmnp8zV8BRGIjALqzPxazvKtQ7PGXQC7n39HpbqdsmfV2ePCzieO84IvN+mwsTrXErpbjI4BfKCa+ZNCg==
 
 "@tanstack/query-core@5.60.6":
   version "5.60.6"
@@ -990,24 +990,33 @@
   dependencies:
     "@tanstack/query-core" "5.60.6"
 
-"@tanstack/react-router@^1.82.8":
-  version "1.82.8"
-  resolved "https://registry.npmjs.org/@tanstack/react-router/-/react-router-1.82.8.tgz"
-  integrity sha512-l4F9V0CeDxvV5TGUsagGK5Zt1+l9xa6P+/Hyj6l79mBgW21Vm4BU3sJ3pgg75379gDee3G2sqkViYGEgv6JRFA==
+"@tanstack/react-router@^1.105.0":
+  version "1.105.0"
+  resolved "https://registry.yarnpkg.com/@tanstack/react-router/-/react-router-1.105.0.tgz#04df62976bc38dbc0b576f4a464193a583e08eb5"
+  integrity sha512-k4Umuy7rna/hhfHkmbq9dCmj9Hp8D0V6dPNCrCXceJb0gQWGxl1KWLXFbw8Ywe/sNyzIzPrMwrMit++MXHo8iw==
   dependencies:
-    "@tanstack/history" "1.81.9"
-    "@tanstack/react-store" "^0.5.6"
-    jsesc "^3.0.2"
+    "@tanstack/history" "1.99.13"
+    "@tanstack/react-store" "^0.7.0"
+    "@tanstack/router-core" "^1.104.1"
+    jsesc "^3.1.0"
     tiny-invariant "^1.3.3"
     tiny-warning "^1.0.3"
 
-"@tanstack/react-store@^0.5.6":
-  version "0.5.6"
-  resolved "https://registry.npmjs.org/@tanstack/react-store/-/react-store-0.5.6.tgz"
-  integrity sha512-SitIpS5jTj28DajjLpWbIX+YetmJL+6PRY0DKKiCGBKfYIqj3ryODQYF3jB3SNoR9ifUA/jFkqbJdBKFtWd+AQ==
+"@tanstack/react-store@^0.7.0":
+  version "0.7.0"
+  resolved "https://registry.yarnpkg.com/@tanstack/react-store/-/react-store-0.7.0.tgz#62d5d1c9b1c66ee04b06b88bc96cfbc4ee53002a"
+  integrity sha512-S/Rq17HaGOk+tQHV/yrePMnG1xbsKZIl/VsNWnNXt4XW+tTY8dTlvpJH2ZQ3GRALsusG5K6Q3unAGJ2pd9W/Ng==
   dependencies:
-    "@tanstack/store" "0.5.5"
-    use-sync-external-store "^1.2.2"
+    "@tanstack/store" "0.7.0"
+    use-sync-external-store "^1.4.0"
+
+"@tanstack/router-core@^1.104.1":
+  version "1.104.1"
+  resolved "https://registry.yarnpkg.com/@tanstack/router-core/-/router-core-1.104.1.tgz#fddbf94eee52f8149faccbcc652c3d45327c21be"
+  integrity sha512-8nP/V5paP+S/17rlw+B2F12R2bB9PixU/+qnD2QdCjK1ajnG4qA0pVN3VSTQe2oCKND6GPZpm2ikmQWumwss9Q==
+  dependencies:
+    "@tanstack/history" "1.99.13"
+    "@tanstack/store" "^0.7.0"
 
 "@tanstack/router-generator@^1.81.9":
   version "1.81.9"
@@ -1043,10 +1052,10 @@
     unplugin "^1.12.2"
     zod "^3.23.8"
 
-"@tanstack/store@0.5.5":
-  version "0.5.5"
-  resolved "https://registry.npmjs.org/@tanstack/store/-/store-0.5.5.tgz"
-  integrity sha512-EOSrgdDAJExbvRZEQ/Xhh9iZchXpMN+ga1Bnk8Nmygzs8TfiE6hbzThF+Pr2G19uHL6+DTDTHhJ8VQiOd7l4tA==
+"@tanstack/store@0.7.0", "@tanstack/store@^0.7.0":
+  version "0.7.0"
+  resolved "https://registry.yarnpkg.com/@tanstack/store/-/store-0.7.0.tgz#afef29b06c6b592e93181cee9baa62fe77454459"
+  integrity sha512-CNIhdoUsmD2NolYuaIs8VfWM467RK6oIBAW4nPEKZhg1smZ+/CwtCdpURgp7nxSqOaV9oKkzdWD80+bC66F/Jg==
 
 "@tanstack/virtual-file-routes@^1.81.9":
   version "1.81.9"
@@ -2921,10 +2930,10 @@ js-yaml@^4.1.0:
   dependencies:
     argparse "^2.0.1"
 
-jsesc@^3.0.2:
-  version "3.0.2"
-  resolved "https://registry.npmjs.org/jsesc/-/jsesc-3.0.2.tgz"
-  integrity sha512-xKqzzWXDttJuOcawBt4KnKHHIf5oQ/Cxax+0PWFG+DFDgHNAdi+TXECADI+RYiFUMmx8792xsMbbgXj4CwnP4g==
+jsesc@^3.0.2, jsesc@^3.1.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/jsesc/-/jsesc-3.1.0.tgz#74d335a234f67ed19907fdadfac7ccf9d409825d"
+  integrity sha512-/sM3dO2FOzXjKQhJuo0Q173wf2KOo8t4I8vHy6lF9poUp7bKT0/NHE8fPX23PwfhnykfqnC2xRxOnVw5XuGIaA==
 
 json-buffer@3.0.1:
   version "3.0.1"
@@ -4056,10 +4065,10 @@ uri-js@^4.2.2:
   dependencies:
     punycode "^2.1.0"
 
-use-sync-external-store@^1.2.2:
-  version "1.2.2"
-  resolved "https://registry.npmjs.org/use-sync-external-store/-/use-sync-external-store-1.2.2.tgz"
-  integrity sha512-PElTlVMwpblvbNqQ82d2n6RjStvdSoNe9FG28kNfz3WiXilJm4DdNkEzRhCZuIDwY8U08WVihhGR5iRqAwfDiw==
+use-sync-external-store@^1.4.0:
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/use-sync-external-store/-/use-sync-external-store-1.4.0.tgz#adbc795d8eeb47029963016cefdf89dc799fcebc"
+  integrity sha512-9WXSPC5fMv61vaupRkCKCxsPxBocVnwakBEkMIHHpkTTg6icbJtg6jzgtLDm4bl3cSHAca52rYWih0k4K3PfHw==
 
 vite@^5.4.11:
   version "5.4.11"
