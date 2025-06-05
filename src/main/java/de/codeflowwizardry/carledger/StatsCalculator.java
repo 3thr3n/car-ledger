@@ -19,6 +19,8 @@ import de.codeflowwizardry.carledger.rest.records.stats.TotalStats;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
+import static java.math.BigDecimal.ZERO;
+
 @ApplicationScoped
 public class StatsCalculator
 {
@@ -35,6 +37,10 @@ public class StatsCalculator
 	public TotalStats calculateTotal(Long carId, String username, Optional<LocalDate> from, Optional<LocalDate> to)
 	{
 		List<Bill> bills = billRepository.getBills(carId, username, from, to);
+
+		if (bills.isEmpty()) {
+			return new TotalStats(ZERO, ZERO, ZERO);
+		}
 
 		BigDecimal unit = calculateTotalUnit(bills);
 		BigDecimal distance = calculateTotalDistance(bills);
@@ -123,7 +129,7 @@ public class StatsCalculator
 
 		if (optionalBigDecimal.isEmpty())
 		{
-			throw new IllegalStateException("Should not be possible");
+			return ZERO;
 		}
 		BigDecimal[] totalWithCount = optionalBigDecimal.get();
 		return totalWithCount[0].divide(totalWithCount[1], RoundingMode.HALF_UP);
@@ -176,13 +182,13 @@ public class StatsCalculator
 				.filter(Bill::isDistanceSet)
 				.map(bigDecimalFunction)
 				.min(Comparator.naturalOrder())
-				.orElse(BigDecimal.ZERO);
+				.orElse(ZERO);
 
 		BigDecimal max = bills.stream()
 				.filter(Bill::isDistanceSet)
 				.map(bigDecimalFunction)
 				.max(Comparator.naturalOrder())
-				.orElse(BigDecimal.ZERO);
+				.orElse(ZERO);
 
 		return new HiLo(min, max, scale);
 	}
@@ -195,6 +201,10 @@ public class StatsCalculator
 	public MinimalStats getMinimalStats(Long carId, String username, Optional<LocalDate> from, Optional<LocalDate> to)
 	{
 		List<Bill> bills = billRepository.getBills(carId, username, from, to);
+
+		if (bills.isEmpty()) {
+			return new MinimalStats(ZERO, ZERO, new HiLo(ZERO, ZERO, 2), ZERO);
+		}
 
 		BigDecimal calculatedPrice = calculateTotalCalculatedPrice(bills);
 		BigDecimal averageCalculated = calculateAverageCalculated(bills);

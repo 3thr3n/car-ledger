@@ -5,6 +5,7 @@ import java.security.Principal;
 import org.apache.commons.lang3.ObjectUtils;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
+import org.hibernate.exception.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,6 +59,11 @@ public class AccountResource extends AbstractResource
 			account.setMaxCars(1);
 			accountRepository.persist(account);
 			LOG.info("user created!");
+		}
+        catch (ConstraintViolationException e)
+        {
+			LOG.debug("Duplicated request on first login");
+			account = accountRepository.findByIdentifier(name);
 		}
 
 		return account;
