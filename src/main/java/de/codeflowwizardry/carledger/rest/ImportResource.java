@@ -1,8 +1,15 @@
 package de.codeflowwizardry.carledger.rest;
 
-import java.io.File;
-import java.security.Principal;
-
+import de.codeflowwizardry.carledger.data.Car;
+import de.codeflowwizardry.carledger.data.repository.AccountRepository;
+import de.codeflowwizardry.carledger.data.repository.CarRepository;
+import de.codeflowwizardry.carledger.rest.processors.CsvProcessor;
+import de.codeflowwizardry.carledger.rest.records.CsvOrder;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import org.apache.commons.lang3.ObjectUtils;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
@@ -11,22 +18,7 @@ import org.jboss.resteasy.reactive.RestForm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.codeflowwizardry.carledger.data.Car;
-import de.codeflowwizardry.carledger.data.repository.AccountRepository;
-import de.codeflowwizardry.carledger.data.repository.CarRepository;
-import de.codeflowwizardry.carledger.rest.processors.CsvProcessor;
-import de.codeflowwizardry.carledger.rest.records.CsvOrder;
-import jakarta.inject.Inject;
-import jakarta.transaction.Transactional;
-import jakarta.ws.rs.BadRequestException;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.InternalServerErrorException;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.QueryParam;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
+import java.io.File;
 
 @Path("import/{carId}")
 public class ImportResource extends AbstractResource
@@ -37,10 +29,10 @@ public class ImportResource extends AbstractResource
 	private final CsvProcessor processor;
 
 	@Inject
-	public ImportResource(Principal context, AccountRepository accountRepository, CarRepository carRepository,
+	public ImportResource(AccountRepository accountRepository, CarRepository carRepository,
 			CsvProcessor processor)
 	{
-		super(context, accountRepository);
+		super(null, accountRepository);
 		this.carRepository = carRepository;
 		this.processor = processor;
 	}

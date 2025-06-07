@@ -1,11 +1,5 @@
 package de.codeflowwizardry.carledger.rest;
 
-import java.security.Principal;
-import java.time.LocalDate;
-import java.util.Optional;
-
-import org.eclipse.microprofile.openapi.annotations.Operation;
-
 import de.codeflowwizardry.carledger.StatsCalculator;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.rest.records.stats.AverageStats;
@@ -13,13 +7,12 @@ import de.codeflowwizardry.carledger.rest.records.stats.HiLoStats;
 import de.codeflowwizardry.carledger.rest.records.stats.MinimalStats;
 import de.codeflowwizardry.carledger.rest.records.stats.TotalStats;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.BeanParam;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
+import org.eclipse.microprofile.openapi.annotations.Operation;
+
+import java.time.LocalDate;
+import java.util.Optional;
 
 @Path("stats/{carId}")
 public class StatsResource extends AbstractResource
@@ -27,9 +20,9 @@ public class StatsResource extends AbstractResource
 	private final StatsCalculator statsCalculator;
 
 	@Inject
-	public StatsResource(Principal context, AccountRepository accountRepository, StatsCalculator statsCalculator)
+	public StatsResource(AccountRepository accountRepository, StatsCalculator statsCalculator)
 	{
-		super(context, accountRepository);
+		super(null, accountRepository);
 		this.statsCalculator = statsCalculator;
 	}
 
