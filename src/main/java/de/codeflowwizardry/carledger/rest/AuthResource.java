@@ -8,10 +8,7 @@ import de.codeflowwizardry.carledger.rest.records.Credentials;
 import de.codeflowwizardry.carledger.state.SessionManager;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import jakarta.ws.rs.BadRequestException;
-import jakarta.ws.rs.CookieParam;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.NewCookie;
 import jakarta.ws.rs.core.Response;
 import org.apache.commons.lang3.ObjectUtils;
@@ -32,9 +29,6 @@ public class AuthResource
 	private final KeycloakTokenService keycloakTokenService;
 	private final SessionManager sessionManager;
 
-	@ConfigProperty(name = "redirect.to")
-	String redirectTo;
-
 	@ConfigProperty(name = "keycloak.client-id")
 	String clientId;
 
@@ -54,7 +48,6 @@ public class AuthResource
 	@Operation(operationId = "login", description = "Here should the browser redirect, when 'login' is pressed")
 	public Response login(Credentials credentials)
 	{
-
 		KeycloakTokenResponse tokenResponse = keycloakTokenService.getToken(
 				"password",
 				clientId,
@@ -76,6 +69,13 @@ public class AuthResource
 				.build();
 
 		return Response.ok().cookie(cookie).build();
+	}
+
+	@GET
+	@Path("log")
+	public String test() {
+		LOG.info("I should be logged in");
+		return "LoggedIn!";
 	}
 
 	@POST

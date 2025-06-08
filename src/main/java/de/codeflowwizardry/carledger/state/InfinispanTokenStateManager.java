@@ -1,12 +1,9 @@
 package de.codeflowwizardry.carledger.state;
 
-import io.quarkus.infinispan.client.Remote;
 import io.vertx.ext.web.RoutingContext;
 import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Alternative;
-import jakarta.inject.Inject;
-import org.infinispan.client.hotrod.RemoteCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,9 +20,7 @@ public class InfinispanTokenStateManager //implements TokenStateManager
 	private static final String TOKEN_STATE_INSERT_FAILED = "Failed to write token state into cache";
 	private static final String FAILED_TO_ACQUIRE_TOKEN = "Failed to acquire authorization code tokens";
 
-	@Inject
-	@Remote("authToken")
-	RemoteCache<String, AuthTokenState> authTokenCache;
+
 
 //	@Override
 //	public Uni<String> createTokenState(RoutingContext routingContext, OidcTenantConfig oidcConfig,
