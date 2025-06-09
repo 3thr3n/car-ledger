@@ -1,37 +1,91 @@
 package de.codeflowwizardry.carledger.rest;
 
-import static io.restassured.RestAssured.given;
-
-import org.junit.jupiter.api.Test;
-
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
+import io.restassured.http.ContentType;
+import io.restassured.http.Cookie;
+import org.hamcrest.Matchers;
+import org.junit.jupiter.api.Test;
+
+import static io.restassured.RestAssured.given;
 
 @QuarkusTest
 @TestHTTPEndpoint(AuthResource.class)
 @TestSecurity(authorizationEnabled = false)
 class AuthResourceTest
 {
+	private final static String BOB_LOGIN = """
+			{
+				"username": "bob",
+				"password": "bob"
+			}
+			""";
+
 	@Test
-	void shouldlogin()
+	void shouldLogin()
+	{
+		given()
+				.contentType(ContentType.JSON)
+				.body(BOB_LOGIN)
+				.when()
+				.post("login")
+				.then()
+				.statusCode(200)
+				.cookie("SESSION_ID", Matchers.notNullValue());
+	}
+
+	@Test
+	void shouldFailWithoutCookie()
 	{
 		given()
 				.when()
-				.get("login")
+				.get("log")
+				.then()
+				.statusCode(401);
+	}
+
+	@Test
+	void shouldLoginAndBeAuthenticated()
+	{
+		Cookie loginCookie = given()
+				.contentType(ContentType.JSON)
+				.body(BOB_LOGIN)
+				.when()
+				.post("login")
+				.then()
+				.statusCode(200)
+				.extract().detailedCookie("SESSION_ID");
+
+		given()
+				.cookie(loginCookie)
+				.get("log")
 				.then()
 				.statusCode(200);
 	}
 
 	@Test
-	void shouldCallbackRedirect()
+	void shouldLoginAndLogout()
 	{
-		given()
-				.redirects()
-				.follow(false)
+		Cookie loginCookie = given()
+				.contentType(ContentType.JSON)
+				.body(BOB_LOGIN)
 				.when()
-				.get("callback")
+				.post("login")
 				.then()
-				.statusCode(302);
+				.statusCode(200)
+				.extract().detailedCookie("SESSION_ID");
+
+		given()
+				.cookie(loginCookie)
+				.post("logout")
+				.then()
+				.statusCode(200);
+
+		given()
+				.cookie(loginCookie)
+				.get("log")
+				.then()
+				.statusCode(401);
 	}
 }

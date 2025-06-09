@@ -80,7 +80,10 @@ public class SessionFilter implements ContainerRequestFilter {
         }
 
         try {
-            handleCookie(cookie);
+            if (!handleCookie(cookie)) {
+                LOG.warn("Session was not found");
+                ctx.abortWith(Response.status(UNAUTHORIZED).build());
+            }
         }
         catch (ParseException e) {
             LOG.error("Error handling JWT", e);
@@ -88,11 +91,11 @@ public class SessionFilter implements ContainerRequestFilter {
         }
         catch (Exception e) {
             LOG.error("Error handling cookies", e);
-            ctx.abortWith(Response.status(Response.Status.UNAUTHORIZED).build());
+            ctx.abortWith(Response.status(UNAUTHORIZED).build());
         }
     }
 
-    private void handleCookie(Cookie cookie) throws ParseException {
+    private boolean handleCookie(Cookie cookie) throws ParseException {
         String sessionId = cookie.getValue();
         SessionToken token = sessionManager.get(sessionId);
 
@@ -106,11 +109,13 @@ public class SessionFilter implements ContainerRequestFilter {
                     refreshToken(token, sessionId);
                     JsonWebToken jwt = jwtParser.parse(token.getAccessToken());
                     handleJwtToken(jwt, token, sessionId);
-                    return;
+                } else {
+                    throw e;
                 }
-                throw e;
             }
+            return true;
         }
+        return false;
     }
 
     private void handleJwtToken(JsonWebToken jwt, SessionToken token, String sessionId) throws ParseException {

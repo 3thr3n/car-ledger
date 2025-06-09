@@ -9,4 +9,4 @@ services:
       KEYCLOAK_DATABASE_VENDOR: 'dev-mem'
       KEYCLOAK_EXTRA_ARGS: "--import-realm"
     volumes:
-      - ./realm.json:/opt/bitnami/keycloak/data/import/realm.json
+      - ./docker/keycloak/realm.json:/opt/bitnami/keycloak/data/import/realm.json
