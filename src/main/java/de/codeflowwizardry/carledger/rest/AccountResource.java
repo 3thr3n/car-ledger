@@ -8,13 +8,15 @@ import jakarta.ws.rs.Path;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
+import java.security.Principal;
+
 @Path("user")
 public class AccountResource extends AbstractResource
 {
 	@Inject
-	public AccountResource(AccountRepository accountRepository)
+	public AccountResource(Principal principal, AccountRepository accountRepository)
 	{
-		super(null, accountRepository);
+		super(principal, accountRepository);
 	}
 
 	@GET

@@ -54,6 +54,9 @@ public class SessionFilter implements ContainerRequestFilter {
     @ConfigProperty(name = "keycloak.client-secret")
     String clientSecret;
 
+    @ConfigProperty(name = "test.mode.enabled", defaultValue = "false")
+    boolean testMode;
+
     @Inject
     public SessionFilter(SessionManager sessionManager, SessionContext sessionContext, JWTParser jwtParser, @RestClient KeycloakTokenService keycloakTokenService) {
         this.sessionManager = sessionManager;
@@ -64,6 +67,8 @@ public class SessionFilter implements ContainerRequestFilter {
 
     @Override
     public void filter(ContainerRequestContext ctx) {
+        if (testMode) return;
+
         LOG.debug("Filtering request");
         String path = ctx.getUriInfo().getPath();
 

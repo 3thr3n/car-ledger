@@ -13,6 +13,7 @@ import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
+import java.security.Principal;
 import java.util.List;
 
 @Path("car/my")
@@ -21,9 +22,9 @@ public class CarResource extends AbstractResource
 	private final CarRepository carRepository;
 
 	@Inject
-	public CarResource(AccountRepository accountRepository, CarRepository carRepository)
+	public CarResource(Principal principal, AccountRepository accountRepository, CarRepository carRepository)
 	{
-		super(null, accountRepository);
+		super(principal, accountRepository);
 		this.carRepository = carRepository;
 	}
 

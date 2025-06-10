@@ -11,6 +11,7 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 
+import java.security.Principal;
 import java.time.LocalDate;
 import java.util.Optional;
 
@@ -20,9 +21,9 @@ public class StatsResource extends AbstractResource
 	private final StatsCalculator statsCalculator;
 
 	@Inject
-	public StatsResource(AccountRepository accountRepository, StatsCalculator statsCalculator)
+	public StatsResource(Principal principal, AccountRepository accountRepository, StatsCalculator statsCalculator)
 	{
-		super(null, accountRepository);
+		super(principal, accountRepository);
 		this.statsCalculator = statsCalculator;
 	}
 

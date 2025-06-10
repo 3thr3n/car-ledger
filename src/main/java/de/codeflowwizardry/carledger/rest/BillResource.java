@@ -17,6 +17,7 @@ import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
+import java.security.Principal;
 import java.util.Optional;
 
 @Path("bill/{carId}")
@@ -26,10 +27,10 @@ public class BillResource extends AbstractResource
 	private final CarRepository carRepository;
 
 	@Inject
-	public BillResource(AccountRepository accountRepository, BillRepository billRepository,
-			CarRepository carRepository)
+	public BillResource(Principal principal, AccountRepository accountRepository, BillRepository billRepository,
+						CarRepository carRepository)
 	{
-		super(null, accountRepository);
+		super(principal, accountRepository);
 		this.billRepository = billRepository;
 		this.carRepository = carRepository;
 	}

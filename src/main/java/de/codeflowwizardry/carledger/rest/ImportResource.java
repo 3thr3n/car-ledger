@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.security.Principal;
 
 @Path("import/{carId}")
 public class ImportResource extends AbstractResource
@@ -29,10 +30,10 @@ public class ImportResource extends AbstractResource
 	private final CsvProcessor processor;
 
 	@Inject
-	public ImportResource(AccountRepository accountRepository, CarRepository carRepository,
-			CsvProcessor processor)
+	public ImportResource(Principal principal, AccountRepository accountRepository, CarRepository carRepository,
+						  CsvProcessor processor)
 	{
-		super(null, accountRepository);
+		super(principal, accountRepository);
 		this.carRepository = carRepository;
 		this.processor = processor;
 	}
