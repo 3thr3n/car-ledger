@@ -5,6 +5,9 @@ import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import de.codeflowwizardry.carledger.rest.processors.CsvProcessor;
 import de.codeflowwizardry.carledger.rest.records.CsvOrder;
+import io.quarkus.security.Authenticated;
+import io.quarkus.security.identity.CurrentIdentityAssociation;
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
@@ -19,9 +22,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.security.Principal;
 
+@Authenticated
 @Path("import/{carId}")
+@ApplicationScoped
 public class ImportResource extends AbstractResource
 {
 	private static final Logger LOG = LoggerFactory.getLogger(ImportResource.class);
@@ -29,8 +33,17 @@ public class ImportResource extends AbstractResource
 	private final CarRepository carRepository;
 	private final CsvProcessor processor;
 
+	/**
+	 * CDI proxying
+	 */
+	public ImportResource() {
+		super(null, null);
+		carRepository = null;
+		processor = null;
+	}
+
 	@Inject
-	public ImportResource(Principal principal, AccountRepository accountRepository, CarRepository carRepository,
+	public ImportResource(CurrentIdentityAssociation principal, AccountRepository accountRepository, CarRepository carRepository,
 						  CsvProcessor processor)
 	{
 		super(principal, accountRepository);
@@ -64,7 +77,7 @@ public class ImportResource extends AbstractResource
 			order = new CsvOrder();
 		}
 
-		Car car = carRepository.findById(carId, context.getName());
+		Car car = carRepository.findById(carId, getName());
 
 		if (car == null)
 		{

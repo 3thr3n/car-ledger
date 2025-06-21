@@ -10,6 +10,9 @@ import de.codeflowwizardry.carledger.rest.records.BillPojo;
 import de.codeflowwizardry.carledger.rest.records.BillPojoPaged;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.panache.common.Page;
+import io.quarkus.security.Authenticated;
+import io.quarkus.security.identity.CurrentIdentityAssociation;
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -17,17 +20,27 @@ import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
-import java.security.Principal;
 import java.util.Optional;
 
+@Authenticated
 @Path("bill/{carId}")
+@ApplicationScoped
 public class BillResource extends AbstractResource
 {
 	private final BillRepository billRepository;
 	private final CarRepository carRepository;
 
+	/**
+	 * CDI proxying
+	 */
+	public BillResource() {
+		super(null, null);
+		billRepository = null;
+		carRepository = null;
+	}
+
 	@Inject
-	public BillResource(Principal principal, AccountRepository accountRepository, BillRepository billRepository,
+	public BillResource(CurrentIdentityAssociation principal, AccountRepository accountRepository, BillRepository billRepository,
 						CarRepository carRepository)
 	{
 		super(principal, accountRepository);
@@ -49,7 +62,7 @@ public class BillResource extends AbstractResource
 		}
 		Page queryPage = new Page(page - 1, size);
 
-		PanacheQuery<Bill> billQuery = billRepository.getBills(carId, context.getName(), queryPage);
+		PanacheQuery<Bill> billQuery = billRepository.getBills(carId, getName(), queryPage);
 		return new BillPojoPaged(billQuery.count(), page, size, BillPojo.convert(billQuery.list()));
 	}
 
@@ -62,7 +75,7 @@ public class BillResource extends AbstractResource
 	@APIResponse(responseCode = "500", description = "Something went wrong while saving. Please ask the server admin for help.")
 	public Response addNewBill(@PathParam("carId") long carId, BillInputPojo billPojo)
 	{
-		Car car = carRepository.findById(carId, context.getName());
+		Car car = carRepository.findById(carId, getName());
 
 		if (car == null)
 		{
@@ -93,7 +106,7 @@ public class BillResource extends AbstractResource
 	@APIResponse(responseCode = "500", description = "Something went wrong while deleting. Please ask the server admin for help.")
 	public Response deleteBill(@PathParam("carId") long carId, @PathParam("billId") long billId)
 	{
-		Optional<Bill> optBill = billRepository.getBillById(billId, carId, context.getName());
+		Optional<Bill> optBill = billRepository.getBillById(billId, carId, getName());
 		if (optBill.isEmpty())
 		{
 			throw new BadRequestException("Bill with id " + billId + " not found on car!");

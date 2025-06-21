@@ -1,27 +1,22 @@
 package de.codeflowwizardry.carledger.rest;
 
+import de.codeflowwizardry.carledger.KeycloakTestResource;
+import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.security.TestSecurity;
 import io.restassured.http.ContentType;
 import io.restassured.http.Cookie;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
+import static de.codeflowwizardry.carledger.rest.AbstractResourceTest.BOB_LOGIN;
 import static io.restassured.RestAssured.given;
 
 @QuarkusTest
 @TestHTTPEndpoint(AuthResource.class)
-@TestSecurity(authorizationEnabled = false)
+@QuarkusTestResource(KeycloakTestResource.class)
 class AuthResourceTest
 {
-	private final static String BOB_LOGIN = """
-			{
-				"username": "bob",
-				"password": "bob"
-			}
-			""";
-
 	@Test
 	void shouldLogin()
 	{

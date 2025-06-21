@@ -1,27 +1,22 @@
 package de.codeflowwizardry.carledger.rest;
 
-import static io.restassured.RestAssured.given;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
+import de.codeflowwizardry.carledger.data.Account;
+import de.codeflowwizardry.carledger.data.Car;
+import de.codeflowwizardry.carledger.data.repository.AccountRepository;
+import de.codeflowwizardry.carledger.data.repository.CarRepository;
+import io.quarkus.test.junit.QuarkusTest;
+import io.restassured.http.ContentType;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import de.codeflowwizardry.carledger.data.Account;
-import de.codeflowwizardry.carledger.data.Car;
-import de.codeflowwizardry.carledger.data.repository.AccountRepository;
-import de.codeflowwizardry.carledger.data.repository.CarRepository;
-import io.quarkus.test.common.http.TestHTTPEndpoint;
-import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.security.TestSecurity;
-import io.restassured.http.ContentType;
-import jakarta.inject.Inject;
-import jakarta.transaction.Transactional;
+import static io.restassured.RestAssured.given;
 
 @QuarkusTest
-@TestHTTPEndpoint(CarResource.class)
-class CarResourceTest
+class CarResourceTest extends AbstractResourceTest
 {
 	@Inject
 	AccountRepository accountRepository;
@@ -49,38 +44,36 @@ class CarResourceTest
 	}
 
 	@Test
-	@TestSecurity(user = "peter", roles = {
-			"user"
-	})
 	void shouldGetMyCars()
 	{
-		given().when().get().then().statusCode(200).body("size()", Matchers.equalTo(1));
+		given()
+				.cookie(cookie)
+				.when()
+				.get("/api/car/my")
+				.then()
+				.statusCode(200)
+				.body("size()", Matchers.equalTo(1));
 	}
 
 	@Test
-	@TestSecurity(user = "peter", roles = {
-			"user"
-	})
 	void shouldGetFailGettingCar()
 	{
 		given()
+				.cookie(cookie)
 				.when()
 				.pathParam("id", 1)
-				.get("{id}")
+				.get("/api/car/my/{id}")
 				.then()
 				.statusCode(204);
 	}
 
 	@Test
-	@TestSecurity(user = "peter", roles = {
-			"user"
-	})
 	void shouldGetMySpecificCar()
 	{
 		given()
 				.when()
 				.pathParam("id", carId)
-				.get("{id}")
+				.get("/api/car/my/{id}")
 				.then()
 				.statusCode(200)
 				.body("id", Matchers.equalTo((int) carId))
@@ -88,18 +81,16 @@ class CarResourceTest
 	}
 
 	@Test
-	@TestSecurity(user = "bob", roles = {
-			"user"
-	})
 	void shouldFailGettingCarData()
 	{
-		given().when().get().then().statusCode(400);
+		given()
+				.when()
+				.get("/api/car/my")
+				.then()
+				.statusCode(400);
 	}
 
 	@Test
-	@TestSecurity(user = "peter", roles = {
-			"user"
-	})
 	void shouldCreateACar()
 	{
 		String body = "{\"description\": \"Hansi\"}";
@@ -108,15 +99,12 @@ class CarResourceTest
 				.body(body)
 				.accept(ContentType.JSON)
 				.contentType(ContentType.JSON)
-				.put()
+				.put("/api/car/my")
 				.then()
 				.statusCode(202);
 	}
 
 	@Test
-	@TestSecurity(user = "peter", roles = {
-			"user"
-	})
 	void shouldFailCreateCarIfAlreadyAtMaxCapacity()
 	{
 		String body = "{\"description\": \"Hansi\"}";
@@ -125,7 +113,7 @@ class CarResourceTest
 				.body(body)
 				.accept(ContentType.JSON)
 				.contentType(ContentType.JSON)
-				.put()
+				.put("/api/car/my")
 				.then()
 				.statusCode(202);
 
@@ -136,25 +124,9 @@ class CarResourceTest
 				.body(body)
 				.accept(ContentType.JSON)
 				.contentType(ContentType.JSON)
-				.put()
+				.put("/api/car/my")
 				.then()
 				.statusCode(400);
-	}
-
-	@Test
-	void shouldBeRedirectToLoginUrl()
-	{
-		String response = given()
-				.when()
-				.get()
-				.then()
-				.statusCode(200)
-				.extract()
-				.response()
-				.getBody()
-				.asString();
-
-		assertTrue(response.contains("<html"));
 	}
 
 	@AfterEach

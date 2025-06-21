@@ -1,17 +1,5 @@
 package de.codeflowwizardry.carledger.rest;
 
-import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import de.codeflowwizardry.carledger.data.Account;
 import de.codeflowwizardry.carledger.data.Bill;
 import de.codeflowwizardry.carledger.data.Car;
@@ -23,9 +11,19 @@ import io.quarkus.test.security.TestSecurity;
 import io.restassured.http.ContentType;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @QuarkusTest
-class BillResourceTest
+class BillResourceTest extends AbstractResourceTest
 {
 	@Inject
 	BillRepository billRepository;
@@ -103,6 +101,7 @@ class BillResourceTest
 	void shouldGetAllMyBillsInOrder()
 	{
 		given()
+				.cookie(cookie)
 				.when()
 				.get("/api/bill/" + car.getId() + "/all")
 				.then()
@@ -139,8 +138,15 @@ class BillResourceTest
 				""";
 
 		// when
-		given().accept(ContentType.JSON).contentType(ContentType.JSON).body(body).put("/api/bill/" + car.getId()).then()
-				.statusCode(202).body("day", is("2024-08-22"));
+		given()
+				.cookie(cookie)
+				.accept(ContentType.JSON)
+				.contentType(ContentType.JSON)
+				.body(body)
+				.put("/api/bill/" + car.getId())
+				.then()
+				.statusCode(202)
+				.body("day", is("2024-08-22"));
 
 		// then
 		assertEquals(4, billRepository.count());
@@ -166,7 +172,13 @@ class BillResourceTest
 				""";
 
 		// when
-		given().accept(ContentType.JSON).contentType(ContentType.JSON).body(body).put("/api/bill/" + car.getId()).then()
+		given()
+				.cookie(cookie)
+				.accept(ContentType.JSON)
+				.contentType(ContentType.JSON)
+				.body(body)
+				.put("/api/bill/" + car.getId())
+				.then()
 				.statusCode(400);
 
 		// then
@@ -185,7 +197,12 @@ class BillResourceTest
 		Long billId = billRepository.listAll().getFirst().getId();
 
 		// when
-		given().delete("/api/bill/" + car.getId() + "/" + billId).then().statusCode(202);
+		given()
+				.cookie(cookie)
+				.when()
+				.delete("/api/bill/" + car.getId() + "/" + billId)
+				.then()
+				.statusCode(202);
 
 		// then
 		assertEquals(2, billRepository.count());
@@ -203,18 +220,15 @@ class BillResourceTest
 		Long billId = billRepository.listAll().getFirst().getId();
 
 		// when
-		given().delete("/api/bill/" + car.getId() + "/" + billId).then().statusCode(400);
+		given()
+				.cookie(cookie)
+				.when()
+				.delete("/api/bill/" + car.getId() + "/" + billId)
+				.then()
+				.statusCode(400);
 
 		// then
 		assertEquals(3, billRepository.count());
-	}
-
-	@Test
-	void shouldBeRedirectToLoginUrl()
-	{
-		String response = given().when().get("/api/bill/" + car.getId() + "/all").then().statusCode(200).extract()
-				.response().getBody().asString();
-		assertTrue(response.contains("<html"));
 	}
 
 	@AfterEach

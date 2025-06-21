@@ -1,26 +1,24 @@
 package de.codeflowwizardry.carledger.rest;
 
-import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.is;
-
-import org.junit.jupiter.api.Test;
-
 import de.codeflowwizardry.carledger.TestDataProfile;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
-import io.quarkus.test.security.TestSecurity;
+import org.junit.jupiter.api.Test;
+
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.is;
 
 @QuarkusTest
 @TestProfile(TestDataProfile.class)
 @TestHTTPEndpoint(BillResource.class)
-class BillResourcePaginationTest
+class BillResourcePaginationTest  extends AbstractResourceTest
 {
 	@Test
-	@TestSecurity(user = "alice", roles = "user")
 	void shouldGetFirstPage()
 	{
 		given()
+				.cookie(cookie)
 				.when()
 				.pathParam("carId", 5L)
 				.queryParam("page", 1)
@@ -33,10 +31,10 @@ class BillResourcePaginationTest
 	}
 
 	@Test
-	@TestSecurity(user = "alice", roles = "user")
 	void shouldGetThirdPage()
 	{
 		given()
+				.cookie(cookie)
 				.when()
 				.pathParam("carId", 5L)
 				.queryParam("page", 5)
@@ -48,10 +46,10 @@ class BillResourcePaginationTest
 	}
 
 	@Test
-	@TestSecurity(user = "alice", roles = "user")
 	void shouldNotAllowInvalidPage()
 	{
 		given()
+				.cookie(cookie)
 				.when()
 				.pathParam("carId", 5L)
 				.queryParam("page", 0)
@@ -62,6 +60,7 @@ class BillResourcePaginationTest
 				.body("data.size()", is(8));
 
 		given()
+				.cookie(cookie)
 				.when()
 				.pathParam("carId", 5L)
 				.queryParam("page", 10)

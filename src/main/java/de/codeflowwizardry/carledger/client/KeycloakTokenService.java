@@ -28,4 +28,13 @@ public interface KeycloakTokenService {
                                        @FormParam("client_id") String clientId,
                                        @FormParam("client_secret") String clientSecret,
                                        @FormParam("refresh_token") String refreshToken);
+
+    @POST
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(MediaType.APPLICATION_JSON)
+    KeycloakTokenResponse processCode(@FormParam("grant_type") String grantType,
+                                       @FormParam("code") String code,
+                                       @FormParam("client_id") String clientId,
+                                       @FormParam("client_secret") String clientSecret,
+                                       @FormParam("redirect_uri") String refreshToken);
 }
