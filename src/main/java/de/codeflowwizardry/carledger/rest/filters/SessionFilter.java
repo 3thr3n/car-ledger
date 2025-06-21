@@ -1,13 +1,9 @@
 package de.codeflowwizardry.carledger.rest.filters;
 
-import jakarta.annotation.Priority;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.ws.rs.Priorities;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerRequestFilter;
 import jakarta.ws.rs.core.Cookie;
 import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.ext.Provider;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,9 +12,6 @@ import java.util.Set;
 
 import static jakarta.ws.rs.core.Response.Status.UNAUTHORIZED;
 
-@Provider
-@ApplicationScoped
-@Priority(Priorities.AUTHENTICATION)
 public class SessionFilter implements ContainerRequestFilter {
 
     private final static Logger LOG = LoggerFactory.getLogger(SessionFilter.class);

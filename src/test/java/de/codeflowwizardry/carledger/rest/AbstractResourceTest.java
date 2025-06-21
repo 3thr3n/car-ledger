@@ -18,13 +18,31 @@ public class AbstractResourceTest {
 			}
 			""";
 
-    protected Cookie cookie;
+    public final static String ALICE_LOGIN = """
+			{
+				"username": "alice",
+				"password": "alice"
+			}
+			""";
+
+    protected Cookie bobCookie;
+    protected Cookie aliceCookie;
 
     @BeforeEach
     public void setUp() {
-        cookie = given()
+        bobCookie = given()
                 .contentType(ContentType.JSON)
                 .body(BOB_LOGIN)
+                .when()
+                .post("api/auth/login")
+                .then()
+                .statusCode(200)
+                .extract()
+                .detailedCookie("SESSION_ID");
+
+        aliceCookie = given()
+                .contentType(ContentType.JSON)
+                .body(ALICE_LOGIN)
                 .when()
                 .post("api/auth/login")
                 .then()
@@ -35,11 +53,21 @@ public class AbstractResourceTest {
 
     @AfterEach
     public void tearDown() {
-        given()
-                .cookie(cookie)
-                .when()
-                .post("api/auth/logout")
-                .then()
-                .statusCode(200);
+        if (bobCookie != null) {
+            given()
+                    .cookie(bobCookie)
+                    .when()
+                    .post("api/auth/logout")
+                    .then()
+                    .statusCode(200);
+        }
+        if (aliceCookie != null) {
+            given()
+                    .cookie(aliceCookie)
+                    .when()
+                    .post("api/auth/logout")
+                    .then()
+                    .statusCode(200);
+        }
     }
 }

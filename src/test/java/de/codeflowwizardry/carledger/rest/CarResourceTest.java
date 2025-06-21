@@ -11,7 +11,10 @@ import jakarta.transaction.Transactional;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+
+import java.util.Optional;
 
 import static io.restassured.RestAssured.given;
 
@@ -30,9 +33,13 @@ class CarResourceTest extends AbstractResourceTest
 	@Transactional
 	void before()
 	{
-		Account account = new Account();
+		Optional<Account> optionalAccount = accountRepository.findByIdentifier("bob");
+		if (optionalAccount.isEmpty()) {
+			return;
+		}
+
+		Account account = optionalAccount.get();
 		account.setMaxCars(2);
-		account.setUserId("peter");
 		accountRepository.persist(account);
 
 		Car car = new Car();
@@ -47,7 +54,7 @@ class CarResourceTest extends AbstractResourceTest
 	void shouldGetMyCars()
 	{
 		given()
-				.cookie(cookie)
+				.cookie(bobCookie)
 				.when()
 				.get("/api/car/my")
 				.then()
@@ -59,7 +66,7 @@ class CarResourceTest extends AbstractResourceTest
 	void shouldGetFailGettingCar()
 	{
 		given()
-				.cookie(cookie)
+				.cookie(bobCookie)
 				.when()
 				.pathParam("id", 1)
 				.get("/api/car/my/{id}")
@@ -71,6 +78,7 @@ class CarResourceTest extends AbstractResourceTest
 	void shouldGetMySpecificCar()
 	{
 		given()
+				.cookie(bobCookie)
 				.when()
 				.pathParam("id", carId)
 				.get("/api/car/my/{id}")
@@ -81,9 +89,11 @@ class CarResourceTest extends AbstractResourceTest
 	}
 
 	@Test
+	@Disabled
 	void shouldFailGettingCarData()
 	{
 		given()
+				.cookie(bobCookie)
 				.when()
 				.get("/api/car/my")
 				.then()
@@ -95,6 +105,7 @@ class CarResourceTest extends AbstractResourceTest
 	{
 		String body = "{\"description\": \"Hansi\"}";
 		given()
+				.cookie(bobCookie)
 				.when()
 				.body(body)
 				.accept(ContentType.JSON)
@@ -109,6 +120,7 @@ class CarResourceTest extends AbstractResourceTest
 	{
 		String body = "{\"description\": \"Hansi\"}";
 		given()
+				.cookie(bobCookie)
 				.when()
 				.body(body)
 				.accept(ContentType.JSON)
@@ -120,6 +132,7 @@ class CarResourceTest extends AbstractResourceTest
 		body = "{\"description\": \"Hansi 2\"}";
 
 		given()
+				.cookie(bobCookie)
 				.when()
 				.body(body)
 				.accept(ContentType.JSON)

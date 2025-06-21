@@ -1,31 +1,27 @@
 package de.codeflowwizardry.carledger.rest;
 
-import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.is;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import de.codeflowwizardry.carledger.data.Account;
 import de.codeflowwizardry.carledger.data.Bill;
 import de.codeflowwizardry.carledger.data.Car;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.BillRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
-import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.security.TestSecurity;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.is;
 
 @QuarkusTest
-@TestHTTPEndpoint(StatsResource.class)
-class StatsResourceTest
+class StatsResourceTest extends AbstractResourceTest
 {
 	@Inject
 	AccountRepository accountRepository;
@@ -59,7 +55,7 @@ class StatsResourceTest
 	{
 		Account account = new Account();
 		account.setMaxCars(1);
-		account.setUserId("peter");
+		account.setUserId("bob");
 		accountRepository.persist(account);
 
 		car = new Car();
@@ -102,15 +98,13 @@ class StatsResourceTest
 	}
 
 	@Test
-	@TestSecurity(user = "peter", roles = {
-			"user"
-	})
 	void shouldGetAllTotalStats()
 	{
 		given()
+				.cookie(bobCookie)
 				.pathParam("carId", car.getId())
 				.when()
-				.get("/total")
+				.get("api/stats/{carId}/total")
 				.then()
 				.statusCode(200)
 				.body("distance", is("1380.00"))
@@ -119,18 +113,16 @@ class StatsResourceTest
 	}
 
 	@Test
-	@TestSecurity(user = "peter", roles = {
-			"user"
-	})
 	void shouldGetAllTotalStatsAfter2022()
 	{
 		String localDateString = LocalDate.of(2023, 1, 1).atStartOfDay().format(DateTimeFormatter.ISO_LOCAL_DATE);
 
 		given()
+				.cookie(bobCookie)
 				.pathParam("carId", car.getId())
 				.queryParam("from", localDateString)
 				.when()
-				.get("/total")
+				.get("api/stats/{carId}/total")
 				.then()
 				.statusCode(200)
 				.body("distance", is("980.00"))
@@ -139,20 +131,18 @@ class StatsResourceTest
 	}
 
 	@Test
-	@TestSecurity(user = "peter", roles = {
-			"user"
-	})
 	void shouldGetAllTotalStatsOf2023()
 	{
 		String fromLocalDate = LocalDate.of(2023, 1, 1).atStartOfDay().format(DateTimeFormatter.ISO_LOCAL_DATE);
 		String toLocalDate = LocalDate.of(2023, 12, 31).atStartOfDay().format(DateTimeFormatter.ISO_LOCAL_DATE);
 
 		given()
+				.cookie(bobCookie)
 				.pathParam("carId", car.getId())
 				.queryParam("from", fromLocalDate)
 				.queryParam("to", toLocalDate)
 				.when()
-				.get("/total")
+				.get("api/stats/{carId}/total")
 				.then()
 				.statusCode(200)
 				.body("distance", is("480.00"))
@@ -161,15 +151,13 @@ class StatsResourceTest
 	}
 
 	@Test
-	@TestSecurity(user = "peter", roles = {
-			"user"
-	})
 	void shouldGetAllAverageStats()
 	{
 		given()
+				.cookie(bobCookie)
 				.pathParam("carId", car.getId())
 				.when()
-				.get("/average")
+				.get("api/stats/{carId}/average")
 				.then()
 				.statusCode(200)
 				.body("pricePerUnit", is("195.6"))
@@ -179,15 +167,13 @@ class StatsResourceTest
 	}
 
 	@Test
-	@TestSecurity(user = "peter", roles = {
-			"user"
-	})
 	void shouldGetAllHiLoStats()
 	{
 		given()
+				.cookie(bobCookie)
 				.pathParam("carId", car.getId())
 				.when()
-				.get("/hi_lo")
+				.get("api/stats/{carId}/hi_lo")
 				.then()
 				.statusCode(200)
 				.body("distance.max", is("500.00"))
@@ -203,15 +189,13 @@ class StatsResourceTest
 	}
 
 	@Test
-	@TestSecurity(user = "peter", roles = {
-			"user"
-	})
 	void shouldGetMinimalStats()
 	{
 		given()
+				.cookie(bobCookie)
 				.pathParam("carId", car.getId())
 				.when()
-				.get("/minimal")
+				.get("api/stats/{carId}/minimal")
 				.then()
 				.statusCode(200)
 				.body("total", is("149.08"))

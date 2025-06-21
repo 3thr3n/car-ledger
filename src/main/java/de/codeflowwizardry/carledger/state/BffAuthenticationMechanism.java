@@ -2,6 +2,8 @@ package de.codeflowwizardry.carledger.state;
 
 import de.codeflowwizardry.carledger.client.KeycloakTokenResponse;
 import de.codeflowwizardry.carledger.client.KeycloakTokenService;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.quarkus.security.AuthenticationFailedException;
 import io.quarkus.security.identity.IdentityProviderManager;
 import io.quarkus.security.identity.SecurityIdentity;
@@ -24,7 +26,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
 
 @ApplicationScoped
 @Priority(100) // Should run early
@@ -48,28 +53,47 @@ public class BffAuthenticationMechanism implements HttpAuthenticationMechanism {
     @ConfigProperty(name = "keycloak.client-secret")
     String clientSecret;
 
+    private static final Set<String> PUBLIC_PATHS = Set.of(
+            "/api/auth/login",
+            "/public"
+    );
+
     @Override
     public Uni<SecurityIdentity> authenticate(RoutingContext context, IdentityProviderManager idpManager) {
-        Cookie cookie = context.request().getCookie("SESSION_ID");
+        return Uni.createFrom().deferred(() -> {
+            String path = context.request().path();
+            LOG.debug("Authenticating request for path {}", path);
+            if (isPublicPath(path)) {
+                LOG.debug("Skip path: {}", path);
+                return Uni.createFrom().item(QuarkusSecurityIdentity.builder().setAnonymous(true).setPrincipal(() -> "anonymous").build()); // Skip auth check for public endpoints
+            }
 
-        if (cookie != null) {
+            Cookie cookie = context.request().getCookie("SESSION_ID");
+
+            if (cookie == null || cookie.getValue() == null) {
+                LOG.debug("No cookie found, be anonymous");
+                // 🔴 Force 401 instead of hanging
+//                return Uni.createFrom().failure(new AuthenticationFailedException("No auth token found"));
+                return Uni.createFrom().optional(Optional.empty());
+            }
+
+            LOG.debug("Cookie found: {}", cookie.getValue());
             try {
                 SecurityIdentity identity = handleCookie(cookie);
                 return Uni.createFrom().item(identity);
-            } catch (ParseException e) {
-                throw new RuntimeException(e);
-            } catch (AuthenticationFailedException e) {
-                return Uni.createFrom().failure(e);
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+                return Uni.createFrom().optional(Optional.empty());
+//                return Uni.createFrom().failure(e);
             }
-        }
-        LOG.debug("No cookie found, be anonymous");
-        return Uni.createFrom().item(QuarkusSecurityIdentity.builder().setPrincipal(() -> "anonymous").setAnonymous(true).build());
+        });
     }
 
     @Override
     public Uni<ChallengeData> getChallenge(RoutingContext context) {
         // No challenge needed since auth happens earlier
-        return Uni.createFrom().nothing();
+        ChallengeData result = new ChallengeData(HttpResponseStatus.UNAUTHORIZED.code(), HttpHeaderNames.COOKIE, "Cookie");
+        return Uni.createFrom().item(result);
     }
 
     private SecurityIdentity handleCookie(Cookie cookie) throws ParseException {
@@ -77,8 +101,10 @@ public class BffAuthenticationMechanism implements HttpAuthenticationMechanism {
         SessionToken token = sessionManager.get(sessionId);
 
         if (token != null) {
+            LOG.debug("Token found");
             try {
                 JsonWebToken jwt = jwtParser.parse(token.getAccessToken());
+                LOG.debug("JWT parsed: {}", jwt.toString());
                 return handleJwtToken(jwt, token, sessionId);
             } catch (ParseException e) {
                 if (e.getCause() instanceof InvalidJwtException && e.getCause().getMessage().contains("Expiration Time")) {
@@ -87,6 +113,7 @@ public class BffAuthenticationMechanism implements HttpAuthenticationMechanism {
                     JsonWebToken jwt = jwtParser.parse(token.getAccessToken());
                     return handleJwtToken(jwt, token, sessionId);
                 } else {
+                    LOG.error(e.getCause().getMessage(), e);
                     throw e;
                 }
             }
@@ -98,16 +125,19 @@ public class BffAuthenticationMechanism implements HttpAuthenticationMechanism {
     private QuarkusSecurityIdentity handleJwtToken(JsonWebToken jwt, SessionToken token, String sessionId) throws ParseException {
         long exp = jwt.getExpirationTime();
         if (exp > 0 && exp < Instant.now().getEpochSecond()) {
+            LOG.debug("Refresh token expired");
             refreshToken(token, sessionId);
             jwt = jwtParser.parse(token.getAccessToken());
         }
+
+        LOG.debug("JWT Token handled");
 
         Object preferredUsername = jwt.getClaim("preferred_username");
         return QuarkusSecurityIdentity.builder()
                 .setPrincipal(preferredUsername::toString)
                 .addAttribute("name", jwt.getClaim("name"))
                 .addAttribute("email", jwt.getClaim("email"))
-                .addRoles(new HashSet<>(jwt.getGroups()))
+                .addRoles(new HashSet<>(jwt.getGroups() != null ? jwt.getGroups() : Collections.emptyList()))
                 .build();
     }
 
@@ -122,5 +152,9 @@ public class BffAuthenticationMechanism implements HttpAuthenticationMechanism {
 
         token.setAccessToken(refreshed.accessToken());
         sessionManager.updateAccessToken(sessionId, token.getAccessToken());
+    }
+
+    private boolean isPublicPath(String path) {
+        return PUBLIC_PATHS.contains(path);
     }
 }

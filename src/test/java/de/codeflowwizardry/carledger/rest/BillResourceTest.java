@@ -7,7 +7,6 @@ import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.BillRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.security.TestSecurity;
 import io.restassured.http.ContentType;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -43,14 +42,13 @@ class BillResourceTest extends AbstractResourceTest
 		cleanup();
 
 		setupBob();
-		setupPeter();
 	}
 
-	private void setupPeter()
+	private void setupBob()
 	{
 		Account account = new Account();
 		account.setMaxCars(1);
-		account.setUserId("peter");
+		account.setUserId("bob");
 		accountRepository.persist(account);
 
 		car = new Car();
@@ -86,22 +84,11 @@ class BillResourceTest extends AbstractResourceTest
 		billRepository.persist(bill);
 	}
 
-	private void setupBob()
-	{
-		Account account = new Account();
-		account.setMaxCars(1);
-		account.setUserId("bob");
-		accountRepository.persist(account);
-	}
-
 	@Test
-	@TestSecurity(user = "peter", roles = {
-			"user"
-	})
 	void shouldGetAllMyBillsInOrder()
 	{
 		given()
-				.cookie(cookie)
+				.cookie(bobCookie)
 				.when()
 				.get("/api/bill/" + car.getId() + "/all")
 				.then()
@@ -119,9 +106,6 @@ class BillResourceTest extends AbstractResourceTest
 	}
 
 	@Test
-	@TestSecurity(user = "peter", roles = {
-			"user"
-	})
 	void shouldAddBill()
 	{
 		// given
@@ -139,7 +123,7 @@ class BillResourceTest extends AbstractResourceTest
 
 		// when
 		given()
-				.cookie(cookie)
+				.cookie(bobCookie)
 				.accept(ContentType.JSON)
 				.contentType(ContentType.JSON)
 				.body(body)
@@ -153,9 +137,6 @@ class BillResourceTest extends AbstractResourceTest
 	}
 
 	@Test
-	@TestSecurity(user = "bob", roles = {
-			"user"
-	})
 	void shouldFailAddingBillAsDifferentUser()
 	{
 		// given
@@ -173,7 +154,7 @@ class BillResourceTest extends AbstractResourceTest
 
 		// when
 		given()
-				.cookie(cookie)
+				.cookie(aliceCookie)
 				.accept(ContentType.JSON)
 				.contentType(ContentType.JSON)
 				.body(body)
@@ -186,9 +167,6 @@ class BillResourceTest extends AbstractResourceTest
 	}
 
 	@Test
-	@TestSecurity(user = "peter", roles = {
-			"user"
-	})
 	void shouldDeleteOne()
 	{
 		// given
@@ -198,7 +176,7 @@ class BillResourceTest extends AbstractResourceTest
 
 		// when
 		given()
-				.cookie(cookie)
+				.cookie(bobCookie)
 				.when()
 				.delete("/api/bill/" + car.getId() + "/" + billId)
 				.then()
@@ -209,9 +187,6 @@ class BillResourceTest extends AbstractResourceTest
 	}
 
 	@Test
-	@TestSecurity(user = "bob", roles = {
-			"user"
-	})
 	void shouldFailDeletingAsDifferentUser()
 	{
 		// given
@@ -221,7 +196,7 @@ class BillResourceTest extends AbstractResourceTest
 
 		// when
 		given()
-				.cookie(cookie)
+				.cookie(aliceCookie)
 				.when()
 				.delete("/api/bill/" + car.getId() + "/" + billId)
 				.then()

@@ -14,6 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.InputStream;
+import java.util.Optional;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -36,14 +37,18 @@ class ImportResourceTest extends AbstractResourceTest
 	@Transactional
 	void setup()
 	{
-		setupPeter();
+		setupBob();
 	}
 
-	private void setupPeter()
+	private void setupBob()
 	{
-		Account account = new Account();
-		account.setMaxCars(1);
-		account.setUserId("peter");
+		Optional<Account> optionalAccount = accountRepository.findByIdentifier("bob");
+		if (optionalAccount.isEmpty()) {
+			return;
+		}
+
+		Account account = optionalAccount.get();
+		account.setMaxCars(2);
 		accountRepository.persist(account);
 
 		car = new Car();
@@ -56,7 +61,7 @@ class ImportResourceTest extends AbstractResourceTest
 	void shouldImportCsv()
 	{
 		given()
-				.cookie(cookie)
+				.cookie(bobCookie)
 				.contentType(ContentType.MULTIPART)
 				.multiPart("file", "import.csv", getFile("csv/import_1.csv"), "text/csv")
 				.when()
@@ -71,7 +76,7 @@ class ImportResourceTest extends AbstractResourceTest
 	void shouldImportCsvInvalidDate()
 	{
 		given()
-				.cookie(cookie)
+				.cookie(bobCookie)
 				.contentType(ContentType.MULTIPART)
 				.multiPart("file", "import.csv", getFile("csv/import_3_invalid.csv"), "text/csv")
 				.when()
@@ -96,7 +101,7 @@ class ImportResourceTest extends AbstractResourceTest
 				""";
 
 		given()
-				.cookie(cookie)
+				.cookie(bobCookie)
 				.contentType(ContentType.MULTIPART)
 				.multiPart("file", "import.csv", getFile("csv/import_2.csv"), "text/csv")
 				.multiPart("order", order)
@@ -112,7 +117,7 @@ class ImportResourceTest extends AbstractResourceTest
 	void shouldImportCsvSkipHeader()
 	{
 		given()
-				.cookie(cookie)
+				.cookie(bobCookie)
 				.contentType(ContentType.MULTIPART)
 				.multiPart("file", "import.csv", getFile("csv/import_4.csv"), "text/csv")
 				.when()
@@ -124,10 +129,10 @@ class ImportResourceTest extends AbstractResourceTest
 	}
 
 	@Test
-	void bobShouldNotBeAbleToImportCsvOnPetersCar()
+	void aliceShouldNotBeAbleToImportCsvOnBobsCar()
 	{
 		given()
-				.cookie(cookie)
+				.cookie(aliceCookie)
 				.contentType(ContentType.MULTIPART)
 				.multiPart("file", "import.csv", getFile("csv/import_1.csv"), "text/csv")
 				.when()
@@ -142,14 +147,14 @@ class ImportResourceTest extends AbstractResourceTest
 	void shouldImportCsvTwice()
 	{
 		given()
-				.cookie(cookie)
+				.cookie(bobCookie)
 				.contentType(ContentType.MULTIPART)
 				.multiPart("file", "import.csv", getFile("csv/import_1.csv"), "text/csv")
 				.when()
 				.post("/api/import/" + car.getId()).then().statusCode(202);
 
 		given()
-				.cookie(cookie)
+				.cookie(bobCookie)
 				.contentType(ContentType.MULTIPART)
 				.multiPart("file", "import.csv", getFile("csv/import_1.csv"), "text/csv")
 				.when()
@@ -164,7 +169,7 @@ class ImportResourceTest extends AbstractResourceTest
 	void shouldFailImporting()
 	{
 		given()
-				.cookie(cookie)
+				.cookie(bobCookie)
 				.contentType(ContentType.MULTIPART)
 				.multiPart("file", "import.png", getFile("white_with_dot.png"), "image/png")
 				.when()

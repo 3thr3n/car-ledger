@@ -68,7 +68,7 @@ public class CarResource extends AbstractResource
 	@APIResponse(responseCode = "202", description = "Car created.")
 	@APIResponse(responseCode = "400", description = "Maximal amount of cars created.")
 	@APIResponse(responseCode = "500", description = "Something went wrong while saving. Please ask the server admin for help.")
-	public Response createCar(CarInputPojo carpojo) throws AccountNotFoundException
+	public Response createCar(CarInputPojo carInputPojo) throws AccountNotFoundException
 	{
 		Account account = getAccount();
 
@@ -79,7 +79,7 @@ public class CarResource extends AbstractResource
 		}
 
 		Car car = new Car();
-		car.setDescription(carpojo.description());
+		car.setDescription(carInputPojo.description());
 		car.setUser(account);
 
 		carRepository.persist(car);
