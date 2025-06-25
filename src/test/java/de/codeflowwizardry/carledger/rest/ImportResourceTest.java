@@ -14,7 +14,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.InputStream;
-import java.util.Optional;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -42,12 +41,7 @@ class ImportResourceTest extends AbstractResourceTest
 
 	private void setupBob()
 	{
-		Optional<Account> optionalAccount = accountRepository.findByIdentifier("bob");
-		if (optionalAccount.isEmpty()) {
-			return;
-		}
-
-		Account account = optionalAccount.get();
+		Account account = accountRepository.findByIdentifier("bob");
 		account.setMaxCars(2);
 		accountRepository.persist(account);
 
@@ -159,8 +153,7 @@ class ImportResourceTest extends AbstractResourceTest
 				.multiPart("file", "import.csv", getFile("csv/import_1.csv"), "text/csv")
 				.when()
 				.post("/api/import/" + car.getId())
-				.then().
-				statusCode(202);
+				.then().statusCode(202);
 
 		assertEquals(13, billRepository.count());
 	}

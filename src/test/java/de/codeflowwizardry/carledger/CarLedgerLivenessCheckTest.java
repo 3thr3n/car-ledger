@@ -7,16 +7,8 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@QuarkusTest
-record CarLedgerLivenessCheckTest(CarLedgerLivenessCheck carLedgerLivenessCheck) {
-	CarLedgerLivenessCheckTest(@Liveness CarLedgerLivenessCheck carLedgerLivenessCheck) {
-		this.carLedgerLivenessCheck = carLedgerLivenessCheck;
-	}
+@QuarkusTest record CarLedgerLivenessCheckTest(CarLedgerLivenessCheck carLedgerLivenessCheck){CarLedgerLivenessCheckTest(@Liveness CarLedgerLivenessCheck carLedgerLivenessCheck){this.carLedgerLivenessCheck=carLedgerLivenessCheck;}
 
-	@Test
-	void shouldStayAlive() {
-		assertEquals(HealthCheckResponse.Status.UP, carLedgerLivenessCheck.call().getStatus());
-		assertEquals(HealthCheckResponse.Status.UP, carLedgerLivenessCheck.call().getStatus());
-	}
+@Test void shouldStayAlive(){assertEquals(HealthCheckResponse.Status.UP,carLedgerLivenessCheck.call().getStatus());assertEquals(HealthCheckResponse.Status.UP,carLedgerLivenessCheck.call().getStatus());}
 
 }

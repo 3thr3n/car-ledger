@@ -33,15 +33,17 @@ public class BillResource extends AbstractResource
 	/**
 	 * CDI proxying
 	 */
-	public BillResource() {
+	public BillResource()
+	{
 		super(null, null);
 		billRepository = null;
 		carRepository = null;
 	}
 
 	@Inject
-	public BillResource(CurrentIdentityAssociation principal, AccountRepository accountRepository, BillRepository billRepository,
-						CarRepository carRepository)
+	public BillResource(CurrentIdentityAssociation principal, AccountRepository accountRepository,
+			BillRepository billRepository,
+			CarRepository carRepository)
 	{
 		super(principal, accountRepository);
 		this.billRepository = billRepository;

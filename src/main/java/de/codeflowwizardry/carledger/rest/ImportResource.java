@@ -36,15 +36,17 @@ public class ImportResource extends AbstractResource
 	/**
 	 * CDI proxying
 	 */
-	public ImportResource() {
+	public ImportResource()
+	{
 		super(null, null);
 		carRepository = null;
 		processor = null;
 	}
 
 	@Inject
-	public ImportResource(CurrentIdentityAssociation principal, AccountRepository accountRepository, CarRepository carRepository,
-						  CsvProcessor processor)
+	public ImportResource(CurrentIdentityAssociation principal, AccountRepository accountRepository,
+			CarRepository carRepository,
+			CsvProcessor processor)
 	{
 		super(principal, accountRepository);
 		this.carRepository = carRepository;

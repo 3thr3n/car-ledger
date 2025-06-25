@@ -35,7 +35,7 @@ class AuthResourceTest
 	{
 		given()
 				.when()
-				.get("log")
+				.get("check_login")
 				.then()
 				.statusCode(401);
 	}
@@ -54,7 +54,7 @@ class AuthResourceTest
 
 		given()
 				.cookie(loginCookie)
-				.get("log")
+				.get("check_login")
 				.then()
 				.statusCode(200);
 	}
@@ -79,7 +79,7 @@ class AuthResourceTest
 
 		given()
 				.cookie(loginCookie)
-				.get("log")
+				.get("check_login")
 				.then()
 				.statusCode(401);
 	}

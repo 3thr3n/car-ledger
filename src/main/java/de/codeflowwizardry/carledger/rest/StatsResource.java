@@ -27,13 +27,15 @@ public class StatsResource extends AbstractResource
 	/**
 	 * CDI proxying
 	 */
-	public StatsResource() {
+	public StatsResource()
+	{
 		super(null, null);
 		statsCalculator = null;
 	}
 
 	@Inject
-	public StatsResource(CurrentIdentityAssociation principal, AccountRepository accountRepository, StatsCalculator statsCalculator)
+	public StatsResource(CurrentIdentityAssociation principal, AccountRepository accountRepository,
+			StatsCalculator statsCalculator)
 	{
 		super(principal, accountRepository);
 		this.statsCalculator = statsCalculator;

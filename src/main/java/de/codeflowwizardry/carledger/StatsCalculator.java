@@ -38,7 +38,8 @@ public class StatsCalculator
 	{
 		List<Bill> bills = billRepository.getBills(carId, username, from, to);
 
-		if (bills.isEmpty()) {
+		if (bills.isEmpty())
+		{
 			return new TotalStats(ZERO, ZERO, ZERO);
 		}
 
@@ -202,7 +203,8 @@ public class StatsCalculator
 	{
 		List<Bill> bills = billRepository.getBills(carId, username, from, to);
 
-		if (bills.isEmpty()) {
+		if (bills.isEmpty())
+		{
 			return new MinimalStats(ZERO, ZERO, new HiLo(ZERO, ZERO, 2), ZERO);
 		}
 

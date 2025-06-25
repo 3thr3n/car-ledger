@@ -29,13 +29,15 @@ public class CarResource extends AbstractResource
 	/**
 	 * CDI proxying
 	 */
-	public CarResource() {
+	public CarResource()
+	{
 		super(null, null);
 		carRepository = null;
 	}
 
 	@Inject
-	public CarResource(CurrentIdentityAssociation principal, AccountRepository accountRepository, CarRepository carRepository)
+	public CarResource(CurrentIdentityAssociation principal, AccountRepository accountRepository,
+			CarRepository carRepository)
 	{
 		super(principal, accountRepository);
 		this.carRepository = carRepository;
@@ -45,7 +47,8 @@ public class CarResource extends AbstractResource
 	@Operation(operationId = "getMyCars")
 	@Produces(MediaType.APPLICATION_JSON)
 	@APIResponse(responseCode = "200", description = "Get all cars.")
-	public List<CarPojo> getMyCars() throws AccountNotFoundException {
+	public List<CarPojo> getMyCars() throws AccountNotFoundException
+	{
 		return CarPojo.convert(getAccount().getCarList());
 	}
 

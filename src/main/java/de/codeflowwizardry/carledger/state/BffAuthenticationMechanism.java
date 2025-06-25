@@ -28,133 +28,162 @@ import org.slf4j.LoggerFactory;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 
 @ApplicationScoped
 @Priority(100) // Should run early
-public class BffAuthenticationMechanism implements HttpAuthenticationMechanism {
+public class BffAuthenticationMechanism implements HttpAuthenticationMechanism
+{
 
-    private final static Logger LOG = LoggerFactory.getLogger(BffAuthenticationMechanism.class);
+	private final static Logger LOG = LoggerFactory.getLogger(BffAuthenticationMechanism.class);
 
-    @Inject
-    SessionManager sessionManager;
+	private static final Set<String> PUBLIC_PATHS = Set.of(
+			"/api/auth/login",
+			"/public");
 
-    @Inject
-    JWTParser jwtParser;
+	private final SessionManager sessionManager;
+	private final JWTParser jwtParser;
+	private final KeycloakTokenService keycloakTokenService;
 
-    @Inject
-    @RestClient
-    KeycloakTokenService keycloakTokenService;
+	@Inject
+	public BffAuthenticationMechanism(SessionManager sessionManager, JWTParser jwtParser,
+			@RestClient KeycloakTokenService keycloakTokenService)
+	{
+		this.sessionManager = sessionManager;
+		this.jwtParser = jwtParser;
+		this.keycloakTokenService = keycloakTokenService;
+	}
 
-    @ConfigProperty(name = "keycloak.client-id")
-    String clientId;
+	@ConfigProperty(name = "keycloak.client-id")
+	String clientId;
 
-    @ConfigProperty(name = "keycloak.client-secret")
-    String clientSecret;
+	@ConfigProperty(name = "keycloak.client-secret")
+	String clientSecret;
 
-    private static final Set<String> PUBLIC_PATHS = Set.of(
-            "/api/auth/login",
-            "/public"
-    );
+	@Override
+	public Uni<SecurityIdentity> authenticate(RoutingContext context, IdentityProviderManager idpManager)
+	{
+		return Uni.createFrom().deferred(() -> {
+			String path = context.request().path();
+			LOG.debug("Authenticating request for path {}", path);
+			if (isPublicPath(path))
+			{
+				LOG.debug("Skip path: {}", path);
+				return Uni.createFrom().item(
+						QuarkusSecurityIdentity.builder().setAnonymous(true).setPrincipal(() -> "anonymous").build()); // Skip
+																														// auth
+																														// check
+																														// for
+																														// public
+																														// endpoints
+			}
 
-    @Override
-    public Uni<SecurityIdentity> authenticate(RoutingContext context, IdentityProviderManager idpManager) {
-        return Uni.createFrom().deferred(() -> {
-            String path = context.request().path();
-            LOG.debug("Authenticating request for path {}", path);
-            if (isPublicPath(path)) {
-                LOG.debug("Skip path: {}", path);
-                return Uni.createFrom().item(QuarkusSecurityIdentity.builder().setAnonymous(true).setPrincipal(() -> "anonymous").build()); // Skip auth check for public endpoints
-            }
+			Cookie cookie = context.request().getCookie("SESSION_ID");
 
-            Cookie cookie = context.request().getCookie("SESSION_ID");
+			if (cookie == null)
+			{
+				LOG.debug("No cookie found, be anonymous");
+				// 🔴 Force 401 instead of hanging
+				// return Uni.createFrom().failure(new AuthenticationFailedException("No auth
+				// token found"));
+				return Uni.createFrom().item(
+						QuarkusSecurityIdentity.builder().setAnonymous(true).setPrincipal(() -> "anonymous").build());
+			}
 
-            if (cookie == null || cookie.getValue() == null) {
-                LOG.debug("No cookie found, be anonymous");
-                // 🔴 Force 401 instead of hanging
-//                return Uni.createFrom().failure(new AuthenticationFailedException("No auth token found"));
-                return Uni.createFrom().optional(Optional.empty());
-            }
+			LOG.debug("Cookie found: {}", cookie.getValue());
+			try
+			{
+				SecurityIdentity identity = handleCookie(cookie);
+				return Uni.createFrom().item(identity);
+			}
+			catch (Exception e)
+			{
+				LOG.error(e.getMessage(), e);
+				// return Uni.createFrom().optional(Optional.empty());
+				return Uni.createFrom().failure(e);
+			}
+		});
+	}
 
-            LOG.debug("Cookie found: {}", cookie.getValue());
-            try {
-                SecurityIdentity identity = handleCookie(cookie);
-                return Uni.createFrom().item(identity);
-            } catch (Exception e) {
-                LOG.error(e.getMessage(), e);
-                return Uni.createFrom().optional(Optional.empty());
-//                return Uni.createFrom().failure(e);
-            }
-        });
-    }
+	@Override
+	public Uni<ChallengeData> getChallenge(RoutingContext context)
+	{
+		// No challenge needed since auth happens earlier
+		ChallengeData result = new ChallengeData(HttpResponseStatus.UNAUTHORIZED.code(), HttpHeaderNames.COOKIE,
+				"Cookie");
+		return Uni.createFrom().item(result);
+	}
 
-    @Override
-    public Uni<ChallengeData> getChallenge(RoutingContext context) {
-        // No challenge needed since auth happens earlier
-        ChallengeData result = new ChallengeData(HttpResponseStatus.UNAUTHORIZED.code(), HttpHeaderNames.COOKIE, "Cookie");
-        return Uni.createFrom().item(result);
-    }
+	private SecurityIdentity handleCookie(Cookie cookie) throws ParseException
+	{
+		String sessionId = cookie.getValue();
+		SessionToken token = sessionManager.get(sessionId);
 
-    private SecurityIdentity handleCookie(Cookie cookie) throws ParseException {
-        String sessionId = cookie.getValue();
-        SessionToken token = sessionManager.get(sessionId);
+		if (token != null)
+		{
+			LOG.debug("Token found");
+			try
+			{
+				JsonWebToken jwt = jwtParser.parse(token.getAccessToken());
+				LOG.debug("JWT parsed: {}", jwt.toString());
+				return handleJwtToken(jwt, token, sessionId);
+			}
+			catch (ParseException e)
+			{
+				if (e.getCause() instanceof InvalidJwtException
+						&& e.getCause().getMessage().contains("Expiration Time"))
+				{
+					LOG.debug("Token expired");
+					refreshToken(token, sessionId);
+					JsonWebToken jwt = jwtParser.parse(token.getAccessToken());
+					return handleJwtToken(jwt, token, sessionId);
+				} else
+				{
+					throw e;
+				}
+			}
+		}
+		LOG.debug("Session token invalid");
+		throw new AuthenticationFailedException("Invalid session token");
+	}
 
-        if (token != null) {
-            LOG.debug("Token found");
-            try {
-                JsonWebToken jwt = jwtParser.parse(token.getAccessToken());
-                LOG.debug("JWT parsed: {}", jwt.toString());
-                return handleJwtToken(jwt, token, sessionId);
-            } catch (ParseException e) {
-                if (e.getCause() instanceof InvalidJwtException && e.getCause().getMessage().contains("Expiration Time")) {
-                    LOG.debug("Token expired");
-                    refreshToken(token, sessionId);
-                    JsonWebToken jwt = jwtParser.parse(token.getAccessToken());
-                    return handleJwtToken(jwt, token, sessionId);
-                } else {
-                    LOG.error(e.getCause().getMessage(), e);
-                    throw e;
-                }
-            }
-        }
-        LOG.debug("Session token invalid");
-        throw new AuthenticationFailedException("Invalid session token");
-    }
+	private QuarkusSecurityIdentity handleJwtToken(JsonWebToken jwt, SessionToken token, String sessionId)
+			throws ParseException
+	{
+		long exp = jwt.getExpirationTime();
+		if (exp > 0 && exp < Instant.now().getEpochSecond())
+		{
+			LOG.debug("Refresh token expired");
+			refreshToken(token, sessionId);
+			jwt = jwtParser.parse(token.getAccessToken());
+		}
 
-    private QuarkusSecurityIdentity handleJwtToken(JsonWebToken jwt, SessionToken token, String sessionId) throws ParseException {
-        long exp = jwt.getExpirationTime();
-        if (exp > 0 && exp < Instant.now().getEpochSecond()) {
-            LOG.debug("Refresh token expired");
-            refreshToken(token, sessionId);
-            jwt = jwtParser.parse(token.getAccessToken());
-        }
+		LOG.debug("JWT Token handled");
 
-        LOG.debug("JWT Token handled");
+		Object preferredUsername = jwt.getClaim("preferred_username");
+		return QuarkusSecurityIdentity.builder()
+				.setPrincipal(preferredUsername::toString)
+				.addAttribute("name", jwt.getClaim("name"))
+				.addAttribute("email", jwt.getClaim("email"))
+				.addRoles(new HashSet<>(jwt.getGroups() != null ? jwt.getGroups() : Collections.emptyList()))
+				.build();
+	}
 
-        Object preferredUsername = jwt.getClaim("preferred_username");
-        return QuarkusSecurityIdentity.builder()
-                .setPrincipal(preferredUsername::toString)
-                .addAttribute("name", jwt.getClaim("name"))
-                .addAttribute("email", jwt.getClaim("email"))
-                .addRoles(new HashSet<>(jwt.getGroups() != null ? jwt.getGroups() : Collections.emptyList()))
-                .build();
-    }
+	private void refreshToken(SessionToken token, String sessionId)
+	{
+		// Try to refresh
+		KeycloakTokenResponse refreshed = keycloakTokenService.refreshToken(
+				"refresh_token",
+				clientId,
+				clientSecret,
+				token.getRefreshToken());
 
-    private void refreshToken(SessionToken token, String sessionId) {
-        // Try to refresh
-        KeycloakTokenResponse refreshed = keycloakTokenService.refreshToken(
-                "refresh_token",
-                clientId,
-                clientSecret,
-                token.getRefreshToken());
+		token.setAccessToken(refreshed.accessToken());
+		sessionManager.updateAccessToken(sessionId, token.getAccessToken());
+	}
 
-
-        token.setAccessToken(refreshed.accessToken());
-        sessionManager.updateAccessToken(sessionId, token.getAccessToken());
-    }
-
-    private boolean isPublicPath(String path) {
-        return PUBLIC_PATHS.contains(path);
-    }
+	private boolean isPublicPath(String path)
+	{
+		return PUBLIC_PATHS.contains(path);
+	}
 }

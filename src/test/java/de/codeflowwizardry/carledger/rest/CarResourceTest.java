@@ -14,8 +14,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import java.util.Optional;
-
 import static io.restassured.RestAssured.given;
 
 @QuarkusTest
@@ -33,12 +31,7 @@ class CarResourceTest extends AbstractResourceTest
 	@Transactional
 	void before()
 	{
-		Optional<Account> optionalAccount = accountRepository.findByIdentifier("bob");
-		if (optionalAccount.isEmpty()) {
-			return;
-		}
-
-		Account account = optionalAccount.get();
+		Account account = accountRepository.findByIdentifier("bob");
 		account.setMaxCars(2);
 		accountRepository.persist(account);
 

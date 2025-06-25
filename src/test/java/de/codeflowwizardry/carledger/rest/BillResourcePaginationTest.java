@@ -10,7 +10,7 @@ import static org.hamcrest.Matchers.is;
 
 @QuarkusTest
 @TestProfile(TestDataProfile.class)
-class BillResourcePaginationTest  extends AbstractResourceTest
+class BillResourcePaginationTest extends AbstractResourceTest
 {
 	@Test
 	void shouldGetFirstPage()
