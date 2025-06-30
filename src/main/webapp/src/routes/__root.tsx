@@ -24,8 +24,8 @@ export const Route = createRootRoute({
       <ThemeProvider theme={theme}>
         <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
           <CssBaseline />
-          <Navigation />
           <QueryClientProvider client={queryClient}>
+            <Navigation />
             <CsvUploadDialog />
             <Box
               flexGrow={1}

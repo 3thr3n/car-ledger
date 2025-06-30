@@ -5,13 +5,16 @@ import {
   getMyselfOptions,
   logoutOptions,
 } from '@/generated/@tanstack/react-query.gen';
-import { baseUrl, localClient } from '@/utils/QueryClient';
+import { localClient } from '@/utils/QueryClient';
 import { useEffect } from 'react';
 import useUserStore from '@/store/UserStore';
 
 export default function Login() {
   const setName = useUserStore((state) => state.setName);
   const setMaxCars = useUserStore((state) => state.setMaxCars);
+
+  const loggedIn = useUserStore((state) => state.loggedIn);
+  const setLoggedIn = useUserStore((state) => state.setLoggedIn);
 
   const logoutQuery = useQuery({
     ...logoutOptions({
@@ -24,15 +27,24 @@ export default function Login() {
   const { isError, isLoading, data, refetch } = useQuery({
     ...getMyselfOptions({
       client: localClient,
+      credentials: 'include',
+      cache: 'no-cache',
     }),
     retry: false,
     refetchIntervalInBackground: true,
     refetchInterval: 5 * 60 * 1000,
   });
 
-  if (isError) {
-    window.location.href = baseUrl + '/api/auth/login';
-  }
+  useEffect(() => {
+    if (loggedIn && isError) {
+      refetch();
+    } else if (isError && !isLoading && data == null) {
+      console.error('Show the login page!');
+      setLoggedIn(false);
+    } else if (!isLoading && data) {
+      setLoggedIn(true);
+    }
+  }, [isError, isLoading, data, setLoggedIn, loggedIn, refetch]);
 
   async function logout() {
     await logoutQuery.refetch();
@@ -48,13 +60,14 @@ export default function Login() {
     }
   }, [data, setMaxCars, setName]);
 
-  if (isLoading) {
+  if (isLoading || isError || !loggedIn) {
     return (
-      <Button variant="contained" href={baseUrl + '/api/auth/login'}>
+      <Button variant="contained" href={'/login'}>
         Login
       </Button>
     );
   }
+
   return (
     <Box display="flex" flexDirection="row" alignItems="center">
       <Typography variant="body1" mr={2}>

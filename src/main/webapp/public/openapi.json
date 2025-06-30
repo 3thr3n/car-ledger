@@ -128,6 +128,17 @@
           }
         }
       },
+      "Credentials" : {
+        "type" : "object",
+        "properties" : {
+          "username" : {
+            "type" : "string"
+          },
+          "password" : {
+            "type" : "string"
+          }
+        }
+      },
       "CsvOrder" : {
         "type" : "object",
         "properties" : {
@@ -164,7 +175,8 @@
           },
           "scale" : {
             "type" : "integer",
-            "format" : "int32"
+            "format" : "int32",
+            "writeOnly" : true
           }
         }
       },
@@ -227,7 +239,9 @@
     },
     "securitySchemes" : {
       "SecurityScheme" : {
-        "type" : "openIdConnect",
+        "type" : "http",
+        "scheme" : "bearer",
+        "bearerFormat" : "JWT",
         "description" : "Authentication"
       }
     }
@@ -235,8 +249,13 @@
   "paths" : {
     "/api/auth/callback" : {
       "get" : {
-        "description" : "This only for redirect purposes of oauth!",
-        "operationId" : "callback",
+        "parameters" : [ {
+          "name" : "code",
+          "in" : "query",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
         "responses" : {
           "200" : {
             "description" : "OK"
@@ -246,10 +265,45 @@
         "tags" : [ "Auth Resource" ]
       }
     },
-    "/api/auth/login" : {
+    "/api/auth/check_login" : {
       "get" : {
-        "description" : "Here should the browser redirect, when 'login' is pressed",
-        "operationId" : "login",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "text/plain" : {
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Not Authorized"
+          },
+          "403" : {
+            "description" : "Not Allowed"
+          }
+        },
+        "summary" : "Test",
+        "tags" : [ "Auth Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ ]
+        } ]
+      }
+    },
+    "/api/auth/external-login/{method}" : {
+      "get" : {
+        "description" : "Here should the browser redirect, when 'login to x' is pressed",
+        "operationId" : "loginByMethod",
+        "parameters" : [ {
+          "name" : "method",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
         "responses" : {
           "200" : {
             "description" : "OK"
@@ -259,16 +313,63 @@
         "tags" : [ "Auth Resource" ]
       }
     },
+    "/api/auth/login" : {
+      "post" : {
+        "description" : "Here should the browser redirect, when 'login' is pressed",
+        "operationId" : "login",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/Credentials"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Login successful"
+          },
+          "401" : {
+            "description" : "No Cookie found or login expired"
+          },
+          "400" : {
+            "description" : "Bad Request"
+          }
+        },
+        "summary" : "Login",
+        "tags" : [ "Auth Resource" ]
+      }
+    },
     "/api/auth/logout" : {
-      "get" : {
+      "post" : {
         "description" : "Logout current user",
         "operationId" : "logout",
+        "parameters" : [ {
+          "name" : "SESSION_ID",
+          "in" : "cookie",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
         "responses" : {
-          "204" : {
-            "description" : "No Content"
+          "200" : {
+            "description" : "OK"
           }
         },
         "summary" : "Logout",
+        "tags" : [ "Auth Resource" ]
+      }
+    },
+    "/api/auth/register" : {
+      "get" : {
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        },
+        "summary" : "Register Redirect",
         "tags" : [ "Auth Resource" ]
       }
     },
@@ -303,10 +404,19 @@
           },
           "500" : {
             "description" : "Something went wrong while saving. Please ask the server admin for help."
+          },
+          "401" : {
+            "description" : "Not Authorized"
+          },
+          "403" : {
+            "description" : "Not Allowed"
           }
         },
         "summary" : "Add New Bill",
-        "tags" : [ "Bill Resource" ]
+        "tags" : [ "Bill Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ ]
+        } ]
       }
     },
     "/api/bill/{carId}/all" : {
@@ -348,10 +458,19 @@
                 }
               }
             }
+          },
+          "401" : {
+            "description" : "Not Authorized"
+          },
+          "403" : {
+            "description" : "Not Allowed"
           }
         },
         "summary" : "Get All My Bills",
-        "tags" : [ "Bill Resource" ]
+        "tags" : [ "Bill Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ ]
+        } ]
       }
     },
     "/api/bill/{carId}/{billId}" : {
@@ -383,10 +502,19 @@
           },
           "500" : {
             "description" : "Something went wrong while deleting. Please ask the server admin for help."
+          },
+          "401" : {
+            "description" : "Not Authorized"
+          },
+          "403" : {
+            "description" : "Not Allowed"
           }
         },
         "summary" : "Delete Bill",
-        "tags" : [ "Bill Resource" ]
+        "tags" : [ "Bill Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ ]
+        } ]
       }
     },
     "/api/car/my" : {
@@ -405,10 +533,19 @@
                 }
               }
             }
+          },
+          "401" : {
+            "description" : "Not Authorized"
+          },
+          "403" : {
+            "description" : "Not Allowed"
           }
         },
         "summary" : "Get My Cars",
-        "tags" : [ "Car Resource" ]
+        "tags" : [ "Car Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ ]
+        } ]
       },
       "put" : {
         "operationId" : "createCar",
@@ -431,10 +568,19 @@
           },
           "500" : {
             "description" : "Something went wrong while saving. Please ask the server admin for help."
+          },
+          "401" : {
+            "description" : "Not Authorized"
+          },
+          "403" : {
+            "description" : "Not Allowed"
           }
         },
         "summary" : "Create Car",
-        "tags" : [ "Car Resource" ]
+        "tags" : [ "Car Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ ]
+        } ]
       }
     },
     "/api/car/my/{id}" : {
@@ -462,10 +608,19 @@
           },
           "204" : {
             "description" : "Id was not found."
+          },
+          "401" : {
+            "description" : "Not Authorized"
+          },
+          "403" : {
+            "description" : "Not Allowed"
           }
         },
         "summary" : "Get My Car",
-        "tags" : [ "Car Resource" ]
+        "tags" : [ "Car Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ ]
+        } ]
       }
     },
     "/api/import/{carId}" : {
@@ -523,10 +678,19 @@
           },
           "500" : {
             "description" : "- CSV was not set\n- Something went wrong while importing. Please ask the server admin for help."
+          },
+          "401" : {
+            "description" : "Not Authorized"
+          },
+          "403" : {
+            "description" : "Not Allowed"
           }
         },
         "summary" : "Import Csv",
-        "tags" : [ "Import Resource" ]
+        "tags" : [ "Import Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ ]
+        } ]
       }
     },
     "/api/stats/{carId}/average" : {
@@ -566,10 +730,19 @@
                 }
               }
             }
+          },
+          "401" : {
+            "description" : "Not Authorized"
+          },
+          "403" : {
+            "description" : "Not Allowed"
           }
         },
         "summary" : "Get Average",
-        "tags" : [ "Stats Resource" ]
+        "tags" : [ "Stats Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ ]
+        } ]
       }
     },
     "/api/stats/{carId}/hi_lo" : {
@@ -609,10 +782,19 @@
                 }
               }
             }
+          },
+          "401" : {
+            "description" : "Not Authorized"
+          },
+          "403" : {
+            "description" : "Not Allowed"
           }
         },
         "summary" : "Get Hi Lo",
-        "tags" : [ "Stats Resource" ]
+        "tags" : [ "Stats Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ ]
+        } ]
       }
     },
     "/api/stats/{carId}/minimal" : {
@@ -652,10 +834,19 @@
                 }
               }
             }
+          },
+          "401" : {
+            "description" : "Not Authorized"
+          },
+          "403" : {
+            "description" : "Not Allowed"
           }
         },
         "summary" : "Get Minimal Stats",
-        "tags" : [ "Stats Resource" ]
+        "tags" : [ "Stats Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ ]
+        } ]
       }
     },
     "/api/stats/{carId}/total" : {
@@ -695,10 +886,19 @@
                 }
               }
             }
+          },
+          "401" : {
+            "description" : "Not Authorized"
+          },
+          "403" : {
+            "description" : "Not Allowed"
           }
         },
         "summary" : "Get Total",
-        "tags" : [ "Stats Resource" ]
+        "tags" : [ "Stats Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ ]
+        } ]
       }
     },
     "/api/user/me" : {
@@ -714,10 +914,19 @@
                 }
               }
             }
+          },
+          "401" : {
+            "description" : "Not Authorized"
+          },
+          "403" : {
+            "description" : "Not Allowed"
           }
         },
         "summary" : "Get Me",
-        "tags" : [ "Account Resource" ]
+        "tags" : [ "Account Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ ]
+        } ]
       }
     }
   },

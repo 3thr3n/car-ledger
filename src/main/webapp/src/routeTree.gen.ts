@@ -8,18 +8,19 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute } from '@tanstack/react-router'
 
 // Import Routes
 
-import { Route as rootRoute } from './routes/__root';
+import { Route as rootRoute } from './routes/__root'
+import { Route as LoginIndexImport } from './routes/login/index'
 
 // Create Virtual Routes
 
-const AboutLazyImport = createFileRoute('/about')();
-const IndexLazyImport = createFileRoute('/')();
-const BillIndexLazyImport = createFileRoute('/bill/')();
-const BillIdLazyImport = createFileRoute('/bill/$id')();
+const AboutLazyImport = createFileRoute('/about')()
+const IndexLazyImport = createFileRoute('/')()
+const BillIndexLazyImport = createFileRoute('/bill/')()
+const BillIdLazyImport = createFileRoute('/bill/$id')()
 
 // Create/Update Routes
 
@@ -27,111 +28,129 @@ const AboutLazyRoute = AboutLazyImport.update({
   id: '/about',
   path: '/about',
   getParentRoute: () => rootRoute,
-} as any).lazy(() => import('./routes/about.lazy').then((d) => d.Route));
+} as any).lazy(() => import('./routes/about.lazy').then((d) => d.Route))
 
 const IndexLazyRoute = IndexLazyImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRoute,
-} as any).lazy(() => import('./routes/index.lazy').then((d) => d.Route));
+} as any).lazy(() => import('./routes/index.lazy').then((d) => d.Route))
 
 const BillIndexLazyRoute = BillIndexLazyImport.update({
   id: '/bill/',
   path: '/bill/',
   getParentRoute: () => rootRoute,
-} as any).lazy(() => import('./routes/bill/index.lazy').then((d) => d.Route));
+} as any).lazy(() => import('./routes/bill/index.lazy').then((d) => d.Route))
+
+const LoginIndexRoute = LoginIndexImport.update({
+  id: '/login/',
+  path: '/login/',
+  getParentRoute: () => rootRoute,
+} as any)
 
 const BillIdLazyRoute = BillIdLazyImport.update({
   id: '/bill/$id',
   path: '/bill/$id',
   getParentRoute: () => rootRoute,
-} as any).lazy(() => import('./routes/bill/$id.lazy').then((d) => d.Route));
+} as any).lazy(() => import('./routes/bill/$id.lazy').then((d) => d.Route))
 
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
     '/': {
-      id: '/';
-      path: '/';
-      fullPath: '/';
-      preLoaderRoute: typeof IndexLazyImport;
-      parentRoute: typeof rootRoute;
-    };
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexLazyImport
+      parentRoute: typeof rootRoute
+    }
     '/about': {
-      id: '/about';
-      path: '/about';
-      fullPath: '/about';
-      preLoaderRoute: typeof AboutLazyImport;
-      parentRoute: typeof rootRoute;
-    };
+      id: '/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof AboutLazyImport
+      parentRoute: typeof rootRoute
+    }
     '/bill/$id': {
-      id: '/bill/$id';
-      path: '/bill/$id';
-      fullPath: '/bill/$id';
-      preLoaderRoute: typeof BillIdLazyImport;
-      parentRoute: typeof rootRoute;
-    };
+      id: '/bill/$id'
+      path: '/bill/$id'
+      fullPath: '/bill/$id'
+      preLoaderRoute: typeof BillIdLazyImport
+      parentRoute: typeof rootRoute
+    }
+    '/login/': {
+      id: '/login/'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginIndexImport
+      parentRoute: typeof rootRoute
+    }
     '/bill/': {
-      id: '/bill/';
-      path: '/bill';
-      fullPath: '/bill';
-      preLoaderRoute: typeof BillIndexLazyImport;
-      parentRoute: typeof rootRoute;
-    };
+      id: '/bill/'
+      path: '/bill'
+      fullPath: '/bill'
+      preLoaderRoute: typeof BillIndexLazyImport
+      parentRoute: typeof rootRoute
+    }
   }
 }
 
 // Create and export the route tree
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexLazyRoute;
-  '/about': typeof AboutLazyRoute;
-  '/bill/$id': typeof BillIdLazyRoute;
-  '/bill': typeof BillIndexLazyRoute;
+  '/': typeof IndexLazyRoute
+  '/about': typeof AboutLazyRoute
+  '/bill/$id': typeof BillIdLazyRoute
+  '/login': typeof LoginIndexRoute
+  '/bill': typeof BillIndexLazyRoute
 }
 
 export interface FileRoutesByTo {
-  '/': typeof IndexLazyRoute;
-  '/about': typeof AboutLazyRoute;
-  '/bill/$id': typeof BillIdLazyRoute;
-  '/bill': typeof BillIndexLazyRoute;
+  '/': typeof IndexLazyRoute
+  '/about': typeof AboutLazyRoute
+  '/bill/$id': typeof BillIdLazyRoute
+  '/login': typeof LoginIndexRoute
+  '/bill': typeof BillIndexLazyRoute
 }
 
 export interface FileRoutesById {
-  __root__: typeof rootRoute;
-  '/': typeof IndexLazyRoute;
-  '/about': typeof AboutLazyRoute;
-  '/bill/$id': typeof BillIdLazyRoute;
-  '/bill/': typeof BillIndexLazyRoute;
+  __root__: typeof rootRoute
+  '/': typeof IndexLazyRoute
+  '/about': typeof AboutLazyRoute
+  '/bill/$id': typeof BillIdLazyRoute
+  '/login/': typeof LoginIndexRoute
+  '/bill/': typeof BillIndexLazyRoute
 }
 
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath;
-  fullPaths: '/' | '/about' | '/bill/$id' | '/bill';
-  fileRoutesByTo: FileRoutesByTo;
-  to: '/' | '/about' | '/bill/$id' | '/bill';
-  id: '__root__' | '/' | '/about' | '/bill/$id' | '/bill/';
-  fileRoutesById: FileRoutesById;
+  fileRoutesByFullPath: FileRoutesByFullPath
+  fullPaths: '/' | '/about' | '/bill/$id' | '/login' | '/bill'
+  fileRoutesByTo: FileRoutesByTo
+  to: '/' | '/about' | '/bill/$id' | '/login' | '/bill'
+  id: '__root__' | '/' | '/about' | '/bill/$id' | '/login/' | '/bill/'
+  fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
-  IndexLazyRoute: typeof IndexLazyRoute;
-  AboutLazyRoute: typeof AboutLazyRoute;
-  BillIdLazyRoute: typeof BillIdLazyRoute;
-  BillIndexLazyRoute: typeof BillIndexLazyRoute;
+  IndexLazyRoute: typeof IndexLazyRoute
+  AboutLazyRoute: typeof AboutLazyRoute
+  BillIdLazyRoute: typeof BillIdLazyRoute
+  LoginIndexRoute: typeof LoginIndexRoute
+  BillIndexLazyRoute: typeof BillIndexLazyRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexLazyRoute: IndexLazyRoute,
   AboutLazyRoute: AboutLazyRoute,
   BillIdLazyRoute: BillIdLazyRoute,
+  LoginIndexRoute: LoginIndexRoute,
   BillIndexLazyRoute: BillIndexLazyRoute,
-};
+}
 
 export const routeTree = rootRoute
   ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>();
+  ._addFileTypes<FileRouteTypes>()
 
 /* ROUTE_MANIFEST_START
 {
@@ -142,6 +161,7 @@ export const routeTree = rootRoute
         "/",
         "/about",
         "/bill/$id",
+        "/login/",
         "/bill/"
       ]
     },
@@ -153,6 +173,9 @@ export const routeTree = rootRoute
     },
     "/bill/$id": {
       "filePath": "bill/$id.lazy.tsx"
+    },
+    "/login/": {
+      "filePath": "login/index.tsx"
     },
     "/bill/": {
       "filePath": "bill/index.lazy.tsx"

@@ -10,6 +10,24 @@ const localClient = createClient({
   credentials: 'include',
 });
 
+
+let redirecting = false;
+localClient.interceptors.response.use((response) => {
+  if (response.status === 401 && !redirecting) {
+    redirecting = true;
+
+    setTimeout(() => {
+      redirecting = false;
+    }, 1000); // 1 second debounce window
+
+    if (!window.location.pathname.startsWith('/login')) {
+      window.location.href = '/login';
+    }
+  }
+
+  return response;
+})
+
 localClient.interceptors.error.use((_, res) => {
   throw new BackendError(res.status);
 });
