@@ -1,5 +1,6 @@
 package de.codeflowwizardry.carledger.client;
 
+import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.FormParam;
@@ -25,10 +26,10 @@ public interface KeycloakTokenService
 	@POST
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces(MediaType.APPLICATION_JSON)
-	KeycloakTokenResponse refreshToken(@FormParam("grant_type") String grantType,
-			@FormParam("client_id") String clientId,
-			@FormParam("client_secret") String clientSecret,
-			@FormParam("refresh_token") String refreshToken);
+	Uni<KeycloakTokenResponse> refreshToken(@FormParam("grant_type") String grantType,
+											@FormParam("client_id") String clientId,
+											@FormParam("client_secret") String clientSecret,
+											@FormParam("refresh_token") String refreshToken);
 
 	@POST
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)

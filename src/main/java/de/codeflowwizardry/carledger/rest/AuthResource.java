@@ -18,6 +18,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,7 +62,7 @@ public class AuthResource
 	}
 
 	@GET
-	@Path("login/{method}")
+	@Path("external-login/{method}")
 	@Operation(operationId = "loginByMethod", description = "Here should the browser redirect, when 'login to x' is pressed")
 	public Response login(@PathParam("method") String method)
 	{
@@ -77,6 +78,8 @@ public class AuthResource
 	@Path("login")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "login", description = "Here should the browser redirect, when 'login' is pressed")
+	@APIResponse(responseCode = "200", description = "Login successful")
+	@APIResponse(responseCode = "401", description = "No Cookie found or login expired")
 	public Response login(Credentials credentials)
 	{
 		if (credentials == null)

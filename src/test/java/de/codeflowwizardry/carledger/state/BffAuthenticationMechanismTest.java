@@ -54,7 +54,7 @@ class BffAuthenticationMechanismTest
 
 		KeycloakTokenService keycloakTokenService = mock(KeycloakTokenService.class);
 		when(keycloakTokenService.refreshToken(any(), any(), any(), any()))
-				.thenReturn(new KeycloakTokenResponse("meep", null, null, 1500, 1500, null, 0, null, null));
+				.thenReturn(Uni.createFrom().item(new KeycloakTokenResponse("meep", null, null, 1500, 1500, null, 0, null, null)));
 
 		// when
 		BffAuthenticationMechanism mechanism = new BffAuthenticationMechanism(sessionManager, jwtParser,
