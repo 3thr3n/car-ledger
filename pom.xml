@@ -14,7 +14,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
         <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
-        <quarkus.platform.version>3.23.4</quarkus.platform.version>
+        <quarkus.platform.version>3.27.0</quarkus.platform.version>
         <skipITs>true</skipITs>
         <surefire-plugin.version>3.5.3</surefire-plugin.version>
         <jacoco.version>0.8.13</jacoco.version>
@@ -88,7 +88,7 @@
         <dependency>
             <groupId>io.quarkiverse.quinoa</groupId>
             <artifactId>quarkus-quinoa</artifactId>
-            <version>2.5.4</version>
+            <version>2.6.0</version>
         </dependency>
 
 
@@ -100,7 +100,7 @@
         <dependency>
             <groupId>com.opencsv</groupId>
             <artifactId>opencsv</artifactId>
-            <version>5.11.1</version>
+            <version>5.12.0</version>
         </dependency>
 
 

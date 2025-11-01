@@ -18,8 +18,11 @@ public class AuthResource
 {
 	private final OidcSession session;
 
-	@ConfigProperty(name = "redirect.to")
-	String redirectTo;
+	@ConfigProperty(name = "redirect.to.logout")
+	String redirectToLogout;
+
+    @ConfigProperty(name = "redirect.to.error")
+    String redirectToError;
 
 	@Inject
 	public AuthResource(OidcSession session)
@@ -48,6 +51,14 @@ public class AuthResource
 	@Operation(operationId = "callback", description = "This only for redirect purposes of oauth!")
 	public Response callback()
 	{
-		throw new RedirectionException(302, URI.create(redirectTo));
+		throw new RedirectionException(302, URI.create(redirectToLogout));
 	}
+
+    @GET
+    @Path("error")
+    @Operation(operationId = "error", description = "This redirects to a frontend error page!")
+    public Response error()
+    {
+        throw new RedirectionException(302, URI.create(redirectToError));
+    }
 }

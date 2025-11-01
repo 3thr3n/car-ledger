@@ -47,18 +47,18 @@ public class AccountResource extends AbstractResource
 
 		try
 		{
-			LOG.info("checking user {}...", name);
+			LOG.debug("checking user {}...", name);
 			account = accountRepository.findByIdentifier(name);
-			LOG.info("user exists!");
+			LOG.debug("user exists!");
 		}
 		catch (BadRequestException e)
 		{
-			LOG.info("user does not exist! creating {}...", name);
+			LOG.debug("user does not exist! creating {}...", name);
 			account = new Account();
 			account.setUserId(name);
 			account.setMaxCars(1);
 			accountRepository.persist(account);
-			LOG.info("user created!");
+			LOG.debug("user created!");
 		}
         catch (ConstraintViolationException e)
         {

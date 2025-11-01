@@ -44,10 +44,10 @@ public class InfinispanTokenStateManager implements TokenStateManager
 	{
 		final String id = now() + UUID.randomUUID().toString();
 
-		LOG.info("Create token");
+		LOG.debug("Create token: {}", id);
 
 		CompletionStage<String> createToken = authTokenCache.putAsync(id, new AuthTokenState(tokens.getAccessToken(),
-				tokens.getIdToken(), tokens.getRefreshToken(), expiresIn(routingContext), id), 3, TimeUnit.DAYS)
+				tokens.getIdToken(), tokens.getRefreshToken(), expiresIn(routingContext), id), 8, TimeUnit.HOURS)
 				.thenApply(x -> id);
 
 		return Uni.createFrom().completionStage(createToken).onFailure()
@@ -65,7 +65,7 @@ public class InfinispanTokenStateManager implements TokenStateManager
 				.transform(t -> new AuthenticationFailedException(FAILED_TO_ACQUIRE_TOKEN, t)).flatMap(state -> {
 					if (state == null)
 					{
-						LOG.info("state is null!");
+						LOG.debug("WARN: State is null!");
 						return Uni.createFrom().failure(new AuthenticationCompletionException(FAILED_TO_ACQUIRE_TOKEN));
 					}
 
@@ -80,10 +80,10 @@ public class InfinispanTokenStateManager implements TokenStateManager
 	{
 		CompletableFuture<AuthTokenState> removeToken = authTokenCache.removeAsync(tokenState);
 
-		LOG.info("Delete token");
+		LOG.debug("Delete token: {}", tokenState);
 
 		return Uni.createFrom().completionStage(removeToken).replaceWithVoid().onFailure().recoverWithItem((t) -> {
-			LOG.debug("Failed to delete tokens: {}", t.getMessage(), t);
+			LOG.warn("Failed to delete tokens: {}", t.getMessage(), t);
 			return null;
 		});
 	}
