@@ -9,9 +9,17 @@ import { baseUrl, localClient } from '@/utils/QueryClient';
 import { useEffect } from 'react';
 import useUserStore from '@/store/UserStore';
 
-export default function Login() {
+interface LoginProps {
+  drawerMode?: boolean;
+}
+
+export default function Login({ drawerMode = false }: LoginProps) {
+  const isLoggedIn = useUserStore((state) => state.loggedIn);
   const setName = useUserStore((state) => state.setName);
+  const setLoggedIn = useUserStore((state) => state.setLoggedIn);
   const setMaxCars = useUserStore((state) => state.setMaxCars);
+
+  console.log(drawerMode);
 
   const logoutQuery = useQuery({
     ...logoutOptions({
@@ -30,37 +38,51 @@ export default function Login() {
     refetchInterval: 5 * 60 * 1000,
   });
 
-  if (isError) {
-    window.location.href = baseUrl + '/api/auth/login';
-  }
-
   async function logout() {
     await logoutQuery.refetch();
     await refetch();
+    setLoggedIn(false);
+  }
+
+  if (isError) {
+    setLoggedIn(false);
   }
 
   useEffect(() => {
-    if (data?.name) {
-      setName(data.name);
+    if (data) {
+      if (data.name) {
+        setName(data.name);
+      }
+      if (data.maxCars) {
+        setMaxCars(data.maxCars);
+      }
+      setLoggedIn(true);
     }
-    if (data?.maxCars) {
-      setMaxCars(data.maxCars);
-    }
-  }, [data, setMaxCars, setName]);
+  }, [data, setMaxCars, setName, setLoggedIn]);
 
-  if (isLoading) {
+  if (isLoading || !isLoggedIn) {
     return (
-      <Button variant="contained" href={baseUrl + '/api/auth/login'}>
+      <Button
+        variant="contained"
+        href={baseUrl + '/api/auth/login'}
+        fullWidth={drawerMode} // full width in drawer
+        sx={{ mb: drawerMode ? 2 : 0 }}
+      >
         Login
       </Button>
     );
   }
   return (
-    <Box display="flex" flexDirection="row" alignItems="center">
-      <Typography variant="body1" mr={2}>
-        Logged in as <b>{data?.name}</b>
+    <Box
+      display="flex"
+      flexDirection={drawerMode ? 'column' : 'row'}
+      alignItems={drawerMode ? 'flex-start' : 'center'}
+      gap={drawerMode ? 1 : 2}
+    >
+      <Typography variant="body1">
+        Welcome <b>{data?.name}</b>
       </Typography>
-      <Button variant="contained" onClick={logout}>
+      <Button variant="contained" onClick={logout} fullWidth={drawerMode}>
         Logout
       </Button>
     </Box>

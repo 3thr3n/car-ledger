@@ -33,7 +33,7 @@ export const Route = createRootRoute({
               flexDirection="column"
               justifyContent="center"
               alignItems="center"
-              marginY={4}
+              marginY={2}
               overflow="auto"
               position="relative"
             >

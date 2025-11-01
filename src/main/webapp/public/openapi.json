@@ -164,7 +164,8 @@
           },
           "scale" : {
             "type" : "integer",
-            "format" : "int32"
+            "format" : "int32",
+            "writeOnly" : true
           }
         }
       },
@@ -243,6 +244,19 @@
           }
         },
         "summary" : "Callback",
+        "tags" : [ "Auth Resource" ]
+      }
+    },
+    "/api/auth/error" : {
+      "get" : {
+        "description" : "This redirects to a frontend error page!",
+        "operationId" : "error",
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        },
+        "summary" : "Error",
         "tags" : [ "Auth Resource" ]
       }
     },
