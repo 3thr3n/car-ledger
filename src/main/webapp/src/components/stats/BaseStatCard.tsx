@@ -1,4 +1,4 @@
-import { Card, CardContent, Grid2 } from '@mui/material';
+import { Card, CardContent, Grid } from '@mui/material';
 import React from 'react';
 
 export interface BaseStatCardProps {
@@ -9,7 +9,7 @@ export interface BaseStatCardProps {
 
 export default function BaseStatCard(props: BaseStatCardProps) {
   return (
-    <Grid2 size={3}>
+    <Grid size={3}>
       <Card
         sx={{
           maxWidth: props.maxWidth ?? '350px',
@@ -18,6 +18,6 @@ export default function BaseStatCard(props: BaseStatCardProps) {
       >
         <CardContent>{props.children}</CardContent>
       </Card>
-    </Grid2>
+    </Grid>
   );
 }

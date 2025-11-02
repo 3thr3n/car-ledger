@@ -1,5 +1,5 @@
 import { BillPojo } from '@/generated';
-import { Card, CardContent, CardHeader, Grid2 } from '@mui/material';
+import { Card, CardContent, CardHeader, Grid } from '@mui/material';
 import React from 'react';
 import BillGrid from './BillGrid';
 
@@ -16,7 +16,7 @@ export default function BillGridGroup(props: BillGridGroupProps) {
   }
 
   return (
-    <Grid2
+    <Grid
       container
       sx={{
         overflow: 'auto',
@@ -32,7 +32,7 @@ export default function BillGridGroup(props: BillGridGroupProps) {
       >
         <CardHeader title={props.year} />
         <CardContent>
-          <Grid2
+          <Grid
             container
             spacing={2}
             columns={{ xl: 14, md: 8, sm: 6, xs: 4 }}
@@ -41,9 +41,9 @@ export default function BillGridGroup(props: BillGridGroupProps) {
             }}
           >
             {renderComponent()}
-          </Grid2>
+          </Grid>
         </CardContent>
       </Card>
-    </Grid2>
+    </Grid>
   );
 }

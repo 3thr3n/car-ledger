@@ -1,4 +1,4 @@
-import { Box, CircularProgress, Grid2, Typography } from '@mui/material';
+import { Box, CircularProgress, Grid, Typography } from '@mui/material';
 import useBillPagination from '@/hooks/useBillPagination';
 import {
   createRef,
@@ -97,7 +97,7 @@ const BillGridList = forwardRef<BillGridRef, BillGridListProps>(
 
     return (
       <Fragment>
-        <Grid2
+        <Grid
           ref={gridRef}
           container
           spacing={2}
@@ -108,7 +108,7 @@ const BillGridList = forwardRef<BillGridRef, BillGridListProps>(
           }}
         >
           {renderComponent()}
-        </Grid2>
+        </Grid>
         {loadingComponent()}
       </Fragment>
     );

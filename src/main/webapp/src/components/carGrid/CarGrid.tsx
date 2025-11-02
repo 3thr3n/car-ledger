@@ -1,4 +1,4 @@
-import { Card, CardContent, Grid2, SxProps, Theme } from '@mui/material';
+import { Card, CardContent, Grid, SxProps, Theme } from '@mui/material';
 import React, { MouseEventHandler } from 'react';
 
 export function CarGrid(props: {
@@ -6,10 +6,10 @@ export function CarGrid(props: {
   height?: number;
   children: React.ReactNode;
   sx?: SxProps<Theme>;
-  click: MouseEventHandler<HTMLDivElement>;
+  click?: MouseEventHandler<HTMLDivElement>;
 }) {
   return (
-    <Grid2
+    <Grid
       size={props.size ?? 4}
       height={props.height}
       justifyContent="center"
@@ -24,12 +24,12 @@ export function CarGrid(props: {
           height: props.height,
           maxWidth: 500,
           width: '100%',
-          cursor: 'pointer',
+          cursor: props.click ? 'pointer' : 'disabled',
         }}
       >
         {props.children}
       </Card>
-    </Grid2>
+    </Grid>
   );
 }
 
@@ -42,6 +42,8 @@ export function CarGridContent(props: { children: React.ReactNode }) {
         display: 'flex',
         flexDirection: 'column',
         position: 'relative',
+        height: '100%',
+        width: '100%',
       }}
     >
       {props.children}
