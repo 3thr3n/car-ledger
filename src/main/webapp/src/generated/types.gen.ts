@@ -43,12 +43,16 @@ export type BillPojoPaged = {
 };
 
 export type CarInputPojo = {
-    description?: string;
+    name?: string;
+    year?: number;
+    odometer?: number;
 };
 
 export type CarPojo = {
     id?: number;
-    description?: string;
+    name?: string;
+    year?: number;
+    odometer?: number;
     amountBills?: number;
 };
 
@@ -268,7 +272,7 @@ export type CreateCarData = {
 
 export type CreateCarErrors = {
     /**
-     * Maximal amount of cars created.
+     * Maximal amount of cars created or input was invalid.
      */
     400: unknown;
     /**
@@ -305,6 +309,29 @@ export type GetMyCarResponses = {
 };
 
 export type GetMyCarResponse = GetMyCarResponses[keyof GetMyCarResponses];
+
+export type UpdateMyCarData = {
+    body: CarInputPojo;
+    path: {
+        id: number;
+    };
+    query?: never;
+    url: '/api/car/my/{id}';
+};
+
+export type UpdateMyCarErrors = {
+    /**
+     * Input was invalid.
+     */
+    400: unknown;
+};
+
+export type UpdateMyCarResponses = {
+    /**
+     * Car found and updated.
+     */
+    200: unknown;
+};
 
 export type ImportCsvData = {
     body: {

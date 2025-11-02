@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   Button,
@@ -8,13 +8,14 @@ import {
   Typography,
 } from '@mui/material';
 import { NavigateOptions } from '@tanstack/router-core';
-
-const getCarById = (id: string) => ({
-  id,
-  name: 'Toyota Corolla',
-  year: 2018,
-  km: 54000,
-});
+import { useMutation, useQuery } from '@tanstack/react-query';
+import {
+  getMyCarOptions,
+  updateMyCarMutation,
+} from '@/generated/@tanstack/react-query.gen';
+import { localClient } from '@/utils/QueryClient';
+import { toast } from 'react-toastify';
+import { BackendError } from '@/utils/BackendError';
 
 export interface CarEditPageProperties {
   id: string;
@@ -22,16 +23,70 @@ export interface CarEditPageProperties {
 }
 
 export default function CarEditPage({ id, navigate }: CarEditPageProperties) {
-  const car = getCarById(id!);
+  const thisYear = new Date().getFullYear();
 
-  const [name, setName] = useState(car.name);
-  const [year, setYear] = useState(car.year);
-  const [km, setKm] = useState(car.km);
+  const [name, setName] = useState('');
+  const [year, setYear] = useState(thisYear);
+  const [km, setKm] = useState(0);
+
+  const {
+    data: car,
+    isLoading,
+    isError,
+  } = useQuery({
+    ...getMyCarOptions({
+      path: {
+        id: Number(id),
+      },
+      client: localClient,
+    }),
+  });
+
+  const { mutate } = useMutation({
+    ...updateMyCarMutation({
+      client: localClient,
+    }),
+    onSuccess: () => {
+      toast.info('Car updated!');
+      navigate({ to: '..', params: { id } });
+    },
+    onError: (error: BackendError) => {
+      if (error.status === 400) {
+        toast.error(error.message);
+      } else {
+        console.warn('Non successful response', error.status);
+        toast.error('Backend failed!');
+      }
+    },
+  });
+
+  useEffect(() => {
+    if (car) {
+      setName(car.name ?? '');
+      setYear(car.year ?? thisYear);
+      setKm(car.odometer ?? 0);
+    }
+  }, [car, thisYear, setKm, setName, setYear]);
+
+  if (isLoading) {
+    return <></>;
+  }
+
+  if (isError || !car) {
+    return <></>;
+  }
 
   const handleSave = () => {
-    // TODO: persist changes via backend API
-    console.log({ id, name, year, km });
-    navigate({ to: '/car/$id', params: { id } }); // navigate back to car
+    mutate({
+      body: {
+        name,
+        year,
+        odometer: km,
+      },
+      path: {
+        id: Number(id),
+      },
+    });
   };
 
   const handleCancel = () => {

@@ -1,6 +1,13 @@
 import { NavigateOptions } from '@tanstack/router-core';
 import React, { useState } from 'react';
-import { Box, Button, Container, Stack, TextField, Typography } from '@mui/material';
+import {
+  Box,
+  Button,
+  Container,
+  Stack,
+  TextField,
+  Typography,
+} from '@mui/material';
 import { NumericFormat } from 'react-number-format';
 import { useMutation } from '@tanstack/react-query';
 import { createCarMutation } from '@/generated/@tanstack/react-query.gen';
@@ -32,11 +39,11 @@ export default function CarNewPage({ navigate }: CarNewPageProperties) {
       toast.info('Car saved!');
     },
     onSettled: () => {
-      navigate({ to: '/car' });
+      navigate({ to: '..' });
     },
     onError: (error: BackendError) => {
       if (error.status === 400) {
-        toast.error('Maximum of cars reached!');
+        toast.error(error.message);
       } else {
         console.warn('Non successful response', error.status);
         toast.error('Backend failed!');
@@ -62,10 +69,8 @@ export default function CarNewPage({ navigate }: CarNewPageProperties) {
   };
 
   const handleSave = () => {
-    console.log({ name, year, km });
     if (!handleValidate()) return;
-
-    mutate({ body: { description: name } });
+    mutate({ body: { name, year, odometer: km } });
   };
 
   const handleCancel = () => {
@@ -93,8 +98,8 @@ export default function CarNewPage({ navigate }: CarNewPageProperties) {
             helperText={errors.name}
           />
           <NumericFormat
-            placeholder="Year"
-            label="Year"
+            placeholder="Manufacture year"
+            label="Manfucature year"
             value={year}
             onBlur={handleValidate}
             customInput={TextField}

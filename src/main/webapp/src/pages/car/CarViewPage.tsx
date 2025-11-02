@@ -1,10 +1,157 @@
 import { NavigateOptions } from '@tanstack/router-core';
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  CircularProgress,
+  Container,
+  Divider,
+  Grid,
+  Stack,
+  Typography,
+  useMediaQuery,
+} from '@mui/material';
+import { useQuery } from '@tanstack/react-query';
+import { getMyCarOptions } from '@/generated/@tanstack/react-query.gen';
+import { localClient } from '@/utils/QueryClient';
+import CarBillPreviewTable from '@/components/bill/CarBillPreviewTable';
 
 export interface CarViewPageProperties {
   id: string;
-  navigate: (path: NavigateOptions) => void;
+  navigate: (opt: NavigateOptions) => void;
 }
 
-export default function CarViewPage({ navigate }: CarViewPageProperties) {
-  return <></>;
+function renderRecentFuelTypes(
+  isMobile: boolean,
+  id: string,
+  navigate: (opt: NavigateOptions) => void,
+) {
+  const goToAll = () => navigate({ to: '/car/$id/fuel/all', params: { id } });
+
+  if (isMobile) {
+    return (
+      <>
+        <Grid size={{ xs: 12, md: 8 }}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6">Recent Fuel Entries</Typography>
+              <Divider sx={{ mb: 2 }} />
+              <Box display="flex" justifyContent="flex-end" mt={2}>
+                <Button size="small" onClick={goToAll}>
+                  See all entries →
+                </Button>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+      </>
+    );
+  }
+  return (
+    <>
+      {/* Fuel bills */}
+      <Grid size={{ xs: 12, md: 8 }}>
+        <Card>
+          <CardContent>
+            <Typography variant="h6">Recent Fuel Entries</Typography>
+            <Divider sx={{ mb: 2 }} />
+            <CarBillPreviewTable id={id} onSeeMore={goToAll} />
+          </CardContent>
+        </Card>
+      </Grid>
+    </>
+  );
+}
+
+export default function CarViewPage({ navigate, id }: CarViewPageProperties) {
+  const isMobile = useMediaQuery('(max-width:600px)');
+
+  const {
+    data: car,
+    isLoading: isCarLoading,
+    isError: isCarError,
+  } = useQuery({
+    ...getMyCarOptions({
+      path: {
+        id: Number(id),
+      },
+      client: localClient,
+    }),
+  });
+
+  if (isCarLoading) {
+    return (
+      <Container sx={{ mt: 8 }}>
+        <CircularProgress />
+        <Typography variant="body1">Loading car details...</Typography>
+      </Container>
+    );
+  }
+
+  if (isCarError || !car) {
+    return (
+      <Container sx={{ mt: 8 }}>
+        <Typography variant="body1" color="error">
+          Could not load car details.
+        </Typography>
+      </Container>
+    );
+  }
+
+  return (
+    <Container sx={{ py: 4 }}>
+      {/* Header */}
+      <Stack
+        direction={{ xs: 'column', sm: 'row' }}
+        justifyContent="space-between"
+        alignItems={{ xs: 'flex-start', sm: 'center' }}
+        spacing={2}
+        mb={3}
+      >
+        <Typography variant="h4" fontWeight={700}>
+          {car.name} {car.year && `(${car.year})`}
+        </Typography>
+        <Stack direction="row" spacing={2}>
+          <Button
+            variant="outlined"
+            onClick={() => navigate({ to: '/car/$id/edit', params: { id } })}
+          >
+            Edit Car
+          </Button>
+          <Button
+            variant="contained"
+            onClick={() =>
+              navigate({ to: '/car/$id/fuel/add', params: { id } })
+            }
+          >
+            Add Fuel Entry
+          </Button>
+        </Stack>
+      </Stack>
+
+      <Grid container spacing={3}>
+        {/* Car info summary */}
+        <Grid size={{ xs: 12, md: 4 }}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
+                Car Information
+              </Typography>
+              <Divider sx={{ mb: 2 }} />
+              <Typography variant="body1">
+                <strong>Year:</strong> {car.year ?? '—'}
+              </Typography>
+              <Typography variant="body1">
+                <strong>Odometer:</strong>{' '}
+                {car.odometer ? `${car.odometer} km` : '—'}
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {renderRecentFuelTypes(isMobile, id, navigate)}
+      </Grid>
+    </Container>
+  );
 }

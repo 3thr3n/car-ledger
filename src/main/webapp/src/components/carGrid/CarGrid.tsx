@@ -24,7 +24,7 @@ export function CarGrid(props: {
           height: props.height,
           maxWidth: 500,
           width: '100%',
-          cursor: props.click ? 'pointer' : 'disabled',
+          cursor: props.click ? 'pointer' : 'default',
         }}
       >
         {props.children}

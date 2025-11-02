@@ -3,8 +3,8 @@
 import { type DefaultError, type InfiniteData, infiniteQueryOptions, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen';
-import { addNewBill, callback, createCar, deleteBill, error, getAllBills, getMyCar, getMyCars, getMyself, getStatsAverage, getStatsHiLo, getStatsMinimal, getStatsTotal, importCsv, login, logout, type Options } from '../sdk.gen';
-import type { AddNewBillData, CallbackData, CreateCarData, DeleteBillData, ErrorData, GetAllBillsData, GetAllBillsResponse, GetMyCarData, GetMyCarsData, GetMyselfData, GetStatsAverageData, GetStatsHiLoData, GetStatsMinimalData, GetStatsTotalData, ImportCsvData, LoginData, LogoutData } from '../types.gen';
+import { addNewBill, callback, createCar, deleteBill, error, getAllBills, getMyCar, getMyCars, getMyself, getStatsAverage, getStatsHiLo, getStatsMinimal, getStatsTotal, importCsv, login, logout, type Options, updateMyCar } from '../sdk.gen';
+import type { AddNewBillData, CallbackData, CreateCarData, DeleteBillData, ErrorData, GetAllBillsData, GetAllBillsResponse, GetMyCarData, GetMyCarsData, GetMyselfData, GetStatsAverageData, GetStatsHiLoData, GetStatsMinimalData, GetStatsTotalData, ImportCsvData, LoginData, LogoutData, UpdateMyCarData } from '../types.gen';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -302,6 +302,23 @@ export const getMyCarOptions = (options: Options<GetMyCarData>) => {
         },
         queryKey: getMyCarQueryKey(options)
     });
+};
+
+/**
+ * Get My Car
+ */
+export const updateMyCarMutation = (options?: Partial<Options<UpdateMyCarData>>): UseMutationOptions<unknown, DefaultError, Options<UpdateMyCarData>> => {
+    const mutationOptions: UseMutationOptions<unknown, DefaultError, Options<UpdateMyCarData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await updateMyCar({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
 };
 
 /**
