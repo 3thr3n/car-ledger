@@ -29,14 +29,13 @@ export const Route = createRootRoute({
           <QueryClientProvider client={queryClient}>
             <CsvUploadDialog />
             <Box
+              component="main"
               flexGrow={1}
               display="flex"
               flexDirection="column"
-              justifyContent="center"
-              alignItems="center"
-              marginY={2}
               overflow="auto"
-              position="relative"
+              px={{ xs: 2, sm: 4 }}
+              py={3}
             >
               <Outlet />
             </Box>

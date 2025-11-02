@@ -107,8 +107,16 @@
       "CarInputPojo" : {
         "type" : "object",
         "properties" : {
-          "description" : {
+          "name" : {
             "type" : "string"
+          },
+          "year" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "odometer" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         }
       },
@@ -119,8 +127,16 @@
             "type" : "integer",
             "format" : "int64"
           },
-          "description" : {
+          "name" : {
             "type" : "string"
+          },
+          "year" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "odometer" : {
+            "type" : "integer",
+            "format" : "int32"
           },
           "amountBills" : {
             "type" : "integer",
@@ -441,7 +457,7 @@
             "description" : "Car created."
           },
           "400" : {
-            "description" : "Maximal amount of cars created."
+            "description" : "Maximal amount of cars created or input was invalid."
           },
           "500" : {
             "description" : "Something went wrong while saving. Please ask the server admin for help."
@@ -452,6 +468,38 @@
       }
     },
     "/api/car/my/{id}" : {
+      "post" : {
+        "operationId" : "updateMyCar",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CarInputPojo"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Car found and updated."
+          },
+          "400" : {
+            "description" : "Input was invalid."
+          }
+        },
+        "summary" : "Get My Car",
+        "tags" : [ "Car Resource" ]
+      },
       "get" : {
         "operationId" : "getMyCar",
         "parameters" : [ {

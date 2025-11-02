@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { Box, Button, Container, Typography } from '@mui/material';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
@@ -11,9 +11,9 @@ export default function ErrorPage({ error }: ErrorPageProps) {
   const navigate = useNavigate();
   const [countdown, setCountdown] = useState(10);
 
-  const handleGoHome = async () => {
+  const handleGoHome = useCallback(async () => {
     await navigate({ to: '/' });
-  };
+  }, [navigate]);
 
   // Optionally, extract message from the error
   const message =
@@ -36,7 +36,7 @@ export default function ErrorPage({ error }: ErrorPageProps) {
       clearInterval(timer);
       clearTimeout(reload);
     };
-  }, []);
+  }, [handleGoHome]);
 
   return (
     <Container
