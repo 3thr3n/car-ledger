@@ -42,7 +42,7 @@ class CarResourceTest
 
 		Car car = new Car();
 		car.setUser(account);
-		car.setDescription("Normal car");
+		car.setName("Normal car");
 		carRepository.persist(car);
 
 		carId = car.getId();
