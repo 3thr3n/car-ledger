@@ -55,7 +55,7 @@ class ImportResourceTest
 
 		car = new Car();
 		car.setUser(account);
-		car.setDescription("Neat car");
+		car.setName("Neat car");
 		carRepository.persist(car);
 	}
 

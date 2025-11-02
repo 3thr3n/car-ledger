@@ -1,6 +1,7 @@
 package de.codeflowwizardry.carledger.data;
 
 import jakarta.persistence.*;
+import jakarta.ws.rs.DefaultValue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,21 +13,46 @@ public class Car
 	@Id
 	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "carSequence")
 	private Long id;
-	@Column(name = "_description")
-	private String description;
+	@Column(name = "_name")
+	private String name;
+	@Column(name = "_manufacture_year")
+	private int manufactureYear;
+    @DefaultValue("0")
+	@Column(name = "_odometer", nullable = false)
+	private int odometer;
 	@OneToMany(mappedBy = "car")
 	private final List<Bill> bills = new ArrayList<>();
 	@ManyToOne
 	private Account user;
 
-	public String getDescription()
+	public String getName()
 	{
-		return description;
+		return name;
 	}
 
-	public void setDescription(String description)
+	public void setName(String name)
 	{
-		this.description = description;
+		this.name = name;
+	}
+
+	public int getManufactureYear()
+	{
+		return manufactureYear;
+	}
+
+	public void setManufactureYear(int manufactureYear)
+	{
+		this.manufactureYear = manufactureYear;
+	}
+
+	public int getOdometer()
+	{
+		return odometer;
+	}
+
+	public void setOdometer(int odometer)
+	{
+		this.odometer = odometer;
 	}
 
 	public Long getId()
