@@ -69,7 +69,7 @@ export default function CarGridList({ navigate, data }: CarGridListProps) {
           <GridItem
             key={car.id}
             id={car.id ?? -1}
-            description={car.description ?? ''}
+            description={car.name ?? ''}
             handleOpenCar={handleOpenCar}
           />
         ))}

@@ -15,7 +15,8 @@
     "forceConsistentCasingInFileNames": true,
     "paths": {
       "@/*": ["./src/*"]
-    }
+    },
+    "target": "ES2024"
   },
   "include": [
     "next-env.d.ts",
