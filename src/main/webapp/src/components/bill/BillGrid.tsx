@@ -4,7 +4,7 @@ import {
   Card,
   CardContent,
   CardHeader,
-  Grid2,
+  Grid,
   Typography,
 } from '@mui/material';
 import React from 'react';
@@ -32,7 +32,7 @@ export default function BillGrid(props: BillGridProps) {
   };
 
   return (
-    <Grid2
+    <Grid
       size={2}
       sx={{
         width: '300px',
@@ -75,6 +75,6 @@ export default function BillGrid(props: BillGridProps) {
           </BillCardRow>
         </CardContent>
       </Card>
-    </Grid2>
+    </Grid>
   );
 }

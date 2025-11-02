@@ -17,6 +17,7 @@ import 'dayjs/locale/de';
 
 import 'react-toastify/dist/ReactToastify.css';
 import CsvUploadDialog from '@/components/csv/CsvUploadDialog';
+import ErrorPage from '@/pages/ErrorPage';
 
 export const Route = createRootRoute({
   component: () => (
@@ -52,7 +53,5 @@ export const Route = createRootRoute({
       </ThemeProvider>
     </>
   ),
-  errorComponent: () => (
-    <div>Nothing to see here, the frontend is broken please reload</div>
-  ),
+  errorComponent: () => <ErrorPage />,
 });

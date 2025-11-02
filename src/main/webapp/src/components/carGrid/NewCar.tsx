@@ -1,27 +1,22 @@
 import { Add } from '@mui/icons-material';
-import { Fab, Tooltip } from '@mui/material';
+import { Box, Tooltip, Typography } from '@mui/material';
 import React, { useEffect, useState } from 'react';
-import NewCarDialog from './NewCarDialog';
 import useCarStore from '@/store/CarStore';
 import useUserStore from '@/store/UserStore';
+import { CarGrid, CarGridContent } from '@/components/carGrid/CarGrid';
+import { useNavigate } from '@tanstack/react-router';
 
-export interface NewCarProps {
-  refetch: () => void;
-}
-
-export default function NewCar(props: NewCarProps) {
+export default function NewCar() {
+  const navigate = useNavigate();
   const [disabled, setDisabled] = useState(true);
 
-  const openDialog = useCarStore((store) => store.openDialog);
   const maxCars = useUserStore((state) => state.maxCars);
   const currentCarSize = useCarStore((state) => state.carSize);
 
-  const handleOpen = () => {
-    openDialog();
-  };
-
-  const handleSave = () => {
-    props.refetch();
+  const handleOpen = async () => {
+    if (!disabled) {
+      await navigate({ to: '/car/new' });
+    }
   };
 
   useEffect(() => {
@@ -32,36 +27,46 @@ export default function NewCar(props: NewCarProps) {
     }
   }, [maxCars, currentCarSize]);
 
-  let tooltip =
+  const tooltip =
     'Add new Car, you can still add ' + (maxCars - currentCarSize) + ' cars';
   if (disabled) {
-    tooltip =
-      'Max cars reached, either delete one or ask the administrator to allow one more!';
+    return (
+      <CarGrid>
+        <Box
+          sx={{
+            display: 'flex',
+            height: '100%',
+            width: '100%',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Typography align="center" mx={2}>
+            Max cars reached, either delete one or ask the administrator to
+            allow one more!
+          </Typography>
+        </Box>
+      </CarGrid>
+    );
   }
 
   return (
-    <React.Fragment>
-      <Tooltip title={tooltip}>
-        <span>
-          <Fab
-            disabled={disabled}
-            variant="extended"
-            size="medium"
-            color="primary"
-            onClick={handleOpen}
+    <CarGrid click={handleOpen}>
+      <CarGridContent>
+        <Tooltip title={tooltip} placement="top">
+          <Box
             sx={{
-              position: 'absolute',
-              top: 0,
-              pointerEvents: 'all !important',
+              display: 'flex',
+              height: '100%',
+              width: '100%',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
           >
-            <Add sx={{ mr: 1 }} />
-            New car
-          </Fab>
-        </span>
-      </Tooltip>
-
-      <NewCarDialog onSave={handleSave} />
-    </React.Fragment>
+            <Add sx={{ mr: 1 }} /> <Typography>New car</Typography>
+          </Box>
+        </Tooltip>
+      </CarGridContent>
+    </CarGrid>
   );
 }

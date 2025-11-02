@@ -1,10 +1,12 @@
 import { createLazyFileRoute } from '@tanstack/react-router';
-import CarGridList from '@/components/carGrid/CarGridList';
+import CarListPage from '@/pages/car/CarListPage';
 
 export const Route = createLazyFileRoute('/car/')({
   component: Index,
 });
 
 function Index() {
-  return <CarGridList />;
+  const navigate = Route.useNavigate();
+
+  return <CarListPage navigate={navigate} />;
 }

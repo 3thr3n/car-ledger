@@ -8,10 +8,18 @@ const baseUrl = isDev ? 'http://localhost:8080' : '';
 const localClient: Client = createClient({
   baseUrl,
   credentials: 'include',
+  redirect: 'manual',
 });
 
 localClient.interceptors.error.use((_, res) => {
   throw new BackendError(res.status);
+});
+
+localClient.interceptors.response.use((x) => {
+  if (x.type == 'opaqueredirect') {
+    throw new BackendError(401);
+  }
+  return x;
 });
 
 export { localClient, baseUrl };

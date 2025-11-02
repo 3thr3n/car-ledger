@@ -19,8 +19,6 @@ export default function Login({ drawerMode = false }: LoginProps) {
   const setLoggedIn = useUserStore((state) => state.setLoggedIn);
   const setMaxCars = useUserStore((state) => state.setMaxCars);
 
-  console.log(drawerMode);
-
   const logoutQuery = useQuery({
     ...logoutOptions({
       client: localClient,

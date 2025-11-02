@@ -26,6 +26,7 @@ export default function NewCarDialog(props: NewCarDialogProps) {
   const { onSave } = props;
 
   const handleClose = () => {
+    console.log('Close dialog');
     closeDialog();
   };
 
@@ -69,13 +70,15 @@ export default function NewCarDialog(props: NewCarDialogProps) {
     <Dialog
       onClose={handleClose}
       open={open}
-      PaperProps={{
-        component: 'form',
-        onSubmit: (event: React.FormEvent<HTMLFormElement>) => {
-          event.preventDefault();
-          const formData = new FormData(event.currentTarget);
-          const formJson = Object.fromEntries(formData.entries());
-          handleSave(formJson);
+      slotProps={{
+        paper: {
+          component: 'form',
+          onSubmit: (event: React.FormEvent<HTMLFormElement>) => {
+            event.preventDefault();
+            const formData = new FormData(event.currentTarget);
+            const formJson = Object.fromEntries(formData.entries());
+            handleSave(formJson);
+          },
         },
       }}
     >

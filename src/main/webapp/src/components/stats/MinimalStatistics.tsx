@@ -8,7 +8,7 @@ import {
   AccordionSummary,
   Box,
   Fab,
-  Grid2,
+  Grid,
   Typography,
 } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
@@ -50,7 +50,7 @@ export function MinimalStatistics(props: MinimalStatisticsProps) {
           </Typography>
         </AccordionSummary>
         <AccordionDetails>
-          <Grid2
+          <Grid
             container
             spacing={2}
             columns={{ xs: 3, sm: 6, md: 9, lg: 12, xl: 18 }}
@@ -80,7 +80,7 @@ export function MinimalStatistics(props: MinimalStatisticsProps) {
               lowIsGood={true}
               postfix="L/100km"
             />
-          </Grid2>
+          </Grid>
         </AccordionDetails>
         <AccordionActions>
           <Fab
