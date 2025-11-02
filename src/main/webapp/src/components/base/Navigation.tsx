@@ -1,6 +1,7 @@
 import {
   AppBar,
   Box,
+  Button,
   Container,
   Divider,
   Drawer,
@@ -17,9 +18,11 @@ import productLogo from '@/assets/car-ledger.png';
 import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import MenuIcon from '@mui/icons-material/Menu';
+import useUserStore from '@/store/UserStore';
 
 export default function Navigation() {
   const navi = useNavigate();
+  const isLoggedIn = useUserStore((state) => state.loggedIn);
 
   const goHome = async () => {
     await navi({
@@ -35,6 +38,28 @@ export default function Navigation() {
   const toggleDrawer = (open: boolean) => () => {
     setDrawerOpen(open);
   };
+
+  const navCars = async (path: string) => {
+    await navi({
+      to: path,
+    });
+  };
+
+  function renderComponent() {
+    if (isSm || !isLoggedIn) {
+      return <></>;
+    }
+
+    return (
+      <>
+        <Box>
+          <Button variant="contained" onClick={() => navCars('/car')}>
+            Cars
+          </Button>
+        </Box>
+      </>
+    );
+  }
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -69,6 +94,7 @@ export default function Navigation() {
                 </Typography>
               </Box>
             </Box>
+            {renderComponent()}
             <Box
               sx={{
                 flexGrow: 1,
