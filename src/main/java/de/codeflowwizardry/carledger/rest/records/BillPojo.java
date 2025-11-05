@@ -12,6 +12,7 @@ public final class BillPojo
 {
 	private final Long id;
 	private final LocalDate day;
+    private final int year;
 	private final BigDecimal distance;
 	private final BigDecimal unit;
 	private final BigDecimal pricePerUnit;
@@ -24,6 +25,7 @@ public final class BillPojo
 	{
 		this.id = id;
 		this.day = day;
+        this.year = day.getYear();
 		this.distance = Objects.requireNonNullElse(distance, BigDecimal.ZERO);
 		this.unit = unit;
 		this.pricePerUnit = pricePerUnit;
@@ -68,6 +70,10 @@ public final class BillPojo
 	{
 		return day;
 	}
+
+    public int getYear() {
+        return year;
+    }
 
 	public String getDistance()
 	{
