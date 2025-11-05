@@ -61,6 +61,10 @@
           "day" : {
             "$ref" : "#/components/schemas/LocalDate"
           },
+          "year" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
           "distance" : {
             "type" : "number"
           },
@@ -367,6 +371,14 @@
             "format" : "int32",
             "default" : 10
           }
+        }, {
+          "name" : "year",
+          "in" : "query",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
         } ],
         "responses" : {
           "200" : {
@@ -375,6 +387,39 @@
               "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/BillPojoPaged"
+                }
+              }
+            }
+          }
+        },
+        "summary" : "Get All My Bills",
+        "tags" : [ "Bill Resource" ]
+      }
+    },
+    "/api/bill/{carId}/years" : {
+      "get" : {
+        "description" : "Gets all years of bills for specified car",
+        "operationId" : "getAllBillYears",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Bills found and years extracted.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "type" : "integer",
+                    "format" : "int32"
+                  }
                 }
               }
             }

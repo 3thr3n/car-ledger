@@ -1,4 +1,4 @@
-import Bill from '@/components/bill/Bills';
+import AllFuelPage from '@/pages/car/fuel/AllFuelPage';
 import { createLazyFileRoute } from '@tanstack/react-router';
 
 export const Route = createLazyFileRoute('/car/$id/fuel/all')({
@@ -7,5 +7,11 @@ export const Route = createLazyFileRoute('/car/$id/fuel/all')({
 
 function RouteComponent() {
   const { id } = Route.useParams();
-  return <Bill carId={Number(id)} />;
+
+  return (
+    <AllFuelPage
+      id={Number(id)}
+      onDelete={() => console.log('*hust* Delete')}
+    />
+  );
 }
