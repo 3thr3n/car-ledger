@@ -1,12 +1,13 @@
 package de.codeflowwizardry.carledger.rest;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -216,6 +217,24 @@ class BillResourceTest
 				.response().getBody().asString();
 		assertTrue(response.contains("<html"));
 	}
+
+    @Test
+    @TestSecurity(user = "peter", roles = {
+            "user"
+    })
+    void shouldGetYearsOfBills()
+    {
+        // given
+        assertEquals(3, billRepository.count());
+
+        // when
+        given()
+                .get("/api/bill/" + car.getId() + "/years")
+                .then()
+                .statusCode(200)
+                .body("", contains(2024, 2023, 2022));
+
+    }
 
 	@AfterEach
 	@Transactional

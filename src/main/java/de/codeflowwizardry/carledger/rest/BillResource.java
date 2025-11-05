@@ -1,7 +1,10 @@
 package de.codeflowwizardry.carledger.rest;
 
 import java.security.Principal;
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
@@ -46,13 +49,23 @@ public class BillResource extends AbstractResource
 		this.carRepository = carRepository;
 	}
 
+    @GET
+    @Path("years")
+    @Operation(operationId = "getAllBillYears", description = "Gets all years of bills for specified car")
+    @APIResponse(responseCode = "200", description = "Bills found and years extracted.")
+    public List<Integer> getAllMyBills(@PathParam("carId") long carId)
+    {
+        return billRepository.getBillYears(carId, context.getName());
+    }
+
 	@GET
 	@Path("all")
 	@Operation(operationId = "getAllBills", description = "Gets all bills for specified car")
 	@APIResponse(responseCode = "200", description = "Bills found.")
 	public BillPojoPaged getAllMyBills(@PathParam("carId") long carId,
 			@QueryParam("page") @DefaultValue("1") int page,
-			@QueryParam("size") @DefaultValue("10") int size)
+			@QueryParam("size") @DefaultValue("10") int size,
+			@QueryParam("year") Integer year)
 	{
 		if (page < 1)
 		{
@@ -60,7 +73,7 @@ public class BillResource extends AbstractResource
 		}
 		Page queryPage = new Page(page - 1, size);
 
-		PanacheQuery<Bill> billQuery = billRepository.getBills(carId, context.getName(), queryPage);
+		PanacheQuery<Bill> billQuery = billRepository.getBills(carId, context.getName(), queryPage, Optional.ofNullable(year));
 		return new BillPojoPaged(billQuery.count(), page, size, BillPojo.convert(billQuery.list()));
 	}
 
