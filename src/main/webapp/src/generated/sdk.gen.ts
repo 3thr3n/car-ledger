@@ -2,7 +2,7 @@
 
 import { type Client, formDataBodySerializer, type Options as Options2, type TDataShape } from './client';
 import { client } from './client.gen';
-import type { AddNewBillData, AddNewBillErrors, AddNewBillResponses, CallbackData, CallbackResponses, CreateCarData, CreateCarErrors, CreateCarResponses, DeleteBillData, DeleteBillErrors, DeleteBillResponses, ErrorData, ErrorResponses, GetAllBillsData, GetAllBillsResponses, GetMyCarData, GetMyCarResponses, GetMyCarsData, GetMyCarsResponses, GetMyselfData, GetMyselfResponses, GetStatsAverageData, GetStatsAverageResponses, GetStatsHiLoData, GetStatsHiLoResponses, GetStatsMinimalData, GetStatsMinimalResponses, GetStatsTotalData, GetStatsTotalResponses, ImportCsvData, ImportCsvErrors, ImportCsvResponses, LoginData, LoginResponses, LogoutData, LogoutResponses, UpdateMyCarData, UpdateMyCarErrors, UpdateMyCarResponses } from './types.gen';
+import type { AddNewBillData, AddNewBillErrors, AddNewBillResponses, CallbackData, CallbackResponses, CreateCarData, CreateCarErrors, CreateCarResponses, DeleteBillData, DeleteBillErrors, DeleteBillResponses, ErrorData, ErrorResponses, GetAllBillsData, GetAllBillsResponses, GetAllBillYearsData, GetAllBillYearsResponses, GetMyCarData, GetMyCarResponses, GetMyCarsData, GetMyCarsResponses, GetMyselfData, GetMyselfResponses, GetStatsAverageData, GetStatsAverageResponses, GetStatsHiLoData, GetStatsHiLoResponses, GetStatsMinimalData, GetStatsMinimalResponses, GetStatsTotalData, GetStatsTotalResponses, ImportCsvData, ImportCsvErrors, ImportCsvResponses, LoginData, LoginResponses, LogoutData, LogoutResponses, UpdateMyCarData, UpdateMyCarErrors, UpdateMyCarResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -88,6 +88,18 @@ export const addNewBill = <ThrowOnError extends boolean = false>(options: Option
 export const getAllBills = <ThrowOnError extends boolean = false>(options: Options<GetAllBillsData, ThrowOnError>) => {
     return (options.client ?? client).get<GetAllBillsResponses, unknown, ThrowOnError>({
         url: '/api/bill/{carId}/all',
+        ...options
+    });
+};
+
+/**
+ * Get All My Bills
+ *
+ * Gets all years of bills for specified car
+ */
+export const getAllBillYears = <ThrowOnError extends boolean = false>(options: Options<GetAllBillYearsData, ThrowOnError>) => {
+    return (options.client ?? client).get<GetAllBillYearsResponses, unknown, ThrowOnError>({
+        url: '/api/bill/{carId}/years',
         ...options
     });
 };
