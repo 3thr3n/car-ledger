@@ -3,8 +3,8 @@
 import { type DefaultError, type InfiniteData, infiniteQueryOptions, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen';
-import { addNewBill, callback, createCar, deleteBill, error, getAllBills, getMyCar, getMyCars, getMyself, getStatsAverage, getStatsHiLo, getStatsMinimal, getStatsTotal, importCsv, login, logout, type Options, updateMyCar } from '../sdk.gen';
-import type { AddNewBillData, CallbackData, CreateCarData, DeleteBillData, ErrorData, GetAllBillsData, GetAllBillsResponse, GetMyCarData, GetMyCarsData, GetMyselfData, GetStatsAverageData, GetStatsHiLoData, GetStatsMinimalData, GetStatsTotalData, ImportCsvData, LoginData, LogoutData, UpdateMyCarData } from '../types.gen';
+import { addNewBill, callback, createCar, deleteBill, error, getAllBills, getAllBillYears, getMyCar, getMyCars, getMyself, getStatsAverage, getStatsHiLo, getStatsMinimal, getStatsTotal, importCsv, login, logout, type Options, updateMyCar } from '../sdk.gen';
+import type { AddNewBillData, CallbackData, CreateCarData, DeleteBillData, ErrorData, GetAllBillsData, GetAllBillsResponse, GetAllBillYearsData, GetMyCarData, GetMyCarsData, GetMyselfData, GetStatsAverageData, GetStatsHiLoData, GetStatsMinimalData, GetStatsTotalData, ImportCsvData, LoginData, LogoutData, UpdateMyCarData } from '../types.gen';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -227,6 +227,28 @@ export const getAllBillsInfiniteOptions = (options: Options<GetAllBillsData>) =>
             return data;
         },
         queryKey: getAllBillsInfiniteQueryKey(options)
+    });
+};
+
+export const getAllBillYearsQueryKey = (options: Options<GetAllBillYearsData>) => createQueryKey('getAllBillYears', options);
+
+/**
+ * Get All My Bills
+ *
+ * Gets all years of bills for specified car
+ */
+export const getAllBillYearsOptions = (options: Options<GetAllBillYearsData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await getAllBillYears({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: getAllBillYearsQueryKey(options)
     });
 };
 

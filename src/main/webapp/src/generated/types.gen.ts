@@ -27,6 +27,7 @@ export type BillInputPojo = {
 export type BillPojo = {
     id?: number;
     day?: LocalDate;
+    year?: number;
     distance?: number;
     unit?: number;
     pricePerUnit?: number;
@@ -206,6 +207,7 @@ export type GetAllBillsData = {
     query?: {
         page?: number;
         size?: number;
+        year?: number;
     };
     url: '/api/bill/{carId}/all';
 };
@@ -218,6 +220,24 @@ export type GetAllBillsResponses = {
 };
 
 export type GetAllBillsResponse = GetAllBillsResponses[keyof GetAllBillsResponses];
+
+export type GetAllBillYearsData = {
+    body?: never;
+    path: {
+        carId: number;
+    };
+    query?: never;
+    url: '/api/bill/{carId}/years';
+};
+
+export type GetAllBillYearsResponses = {
+    /**
+     * Bills found and years extracted.
+     */
+    200: Array<number>;
+};
+
+export type GetAllBillYearsResponse = GetAllBillYearsResponses[keyof GetAllBillYearsResponses];
 
 export type DeleteBillData = {
     body?: never;

@@ -11,6 +11,7 @@ export default function useBillPagination(
   const [pagination, setPagination] = useState<GridPaginationModel>(
     page ?? { page: 0, pageSize: 20 },
   );
+  const [year, setYear] = useState<number>(-1);
 
   const options = getAllBillsOptions({
     path: {
@@ -19,6 +20,7 @@ export default function useBillPagination(
     query: {
       page: pagination.page + 1,
       size: pagination.pageSize,
+      year: year === -1 ? undefined : year,
     },
     client: localClient,
   });
@@ -28,5 +30,5 @@ export default function useBillPagination(
     placeholderData: keepPreviousData,
   });
 
-  return { data, refetch, pagination, setPagination };
+  return { data, refetch, pagination, setPagination, setYear };
 }
