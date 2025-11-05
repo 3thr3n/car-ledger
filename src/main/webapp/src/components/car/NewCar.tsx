@@ -3,7 +3,7 @@ import { Box, Tooltip, Typography } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import useCarStore from '@/store/CarStore';
 import useUserStore from '@/store/UserStore';
-import { CarGrid, CarGridContent } from '@/components/carGrid/CarGrid';
+import { CarGrid, CarGridContent } from './CarGrid';
 import { useNavigate } from '@tanstack/react-router';
 
 export default function NewCar() {

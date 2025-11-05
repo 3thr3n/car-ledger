@@ -1,10 +1,10 @@
 import { NavigateOptions } from '@tanstack/router-core';
 import { Container, Typography } from '@mui/material';
-import CarGridList from '@/components/carGrid/CarGridList';
+import CarGridList from '@/components/car/CarGridList';
 import { useQuery } from '@tanstack/react-query';
 import { getMyCarsOptions } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
-import { LoadingCarGrid } from '@/components/carGrid/LoadingCarGrid';
+import { LoadingCarGrid } from '@/components/car/LoadingCarGrid';
 import React from 'react';
 import ErrorPage from '@/pages/ErrorPage';
 import { BackendError } from '@/utils/BackendError';
