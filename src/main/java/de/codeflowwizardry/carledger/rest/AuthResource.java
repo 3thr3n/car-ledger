@@ -58,6 +58,6 @@ public class AuthResource
 	@Operation(operationId = "callback", description = "This only for redirect purposes of oauth!")
 	public Response callback()
 	{
-		return Response.status(302).location(URI.create(redirectToLogout)).build();
+		return Response.status(302).location(URI.create(redirectToLogout + "?followRedirect")).build();
 	}
 }
