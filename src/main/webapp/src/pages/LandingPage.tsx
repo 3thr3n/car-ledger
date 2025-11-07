@@ -1,12 +1,5 @@
-import {
-  Box,
-  Button,
-  Card,
-  CardContent,
-  Container,
-  Grid,
-  Typography,
-} from '@mui/material';
+import { Box, Button, Card, CardContent, Container, Grid, Typography } from '@mui/material';
+import PageHeader from '@/components/base/PageHeader';
 
 export default function LandingPage() {
   return (
@@ -42,9 +35,7 @@ export default function LandingPage() {
             <Grid size={{ xs: 12, md: 4 }}>
               <Card variant="outlined" sx={{ height: '100%' }}>
                 <CardContent>
-                  <Typography variant="h6" gutterBottom>
-                    Organized Fuel Records
-                  </Typography>
+                  <PageHeader title="Organized Fuel Records" isCardHeader />
                   <Typography variant="body2" color="text.secondary">
                     Store date, liters, price, odometer and receipt image.
                     Search and filter by car or date range.
@@ -56,9 +47,7 @@ export default function LandingPage() {
             <Grid size={{ xs: 12, md: 4 }}>
               <Card variant="outlined" sx={{ height: '100%' }}>
                 <CardContent>
-                  <Typography variant="h6" gutterBottom>
-                    Cost Insights
-                  </Typography>
+                  <PageHeader title="Cost Insights" isCardHeader />
                   <Typography variant="body2" color="text.secondary">
                     Automatic cost-per-km calculations and monthly spending
                     summaries so you spot trends fast.
@@ -70,9 +59,7 @@ export default function LandingPage() {
             <Grid size={{ xs: 12, md: 4 }}>
               <Card variant="outlined" sx={{ height: '100%' }}>
                 <CardContent>
-                  <Typography variant="h6" gutterBottom>
-                    Multiple Cars
-                  </Typography>
+                  <PageHeader title="Multiple Cars" isCardHeader />
                   <Typography variant="body2" color="text.secondary">
                     Add one or many cars and keep each vehicle's history
                     separate for accurate comparisons.
@@ -93,9 +80,7 @@ export default function LandingPage() {
         }}
       >
         <Container>
-          <Typography variant="h6" gutterBottom>
-            Planned — Maintenance & Costs
-          </Typography>
+          <PageHeader title="Planned — Maintenance & Costs" isCardHeader />
           <Typography variant="body2" color="text.secondary">
             Soon you'll be able to add maintenance entries (one-off, monthly,
             yearly) per car — oil changes, tyres, inspections — and the app will
@@ -106,9 +91,7 @@ export default function LandingPage() {
 
       <Box id="get-started" sx={{ py: 5 }}>
         <Container>
-          <Typography variant="h6" gutterBottom>
-            Get started
-          </Typography>
+          <PageHeader title="Get started" isCardHeader />
           <Box component="ol" sx={{ pl: 3, mb: 2 }}>
             <Typography component="li">
               Create a free account (coming soon).

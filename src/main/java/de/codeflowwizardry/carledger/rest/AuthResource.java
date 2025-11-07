@@ -10,7 +10,6 @@ import io.smallrye.mutiny.Uni;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
-import jakarta.ws.rs.RedirectionException;
 import jakarta.ws.rs.core.Response;
 
 @Path("auth")
@@ -41,24 +40,24 @@ public class AuthResource
 	@GET
 	@Path("logout")
 	@Operation(operationId = "logout", description = "Logout current user")
-	public Uni<Void> logout()
+	public Uni<Response> logout()
 	{
-		return session.logout();
+		return session.logout().onItem().transform((x) -> Response.status(302).location(URI.create(redirectToLogout)).build());
 	}
+
+    @GET
+    @Path("logout-callback")
+    @Operation(operationId = "callback", description = "This only for redirect purposes of oauth!")
+    public Response logoutCallback()
+    {
+        return Response.status(302).location(URI.create(redirectToLogout)).build();
+    }
 
 	@GET
 	@Path("callback")
 	@Operation(operationId = "callback", description = "This only for redirect purposes of oauth!")
 	public Response callback()
 	{
-		throw new RedirectionException(302, URI.create(redirectToLogout));
-	}
-
-	@GET
-	@Path("error")
-	@Operation(operationId = "error", description = "This redirects to a frontend error page!")
-	public Response error()
-	{
-		throw new RedirectionException(302, URI.create(redirectToError));
+		return Response.status(302).location(URI.create(redirectToLogout)).build();
 	}
 }

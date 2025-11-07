@@ -8,6 +8,7 @@ import { LoadingCarGrid } from '@/components/car/LoadingCarGrid';
 import React from 'react';
 import ErrorPage from '@/pages/ErrorPage';
 import { BackendError } from '@/utils/BackendError';
+import PageHeader from '@/components/base/PageHeader';
 
 export interface CarListPageProperties {
   navigate: (path: NavigateOptions) => void;
@@ -42,9 +43,7 @@ export default function CarListPage({ navigate }: CarListPageProperties) {
 
   return (
     <Container>
-      <Typography variant="h4" gutterBottom>
-        My Cars
-      </Typography>
+      <PageHeader title="MyCars" />
       <Typography variant="body1" color="text.secondary" gutterBottom>
         View, add, and manage your vehicles.
       </Typography>
