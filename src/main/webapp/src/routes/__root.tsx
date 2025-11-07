@@ -20,6 +20,13 @@ import CsvUploadDialog from '@/components/csv/CsvUploadDialog';
 import ErrorPage from '@/pages/ErrorPage';
 
 export const Route = createRootRoute({
+  beforeLoad: () => {
+    const redirectUrl = localStorage.getItem('postLoginRedirect');
+    if (redirectUrl) {
+      localStorage.removeItem('postLoginRedirect');
+      window.location.href = redirectUrl; // redirect to original page
+    }
+  },
   component: () => (
     <>
       <ThemeProvider theme={theme}>
@@ -53,4 +60,5 @@ export const Route = createRootRoute({
     </>
   ),
   errorComponent: () => <ErrorPage />,
+  notFoundComponent: () => <ErrorPage />,
 });

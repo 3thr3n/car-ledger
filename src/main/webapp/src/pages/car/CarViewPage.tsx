@@ -16,6 +16,7 @@ import { useQuery } from '@tanstack/react-query';
 import { getMyCarOptions } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
 import CarBillPreviewTable from '@/components/bill/CarBillPreviewTable';
+import PageHeader from '@/components/base/PageHeader';
 
 export interface CarViewPageProperties {
   id: string;
@@ -54,7 +55,7 @@ function renderRecentFuelTypes(
       <Grid size={{ xs: 12, md: 8 }}>
         <Card>
           <CardContent>
-            <Typography variant="h6">Recent Fuel Entries</Typography>
+            <PageHeader title="Recent Fuel Entries" isCardHeader />
             <Divider sx={{ mb: 2 }} />
             <CarBillPreviewTable id={id} onSeeMore={goToAll} />
           </CardContent>
@@ -109,9 +110,7 @@ export default function CarViewPage({ navigate, id }: CarViewPageProperties) {
         spacing={2}
         mb={3}
       >
-        <Typography variant="h4" fontWeight={700}>
-          {car.name} {car.year && `(${car.year})`}
-        </Typography>
+        <PageHeader title={`${car.name} ${car.year && '(' + car.year + ')'}`} />
         <Stack direction="row" spacing={2}>
           <Button
             variant="outlined"
@@ -135,9 +134,7 @@ export default function CarViewPage({ navigate, id }: CarViewPageProperties) {
         <Grid size={{ xs: 12, md: 4 }}>
           <Card>
             <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Car Information
-              </Typography>
+              <PageHeader title="Car Information" isCardHeader />
               <Divider sx={{ mb: 2 }} />
               <Typography variant="body1">
                 <strong>Year:</strong> {car.year ?? '—'}

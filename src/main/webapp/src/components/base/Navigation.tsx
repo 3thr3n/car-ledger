@@ -1,4 +1,12 @@
-import { AppBar, Box, Container, Toolbar, Typography, useMediaQuery, useTheme } from '@mui/material';
+import {
+  AppBar,
+  Box,
+  Container,
+  Toolbar,
+  Typography,
+  useMediaQuery,
+  useTheme,
+} from '@mui/material';
 import { QueryClientProvider } from '@tanstack/react-query';
 import queryClient from '@/utils/QueryClient';
 import productLogo from '@/assets/car-ledger.png';
@@ -20,9 +28,9 @@ export default function Navigation() {
 
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  const toggleDrawer = (open: boolean) => () => {
+  function toggleDrawer(open: boolean) {
     setDrawerOpen(open);
-  };
+  }
 
   const navigate = async (path: string) => {
     await navi({
