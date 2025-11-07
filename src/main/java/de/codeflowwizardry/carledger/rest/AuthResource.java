@@ -20,9 +20,6 @@ public class AuthResource
 	@ConfigProperty(name = "redirect.to.logout")
 	String redirectToLogout;
 
-	@ConfigProperty(name = "redirect.to.error")
-	String redirectToError;
-
 	@Inject
 	public AuthResource(OidcSession session)
 	{
@@ -47,7 +44,7 @@ public class AuthResource
 
     @GET
     @Path("logout-callback")
-    @Operation(operationId = "callback", description = "This only for redirect purposes of oauth!")
+    @Operation(operationId = "logout-callback", description = "This only for redirect purposes of oauth!")
     public Response logoutCallback()
     {
         return Response.status(302).location(URI.create(redirectToLogout)).build();

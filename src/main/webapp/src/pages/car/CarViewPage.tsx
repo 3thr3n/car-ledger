@@ -15,7 +15,7 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { getMyCarOptions } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
-import CarBillPreviewTable from '@/components/bill/CarBillPreviewTable';
+import CarBillPreviewTable from '@/components/car/bill/CarBillPreviewTable';
 import PageHeader from '@/components/base/PageHeader';
 
 export interface CarViewPageProperties {
@@ -28,7 +28,7 @@ function renderRecentFuelTypes(
   id: string,
   navigate: (opt: NavigateOptions) => void,
 ) {
-  const goToAll = () => navigate({ to: '/car/$id/fuel/all', params: { id } });
+  const goToAll = () => navigate({ to: '/car/$id/bill/fuel', params: { id } });
 
   if (isMobile) {
     return (
@@ -121,10 +121,10 @@ export default function CarViewPage({ navigate, id }: CarViewPageProperties) {
           <Button
             variant="contained"
             onClick={() =>
-              navigate({ to: '/car/$id/fuel/add', params: { id } })
+              navigate({ to: '/car/$id/bill/add', params: { id } })
             }
           >
-            Add Fuel Entry
+            Add Bill
           </Button>
         </Stack>
       </Stack>
