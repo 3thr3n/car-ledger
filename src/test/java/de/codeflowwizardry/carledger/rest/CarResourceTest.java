@@ -102,7 +102,7 @@ class CarResourceTest
 	})
 	void shouldCreateACar()
 	{
-		String body = "{\"description\": \"Hansi\"}";
+        String body = "{\"name\": \"Hansi\", \"year\": \"2000\"}";
 		given()
 				.when()
 				.body(body)
@@ -119,7 +119,7 @@ class CarResourceTest
 	})
 	void shouldFailCreateCarIfAlreadyAtMaxCapacity()
 	{
-		String body = "{\"description\": \"Hansi\"}";
+		String body = "{\"name\": \"Hansi\", \"year\": \"2000\"}";
 		given()
 				.when()
 				.body(body)
@@ -129,7 +129,7 @@ class CarResourceTest
 				.then()
 				.statusCode(202);
 
-		body = "{\"description\": \"Hansi 2\"}";
+		body = "{\"name\": \"Hansi 2\", \"year\": \"2010\"}";
 
 		given()
 				.when()
