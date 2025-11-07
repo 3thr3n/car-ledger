@@ -22,7 +22,7 @@ export interface UserNavigationProps {
 export default function UserNavigation({
   isSm,
   toggleDrawer,
-  drawerOpen = false,
+  drawerOpen,
   navigate,
 }: UserNavigationProps) {
   const isLoggedIn = useUserStore((state) => state.loggedIn);
@@ -61,11 +61,15 @@ export default function UserNavigation({
             flexGrow: 1,
           }}
         />
-        <IconButton color="inherit" onClick={toggleDrawer(true)}>
+        <IconButton color="inherit" onClick={() => toggleDrawer(true)}>
           <MenuIcon />
         </IconButton>
 
-        <Drawer anchor="right" open={drawerOpen} onClose={toggleDrawer(false)}>
+        <Drawer
+          anchor="right"
+          open={drawerOpen}
+          onClose={() => toggleDrawer(false)}
+        >
           <Box
             sx={{
               width: 250,
@@ -98,8 +102,8 @@ export default function UserNavigation({
           marginY: '1rem',
         }}
       />
-      {isLoggedIn && navigationButton('Cars', '/car')}
       {isLoggedIn && navigationButton('Dashboard', '/dashboard')}
+      {isLoggedIn && navigationButton('Cars', '/car')}
       <Box
         sx={{
           flexGrow: 1,

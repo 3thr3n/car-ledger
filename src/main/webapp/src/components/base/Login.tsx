@@ -1,10 +1,7 @@
 import { Box, Button, Typography } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
 
-import {
-  getMyselfOptions,
-  logoutOptions,
-} from '@/generated/@tanstack/react-query.gen';
+import { getMyselfOptions } from '@/generated/@tanstack/react-query.gen';
 import { baseUrl, localClient } from '@/utils/QueryClient';
 import { useEffect } from 'react';
 import useUserStore from '@/store/UserStore';
@@ -19,15 +16,7 @@ export default function Login({ drawerMode = false }: LoginProps) {
   const setLoggedIn = useUserStore((state) => state.setLoggedIn);
   const setMaxCars = useUserStore((state) => state.setMaxCars);
 
-  const logoutQuery = useQuery({
-    ...logoutOptions({
-      client: localClient,
-    }),
-    enabled: false,
-    retry: false,
-  });
-
-  const { isError, isLoading, data, refetch } = useQuery({
+  const { isError, isLoading, data } = useQuery({
     ...getMyselfOptions({
       client: localClient,
     }),
@@ -35,12 +24,6 @@ export default function Login({ drawerMode = false }: LoginProps) {
     refetchIntervalInBackground: true,
     refetchInterval: 5 * 60 * 1000,
   });
-
-  async function logout() {
-    await logoutQuery.refetch();
-    await refetch();
-    setLoggedIn(false);
-  }
 
   if (isError) {
     setLoggedIn(false);
@@ -80,7 +63,11 @@ export default function Login({ drawerMode = false }: LoginProps) {
       <Typography variant="body1">
         Welcome <b>{data?.name}</b>
       </Typography>
-      <Button variant="contained" onClick={logout} fullWidth={drawerMode}>
+      <Button
+        variant="contained"
+        href={baseUrl + '/api/auth/logout'}
+        fullWidth={drawerMode}
+      >
         Logout
       </Button>
     </Box>
