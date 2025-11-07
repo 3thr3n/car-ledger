@@ -18,13 +18,23 @@ import 'dayjs/locale/de';
 import 'react-toastify/dist/ReactToastify.css';
 import CsvUploadDialog from '@/components/csv/CsvUploadDialog';
 import ErrorPage from '@/pages/ErrorPage';
+import NotFoundPage from '@/pages/NotFoundPage';
 
 export const Route = createRootRoute({
-  beforeLoad: () => {
-    const redirectUrl = localStorage.getItem('postLoginRedirect');
-    if (redirectUrl) {
-      localStorage.removeItem('postLoginRedirect');
-      window.location.href = redirectUrl; // redirect to original page
+  beforeLoad: (ctx) => {
+    const { followRedirect }: { followRedirect?: string } = ctx.search;
+    if (followRedirect == '') {
+      const redirectUrl = localStorage.getItem('postLoginRedirect');
+      if (redirectUrl) {
+        localStorage.removeItem('postLoginRedirect');
+        // redirect to original page
+        window.location.href = redirectUrl;
+      }
+    } else {
+      const redirectUrl = localStorage.getItem('postLoginRedirect');
+      if (redirectUrl) {
+        localStorage.removeItem('postLoginRedirect');
+      }
     }
   },
   component: () => (
@@ -60,5 +70,5 @@ export const Route = createRootRoute({
     </>
   ),
   errorComponent: () => <ErrorPage />,
-  notFoundComponent: () => <ErrorPage />,
+  notFoundComponent: () => <NotFoundPage />,
 });

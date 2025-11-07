@@ -3,7 +3,7 @@ import { CarGrid, CarGridContent } from './CarGrid';
 
 export function LoadingCarGrid() {
   return (
-    <CarGrid click={() => {}}>
+    <CarGrid>
       <CarGridContent>
         <Skeleton variant="rectangular" height={100} width="100%" />
         <Skeleton variant="text" width="100%" sx={{ fontSize: '2rem' }} />

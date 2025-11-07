@@ -2,25 +2,29 @@ import { Box, CircularProgress, useMediaQuery } from '@mui/material';
 import React, { useState } from 'react';
 import { BillPojo } from '@/generated';
 import YearSelection from '@/components/car/fuel/YearSelection';
-import { useQuery } from '@tanstack/react-query';
-import { getAllBillYearsOptions } from '@/generated/@tanstack/react-query.gen';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import {
+  deleteBillMutation,
+  getAllBillYearsOptions,
+} from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
 import useBillPagination from '@/hooks/useBillPagination';
 import FuelTable from '@/components/car/fuel/FuelTable';
 import PageHeader from '@/components/base/PageHeader';
+import { toast } from 'react-toastify';
 
 interface CarBillOverviewProps {
   id: number;
-  onDelete: (id: number) => void;
 }
 
-export default function AllViewPage({ id, onDelete }: CarBillOverviewProps) {
+export default function AllViewPage({ id }: CarBillOverviewProps) {
   const isMobile = useMediaQuery('(max-width:900px)');
 
   const {
     data: yearData,
     isError: isYearError,
     isLoading: isYearLoading,
+    refetch: yearRefetch,
   } = useQuery({
     ...getAllBillYearsOptions({
       client: localClient,
@@ -35,7 +39,30 @@ export default function AllViewPage({ id, onDelete }: CarBillOverviewProps) {
     data: billData,
     setPagination,
     setSort,
+    refetch: billRefetch,
   } = useBillPagination(id);
+
+  const { mutate } = useMutation({
+    ...deleteBillMutation({
+      client: localClient,
+    }),
+    onSuccess: () => {
+      toast.info('Bill deleted!');
+    },
+    onSettled: async () => {
+      await yearRefetch();
+      await billRefetch();
+    },
+  });
+
+  function onDelete(billId: number) {
+    mutate({
+      path: {
+        carId: id,
+        billId,
+      },
+    });
+  }
 
   const years: number[] = yearData ?? [];
   const bills: BillPojo[] = billData?.data ?? [];

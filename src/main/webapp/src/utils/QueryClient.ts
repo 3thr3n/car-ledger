@@ -25,19 +25,20 @@ localClient.interceptors.request.use((req) => {
   return req;
 });
 
+const noRedirectUrls = ['/', '/404', '/error', '/about'];
+
 localClient.interceptors.response.use(async (res) => {
-  if (res.status == 400 || res.status == 302) {
+  if (res.status == 400) {
     throw new BackendError(res.status, await res.text());
   }
 
   if (res.status == 499) {
-    console.log(location.pathname);
-    if (location.pathname == '/') {
+    if (noRedirectUrls.includes(location.pathname)) {
+      toast.warn('Session expired');
       throw new BackendError(401, 'Login required');
     } else {
-      const currentUrl = window.location.href;
       localStorage.setItem('postLoginRedirect', window.location.href);
-      location.href = `${baseUrl}/api/auth/login?redirect_uri=${encodeURIComponent(currentUrl)}`;
+      location.href = `${baseUrl}/api/auth/login`;
     }
   }
 

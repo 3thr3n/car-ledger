@@ -85,7 +85,7 @@ export default function FuelTable({
         rowCount={totalBills}
         columns={columns}
         pagination
-        pageSizeOptions={[10, 20, 50]}
+        pageSizeOptions={[10, 20, 50, 100]}
         paginationMode="server"
         sortingMode="server"
         onPaginationModelChange={(model) => setPagination(model)}
