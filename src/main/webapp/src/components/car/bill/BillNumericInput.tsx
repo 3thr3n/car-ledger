@@ -1,5 +1,6 @@
 import { TextField } from '@mui/material';
 import { NumericFormat } from 'react-number-format';
+import { OnValueChange } from 'react-number-format/types/types';
 
 export interface BillNumericInputProps {
   maxInput: number;
@@ -8,6 +9,8 @@ export interface BillNumericInputProps {
   required?: boolean;
   suffix?: string;
   decimalScale?: number;
+  value?: number;
+  onChange: OnValueChange;
 }
 
 export default function BillNumericInput(props: BillNumericInputProps) {
@@ -27,6 +30,8 @@ export default function BillNumericInput(props: BillNumericInputProps) {
         const { floatValue } = values;
         return (floatValue ?? 0) < props.maxInput;
       }}
+      value={props.value}
+      onValueChange={props.onChange}
       required={props.required}
     />
   );
