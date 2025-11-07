@@ -17,6 +17,7 @@ const ErrorLazyRouteImport = createFileRoute('/error')()
 const AboutLazyRouteImport = createFileRoute('/about')()
 const IndexLazyRouteImport = createFileRoute('/')()
 const CarIndexLazyRouteImport = createFileRoute('/car/')()
+const Dev404LazyRouteImport = createFileRoute('/dev/404')()
 const CarNewLazyRouteImport = createFileRoute('/car/new')()
 const CarIdIndexLazyRouteImport = createFileRoute('/car/$id/')()
 const CarIdEditLazyRouteImport = createFileRoute('/car/$id/edit')()
@@ -43,6 +44,11 @@ const CarIndexLazyRoute = CarIndexLazyRouteImport.update({
   path: '/car/',
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/car/index.lazy').then((d) => d.Route))
+const Dev404LazyRoute = Dev404LazyRouteImport.update({
+  id: '/dev/404',
+  path: '/dev/404',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/dev/404.lazy').then((d) => d.Route))
 const CarNewLazyRoute = CarNewLazyRouteImport.update({
   id: '/car/new',
   path: '/car/new',
@@ -84,6 +90,7 @@ export interface FileRoutesByFullPath {
   '/error': typeof ErrorLazyRoute
   '/car/$id': typeof CarIdRouteRouteWithChildren
   '/car/new': typeof CarNewLazyRoute
+  '/dev/404': typeof Dev404LazyRoute
   '/car': typeof CarIndexLazyRoute
   '/car/$id/edit': typeof CarIdEditLazyRoute
   '/car/$id/': typeof CarIdIndexLazyRoute
@@ -95,6 +102,7 @@ export interface FileRoutesByTo {
   '/about': typeof AboutLazyRoute
   '/error': typeof ErrorLazyRoute
   '/car/new': typeof CarNewLazyRoute
+  '/dev/404': typeof Dev404LazyRoute
   '/car': typeof CarIndexLazyRoute
   '/car/$id/edit': typeof CarIdEditLazyRoute
   '/car/$id': typeof CarIdIndexLazyRoute
@@ -108,6 +116,7 @@ export interface FileRoutesById {
   '/error': typeof ErrorLazyRoute
   '/car/$id': typeof CarIdRouteRouteWithChildren
   '/car/new': typeof CarNewLazyRoute
+  '/dev/404': typeof Dev404LazyRoute
   '/car/': typeof CarIndexLazyRoute
   '/car/$id/edit': typeof CarIdEditLazyRoute
   '/car/$id/': typeof CarIdIndexLazyRoute
@@ -122,6 +131,7 @@ export interface FileRouteTypes {
     | '/error'
     | '/car/$id'
     | '/car/new'
+    | '/dev/404'
     | '/car'
     | '/car/$id/edit'
     | '/car/$id/'
@@ -133,6 +143,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/error'
     | '/car/new'
+    | '/dev/404'
     | '/car'
     | '/car/$id/edit'
     | '/car/$id'
@@ -145,6 +156,7 @@ export interface FileRouteTypes {
     | '/error'
     | '/car/$id'
     | '/car/new'
+    | '/dev/404'
     | '/car/'
     | '/car/$id/edit'
     | '/car/$id/'
@@ -158,6 +170,7 @@ export interface RootRouteChildren {
   ErrorLazyRoute: typeof ErrorLazyRoute
   CarIdRouteRoute: typeof CarIdRouteRouteWithChildren
   CarNewLazyRoute: typeof CarNewLazyRoute
+  Dev404LazyRoute: typeof Dev404LazyRoute
   CarIndexLazyRoute: typeof CarIndexLazyRoute
 }
 
@@ -189,6 +202,13 @@ declare module '@tanstack/react-router' {
       path: '/car'
       fullPath: '/car'
       preLoaderRoute: typeof CarIndexLazyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dev/404': {
+      id: '/dev/404'
+      path: '/dev/404'
+      fullPath: '/dev/404'
+      preLoaderRoute: typeof Dev404LazyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/car/new': {
@@ -260,6 +280,7 @@ const rootRouteChildren: RootRouteChildren = {
   ErrorLazyRoute: ErrorLazyRoute,
   CarIdRouteRoute: CarIdRouteRouteWithChildren,
   CarNewLazyRoute: CarNewLazyRoute,
+  Dev404LazyRoute: Dev404LazyRoute,
   CarIndexLazyRoute: CarIndexLazyRoute,
 }
 export const routeTree = rootRouteImport

@@ -5,9 +5,10 @@ import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 
 type ErrorPageProps = {
   error?: unknown;
+  title?: string;
 };
 
-export default function ErrorPage({ error }: ErrorPageProps) {
+export default function ErrorPage({ error, title }: ErrorPageProps) {
   const navigate = useNavigate();
   const [countdown, setCountdown] = useState(10);
 
@@ -54,7 +55,7 @@ export default function ErrorPage({ error }: ErrorPageProps) {
 
       <Box>
         <Typography variant="h3" fontWeight={700} gutterBottom>
-          Oops!
+          {title ? title : 'Oops!'}
         </Typography>
         <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
           {message}
