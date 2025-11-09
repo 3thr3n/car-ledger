@@ -17,6 +17,8 @@ import { getMyCarOptions } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
 import CarBillPreviewTable from '@/components/car/bill/CarBillPreviewTable';
 import PageHeader from '@/components/base/PageHeader';
+import NotFoundPage from '@/pages/NotFoundPage';
+import useCsvStore from '@/store/CsvStore';
 
 export interface CarViewPageProperties {
   id: string;
@@ -67,6 +69,7 @@ function renderRecentFuelTypes(
 
 export default function CarViewPage({ navigate, id }: CarViewPageProperties) {
   const isMobile = useMediaQuery('(max-width:600px)');
+  const openImportDialog = useCsvStore((state) => state.openDialog);
 
   const {
     data: car,
@@ -100,6 +103,10 @@ export default function CarViewPage({ navigate, id }: CarViewPageProperties) {
     );
   }
 
+  if (!car.id) {
+    return <NotFoundPage />;
+  }
+
   return (
     <Container sx={{ py: 4 }}>
       {/* Header */}
@@ -125,6 +132,13 @@ export default function CarViewPage({ navigate, id }: CarViewPageProperties) {
             }
           >
             Add Bill
+          </Button>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={() => openImportDialog(Number(id))}
+          >
+            Import CSV
           </Button>
         </Stack>
       </Stack>
