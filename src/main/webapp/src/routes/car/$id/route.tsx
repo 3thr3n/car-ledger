@@ -9,7 +9,6 @@ export const Route = createFileRoute('/car/$id')({
       throw redirect({ to: '..' });
     }
 
-    // optionally, you could even fetch minimal car metadata here
     return { id };
   },
 });

@@ -8,6 +8,7 @@ import TrafficIcon from '@mui/icons-material/Traffic';
 import LocalCarWashIcon from '@mui/icons-material/LocalCarWash';
 import EvStationIcon from '@mui/icons-material/EvStation';
 import EngineeringIcon from '@mui/icons-material/Engineering';
+import { useNavigate } from '@tanstack/react-router';
 
 const messages = [
   {
@@ -62,6 +63,8 @@ const messages = [
 ];
 
 export default function NotFoundPage() {
+  const navigate = useNavigate();
+
   // Pick one message randomly on first render
   const message = useMemo(
     () => messages[Math.floor(Math.random() * messages.length)],
@@ -98,7 +101,7 @@ export default function NotFoundPage() {
         <Button
           variant="contained"
           color="primary"
-          onClick={() => (window.location.href = '/')}
+          onClick={() => navigate({ to: '/' })}
         >
           {message.button}
         </Button>

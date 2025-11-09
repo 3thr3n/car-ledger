@@ -34,10 +34,10 @@ localClient.interceptors.response.use(async (res) => {
 
   if (res.status == 499) {
     if (noRedirectUrls.includes(location.pathname)) {
-      toast.warn('Session expired');
+      // toast.warn('Session expired');
       throw new BackendError(401, 'Login required');
     } else {
-      localStorage.setItem('postLoginRedirect', window.location.href);
+      localStorage.setItem('postLoginRedirect', location.pathname);
       location.href = `${baseUrl}/api/auth/login`;
     }
   }
