@@ -5,9 +5,9 @@ import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
-@Entity
+@Entity(name = "Account")
 @SequenceGenerator(allocationSize = 1, sequenceName = "sequence_account", initialValue = 5, name = "accountSequence")
-public class Account
+public class AccountEntity
 {
 	@Id
 	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "accountSequence")
@@ -16,8 +16,8 @@ public class Account
 	private String userId;
 	@Column(name = "max_cars")
 	private int maxCars;
-	@OneToMany(mappedBy = "user", targetEntity = Car.class)
-	private final List<Car> carList = new ArrayList<>();
+	@OneToMany(mappedBy = "user", targetEntity = CarEntity.class)
+	private final List<CarEntity> carEntityList = new ArrayList<>();
 
 	public Long getId()
 	{
@@ -44,13 +44,13 @@ public class Account
 		this.maxCars = maxCars;
 	}
 
-	public List<Car> getCarList()
+	public List<CarEntity> getCarList()
 	{
-		return carList;
+		return carEntityList;
 	}
 
-	public void addCar(Car car)
+	public void addCar(CarEntity carEntity)
 	{
-		carList.add(car);
+		carEntityList.add(carEntity);
 	}
 }

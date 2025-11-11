@@ -7,7 +7,7 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.Objects;
 
-import de.codeflowwizardry.carledger.rest.records.BillInputPojo;
+import de.codeflowwizardry.carledger.rest.records.BillInput;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -18,13 +18,15 @@ import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
-@Entity
+@Entity(name = "Bill")
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = {
 		"_day", "unit", "distance", "car_id"
 }))
 @SequenceGenerator(name = "sequence_bill", allocationSize = 1, initialValue = 5, sequenceName = "sequence_bill")
-public class Bill
+public class BillEntity
 {
+    public static final BigDecimal GERMAN_UST = BigDecimal.valueOf(1.19);
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequence_bill")
 	@Column(insertable = false, updatable = false)
@@ -39,13 +41,13 @@ public class Bill
 	private BigDecimal estimate = BigDecimal.ZERO;
 
 	@ManyToOne(optional = false)
-	private Car car;
+	private CarEntity car;
 
-	public Bill()
+	public BillEntity()
 	{
 	}
 
-	public Bill(BillInputPojo billPojo)
+	public BillEntity(BillInput billPojo)
 	{
 		this.day = billPojo.day();
 		this.distance = Objects.requireNonNullElse(billPojo.distance(), BigDecimal.ZERO);
@@ -114,14 +116,14 @@ public class Bill
 		this.estimate = estimate;
 	}
 
-	public Car getCar()
+	public CarEntity getCar()
 	{
 		return car;
 	}
 
-	public void setCar(Car car)
+	public void setCar(CarEntity carEntity)
 	{
-		this.car = car;
+		this.car = carEntity;
 	}
 
 	public Long getCarId()
@@ -137,4 +139,13 @@ public class Bill
 				.multiply(mwst)
 				.divide(ONE_HUNDRED, 2, RoundingMode.HALF_UP);
 	}
+
+    public BigDecimal getCalculateConsumption()
+    {
+        if (unit.compareTo(BigDecimal.ZERO) <= 0 || distance.compareTo(BigDecimal.ZERO) <= 0)
+        {
+            return BigDecimal.ZERO;
+        }
+        return unit.divide(distance, 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100));
+    }
 }
