@@ -9,7 +9,7 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import de.codeflowwizardry.carledger.data.Bill;
+import de.codeflowwizardry.carledger.data.BillEntity;
 import de.codeflowwizardry.carledger.data.repository.BillRepository;
 import de.codeflowwizardry.carledger.rest.records.stats.AverageStats;
 import de.codeflowwizardry.carledger.rest.records.stats.HiLo;
@@ -19,6 +19,7 @@ import de.codeflowwizardry.carledger.rest.records.stats.TotalStats;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
+import static de.codeflowwizardry.carledger.data.BillEntity.*;
 import static java.math.BigDecimal.ZERO;
 
 @ApplicationScoped
@@ -36,36 +37,36 @@ public class StatsCalculator
 
 	public TotalStats calculateTotal(Long carId, String username, Optional<LocalDate> from, Optional<LocalDate> to)
 	{
-		List<Bill> bills = billRepository.getBills(carId, username, from, to);
+		List<BillEntity> billEntities = billRepository.getBills(carId, username, from, to);
 
-		if (bills.isEmpty())
-		{
+		if (billEntities.isEmpty())
+        {
 			return new TotalStats(ZERO, ZERO, ZERO);
 		}
 
-		BigDecimal unit = calculateTotalUnit(bills);
-		BigDecimal distance = calculateTotalDistance(bills);
-		BigDecimal calculatedPrice = calculateTotalCalculatedPrice(bills);
+		BigDecimal unit = calculateTotalUnit(billEntities);
+		BigDecimal distance = calculateTotalDistance(billEntities);
+		BigDecimal calculatedPrice = calculateTotalCalculatedPrice(billEntities);
 
 		return new TotalStats(unit, distance, calculatedPrice);
 	}
 
-	private BigDecimal calculateTotalUnit(List<Bill> bills)
+	private BigDecimal calculateTotalUnit(List<BillEntity> billEntities)
 	{
-		Stream<BigDecimal> totalUnit = bills.stream().map(Bill::getUnit);
+		Stream<BigDecimal> totalUnit = billEntities.stream().map(BillEntity::getUnit);
 		return handleReduceTotalResult(totalUnit);
 	}
 
-	private BigDecimal calculateTotalDistance(List<Bill> bills)
+	private BigDecimal calculateTotalDistance(List<BillEntity> billEntities)
 	{
-		Stream<BigDecimal> totalUnit = bills.stream().map(Bill::getDistance);
+		Stream<BigDecimal> totalUnit = billEntities.stream().map(BillEntity::getDistance);
 		return handleReduceTotalResult(totalUnit);
 	}
 
-	private BigDecimal calculateTotalCalculatedPrice(List<Bill> bills)
+	private BigDecimal calculateTotalCalculatedPrice(List<BillEntity> billEntities)
 	{
-		Stream<BigDecimal> totalCost = bills.stream()
-				.map(bill -> bill.getCalculatedPrice(BigDecimal.valueOf(1.19)));
+		Stream<BigDecimal> totalCost = billEntities.stream()
+				.map(bill -> bill.getCalculatedPrice(GERMAN_UST));
 		return handleReduceTotalResult(totalCost);
 	}
 
@@ -82,44 +83,44 @@ public class StatsCalculator
 
 	public AverageStats calculateAverage(Long carId, String username, Optional<LocalDate> from, Optional<LocalDate> to)
 	{
-		List<Bill> bills = billRepository.getBills(carId, username, from, to);
+		List<BillEntity> billEntities = billRepository.getBills(carId, username, from, to);
 
-		BigDecimal averagePricePerUnit = calculateAveragePricePerUnit(bills);
-		BigDecimal averageDistance = calculateAverageDistance(bills);
-		BigDecimal averageCalculated = calculateAverageCalculated(bills);
-		BigDecimal averageCalculatedPrice = calculateAverageCalculatedPrice(bills);
+		BigDecimal averagePricePerUnit = calculateAveragePricePerUnit(billEntities);
+		BigDecimal averageDistance = calculateAverageDistance(billEntities);
+		BigDecimal averageCalculated = calculateAverageCalculated(billEntities);
+		BigDecimal averageCalculatedPrice = calculateAverageCalculatedPrice(billEntities);
 
 		return new AverageStats(averagePricePerUnit, averageDistance, averageCalculated, averageCalculatedPrice);
 	}
 
-	private static BigDecimal calculateAverageDistance(List<Bill> bills)
+	private static BigDecimal calculateAverageDistance(List<BillEntity> billEntities)
 	{
-		return handleReduceAverageResult(bills, Bill::getDistance);
+		return handleReduceAverageResult(billEntities, BillEntity::getDistance);
 	}
 
-	private static BigDecimal calculateAveragePricePerUnit(List<Bill> bills)
+	private static BigDecimal calculateAveragePricePerUnit(List<BillEntity> billEntities)
 	{
-		return handleReduceAverageResult(bills, Bill::getPricePerUnit);
+		return handleReduceAverageResult(billEntities, BillEntity::getPricePerUnit);
 	}
 
-	private static BigDecimal calculateAverageCalculated(List<Bill> bills)
+	private static BigDecimal calculateAverageCalculated(List<BillEntity> billEntities)
 	{
-		return handleReduceAverageResult(bills,
+		return handleReduceAverageResult(billEntities,
 				bill -> bill.getUnit().divide(bill.getDistance(), 6, RoundingMode.HALF_UP)
 						.multiply(ONE_HUNDRED));
 	}
 
-	private static BigDecimal calculateAverageCalculatedPrice(List<Bill> bills)
+	private static BigDecimal calculateAverageCalculatedPrice(List<BillEntity> billEntities)
 	{
-		return handleReduceAverageResult(bills,
-				bill -> bill.getCalculatedPrice(BigDecimal.valueOf(1.19)));
+		return handleReduceAverageResult(billEntities,
+				bill -> bill.getCalculatedPrice(GERMAN_UST));
 	}
 
-	private static BigDecimal handleReduceAverageResult(List<Bill> bills,
-			Function<Bill, BigDecimal> bigDecimalMapFunction)
+	private static BigDecimal handleReduceAverageResult(List<BillEntity> billEntities,
+			Function<BillEntity, BigDecimal> bigDecimalMapFunction)
 	{
-		Optional<BigDecimal[]> optionalBigDecimal = bills.stream()
-				.filter(Bill::isDistanceSet)
+		Optional<BigDecimal[]> optionalBigDecimal = billEntities.stream()
+				.filter(BillEntity::isDistanceSet)
 				.map(bigDecimalMapFunction)
 				.map(bd -> new BigDecimal[] {
 						bd, BigDecimal.ONE
@@ -138,55 +139,55 @@ public class StatsCalculator
 
 	public HiLoStats calculateHighLow(Long carId, String username, Optional<LocalDate> from, Optional<LocalDate> to)
 	{
-		List<Bill> bills = billRepository.getBills(carId, username, from, to);
+		List<BillEntity> billEntities = billRepository.getBills(carId, username, from, to);
 
-		HiLo hiLoDistance = calculateHiLoDistance(bills);
-		HiLo hiLoUnit = calculateHiLoUnit(bills);
-		HiLo hiLoPricePerUnit = calculateHiLoPricePerUnit(bills);
-		HiLo hiLoCalculated = calculateHiLoCalculated(bills);
-		HiLo hiLoCalculatedPrice = calculateHiLoCalculatedPrice(bills);
+		HiLo hiLoDistance = calculateHiLoDistance(billEntities);
+		HiLo hiLoUnit = calculateHiLoUnit(billEntities);
+		HiLo hiLoPricePerUnit = calculateHiLoPricePerUnit(billEntities);
+		HiLo hiLoCalculated = calculateHiLoCalculated(billEntities);
+		HiLo hiLoCalculatedPrice = calculateHiLoCalculatedPrice(billEntities);
 
 		return new HiLoStats(hiLoCalculatedPrice, hiLoCalculated, hiLoDistance, hiLoUnit, hiLoPricePerUnit);
 	}
 
-	private static HiLo calculateHiLoDistance(List<Bill> bills)
+	private static HiLo calculateHiLoDistance(List<BillEntity> billEntities)
 	{
-		return calculateHiLo(bills, Bill::getDistance);
+		return calculateHiLo(billEntities, BillEntity::getDistance);
 	}
 
-	private static HiLo calculateHiLoUnit(List<Bill> bills)
+	private static HiLo calculateHiLoUnit(List<BillEntity> billEntities)
 	{
-		return calculateHiLo(bills, Bill::getUnit);
+		return calculateHiLo(billEntities, BillEntity::getUnit);
 	}
 
-	private static HiLo calculateHiLoPricePerUnit(List<Bill> bills)
+	private static HiLo calculateHiLoPricePerUnit(List<BillEntity> billEntities)
 	{
-		return calculateHiLo(bills, Bill::getPricePerUnit, 1);
+		return calculateHiLo(billEntities, BillEntity::getPricePerUnit, 1);
 	}
 
-	private static HiLo calculateHiLoCalculated(List<Bill> bills)
+	private static HiLo calculateHiLoCalculated(List<BillEntity> billEntities)
 	{
-		return calculateHiLo(bills,
+		return calculateHiLo(billEntities,
 				bill -> bill.getUnit().divide(bill.getDistance(), 6, RoundingMode.HALF_UP)
 						.multiply(ONE_HUNDRED));
 	}
 
-	private static HiLo calculateHiLoCalculatedPrice(List<Bill> bills)
+	private static HiLo calculateHiLoCalculatedPrice(List<BillEntity> billEntities)
 	{
-		return calculateHiLo(bills,
-				bill -> bill.getCalculatedPrice(BigDecimal.valueOf(1.19)));
+		return calculateHiLo(billEntities,
+				bill -> bill.getCalculatedPrice(GERMAN_UST));
 	}
 
-	private static HiLo calculateHiLo(List<Bill> bills, Function<Bill, BigDecimal> bigDecimalFunction, int scale)
+	private static HiLo calculateHiLo(List<BillEntity> billEntities, Function<BillEntity, BigDecimal> bigDecimalFunction, int scale)
 	{
-		BigDecimal min = bills.stream()
-				.filter(Bill::isDistanceSet)
+		BigDecimal min = billEntities.stream()
+				.filter(BillEntity::isDistanceSet)
 				.map(bigDecimalFunction)
 				.min(Comparator.naturalOrder())
 				.orElse(ZERO);
 
-		BigDecimal max = bills.stream()
-				.filter(Bill::isDistanceSet)
+		BigDecimal max = billEntities.stream()
+				.filter(BillEntity::isDistanceSet)
 				.map(bigDecimalFunction)
 				.max(Comparator.naturalOrder())
 				.orElse(ZERO);
@@ -194,24 +195,24 @@ public class StatsCalculator
 		return new HiLo(min, max, scale);
 	}
 
-	private static HiLo calculateHiLo(List<Bill> bills, Function<Bill, BigDecimal> bigDecimalFunction)
+	private static HiLo calculateHiLo(List<BillEntity> billEntities, Function<BillEntity, BigDecimal> bigDecimalFunction)
 	{
-		return calculateHiLo(bills, bigDecimalFunction, 2);
+		return calculateHiLo(billEntities, bigDecimalFunction, 2);
 	}
 
 	public MinimalStats getMinimalStats(Long carId, String username, Optional<LocalDate> from, Optional<LocalDate> to)
 	{
-		List<Bill> bills = billRepository.getBills(carId, username, from, to);
+		List<BillEntity> billEntities = billRepository.getBills(carId, username, from, to);
 
-		if (bills.isEmpty())
-		{
+		if (billEntities.isEmpty())
+        {
 			return new MinimalStats(ZERO, ZERO, new HiLo(ZERO, ZERO, 2), ZERO);
 		}
 
-		BigDecimal calculatedPrice = calculateTotalCalculatedPrice(bills);
-		BigDecimal averageCalculated = calculateAverageCalculated(bills);
-		HiLo hiLoCalculated = calculateHiLoCalculated(bills);
-		BigDecimal averageDistance = calculateAverageDistance(bills);
+		BigDecimal calculatedPrice = calculateTotalCalculatedPrice(billEntities);
+		BigDecimal averageCalculated = calculateAverageCalculated(billEntities);
+		HiLo hiLoCalculated = calculateHiLoCalculated(billEntities);
+		BigDecimal averageDistance = calculateAverageDistance(billEntities);
 
 		return new MinimalStats(calculatedPrice, averageCalculated, hiLoCalculated, averageDistance);
 	}

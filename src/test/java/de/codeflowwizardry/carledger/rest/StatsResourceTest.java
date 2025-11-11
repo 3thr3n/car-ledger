@@ -11,9 +11,9 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import de.codeflowwizardry.carledger.data.Account;
-import de.codeflowwizardry.carledger.data.Bill;
-import de.codeflowwizardry.carledger.data.Car;
+import de.codeflowwizardry.carledger.data.AccountEntity;
+import de.codeflowwizardry.carledger.data.BillEntity;
+import de.codeflowwizardry.carledger.data.CarEntity;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.BillRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
@@ -36,7 +36,7 @@ class StatsResourceTest
 	@Inject
 	BillRepository billRepository;
 
-	Car car;
+	CarEntity carEntity;
 
 	@BeforeEach
 	@Transactional
@@ -57,48 +57,48 @@ class StatsResourceTest
 
 	private void setupPeter()
 	{
-		Account account = new Account();
-		account.setMaxCars(1);
-		account.setUserId("peter");
-		accountRepository.persist(account);
+		AccountEntity accountEntity = new AccountEntity();
+		accountEntity.setMaxCars(1);
+		accountEntity.setUserId("peter");
+		accountRepository.persist(accountEntity);
 
-		car = new Car();
-		car.setUser(account);
-		car.setName("Neat car");
-		carRepository.persist(car);
+		carEntity = new CarEntity();
+		carEntity.setUser(accountEntity);
+		carEntity.setName("Neat car");
+		carRepository.persist(carEntity);
 
-		Bill bill = new Bill();
-		bill.setEstimate(BigDecimal.valueOf(8.5));
-		bill.setDay(LocalDate.now());
-		bill.setDistance(BigDecimal.valueOf(500));
-		bill.setUnit(BigDecimal.valueOf(28d));
-		bill.setPricePerUnit(BigDecimal.valueOf(199.9d));
+		BillEntity billEntity = new BillEntity();
+		billEntity.setEstimate(BigDecimal.valueOf(8.5));
+		billEntity.setDay(LocalDate.now());
+		billEntity.setDistance(BigDecimal.valueOf(500));
+		billEntity.setUnit(BigDecimal.valueOf(28d));
+		billEntity.setPricePerUnit(BigDecimal.valueOf(199.9d));
 		// 55,972
 		// 5.6
-		bill.setCar(car);
-		billRepository.persist(bill);
+		billEntity.setCar(carEntity);
+		billRepository.persist(billEntity);
 
-		bill = new Bill();
-		bill.setEstimate(BigDecimal.valueOf(9.1d));
-		bill.setDay(LocalDate.of(2022, 5, 22));
-		bill.setDistance(BigDecimal.valueOf(400));
-		bill.setUnit(BigDecimal.valueOf(20d));
-		bill.setPricePerUnit(BigDecimal.valueOf(189.9d));
+		billEntity = new BillEntity();
+		billEntity.setEstimate(BigDecimal.valueOf(9.1d));
+		billEntity.setDay(LocalDate.of(2022, 5, 22));
+		billEntity.setDistance(BigDecimal.valueOf(400));
+		billEntity.setUnit(BigDecimal.valueOf(20d));
+		billEntity.setPricePerUnit(BigDecimal.valueOf(189.9d));
 		// 37,98
 		// 5.0
-		bill.setCar(car);
-		billRepository.persist(bill);
+		billEntity.setCar(carEntity);
+		billRepository.persist(billEntity);
 
-		bill = new Bill();
-		bill.setEstimate(BigDecimal.valueOf(8.2d));
-		bill.setDay(LocalDate.of(2023, 6, 2));
-		bill.setDistance(BigDecimal.valueOf(480));
-		bill.setUnit(BigDecimal.valueOf(28d));
-		bill.setPricePerUnit(BigDecimal.valueOf(196.9d));
+		billEntity = new BillEntity();
+		billEntity.setEstimate(BigDecimal.valueOf(8.2d));
+		billEntity.setDay(LocalDate.of(2023, 6, 2));
+		billEntity.setDistance(BigDecimal.valueOf(480));
+		billEntity.setUnit(BigDecimal.valueOf(28d));
+		billEntity.setPricePerUnit(BigDecimal.valueOf(196.9d));
 		// 55,132
 		// 5.83
-		bill.setCar(car);
-		billRepository.persist(bill);
+		billEntity.setCar(carEntity);
+		billRepository.persist(billEntity);
 	}
 
 	@Test
@@ -108,7 +108,7 @@ class StatsResourceTest
 	void shouldGetAllTotalStats()
 	{
 		given()
-				.pathParam("carId", car.getId())
+				.pathParam("carId", carEntity.getId())
 				.when()
 				.get("/total")
 				.then()
@@ -127,7 +127,7 @@ class StatsResourceTest
 		String localDateString = LocalDate.of(2023, 1, 1).atStartOfDay().format(DateTimeFormatter.ISO_LOCAL_DATE);
 
 		given()
-				.pathParam("carId", car.getId())
+				.pathParam("carId", carEntity.getId())
 				.queryParam("from", localDateString)
 				.when()
 				.get("/total")
@@ -148,7 +148,7 @@ class StatsResourceTest
 		String toLocalDate = LocalDate.of(2023, 12, 31).atStartOfDay().format(DateTimeFormatter.ISO_LOCAL_DATE);
 
 		given()
-				.pathParam("carId", car.getId())
+				.pathParam("carId", carEntity.getId())
 				.queryParam("from", fromLocalDate)
 				.queryParam("to", toLocalDate)
 				.when()
@@ -167,7 +167,7 @@ class StatsResourceTest
 	void shouldGetAllAverageStats()
 	{
 		given()
-				.pathParam("carId", car.getId())
+				.pathParam("carId", carEntity.getId())
 				.when()
 				.get("/average")
 				.then()
@@ -185,7 +185,7 @@ class StatsResourceTest
 	void shouldGetAllHiLoStats()
 	{
 		given()
-				.pathParam("carId", car.getId())
+				.pathParam("carId", carEntity.getId())
 				.when()
 				.get("/hi_lo")
 				.then()
@@ -209,7 +209,7 @@ class StatsResourceTest
 	void shouldGetMinimalStats()
 	{
 		given()
-				.pathParam("carId", car.getId())
+				.pathParam("carId", carEntity.getId())
 				.when()
 				.get("/minimal")
 				.then()

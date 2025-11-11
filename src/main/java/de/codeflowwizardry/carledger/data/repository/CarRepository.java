@@ -2,48 +2,48 @@ package de.codeflowwizardry.carledger.data.repository;
 
 import java.util.Optional;
 
-import de.codeflowwizardry.carledger.data.Car;
+import de.codeflowwizardry.carledger.data.CarEntity;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.LockModeType;
 import jakarta.transaction.Transactional;
 
 @ApplicationScoped
-public class CarRepository implements PanacheRepository<Car>
+public class CarRepository implements PanacheRepository<CarEntity>
 {
-	public Car findById(Long id, String name)
+	public CarEntity findById(Long id, String name)
 	{
 		return find("id = ?1 and user.userId = ?2", id, name).firstResult();
 	}
 
 	@Override
-	public Car findById(Long id)
+	public CarEntity findById(Long id)
 	{
 		throw new UnsupportedOperationException("Find is only allowed with user!");
 	}
 
 	@Override
-	public Car findById(Long id, LockModeType lockModeType)
+	public CarEntity findById(Long id, LockModeType lockModeType)
 	{
 		throw new UnsupportedOperationException("Find is only allowed with user!");
 	}
 
 	@Override
-	public Optional<Car> findByIdOptional(Long id)
+	public Optional<CarEntity> findByIdOptional(Long id)
 	{
 		throw new UnsupportedOperationException("Find is only allowed with user!");
 	}
 
 	@Override
-	public Optional<Car> findByIdOptional(Long id, LockModeType lockModeType)
+	public Optional<CarEntity> findByIdOptional(Long id, LockModeType lockModeType)
 	{
 		throw new UnsupportedOperationException("Find is only allowed with user!");
 	}
 
 	@Override
 	@Transactional
-	public void persist(Car car)
+	public void persist(CarEntity carEntity)
 	{
-		PanacheRepository.super.persist(car);
+		PanacheRepository.super.persist(carEntity);
 	}
 }

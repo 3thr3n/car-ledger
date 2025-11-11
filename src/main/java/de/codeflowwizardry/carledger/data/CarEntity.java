@@ -6,9 +6,9 @@ import jakarta.ws.rs.DefaultValue;
 import java.util.ArrayList;
 import java.util.List;
 
-@Entity
+@Entity(name = "Car")
 @SequenceGenerator(allocationSize = 1, sequenceName = "sequence_car", initialValue = 5, name = "carSequence")
-public class Car
+public class CarEntity
 {
 	@Id
 	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "carSequence")
@@ -21,9 +21,9 @@ public class Car
 	@Column(name = "_odometer", nullable = false)
 	private int odometer;
 	@OneToMany(mappedBy = "car")
-	private final List<Bill> bills = new ArrayList<>();
+	private final List<BillEntity> billEntities = new ArrayList<>();
 	@ManyToOne
-	private Account user;
+	private AccountEntity user;
 
 	public String getName()
 	{
@@ -60,22 +60,22 @@ public class Car
 		return id;
 	}
 
-	public List<Bill> getBills()
+	public List<BillEntity> getBills()
 	{
-		return bills;
+		return billEntities;
 	}
 
-	public void addBill(Bill bill)
+	public void addBill(BillEntity billEntity)
 	{
-		bills.add(bill);
+		billEntities.add(billEntity);
 	}
 
-	public Account getUser()
+	public AccountEntity getUser()
 	{
 		return user;
 	}
 
-	public void setUser(Account user)
+	public void setUser(AccountEntity user)
 	{
 		this.user = user;
 	}

@@ -7,9 +7,9 @@ import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
 
+import de.codeflowwizardry.carledger.data.BillEntity;
 import org.junit.jupiter.api.Test;
 
-import de.codeflowwizardry.carledger.data.Bill;
 import de.codeflowwizardry.carledger.data.repository.BillRepository;
 import de.codeflowwizardry.carledger.rest.records.CsvOrder;
 
@@ -34,13 +34,13 @@ class CsvProcessorTest
 		// given
 		BillRepository billRepository = new BillRepository() {
 			@Override
-			public boolean isPersistent(Bill entity)
+			public boolean isPersistent(BillEntity entity)
 			{
 				return false;
 			}
 
 			@Override
-			public void persist(Iterable<Bill> entities)
+			public void persist(Iterable<BillEntity> entities)
 			{
 				// Do nothing
 			}

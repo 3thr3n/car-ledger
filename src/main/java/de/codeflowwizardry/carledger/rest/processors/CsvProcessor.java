@@ -17,8 +17,8 @@ import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
 import com.opencsv.exceptions.CsvValidationException;
 
-import de.codeflowwizardry.carledger.data.Bill;
-import de.codeflowwizardry.carledger.data.Car;
+import de.codeflowwizardry.carledger.data.BillEntity;
+import de.codeflowwizardry.carledger.data.CarEntity;
 import de.codeflowwizardry.carledger.data.repository.BillRepository;
 import de.codeflowwizardry.carledger.rest.records.CsvOrder;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -40,7 +40,7 @@ public class CsvProcessor
 		this.billRepository = billRepository;
 	}
 
-	public void processCsv(File csv, CsvOrder csvOrder, Car car, boolean hasHeader)
+	public void processCsv(File csv, CsvOrder csvOrder, CarEntity carEntity, boolean hasHeader)
 			throws WebApplicationException
 	{
 		int skipLines = 0;
@@ -52,7 +52,7 @@ public class CsvProcessor
 
 		try
 		{
-			processAndReadCsv(csv, csvOrder, car, skipLines);
+			processAndReadCsv(csv, csvOrder, carEntity, skipLines);
 		}
 		catch (IOException e)
 		{
@@ -61,31 +61,31 @@ public class CsvProcessor
 		}
 	}
 
-	private void processAndReadCsv(File csv, CsvOrder csvOrder, Car car, int skipLines) throws IOException
+	private void processAndReadCsv(File csv, CsvOrder csvOrder, CarEntity carEntity, int skipLines) throws IOException
 	{
 		try (CSVReader csvReader = new CSVReaderBuilder(new FileReader(csv)).withSkipLines(skipLines).build())
 		{
-			List<Bill> billList = new ArrayList<>();
+			List<BillEntity> billEntityList = new ArrayList<>();
 
 			String[] line;
 			while ((line = csvReader.readNext()) != null)
 			{
-				Bill bill = new Bill();
-				bill.setCar(car);
+				BillEntity billEntity = new BillEntity();
+				billEntity.setCar(carEntity);
 
-				bill.setUnit(parseToBigDecimal(line, csvOrder.unit()));
-				bill.setEstimate(parseToBigDecimal(line, csvOrder.estimate()));
-				bill.setDistance(parseToBigDecimal(line, csvOrder.distance()));
-				bill.setPricePerUnit(parseToBigDecimal(line, csvOrder.pricePerUnit()));
-				bill.setDay(parseToLocalDate(line, csvOrder.day()));
+				billEntity.setUnit(parseToBigDecimal(line, csvOrder.unit()));
+				billEntity.setEstimate(parseToBigDecimal(line, csvOrder.estimate()));
+				billEntity.setDistance(parseToBigDecimal(line, csvOrder.distance()));
+				billEntity.setPricePerUnit(parseToBigDecimal(line, csvOrder.pricePerUnit()));
+				billEntity.setDay(parseToLocalDate(line, csvOrder.day()));
 
-				if (!billRepository.isPersistent(bill))
+				if (!billRepository.isPersistent(billEntity))
 				{
-					billList.add(bill);
+					billEntityList.add(billEntity);
 				}
 			}
 
-			billRepository.persist(billList);
+			billRepository.persist(billEntityList);
 		}
 		catch (CsvValidationException e)
 		{

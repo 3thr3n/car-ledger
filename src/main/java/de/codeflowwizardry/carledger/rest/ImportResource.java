@@ -3,6 +3,7 @@ package de.codeflowwizardry.carledger.rest;
 import java.io.File;
 import java.security.Principal;
 
+import de.codeflowwizardry.carledger.data.CarEntity;
 import org.apache.commons.lang3.ObjectUtils;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
@@ -11,7 +12,6 @@ import org.jboss.resteasy.reactive.RestForm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.codeflowwizardry.carledger.data.Car;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import de.codeflowwizardry.carledger.rest.processors.CsvProcessor;
@@ -46,7 +46,7 @@ public class ImportResource extends AbstractResource
 	}
 
 	@Operation(operationId = "importCsv", description = """
-			This is the description for the import of an csv of your bills.<br />
+			This is the description for the import of an csv of your billEntities.<br />
 			<br />
 			You need to add the csv and optionally the order in the csv (starts with 0).<br />
 			If you're not adding the order, the default is: day, unit, pricePerUnit, distance, estimate
@@ -71,16 +71,16 @@ public class ImportResource extends AbstractResource
 			order = new CsvOrder();
 		}
 
-		Car car = carRepository.findById(carId, context.getName());
+		CarEntity carEntity = carRepository.findById(carId, context.getName());
 
-		if (car == null)
+		if (carEntity == null)
 		{
 			throw new BadRequestException("Car cannot be found!");
 		}
 
 		try
 		{
-			processor.processCsv(csv, order, car, skipHeader);
+			processor.processCsv(csv, order, carEntity, skipHeader);
 		}
 		catch (IllegalArgumentException e)
 		{

@@ -1,14 +1,16 @@
 package de.codeflowwizardry.carledger.rest.records;
 
+import de.codeflowwizardry.carledger.data.BillEntity;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 
-import de.codeflowwizardry.carledger.data.Bill;
+import static de.codeflowwizardry.carledger.data.BillEntity.GERMAN_UST;
 
-public final class BillPojo
+public final class Bill
 {
 	private final Long id;
 	private final LocalDate day;
@@ -20,8 +22,8 @@ public final class BillPojo
 	private final BigDecimal calculated;
 	private final BigDecimal calculatedPrice;
 
-	BillPojo(Long id, LocalDate day, BigDecimal distance, BigDecimal unit, BigDecimal pricePerUnit, BigDecimal estimate,
-			BigDecimal calculated, BigDecimal calculatedPrice)
+	Bill(Long id, LocalDate day, BigDecimal distance, BigDecimal unit, BigDecimal pricePerUnit, BigDecimal estimate,
+         BigDecimal calculated, BigDecimal calculatedPrice)
 	{
 		this.id = id;
 		this.day = day;
@@ -34,21 +36,21 @@ public final class BillPojo
 		this.calculatedPrice = Objects.requireNonNullElse(calculatedPrice, BigDecimal.ZERO);
 	}
 
-	public static BillPojo convert(Bill bill)
+	public static Bill convert(BillEntity billEntity)
 	{
-		return new BillPojoBuilder().setId(bill.getId()).setDay(bill.getDay()).setDistance(bill.getDistance())
-				.setUnit(bill.getUnit()).setPricePerUnit(bill.getPricePerUnit()).setEstimate(bill.getEstimate())
-				.setCalculated(calculateConsumption(bill.getUnit(), bill.getDistance()))
-				.setCalculatedPrice(bill.getCalculatedPrice(BigDecimal.valueOf(1.19))).createBillPojo();
+		return new BillBuilder().setId(billEntity.getId()).setDay(billEntity.getDay()).setDistance(billEntity.getDistance())
+				.setUnit(billEntity.getUnit()).setPricePerUnit(billEntity.getPricePerUnit()).setEstimate(billEntity.getEstimate())
+				.setCalculated(billEntity.getCalculateConsumption())
+				.setCalculatedPrice(billEntity.getCalculatedPrice(GERMAN_UST)).createBillPojo();
 	}
 
-	public static List<BillPojo> convert(List<Bill> billList)
+	public static List<Bill> convert(List<BillEntity> billEntityList)
 	{
-		return billList.stream()
-				.map(t -> new BillPojoBuilder().setId(t.getId()).setDay(t.getDay()).setDistance(t.getDistance())
+		return billEntityList.stream()
+				.map(t -> new BillBuilder().setId(t.getId()).setDay(t.getDay()).setDistance(t.getDistance())
 						.setUnit(t.getUnit()).setPricePerUnit(t.getPricePerUnit()).setEstimate(t.getEstimate())
-						.setCalculated(calculateConsumption(t.getUnit(), t.getDistance()))
-						.setCalculatedPrice(t.getCalculatedPrice(BigDecimal.valueOf(1.19))).createBillPojo())
+						.setCalculated(t.getCalculateConsumption())
+						.setCalculatedPrice(t.getCalculatedPrice(GERMAN_UST)).createBillPojo())
 				.toList();
 	}
 
