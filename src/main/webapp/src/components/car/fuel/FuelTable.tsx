@@ -13,7 +13,7 @@ import {
   GridPaginationModel,
   GridSortModel,
 } from '@mui/x-data-grid';
-import { BillPojo } from '@/generated';
+import { Bill } from '@/generated';
 
 export interface FuelTableProps {
   onDelete: (id: number) => void;
@@ -21,7 +21,7 @@ export interface FuelTableProps {
   setSortModel: (sort: GridSortModel) => void;
   isMobile?: boolean;
   totalBills: number;
-  bills: BillPojo[];
+  bills: Bill[];
 }
 
 export default function FuelTable({

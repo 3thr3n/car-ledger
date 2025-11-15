@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "components": {
     "schemas": {
-      "AccountPojo": {
+      "Account": {
         "type": "object",
         "properties": {
           "maxCars": {
@@ -31,27 +31,7 @@
           }
         }
       },
-      "BillInputPojo": {
-        "type": "object",
-        "properties": {
-          "day": {
-            "$ref": "#/components/schemas/LocalDate"
-          },
-          "distance": {
-            "type": "number"
-          },
-          "unit": {
-            "type": "number"
-          },
-          "pricePerUnit": {
-            "type": "number"
-          },
-          "estimate": {
-            "type": "number"
-          }
-        }
-      },
-      "BillPojo": {
+      "Bill": {
         "type": "object",
         "properties": {
           "id": {
@@ -85,7 +65,27 @@
           }
         }
       },
-      "BillPojoPaged": {
+      "BillInput": {
+        "type": "object",
+        "properties": {
+          "day": {
+            "$ref": "#/components/schemas/LocalDate"
+          },
+          "distance": {
+            "type": "number"
+          },
+          "unit": {
+            "type": "number"
+          },
+          "pricePerUnit": {
+            "type": "number"
+          },
+          "estimate": {
+            "type": "number"
+          }
+        }
+      },
+      "BillPaged": {
         "type": "object",
         "properties": {
           "total": {
@@ -103,28 +103,12 @@
           "data": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/BillPojo"
+              "$ref": "#/components/schemas/Bill"
             }
           }
         }
       },
-      "CarInputPojo": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "year": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "odometer": {
-            "type": "integer",
-            "format": "int32"
-          }
-        }
-      },
-      "CarPojo": {
+      "Car": {
         "type": "object",
         "properties": {
           "id": {
@@ -145,6 +129,36 @@
           "amountBills": {
             "type": "integer",
             "format": "int32"
+          }
+        }
+      },
+      "CarInput": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "year": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "odometer": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "CarOverview": {
+        "type": "object",
+        "properties": {
+          "totalRefuels": {
+            "type": "integer"
+          },
+          "totalCost": {
+            "type": "number"
+          },
+          "avgConsumption": {
+            "type": "number"
           }
         }
       },
@@ -327,7 +341,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/BillInputPojo"
+                "$ref": "#/components/schemas/BillInput"
               }
             }
           },
@@ -395,7 +409,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/BillPojoPaged"
+                  "$ref": "#/components/schemas/BillPaged"
                 }
               }
             }
@@ -489,7 +503,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/CarPojo"
+                    "$ref": "#/components/schemas/Car"
                   }
                 }
               }
@@ -505,7 +519,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CarInputPojo"
+                "$ref": "#/components/schemas/CarInput"
               }
             }
           },
@@ -544,7 +558,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CarInputPojo"
+                "$ref": "#/components/schemas/CarInput"
               }
             }
           },
@@ -580,7 +594,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CarPojo"
+                  "$ref": "#/components/schemas/Car"
                 }
               }
             }
@@ -593,9 +607,42 @@
         "tags": ["Car Resource"]
       }
     },
+    "/api/car/my/{id}/overview": {
+      "get": {
+        "operationId": "getMyCarOverview",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Car found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CarOverview"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "Id was not found."
+          }
+        },
+        "summary": "Get My Car Overview",
+        "tags": ["Car Resource"]
+      }
+    },
     "/api/import/{carId}": {
       "post": {
-        "description": "This is the description for the import of an csv of your bills.<br />\n<br />\nYou need to add the csv and optionally the order in the csv (starts with 0).<br />\nIf you're not adding the order, the default is: day, unit, pricePerUnit, distance, estimate\nseparator between columns is ',' (comma)\n",
+        "description": "This is the description for the import of an csv of your billEntities.<br />\n<br />\nYou need to add the csv and optionally the order in the csv (starts with 0).<br />\nIf you're not adding the order, the default is: day, unit, pricePerUnit, distance, estimate\nseparator between columns is ',' (comma)\n",
         "operationId": "importCsv",
         "parameters": [
           {
@@ -854,7 +901,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AccountPojo"
+                  "$ref": "#/components/schemas/Account"
                 }
               }
             }

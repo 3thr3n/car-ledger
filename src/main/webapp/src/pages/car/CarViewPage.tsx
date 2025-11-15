@@ -19,6 +19,8 @@ import CarBillPreviewTable from '@/components/car/bill/CarBillPreviewTable';
 import PageHeader from '@/components/base/PageHeader';
 import NotFoundPage from '@/pages/NotFoundPage';
 import useCsvStore from '@/store/CsvStore';
+import { CarOverviewStats } from '@/components/car/CarOverviewStats';
+import SingleLineStat from '@/components/base/SingleLineStat';
 
 export interface CarViewPageProperties {
   id: string;
@@ -38,7 +40,7 @@ function renderRecentFuelTypes(
         <Grid size={{ xs: 12, md: 8 }}>
           <Card>
             <CardContent>
-              <Typography variant="h6">Recent Fuel Entries</Typography>
+              <PageHeader title="Recent Fuel Entries" isCardHeader isMobile />
               <Divider sx={{ mb: 2 }} />
               <Box display="flex" justifyContent="flex-end" mt={2}>
                 <Button size="small" onClick={goToAll}>
@@ -150,15 +152,15 @@ export default function CarViewPage({ navigate, id }: CarViewPageProperties) {
             <CardContent>
               <PageHeader title="Car Information" isCardHeader />
               <Divider sx={{ mb: 2 }} />
-              <Typography variant="body1">
-                <strong>Year:</strong> {car.year ?? '—'}
-              </Typography>
-              <Typography variant="body1">
-                <strong>Odometer:</strong>{' '}
-                {car.odometer ? `${car.odometer} km` : '—'}
-              </Typography>
+              <SingleLineStat label="Year:" value={car.year} />
+              <SingleLineStat
+                label="Odometer:"
+                value={car.odometer}
+                type="km"
+              />
             </CardContent>
           </Card>
+          <CarOverviewStats carId={Number(id)} />
         </Grid>
 
         {renderRecentFuelTypes(isMobile, id, navigate)}

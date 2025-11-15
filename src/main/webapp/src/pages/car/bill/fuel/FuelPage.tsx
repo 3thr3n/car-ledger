@@ -1,6 +1,6 @@
 import { Box, CircularProgress, useMediaQuery } from '@mui/material';
 import React, { useState } from 'react';
-import { BillPojo } from '@/generated';
+import { Bill } from '@/generated';
 import YearSelection from '@/components/car/fuel/YearSelection';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import {
@@ -65,7 +65,7 @@ export default function AllViewPage({ id }: CarBillOverviewProps) {
   }
 
   const years: number[] = yearData ?? [];
-  const bills: BillPojo[] = billData?.data ?? [];
+  const bills: Bill[] = billData?.data ?? [];
 
   const currentYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = useState<number>(

@@ -51,6 +51,7 @@ export const Route = createRootRoute({
               display="flex"
               flexDirection="column"
               overflow="auto"
+              height="100%"
               px={{ xs: 2, sm: 4 }}
               py={3}
             >

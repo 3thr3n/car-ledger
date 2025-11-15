@@ -6,11 +6,11 @@ import NewCar from './NewCar';
 import CarGridMenu from './CarGridMenu';
 import useCarStore from '@/store/CarStore';
 import { NavigateOptions } from '@tanstack/router-core';
-import { CarPojo } from '@/generated';
+import { Car } from '@/generated';
 
 export interface CarGridListProps {
   navigate: (path: NavigateOptions) => void;
-  data: CarPojo[];
+  data: Car[];
 }
 
 export default function CarGridList({ navigate, data }: CarGridListProps) {
