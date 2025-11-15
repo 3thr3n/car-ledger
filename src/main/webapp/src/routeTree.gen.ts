@@ -11,12 +11,12 @@
 import { createFileRoute } from '@tanstack/react-router'
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
 import { Route as CarIdRouteRouteImport } from './routes/car/$id/route'
 
 const ErrorLazyRouteImport = createFileRoute('/error')()
 const AboutLazyRouteImport = createFileRoute('/about')()
 const IndexLazyRouteImport = createFileRoute('/')()
-const DashboardIndexLazyRouteImport = createFileRoute('/dashboard/')()
 const CarIndexLazyRouteImport = createFileRoute('/car/')()
 const Dev404LazyRouteImport = createFileRoute('/dev/404')()
 const CarNewLazyRouteImport = createFileRoute('/car/new')()
@@ -42,18 +42,16 @@ const IndexLazyRoute = IndexLazyRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/index.lazy').then((d) => d.Route))
-const DashboardIndexLazyRoute = DashboardIndexLazyRouteImport.update({
-  id: '/dashboard/',
-  path: '/dashboard/',
-  getParentRoute: () => rootRouteImport,
-} as any).lazy(() =>
-  import('./routes/dashboard/index.lazy').then((d) => d.Route),
-)
 const CarIndexLazyRoute = CarIndexLazyRouteImport.update({
   id: '/car/',
   path: '/car/',
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/car/index.lazy').then((d) => d.Route))
+const DashboardIndexRoute = DashboardIndexRouteImport.update({
+  id: '/dashboard/',
+  path: '/dashboard/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const Dev404LazyRoute = Dev404LazyRouteImport.update({
   id: '/dev/404',
   path: '/dev/404',
@@ -101,8 +99,8 @@ export interface FileRoutesByFullPath {
   '/car/$id': typeof CarIdRouteRouteWithChildren
   '/car/new': typeof CarNewLazyRoute
   '/dev/404': typeof Dev404LazyRoute
+  '/dashboard': typeof DashboardIndexRoute
   '/car': typeof CarIndexLazyRoute
-  '/dashboard': typeof DashboardIndexLazyRoute
   '/car/$id/edit': typeof CarIdEditLazyRoute
   '/car/$id/': typeof CarIdIndexLazyRoute
   '/car/$id/bill/add': typeof CarIdBillAddLazyRoute
@@ -114,8 +112,8 @@ export interface FileRoutesByTo {
   '/error': typeof ErrorLazyRoute
   '/car/new': typeof CarNewLazyRoute
   '/dev/404': typeof Dev404LazyRoute
+  '/dashboard': typeof DashboardIndexRoute
   '/car': typeof CarIndexLazyRoute
-  '/dashboard': typeof DashboardIndexLazyRoute
   '/car/$id/edit': typeof CarIdEditLazyRoute
   '/car/$id': typeof CarIdIndexLazyRoute
   '/car/$id/bill/add': typeof CarIdBillAddLazyRoute
@@ -129,8 +127,8 @@ export interface FileRoutesById {
   '/car/$id': typeof CarIdRouteRouteWithChildren
   '/car/new': typeof CarNewLazyRoute
   '/dev/404': typeof Dev404LazyRoute
+  '/dashboard/': typeof DashboardIndexRoute
   '/car/': typeof CarIndexLazyRoute
-  '/dashboard/': typeof DashboardIndexLazyRoute
   '/car/$id/edit': typeof CarIdEditLazyRoute
   '/car/$id/': typeof CarIdIndexLazyRoute
   '/car/$id/bill/add': typeof CarIdBillAddLazyRoute
@@ -145,8 +143,8 @@ export interface FileRouteTypes {
     | '/car/$id'
     | '/car/new'
     | '/dev/404'
-    | '/car'
     | '/dashboard'
+    | '/car'
     | '/car/$id/edit'
     | '/car/$id/'
     | '/car/$id/bill/add'
@@ -158,8 +156,8 @@ export interface FileRouteTypes {
     | '/error'
     | '/car/new'
     | '/dev/404'
-    | '/car'
     | '/dashboard'
+    | '/car'
     | '/car/$id/edit'
     | '/car/$id'
     | '/car/$id/bill/add'
@@ -172,8 +170,8 @@ export interface FileRouteTypes {
     | '/car/$id'
     | '/car/new'
     | '/dev/404'
-    | '/car/'
     | '/dashboard/'
+    | '/car/'
     | '/car/$id/edit'
     | '/car/$id/'
     | '/car/$id/bill/add'
@@ -187,8 +185,8 @@ export interface RootRouteChildren {
   CarIdRouteRoute: typeof CarIdRouteRouteWithChildren
   CarNewLazyRoute: typeof CarNewLazyRoute
   Dev404LazyRoute: typeof Dev404LazyRoute
+  DashboardIndexRoute: typeof DashboardIndexRoute
   CarIndexLazyRoute: typeof CarIndexLazyRoute
-  DashboardIndexLazyRoute: typeof DashboardIndexLazyRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -214,18 +212,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexLazyRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/dashboard/': {
-      id: '/dashboard/'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof DashboardIndexLazyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/car/': {
       id: '/car/'
       path: '/car'
       fullPath: '/car'
       preLoaderRoute: typeof CarIndexLazyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/': {
+      id: '/dashboard/'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dev/404': {
@@ -305,8 +303,8 @@ const rootRouteChildren: RootRouteChildren = {
   CarIdRouteRoute: CarIdRouteRouteWithChildren,
   CarNewLazyRoute: CarNewLazyRoute,
   Dev404LazyRoute: Dev404LazyRoute,
+  DashboardIndexRoute: DashboardIndexRoute,
   CarIndexLazyRoute: CarIndexLazyRoute,
-  DashboardIndexLazyRoute: DashboardIndexLazyRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

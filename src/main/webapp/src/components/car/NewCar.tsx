@@ -41,7 +41,7 @@ export default function NewCar() {
             justifyContent: 'center',
           }}
         >
-          <Typography align="center" mx={2}>
+          <Typography align="center" m={2}>
             Max cars reached, either delete one or ask the administrator to
             allow one more!
           </Typography>
