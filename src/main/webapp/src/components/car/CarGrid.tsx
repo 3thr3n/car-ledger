@@ -7,22 +7,16 @@ export function CarGrid(props: {
   children: React.ReactNode;
   sx?: SxProps<Theme>;
   click?: MouseEventHandler<HTMLDivElement>;
+  index?: number;
 }) {
   return (
-    <Grid
-      size={props.size ?? 4}
-      height={props.height}
-      justifyContent="center"
-      display="flex"
-      maxWidth={400}
-    >
+    <Grid height={props.height} justifyContent="center" display="flex">
       <Card
         onClick={props.click}
         variant="elevation"
         sx={{
           ...props.sx,
           height: props.height,
-          maxWidth: 500,
           width: '100%',
           cursor: props.click ? 'pointer' : 'default',
         }}

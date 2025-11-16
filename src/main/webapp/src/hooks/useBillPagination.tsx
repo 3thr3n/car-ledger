@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { getAllBillsOptions } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
 import { GridPaginationModel, GridSortModel } from '@mui/x-data-grid';
@@ -31,6 +31,10 @@ export default function useBillPagination(
     ...options,
     placeholderData: keepPreviousData,
   });
+
+  useEffect(() => {
+    console.log('sort:', sort);
+  }, [sort]);
 
   return { data, refetch, setPagination, setYear, setSort };
 }
