@@ -14,13 +14,15 @@ import io.quarkus.test.security.TestSecurity;
 class AuthResourceTest
 {
 	@Test
-	void shouldlogin()
+	void shouldLogin()
 	{
 		given()
+                .redirects()
+                .follow(false)
 				.when()
 				.get("login")
 				.then()
-				.statusCode(200);
+				.statusCode(302);
 	}
 
 	@Test

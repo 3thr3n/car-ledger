@@ -44,7 +44,7 @@ public class BillRepository implements PanacheRepository<BillEntity>
 	}
 
     public List<Integer> getBillYears(long carId, String username) {
-        return find("select b.day from bill b where b.car.id = ?1 and b.car.user.userId = ?2", carId, username)
+        return find("select b.day from Bill b where b.car.id = ?1 and b.car.user.userId = ?2", carId, username)
                 .project(LocalDate.class)
                 .list()
                 .stream()

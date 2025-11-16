@@ -95,8 +95,7 @@ class CarResourceTest
                 .statusCode(200)
                 .body("totalRefuels", is(1))
                 .body("totalCost", is(79.96F))
-                .body("avgConsumption", is(8.0F))
-        ;
+                .body("avgConsumption", is(8.0F));
     }
 
 	@Test
@@ -126,7 +125,7 @@ class CarResourceTest
 				.then()
 				.statusCode(200)
 				.body("id", Matchers.equalTo((int) carId))
-				.body("amountBills", Matchers.equalTo(0));
+				.body("amountBills", Matchers.equalTo(1));
 	}
 
 	@Test
@@ -182,6 +181,57 @@ class CarResourceTest
 				.then()
 				.statusCode(400);
 	}
+
+    @Test
+    @TestSecurity(user = "peter", roles = {
+            "user"
+    })
+    void shouldNotCreateCarWithInvalidBody()
+    {
+        String body = "{\"namxe\": \"Hans\", \"year\": \"2000\"}";
+        given()
+                .when()
+                .body(body)
+                .accept(ContentType.JSON)
+                .contentType(ContentType.JSON)
+                .put()
+                .then()
+                .statusCode(400);
+    }
+
+    @Test
+    @TestSecurity(user = "peter", roles = {
+            "user"
+    })
+    void shouldUpdateMyCar()
+    {
+        String body = "{\"name\": \"Hans\", \"year\": \"2000\"}";
+        given()
+                .when()
+                .body(body)
+                .accept(ContentType.JSON)
+                .contentType(ContentType.JSON)
+                .post("{id}", carId)
+                .then()
+                .statusCode(200);
+    }
+
+    @Test
+    @TestSecurity(user = "peter", roles = {
+            "user"
+    })
+    void shouldNotUpdateMyCarWithInvalidBody()
+    {
+        String body = "{\"name\": \"Hans\", \"years\": \"2000\"}";
+        given()
+                .when()
+                .body(body)
+                .accept(ContentType.JSON)
+                .contentType(ContentType.JSON)
+                .post("{id}", carId)
+                .then()
+                .statusCode(400);
+    }
 
 	@Test
 	void shouldBeRedirectToLoginUrl()
