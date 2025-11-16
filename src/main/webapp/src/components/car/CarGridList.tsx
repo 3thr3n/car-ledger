@@ -7,6 +7,7 @@ import CarGridMenu from './CarGridMenu';
 import useCarStore from '@/store/CarStore';
 import { NavigateOptions } from '@tanstack/router-core';
 import { Car } from '@/generated';
+import { AnimatedCard } from '@/components/base/AnimatedCard';
 
 export interface CarGridListProps {
   navigate: (path: NavigateOptions) => void;
@@ -33,11 +34,12 @@ export default function CarGridList({ navigate, data }: CarGridListProps) {
 
   function GridItem(props: {
     id: number;
+    index?: number;
     description: string;
     handleOpenCar: (id: number) => void;
   }) {
     return (
-      <CarGrid click={() => props.handleOpenCar(props.id)}>
+      <CarGrid click={() => props.handleOpenCar(props.id)} index={props.index}>
         <CarGridContent>
           <CarGridMenu
             id={props.id}
@@ -65,13 +67,15 @@ export default function CarGridList({ navigate, data }: CarGridListProps) {
   function renderComponent() {
     return (
       <React.Fragment>
-        {data?.map((car) => (
-          <GridItem
-            key={car.id}
-            id={car.id ?? -1}
-            description={car.name ?? ''}
-            handleOpenCar={handleOpenCar}
-          />
+        {data?.map((car, i) => (
+          <AnimatedCard index={i} key={car.id} maxWidth={400}>
+            <GridItem
+              id={car.id ?? -1}
+              index={i}
+              description={car.name ?? ''}
+              handleOpenCar={handleOpenCar}
+            />
+          </AnimatedCard>
         ))}
       </React.Fragment>
     );
@@ -84,6 +88,7 @@ export default function CarGridList({ navigate, data }: CarGridListProps) {
         spacing={2}
         columns={{ xl: 16, md: 12, sm: 8, xs: 4 }}
         justifyContent="center"
+        display="flex"
         mt={6}
         sx={{
           width: '100%',
@@ -91,7 +96,7 @@ export default function CarGridList({ navigate, data }: CarGridListProps) {
         }}
       >
         {renderComponent()}
-        <NewCar />
+        <NewCar index={data.length ?? 0} />
       </Grid>
     </React.Fragment>
   );

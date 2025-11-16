@@ -5,8 +5,9 @@ import useCarStore from '@/store/CarStore';
 import useUserStore from '@/store/UserStore';
 import { CarGrid, CarGridContent } from './CarGrid';
 import { useNavigate } from '@tanstack/react-router';
+import { AnimatedCard } from '@/components/base/AnimatedCard';
 
-export default function NewCar() {
+export default function NewCar({ index }: { index: number }) {
   const navigate = useNavigate();
   const [disabled, setDisabled] = useState(true);
 
@@ -31,29 +32,8 @@ export default function NewCar() {
     'Add new Car, you can still add ' + (maxCars - currentCarSize) + ' cars';
   if (disabled) {
     return (
-      <CarGrid>
-        <Box
-          sx={{
-            display: 'flex',
-            height: '100%',
-            width: '100%',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <Typography align="center" m={2}>
-            Max cars reached, either delete one or ask the administrator to
-            allow one more!
-          </Typography>
-        </Box>
-      </CarGrid>
-    );
-  }
-
-  return (
-    <CarGrid click={handleOpen}>
-      <CarGridContent>
-        <Tooltip title={tooltip} placement="top">
+      <AnimatedCard index={index} maxWidth={400}>
+        <CarGrid>
           <Box
             sx={{
               display: 'flex',
@@ -63,10 +43,35 @@ export default function NewCar() {
               justifyContent: 'center',
             }}
           >
-            <Add sx={{ mr: 1 }} /> <Typography>New car</Typography>
+            <Typography align="center" m={2}>
+              Max cars reached, either delete one or ask the administrator to
+              allow one more!
+            </Typography>
           </Box>
-        </Tooltip>
-      </CarGridContent>
-    </CarGrid>
+        </CarGrid>
+      </AnimatedCard>
+    );
+  }
+
+  return (
+    <AnimatedCard index={index} maxWidth={400}>
+      <CarGrid click={handleOpen}>
+        <CarGridContent>
+          <Tooltip title={tooltip} placement="top">
+            <Box
+              sx={{
+                display: 'flex',
+                height: '100%',
+                width: '100%',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Add sx={{ mr: 1 }} /> <Typography>New car</Typography>
+            </Box>
+          </Tooltip>
+        </CarGridContent>
+      </CarGrid>
+    </AnimatedCard>
   );
 }
