@@ -31,7 +31,7 @@ public class AuthResource
 	@Operation(operationId = "login", description = "Here should the browser redirect, when 'login' is pressed")
 	public Response login()
 	{
-		return Response.ok().build();
+		return Response.status(302).location(URI.create(redirectToLogout)).build();
 	}
 
 	@GET
@@ -39,16 +39,17 @@ public class AuthResource
 	@Operation(operationId = "logout", description = "Logout current user")
 	public Uni<Response> logout()
 	{
-		return session.logout().onItem().transform((x) -> Response.status(302).location(URI.create(redirectToLogout)).build());
+		return session.logout().onItem()
+				.transform((x) -> Response.status(302).location(URI.create(redirectToLogout)).build());
 	}
 
-    @GET
-    @Path("logout-callback")
-    @Operation(operationId = "logout-callback", description = "This only for redirect purposes of oauth!")
-    public Response logoutCallback()
-    {
-        return Response.status(302).location(URI.create(redirectToLogout)).build();
-    }
+	@GET
+	@Path("logout-callback")
+	@Operation(operationId = "logout-callback", description = "This only for redirect purposes of oauth!")
+	public Response logoutCallback()
+	{
+		return Response.status(302).location(URI.create(redirectToLogout)).build();
+	}
 
 	@GET
 	@Path("callback")
