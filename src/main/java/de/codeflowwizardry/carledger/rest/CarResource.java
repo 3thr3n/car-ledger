@@ -63,7 +63,6 @@ public class CarResource extends AbstractResource
     public CarOverview getMyCarOverview(@PathParam("id") Long id)
     {
         CarEntity carEntity = carRepository.findById(id, context.getName());
-
         return CarOverview.convert(carEntity);
     }
 
@@ -74,7 +73,7 @@ public class CarResource extends AbstractResource
     @Produces(MediaType.APPLICATION_JSON)
     @APIResponse(responseCode = "200", description = "Car found and updated.")
     @APIResponse(responseCode = "400", description = "Input was invalid.")
-    public Response getMyCar(@PathParam("id") Long id, CarInput carpojo)
+    public Response updateCar(@PathParam("id") Long id, CarInput carpojo)
     {
         if (isInputInvalid(carpojo)) {
             return Response
