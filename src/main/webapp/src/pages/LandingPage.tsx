@@ -1,4 +1,12 @@
-import { Box, Button, Card, CardContent, Container, Grid, Typography } from '@mui/material';
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Container,
+  Grid,
+  Typography,
+} from '@mui/material';
 import PageHeader from '@/components/base/PageHeader';
 
 export default function LandingPage() {
