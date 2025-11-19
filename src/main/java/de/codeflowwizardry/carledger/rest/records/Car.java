@@ -12,11 +12,14 @@ public record Car(Long id, String name, int year, int odometer, int amountBills)
 		{
 			return null;
 		}
-		return new Car(carEntity.getId(), carEntity.getName(), carEntity.getManufactureYear(), carEntity.getOdometer(), carEntity.getBills().size());
+		return new Car(carEntity.getId(), carEntity.getName(), carEntity.getManufactureYear(), carEntity.getOdometer(),
+				carEntity.getBills().size());
 	}
 
 	public static List<Car> convert(List<CarEntity> carEntityList)
 	{
-		return carEntityList.stream().map(t -> new Car(t.getId(), t.getName(), t.getManufactureYear(), t.getOdometer(), t.getBills().size())).toList();
+		return carEntityList.stream()
+				.map(t -> new Car(t.getId(), t.getName(), t.getManufactureYear(), t.getOdometer(), t.getBills().size()))
+				.toList();
 	}
 }

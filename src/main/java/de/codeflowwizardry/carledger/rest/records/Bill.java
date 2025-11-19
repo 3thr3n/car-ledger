@@ -14,7 +14,7 @@ public final class Bill
 {
 	private final Long id;
 	private final LocalDate day;
-    private final int year;
+	private final int year;
 	private final BigDecimal distance;
 	private final BigDecimal unit;
 	private final BigDecimal pricePerUnit;
@@ -23,11 +23,11 @@ public final class Bill
 	private final BigDecimal calculatedPrice;
 
 	Bill(Long id, LocalDate day, BigDecimal distance, BigDecimal unit, BigDecimal pricePerUnit, BigDecimal estimate,
-         BigDecimal calculated, BigDecimal calculatedPrice)
+			BigDecimal calculated, BigDecimal calculatedPrice)
 	{
 		this.id = id;
 		this.day = day;
-        this.year = day.getYear();
+		this.year = day.getYear();
 		this.distance = Objects.requireNonNullElse(distance, BigDecimal.ZERO);
 		this.unit = unit;
 		this.pricePerUnit = pricePerUnit;
@@ -38,8 +38,10 @@ public final class Bill
 
 	public static Bill convert(BillEntity billEntity)
 	{
-		return new BillBuilder().setId(billEntity.getId()).setDay(billEntity.getDay()).setDistance(billEntity.getDistance())
-				.setUnit(billEntity.getUnit()).setPricePerUnit(billEntity.getPricePerUnit()).setEstimate(billEntity.getEstimate())
+		return new BillBuilder().setId(billEntity.getId()).setDay(billEntity.getDay())
+				.setDistance(billEntity.getDistance())
+				.setUnit(billEntity.getUnit()).setPricePerUnit(billEntity.getPricePerUnit())
+				.setEstimate(billEntity.getEstimate())
 				.setCalculated(billEntity.getCalculateConsumption())
 				.setCalculatedPrice(billEntity.getCalculatedPrice(GERMAN_UST)).createBillPojo();
 	}
@@ -73,9 +75,10 @@ public final class Bill
 		return day;
 	}
 
-    public int getYear() {
-        return year;
-    }
+	public int getYear()
+	{
+		return year;
+	}
 
 	public String getDistance()
 	{

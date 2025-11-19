@@ -43,28 +43,30 @@ public class BillRepository implements PanacheRepository<BillEntity>
 		return find(query, params).list();
 	}
 
-    public List<Integer> getBillYears(long carId, String username) {
-        return find("select b.day from Bill b where b.car.id = ?1 and b.car.user.userId = ?2", carId, username)
-                .project(LocalDate.class)
-                .list()
-                .stream()
-                .map(LocalDate::getYear)
-                .distinct()
-                .sorted(Comparator.reverseOrder())
-                .toList();
-    }
+	public List<Integer> getBillYears(long carId, String username)
+	{
+		return find("select b.day from Bill b where b.car.id = ?1 and b.car.user.userId = ?2", carId, username)
+				.project(LocalDate.class)
+				.list()
+				.stream()
+				.map(LocalDate::getYear)
+				.distinct()
+				.sorted(Comparator.reverseOrder())
+				.toList();
+	}
 
 	public PanacheQuery<BillEntity> getBills(long carId, String username, Page page, Optional<Integer> year)
 	{
-        String query = "car.id = :carId and car.user.userId = :username order by day desc";
-        Map<String, Object> params = new HashMap<>();
-        params.put("carId", carId);
-        params.put("username", username);
+		String query = "car.id = :carId and car.user.userId = :username order by day desc";
+		Map<String, Object> params = new HashMap<>();
+		params.put("carId", carId);
+		params.put("username", username);
 
-        if (year.isPresent()) {
-            query = "year(day) = :year and " + query;
-            params.put("year", year.get());
-        }
+		if (year.isPresent())
+		{
+			query = "year(day) = :year and " + query;
+			params.put("year", year.get());
+		}
 
 		return find(query, params)
 				.page(page);

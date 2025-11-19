@@ -40,7 +40,7 @@ public class StatsCalculator
 		List<BillEntity> billEntities = billRepository.getBills(carId, username, from, to);
 
 		if (billEntities.isEmpty())
-        {
+		{
 			return new TotalStats(ZERO, ZERO, ZERO);
 		}
 
@@ -178,7 +178,8 @@ public class StatsCalculator
 				bill -> bill.getCalculatedPrice(GERMAN_UST));
 	}
 
-	private static HiLo calculateHiLo(List<BillEntity> billEntities, Function<BillEntity, BigDecimal> bigDecimalFunction, int scale)
+	private static HiLo calculateHiLo(List<BillEntity> billEntities,
+			Function<BillEntity, BigDecimal> bigDecimalFunction, int scale)
 	{
 		BigDecimal min = billEntities.stream()
 				.filter(BillEntity::isDistanceSet)
@@ -195,7 +196,8 @@ public class StatsCalculator
 		return new HiLo(min, max, scale);
 	}
 
-	private static HiLo calculateHiLo(List<BillEntity> billEntities, Function<BillEntity, BigDecimal> bigDecimalFunction)
+	private static HiLo calculateHiLo(List<BillEntity> billEntities,
+			Function<BillEntity, BigDecimal> bigDecimalFunction)
 	{
 		return calculateHiLo(billEntities, bigDecimalFunction, 2);
 	}
@@ -205,7 +207,7 @@ public class StatsCalculator
 		List<BillEntity> billEntities = billRepository.getBills(carId, username, from, to);
 
 		if (billEntities.isEmpty())
-        {
+		{
 			return new MinimalStats(ZERO, ZERO, new HiLo(ZERO, ZERO, 2), ZERO);
 		}
 
