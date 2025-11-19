@@ -16,11 +16,12 @@ import { useQuery } from '@tanstack/react-query';
 import { getMyCarOptions } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
 import CarBillPreviewTable from '@/components/car/bill/CarBillPreviewTable';
-import PageHeader from '@/components/base/PageHeader';
+import SubPageHeader from '@/components/base/SubPageHeader';
 import NotFoundPage from '@/pages/NotFoundPage';
 import useCsvStore from '@/store/CsvStore';
 import { CarOverviewStats } from '@/components/car/CarOverviewStats';
 import SingleLineStat from '@/components/base/SingleLineStat';
+import PageHeader from '@/components/base/PageHeader';
 
 export interface CarViewPageProperties {
   id: string;
@@ -40,7 +41,11 @@ function renderRecentFuelTypes(
         <Grid size={{ xs: 12, md: 8 }}>
           <Card>
             <CardContent>
-              <PageHeader title="Recent Fuel Entries" isCardHeader isMobile />
+              <SubPageHeader
+                title="Recent Fuel Entries"
+                isCardHeader
+                isMobile
+              />
               <Divider sx={{ mb: 2 }} />
               <Box display="flex" justifyContent="flex-end" mt={2}>
                 <Button size="small" onClick={goToAll}>
@@ -59,7 +64,7 @@ function renderRecentFuelTypes(
       <Grid size={{ xs: 12, md: 8 }}>
         <Card>
           <CardContent>
-            <PageHeader title="Recent Fuel Entries" isCardHeader />
+            <SubPageHeader title="Recent Fuel Entries" isCardHeader />
             <Divider sx={{ mb: 2 }} />
             <CarBillPreviewTable id={id} onSeeMore={goToAll} />
           </CardContent>
@@ -119,7 +124,10 @@ export default function CarViewPage({ navigate, id }: CarViewPageProperties) {
         spacing={2}
         mb={3}
       >
-        <PageHeader title={`${car.name} ${car.year && '(' + car.year + ')'}`} />
+        <PageHeader
+          title={`${car.name} ${car.year && '(' + car.year + ')'}`}
+          navigate={navigate}
+        />
         <Stack direction="row" spacing={2}>
           <Button
             variant="outlined"
@@ -150,7 +158,7 @@ export default function CarViewPage({ navigate, id }: CarViewPageProperties) {
         <Grid size={{ xs: 12, md: 4 }}>
           <Card>
             <CardContent>
-              <PageHeader title="Car Information" isCardHeader />
+              <SubPageHeader title="Car Information" isCardHeader />
               <Divider sx={{ mb: 2 }} />
               <SingleLineStat label="Year:" value={car.year} />
               <SingleLineStat

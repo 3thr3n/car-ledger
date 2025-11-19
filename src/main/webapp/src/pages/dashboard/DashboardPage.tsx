@@ -1,6 +1,6 @@
-import { Box, CircularProgress, Container, Typography } from '@mui/material';
+import { Box, CircularProgress, Container } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import {
   getStatsAverageOptions,
   getStatsMinimalOptions,
@@ -12,6 +12,7 @@ import DashboardCards from '@/components/dashboard/DashboardCards';
 import DashboardDateRange from '@/components/dashboard/DashboardDateRange';
 import { NavigateOptions } from '@tanstack/router-core';
 import { useSyncQueryParams } from '@/hooks/useSyncQueryParams';
+import PageHeader from '@/components/base/PageHeader';
 
 // import HiLoSummary from '@/components/dashboard/HiLoSummary';
 
@@ -69,9 +70,7 @@ export default function DashboardPage({
 
   return (
     <Container sx={{ py: 4 }}>
-      <Typography variant="h4" fontWeight={700} gutterBottom>
-        Dashboard
-      </Typography>
+      <PageHeader title="Dashboard" navigate={navigate} />
 
       <DashboardFilterBar
         selectedCarId={selectedCarId}

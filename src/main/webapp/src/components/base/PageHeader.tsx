@@ -1,25 +1,35 @@
-import { Typography, TypographyVariant } from '@mui/material';
+import { ArrowBack } from '@mui/icons-material';
+import { Box, IconButton, Typography, TypographyVariant } from '@mui/material';
+import { NavigateOptions } from '@tanstack/router-core';
 
 export default function PageHeader({
   title,
   isMobile,
-  isCardHeader,
+  navigateTo,
+  navigate,
 }: {
   title: string;
   isMobile?: boolean;
-  isCardHeader?: boolean;
+  navigateTo?: NavigateOptions;
+  navigate: (path: NavigateOptions) => void;
 }) {
   let variant: TypographyVariant = 'h4';
 
-  if (isMobile && isCardHeader) {
-    variant = 'subtitle1';
-  } else if (isMobile || isCardHeader) {
+  if (isMobile) {
     variant = 'h6';
   }
 
   return (
-    <Typography variant={variant} gutterBottom>
-      {title}
-    </Typography>
+    <Box my={0} display={'flex'} mb={2}>
+      <IconButton
+        onClick={() => navigate(navigateTo ?? { to: '..' })}
+        sx={{ mr: 1 }}
+      >
+        <ArrowBack fontSize="large" />
+      </IconButton>
+      <Typography variant={variant} sx={{ pt: '2px' }}>
+        {title}
+      </Typography>
+    </Box>
   );
 }

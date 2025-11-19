@@ -7,5 +7,6 @@ export const Route = createLazyFileRoute('/car/$id/bill/fuel/')({
 
 function RouteComponent() {
   const { id } = Route.useParams();
-  return <AllFuelPage id={Number(id)} />;
+  const navigate = Route.useNavigate();
+  return <AllFuelPage id={Number(id)} navigate={navigate} />;
 }
