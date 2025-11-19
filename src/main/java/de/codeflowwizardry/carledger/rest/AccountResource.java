@@ -60,8 +60,8 @@ public class AccountResource extends AbstractResource
 			accountRepository.persist(account);
 			LOG.debug("user created!");
 		}
-        catch (ConstraintViolationException e)
-        {
+		catch (ConstraintViolationException e)
+		{
 			LOG.debug("Duplicated request on first login");
 			account = accountRepository.findByIdentifier(name);
 		}

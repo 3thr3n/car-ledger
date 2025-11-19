@@ -1,0 +1,22 @@
+name: Lint frontend
+on: [push]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node_version: [ 20, 22, 24 ]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Use Node.js ${{ matrix.node_version }}
+      uses: actions/setup-node@v1
+      with:
+        node_version: ${{ matrix.node_version }}
+
+    - name: Build with Maven
+      run: |
+        yarn install
+        yarn lint
