@@ -21,8 +21,8 @@ public class AuthResource
 	@ConfigProperty(name = "redirect.to.logout")
 	String redirectToLogout;
 
-    @ConfigProperty(name = "redirect.to.error")
-    String redirectToError;
+	@ConfigProperty(name = "redirect.to.error")
+	String redirectToError;
 
 	@Inject
 	public AuthResource(OidcSession session)
@@ -54,11 +54,11 @@ public class AuthResource
 		throw new RedirectionException(302, URI.create(redirectToLogout));
 	}
 
-    @GET
-    @Path("error")
-    @Operation(operationId = "error", description = "This redirects to a frontend error page!")
-    public Response error()
-    {
-        throw new RedirectionException(302, URI.create(redirectToError));
-    }
+	@GET
+	@Path("error")
+	@Operation(operationId = "error", description = "This redirects to a frontend error page!")
+	public Response error()
+	{
+		throw new RedirectionException(302, URI.create(redirectToError));
+	}
 }
