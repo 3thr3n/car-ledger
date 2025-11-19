@@ -34,20 +34,22 @@ export default function NewCar({ index }: { index: number }) {
     return (
       <AnimatedCard index={index} maxWidth={400}>
         <CarGrid>
-          <Box
-            sx={{
-              display: 'flex',
-              height: '100%',
-              width: '100%',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <Typography align="center" m={2}>
-              Max cars reached, either delete one or ask the administrator to
-              allow one more!
-            </Typography>
-          </Box>
+          <CarGridContent>
+            <Box
+              sx={{
+                display: 'flex',
+                height: '224px',
+                width: '100%',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Typography align="center" m={2}>
+                Max cars reached, either delete one or ask the administrator to
+                allow one more!
+              </Typography>
+            </Box>
+          </CarGridContent>
         </CarGrid>
       </AnimatedCard>
     );
@@ -61,7 +63,7 @@ export default function NewCar({ index }: { index: number }) {
             <Box
               sx={{
                 display: 'flex',
-                height: '100%',
+                height: '224px',
                 width: '100%',
                 alignItems: 'center',
                 justifyContent: 'center',
