@@ -43,7 +43,7 @@ export default function CarListPage({ navigate }: CarListPageProperties) {
 
   return (
     <Container>
-      <PageHeader title="MyCars" />
+      <PageHeader title="My Cars" navigate={navigate} />
       <Typography variant="body1" color="text.secondary" gutterBottom>
         View, add, and manage your vehicles.
       </Typography>

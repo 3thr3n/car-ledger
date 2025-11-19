@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { getMyCarOverviewOptions } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
 import SingleLineStat from '@/components/base/SingleLineStat';
-import PageHeader from '@/components/base/PageHeader';
+import SubPageHeader from '@/components/base/SubPageHeader';
 
 export const CarOverviewStats = ({ carId }: { carId: number }) => {
   const { data, isLoading } = useQuery({
@@ -18,7 +18,7 @@ export const CarOverviewStats = ({ carId }: { carId: number }) => {
   return (
     <Card sx={{ mt: 3 }}>
       <CardContent>
-        <PageHeader title="Fuel Statistics" isCardHeader />
+        <SubPageHeader title="Fuel Statistics" isCardHeader />
 
         <Divider sx={{ mb: 2 }} />
 

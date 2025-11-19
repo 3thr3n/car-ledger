@@ -10,14 +10,16 @@ import {
 import { localClient } from '@/utils/QueryClient';
 import useBillPagination from '@/hooks/useBillPagination';
 import FuelTable from '@/components/car/fuel/FuelTable';
-import PageHeader from '@/components/base/PageHeader';
 import { toast } from 'react-toastify';
+import PageHeader from '@/components/base/PageHeader';
+import { NavigateOptions } from '@tanstack/router-core';
 
 interface CarBillOverviewProps {
   id: number;
+  navigate: (path: NavigateOptions) => void;
 }
 
-export default function AllViewPage({ id }: CarBillOverviewProps) {
+export default function AllViewPage({ id, navigate }: CarBillOverviewProps) {
   const isMobile = useMediaQuery('(max-width:900px)');
 
   const {
@@ -82,12 +84,21 @@ export default function AllViewPage({ id }: CarBillOverviewProps) {
   }
 
   const totalBills = billData?.total ?? 0;
+  const navigateTo: NavigateOptions = {
+    to: '/car/$id',
+    params: { id: `${id}` },
+  };
 
   // 📱 Mobile view: cards
   if (isMobile) {
     return (
       <Box sx={{ p: 2 }}>
-        <PageHeader title="Fuel Entries" isMobile />
+        <PageHeader
+          title="Fuel Entries"
+          navigate={navigate}
+          navigateTo={navigateTo}
+          isMobile
+        />
 
         <YearSelection
           years={years}
@@ -111,7 +122,11 @@ export default function AllViewPage({ id }: CarBillOverviewProps) {
   // 💻 Desktop view: sidebar selector + table
   return (
     <Box sx={{ p: 2 }}>
-      <PageHeader title="Fuel Entries" />
+      <PageHeader
+        title="Fuel Entries"
+        navigate={navigate}
+        navigateTo={navigateTo}
+      />
 
       <Box sx={{ display: 'flex', gap: 3 }}>
         {/* Year Selector */}
