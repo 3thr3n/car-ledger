@@ -11,20 +11,28 @@ import java.util.Optional;
 
 import static de.codeflowwizardry.carledger.data.BillEntity.GERMAN_UST;
 
-public record CarOverview(BigInteger totalRefuels, BigDecimal totalCost, BigDecimal avgConsumption) {
-    public static CarOverview convert(CarEntity carEntity) {
-        List<BillEntity> billEntities = carEntity.getBills();
-        BigDecimal totalCost = billEntities.stream().map(x -> x.getCalculatedPrice(GERMAN_UST)).reduce(BigDecimal.ZERO, BigDecimal::add);
+public record CarOverview(BigInteger totalRefuels, BigDecimal totalCost, BigDecimal avgConsumption)
+{
+	public static CarOverview convert(CarEntity carEntity)
+	{
+		List<BillEntity> billEntities = carEntity.getBills();
+		BigDecimal totalCost = billEntities.stream().map(x -> x.getCalculatedPrice(GERMAN_UST)).reduce(BigDecimal.ZERO,
+				BigDecimal::add);
 
-        BigDecimal avgConsumption = BigDecimal.ZERO;
-        Optional<BigDecimal[]> optAvgConsumptionArray = billEntities.stream()
-                .map(BillEntity::getCalculateConsumption).map(bd -> new BigDecimal[]{bd, BigDecimal.ONE})
-                .reduce((a, b) -> new BigDecimal[]{a[0].add(b[0]), a[1].add(BigDecimal.ONE)});
-        if (optAvgConsumptionArray.isPresent()) {
-            BigDecimal[] avgConsumptionArray = optAvgConsumptionArray.get();
-            avgConsumption = avgConsumptionArray[0].divide(avgConsumptionArray[1], RoundingMode.HALF_UP);
-        }
+		BigDecimal avgConsumption = BigDecimal.ZERO;
+		Optional<BigDecimal[]> optAvgConsumptionArray = billEntities.stream()
+				.map(BillEntity::getCalculateConsumption).map(bd -> new BigDecimal[] {
+						bd, BigDecimal.ONE
+				})
+				.reduce((a, b) -> new BigDecimal[] {
+						a[0].add(b[0]), a[1].add(BigDecimal.ONE)
+				});
+		if (optAvgConsumptionArray.isPresent())
+		{
+			BigDecimal[] avgConsumptionArray = optAvgConsumptionArray.get();
+			avgConsumption = avgConsumptionArray[0].divide(avgConsumptionArray[1], RoundingMode.HALF_UP);
+		}
 
-        return new CarOverview(BigInteger.valueOf(billEntities.size()), totalCost, avgConsumption);
-    }
+		return new CarOverview(BigInteger.valueOf(billEntities.size()), totalCost, avgConsumption);
+	}
 }

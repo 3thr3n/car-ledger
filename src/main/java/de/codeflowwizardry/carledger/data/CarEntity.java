@@ -17,7 +17,7 @@ public class CarEntity
 	private String name;
 	@Column(name = "_manufacture_year")
 	private int manufactureYear;
-    @DefaultValue("0")
+	@DefaultValue("0")
 	@Column(name = "_odometer", nullable = false)
 	private int odometer;
 	@OneToMany(mappedBy = "car")

@@ -36,8 +36,8 @@ class CarResourceTest
 	@Inject
 	CarRepository carRepository;
 
-    @Inject
-    BillRepository billRepository;
+	@Inject
+	BillRepository billRepository;
 
 	long carId = 0;
 
@@ -55,14 +55,14 @@ class CarResourceTest
 		carEntity.setName("Normal car");
 		carRepository.persist(carEntity);
 
-        BillEntity billEntity = new BillEntity();
-        billEntity.setCar(carEntity);
-        billEntity.setDay(LocalDate.now());
-        billEntity.setDistance(BigDecimal.valueOf(500));
-        billEntity.setUnit(BigDecimal.valueOf(40));
-        billEntity.setPricePerUnit(BigDecimal.valueOf(199.9));
-        billEntity.setEstimate(BigDecimal.valueOf(8.0));
-        billRepository.persist(billEntity);
+		BillEntity billEntity = new BillEntity();
+		billEntity.setCar(carEntity);
+		billEntity.setDay(LocalDate.now());
+		billEntity.setDistance(BigDecimal.valueOf(500));
+		billEntity.setUnit(BigDecimal.valueOf(40));
+		billEntity.setPricePerUnit(BigDecimal.valueOf(199.9));
+		billEntity.setEstimate(BigDecimal.valueOf(8.0));
+		billRepository.persist(billEntity);
 
 		carId = carEntity.getId();
 	}
@@ -74,29 +74,29 @@ class CarResourceTest
 	void shouldGetMyCars()
 	{
 		given()
-                .when()
-                .get()
-                .then()
-                .statusCode(200)
-                .body("size()", Matchers.equalTo(1));
+				.when()
+				.get()
+				.then()
+				.statusCode(200)
+				.body("size()", Matchers.equalTo(1));
 	}
 
-    @Test
-    @TestSecurity(user = "peter", roles = {
-            "user"
-    })
-    void shouldGetMyCarOverview()
-    {
-        given()
-                .when()
-                .pathParam("id", carId)
-                .get("{id}/overview")
-                .then()
-                .statusCode(200)
-                .body("totalRefuels", is(1))
-                .body("totalCost", is(79.96F))
-                .body("avgConsumption", is(8.0F));
-    }
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldGetMyCarOverview()
+	{
+		given()
+				.when()
+				.pathParam("id", carId)
+				.get("{id}/overview")
+				.then()
+				.statusCode(200)
+				.body("totalRefuels", is(1))
+				.body("totalCost", is(79.96F))
+				.body("avgConsumption", is(8.0F));
+	}
 
 	@Test
 	@TestSecurity(user = "peter", roles = {
@@ -143,7 +143,7 @@ class CarResourceTest
 	})
 	void shouldCreateACar()
 	{
-        String body = "{\"name\": \"Hansi\", \"year\": \"2000\"}";
+		String body = "{\"name\": \"Hansi\", \"year\": \"2000\"}";
 		given()
 				.when()
 				.body(body)
@@ -182,56 +182,56 @@ class CarResourceTest
 				.statusCode(400);
 	}
 
-    @Test
-    @TestSecurity(user = "peter", roles = {
-            "user"
-    })
-    void shouldNotCreateCarWithInvalidBody()
-    {
-        String body = "{\"namxe\": \"Hans\", \"year\": \"2000\"}";
-        given()
-                .when()
-                .body(body)
-                .accept(ContentType.JSON)
-                .contentType(ContentType.JSON)
-                .put()
-                .then()
-                .statusCode(400);
-    }
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldNotCreateCarWithInvalidBody()
+	{
+		String body = "{\"namxe\": \"Hans\", \"year\": \"2000\"}";
+		given()
+				.when()
+				.body(body)
+				.accept(ContentType.JSON)
+				.contentType(ContentType.JSON)
+				.put()
+				.then()
+				.statusCode(400);
+	}
 
-    @Test
-    @TestSecurity(user = "peter", roles = {
-            "user"
-    })
-    void shouldUpdateMyCar()
-    {
-        String body = "{\"name\": \"Hans\", \"year\": \"2000\"}";
-        given()
-                .when()
-                .body(body)
-                .accept(ContentType.JSON)
-                .contentType(ContentType.JSON)
-                .post("{id}", carId)
-                .then()
-                .statusCode(200);
-    }
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldUpdateMyCar()
+	{
+		String body = "{\"name\": \"Hans\", \"year\": \"2000\"}";
+		given()
+				.when()
+				.body(body)
+				.accept(ContentType.JSON)
+				.contentType(ContentType.JSON)
+				.post("{id}", carId)
+				.then()
+				.statusCode(200);
+	}
 
-    @Test
-    @TestSecurity(user = "peter", roles = {
-            "user"
-    })
-    void shouldNotUpdateMyCarWithInvalidBody()
-    {
-        String body = "{\"name\": \"Hans\", \"years\": \"2000\"}";
-        given()
-                .when()
-                .body(body)
-                .accept(ContentType.JSON)
-                .contentType(ContentType.JSON)
-                .post("{id}", carId)
-                .then()
-                .statusCode(400);
-    }
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldNotUpdateMyCarWithInvalidBody()
+	{
+		String body = "{\"name\": \"Hans\", \"years\": \"2000\"}";
+		given()
+				.when()
+				.body(body)
+				.accept(ContentType.JSON)
+				.contentType(ContentType.JSON)
+				.post("{id}", carId)
+				.then()
+				.statusCode(400);
+	}
 
 	@Test
 	void shouldBeRedirectToLoginUrl()
@@ -253,7 +253,7 @@ class CarResourceTest
 	@Transactional
 	void cleanup()
 	{
-        billRepository.deleteAll();
+		billRepository.deleteAll();
 		carRepository.deleteAll();
 		accountRepository.deleteAll();
 	}

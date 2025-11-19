@@ -54,45 +54,46 @@ public class CarResource extends AbstractResource
 		return Car.convert(carEntity);
 	}
 
-    @GET
-    @Path("/{id}/overview")
-    @Operation(operationId = "getMyCarOverview")
-    @Produces(MediaType.APPLICATION_JSON)
-    @APIResponse(responseCode = "200", description = "Car found.")
-    @APIResponse(responseCode = "204", description = "Id was not found.")
-    public CarOverview getMyCarOverview(@PathParam("id") Long id)
-    {
-        CarEntity carEntity = carRepository.findById(id, context.getName());
-        return CarOverview.convert(carEntity);
-    }
+	@GET
+	@Path("/{id}/overview")
+	@Operation(operationId = "getMyCarOverview")
+	@Produces(MediaType.APPLICATION_JSON)
+	@APIResponse(responseCode = "200", description = "Car found.")
+	@APIResponse(responseCode = "204", description = "Id was not found.")
+	public CarOverview getMyCarOverview(@PathParam("id") Long id)
+	{
+		CarEntity carEntity = carRepository.findById(id, context.getName());
+		return CarOverview.convert(carEntity);
+	}
 
-    @POST
-    @Path("/{id}")
-    @Transactional
-    @Operation(operationId = "updateMyCar")
-    @Produces(MediaType.APPLICATION_JSON)
-    @APIResponse(responseCode = "200", description = "Car found and updated.")
-    @APIResponse(responseCode = "400", description = "Input was invalid.")
-    public Response updateCar(@PathParam("id") Long id, CarInput carpojo)
-    {
-        if (isInputInvalid(carpojo)) {
-            return Response
-                    .status(400)
-                    .entity("Input was invalid")
-                    .build();
-        }
+	@POST
+	@Path("/{id}")
+	@Transactional
+	@Operation(operationId = "updateMyCar")
+	@Produces(MediaType.APPLICATION_JSON)
+	@APIResponse(responseCode = "200", description = "Car found and updated.")
+	@APIResponse(responseCode = "400", description = "Input was invalid.")
+	public Response updateCar(@PathParam("id") Long id, CarInput carpojo)
+	{
+		if (isInputInvalid(carpojo))
+		{
+			return Response
+					.status(400)
+					.entity("Input was invalid")
+					.build();
+		}
 
-        CarEntity carEntity = carRepository.findById(id, context.getName());
-        carEntity.setName(carpojo.name());
-        carEntity.setOdometer(carpojo.odometer());
-        carEntity.setManufactureYear(carpojo.year());
+		CarEntity carEntity = carRepository.findById(id, context.getName());
+		carEntity.setName(carpojo.name());
+		carEntity.setOdometer(carpojo.odometer());
+		carEntity.setManufactureYear(carpojo.year());
 
-        carRepository.persist(carEntity);
+		carRepository.persist(carEntity);
 
-        return Response.ok().entity(Car.convert(carEntity)).build();
-    }
+		return Response.ok().entity(Car.convert(carEntity)).build();
+	}
 
-    @PUT
+	@PUT
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "createCar")
@@ -105,23 +106,24 @@ public class CarResource extends AbstractResource
 
 		if (accountEntity.getMaxCars() == accountEntity.getCarList().size())
 		{
-            return  Response
-                    .status(400)
-                    .entity("Max cars already reached! Delete one car or ask the administrator for an increase.")
-                    .build();
-        }
+			return Response
+					.status(400)
+					.entity("Max cars already reached! Delete one car or ask the administrator for an increase.")
+					.build();
+		}
 
-        if (isInputInvalid(carpojo)) {
-            return Response
-                    .status(400)
-                    .entity("Input was invalid")
-                    .build();
-        }
+		if (isInputInvalid(carpojo))
+		{
+			return Response
+					.status(400)
+					.entity("Input was invalid")
+					.build();
+		}
 
 		CarEntity carEntity = new CarEntity();
 		carEntity.setName(carpojo.name());
-        carEntity.setManufactureYear(carpojo.year());
-        carEntity.setOdometer(carpojo.odometer());
+		carEntity.setManufactureYear(carpojo.year());
+		carEntity.setOdometer(carpojo.odometer());
 		carEntity.setUser(accountEntity);
 
 		carRepository.persist(carEntity);
@@ -129,10 +131,11 @@ public class CarResource extends AbstractResource
 		return Response.accepted().build();
 	}
 
-    private boolean isInputInvalid(CarInput carInput) {
-        return StringUtils.isBlank(carInput.name())
-                || carInput.odometer() < 0
-                || carInput.year() < 1900
-                || carInput.year() > Calendar.getInstance().get(Calendar.YEAR) + 1;
-    }
+	private boolean isInputInvalid(CarInput carInput)
+	{
+		return StringUtils.isBlank(carInput.name())
+				|| carInput.odometer() < 0
+				|| carInput.year() < 1900
+				|| carInput.year() > Calendar.getInstance().get(Calendar.YEAR) + 1;
+	}
 }

@@ -25,7 +25,7 @@ import jakarta.persistence.UniqueConstraint;
 @SequenceGenerator(name = "sequence_bill", allocationSize = 1, initialValue = 5, sequenceName = "sequence_bill")
 public class BillEntity
 {
-    public static final BigDecimal GERMAN_UST = BigDecimal.valueOf(1.19);
+	public static final BigDecimal GERMAN_UST = BigDecimal.valueOf(1.19);
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequence_bill")
@@ -140,12 +140,12 @@ public class BillEntity
 				.divide(ONE_HUNDRED, 2, RoundingMode.HALF_UP);
 	}
 
-    public BigDecimal getCalculateConsumption()
-    {
-        if (unit.compareTo(BigDecimal.ZERO) <= 0 || distance.compareTo(BigDecimal.ZERO) <= 0)
-        {
-            return BigDecimal.ZERO;
-        }
-        return unit.divide(distance, 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100));
-    }
+	public BigDecimal getCalculateConsumption()
+	{
+		if (unit.compareTo(BigDecimal.ZERO) <= 0 || distance.compareTo(BigDecimal.ZERO) <= 0)
+		{
+			return BigDecimal.ZERO;
+		}
+		return unit.divide(distance, 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100));
+	}
 }

@@ -47,23 +47,23 @@ public class BillResource extends AbstractResource
 		this.carRepository = carRepository;
 	}
 
-    @GET
-    @Path("years")
-    @Operation(operationId = "getAllBillYears", description = "Gets all years of bills for specified car")
-    @APIResponse(responseCode = "200", description = "Bills found and years extracted.")
-    public List<Integer> getAllMyBills(@PathParam("carId") long carId)
-    {
-        return billRepository.getBillYears(carId, context.getName());
-    }
+	@GET
+	@Path("years")
+	@Operation(operationId = "getAllBillYears", description = "Gets all years of bills for specified car")
+	@APIResponse(responseCode = "200", description = "Bills found and years extracted.")
+	public List<Integer> getAllMyBills(@PathParam("carId") long carId)
+	{
+		return billRepository.getBillYears(carId, context.getName());
+	}
 
 	@GET
 	@Path("all")
 	@Operation(operationId = "getAllBills", description = "Gets all bills for specified car")
 	@APIResponse(responseCode = "200", description = "Bills found.")
 	public BillPaged getAllMyBills(@PathParam("carId") long carId,
-                                   @QueryParam("page") @DefaultValue("1") int page,
-                                   @QueryParam("size") @DefaultValue("10") int size,
-                                   @QueryParam("year") Integer year)
+			@QueryParam("page") @DefaultValue("1") int page,
+			@QueryParam("size") @DefaultValue("10") int size,
+			@QueryParam("year") Integer year)
 	{
 		if (page < 1)
 		{
@@ -71,7 +71,8 @@ public class BillResource extends AbstractResource
 		}
 		Page queryPage = new Page(page - 1, size);
 
-		PanacheQuery<BillEntity> billQuery = billRepository.getBills(carId, context.getName(), queryPage, Optional.ofNullable(year));
+		PanacheQuery<BillEntity> billQuery = billRepository.getBills(carId, context.getName(), queryPage,
+				Optional.ofNullable(year));
 		return new BillPaged(billQuery.count(), page, size, Bill.convert(billQuery.list()));
 	}
 

@@ -139,7 +139,8 @@ class BillResourceTest
 				""";
 
 		// when
-		given().accept(ContentType.JSON).contentType(ContentType.JSON).body(body).put("/api/bill/" + carEntity.getId()).then()
+		given().accept(ContentType.JSON).contentType(ContentType.JSON).body(body).put("/api/bill/" + carEntity.getId())
+				.then()
 				.statusCode(202).body("day", is("2024-08-22"));
 
 		// then
@@ -166,7 +167,8 @@ class BillResourceTest
 				""";
 
 		// when
-		given().accept(ContentType.JSON).contentType(ContentType.JSON).body(body).put("/api/bill/" + carEntity.getId()).then()
+		given().accept(ContentType.JSON).contentType(ContentType.JSON).body(body).put("/api/bill/" + carEntity.getId())
+				.then()
 				.statusCode(400);
 
 		// then
@@ -217,23 +219,23 @@ class BillResourceTest
 		assertTrue(response.contains("<html"));
 	}
 
-    @Test
-    @TestSecurity(user = "peter", roles = {
-            "user"
-    })
-    void shouldGetYearsOfBills()
-    {
-        // given
-        assertEquals(3, billRepository.count());
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldGetYearsOfBills()
+	{
+		// given
+		assertEquals(3, billRepository.count());
 
-        // when
-        given()
-                .get("/api/bill/" + carEntity.getId() + "/years")
-                .then()
-                .statusCode(200)
-                .body("", contains(2024, 2023, 2022));
+		// when
+		given()
+				.get("/api/bill/" + carEntity.getId() + "/years")
+				.then()
+				.statusCode(200)
+				.body("", contains(2024, 2023, 2022));
 
-    }
+	}
 
 	@AfterEach
 	@Transactional

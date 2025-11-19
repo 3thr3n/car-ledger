@@ -17,8 +17,8 @@ class AuthResourceTest
 	void shouldLogin()
 	{
 		given()
-                .redirects()
-                .follow(false)
+				.redirects()
+				.follow(false)
 				.when()
 				.get("login")
 				.then()
