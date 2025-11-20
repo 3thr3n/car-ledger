@@ -3,19 +3,24 @@ import globals from 'globals';
 import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
 import tseslint from 'typescript-eslint';
-import eslintPluginPrettier from 'eslint-plugin-prettier/recommended';
-import deprecation from 'eslint-plugin-deprecation';
+import tsparser from '@typescript-eslint/parser';
+import prettierPlugin from 'eslint-plugin-prettier';
+import prettierConfig from 'eslint-config-prettier';
 
 export default tseslint.config(
   { ignores: ['dist', 'src/generated', 'node_modules'] },
+  // -------------------------
+  // Base project config
+  // -------------------------
   {
     extends: [
       js.configs.recommended,
       ...tseslint.configs.recommended,
-      eslintPluginPrettier,
+      prettierConfig,
     ],
     files: ['**/*.{ts,tsx}'],
     languageOptions: {
+      parser: tsparser,
       ecmaVersion: 2020,
       globals: globals.browser,
       parserOptions: {
@@ -26,23 +31,36 @@ export default tseslint.config(
     plugins: {
       'react-hooks': reactHooks,
       'react-refresh': reactRefresh,
-      deprecation,
+      prettier: prettierPlugin,
     },
     rules: {
-      ...reactHooks.configs.recommended.rules,
+      // React hooks rules must be added manually in v7
+      'react-hooks/rules-of-hooks': 'error',
+      'react-hooks/exhaustive-deps': 'warn',
+
+      // Prettier plugin rule
+      'prettier/prettier': 'error',
+
+      // React refresh
       'react-refresh/only-export-components': [
         'warn',
         { allowConstantExport: true },
       ],
+
+      // TypeScript
       '@typescript-eslint/no-explicit-any': 'warn',
-      'deprecation/deprecation': 'warn',
+
+      // Deprecation warning
+      '@typescript-eslint/no-deprecated': 'warn',
     },
   },
-  // 🔹 Enable deprecation only for /src/generated/**
+  // -------------------------
+  // Generated code (deprecation allowed)
+  // -------------------------
   {
     files: ['src/generated/**/*.{ts,tsx}'],
     rules: {
-      'deprecation/deprecation': 'warn',
+      '@typescript-eslint/no-deprecated': 'warn',
     },
   },
 );
