@@ -2,6 +2,10 @@ import { RefObject, useEffect, useState } from 'react';
 
 const offset = 50;
 
+/**
+ * Checks the `ref` if the scrollHeight is reached and updates the scrollNeeded property
+ * @param ref
+ */
 export function useScrollNeeded(ref: RefObject<HTMLElement>) {
   const [scrollNeeded, setScrollNeeded] = useState(false);
 

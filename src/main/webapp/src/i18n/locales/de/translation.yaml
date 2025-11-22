@@ -1,0 +1,9 @@
+app:
+  title: "Car Ledger"
+  menu:
+    overview: "Übersicht"
+    cars: "Autos"
+  login:
+    loginButton: "Einloggen"
+    logoutButton: "Ausloggen"
+    welcome: "Willkommen"

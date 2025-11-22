@@ -11,6 +11,7 @@ import {
 import MenuIcon from '@mui/icons-material/Menu';
 import Login from '@/components/base/Login';
 import useUserStore from '@/store/UserStore';
+import { LanguageSwitcher } from '@/components/base/LanguageSwitcher';
 
 export interface UserNavigationProps {
   isSm: boolean;
@@ -73,21 +74,21 @@ export default function UserNavigation({
           <Box
             sx={{
               width: 250,
-              display: 'flex',
-              flexDirection: 'column',
               p: 2,
               height: '100%',
             }}
             role="presentation"
           >
-            <Typography variant="h6" gutterBottom>
-              Menu
-            </Typography>
-            <Divider sx={{ mb: 2 }} />
-            <Stack spacing={1}>
+            <Stack spacing={1} direction="column" sx={{ height: '100%' }}>
+              <Typography variant="h6" gutterBottom>
+                Menu
+              </Typography>
+              <Divider sx={{ mb: 2 }} />
               <Login drawerMode />
               {isLoggedIn && drawerNavigationButton('Dashboard', '/dashboard')}
               {isLoggedIn && drawerNavigationButton('Cars', '/car')}
+              <Box sx={{ flexGrow: 1 }} />
+              <LanguageSwitcher drawerMode />
             </Stack>
           </Box>
         </Drawer>
@@ -110,6 +111,7 @@ export default function UserNavigation({
         }}
       />
       <Login />
+      <LanguageSwitcher />
     </>
   );
 }

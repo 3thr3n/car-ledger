@@ -25,7 +25,7 @@ localClient.interceptors.request.use((req) => {
   return req;
 });
 
-const noRedirectUrls = ['/', '/404', '/error', '/about'];
+const noRedirectUrls = ['/', '/error', '/about', '/dev/i18n', '/dev/404'];
 
 localClient.interceptors.response.use(async (res) => {
   if (res.status == 400) {

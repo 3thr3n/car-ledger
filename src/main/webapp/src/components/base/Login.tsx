@@ -5,12 +5,15 @@ import { getMyselfOptions } from '@/generated/@tanstack/react-query.gen';
 import { baseUrl, localClient } from '@/utils/QueryClient';
 import { useEffect } from 'react';
 import useUserStore from '@/store/UserStore';
+import { useTranslation } from 'react-i18next';
 
 interface LoginProps {
   drawerMode?: boolean;
 }
 
 export default function Login({ drawerMode = false }: LoginProps) {
+  const { t } = useTranslation();
+
   const isLoggedIn = useUserStore((state) => state.loggedIn);
   const setName = useUserStore((state) => state.setName);
   const setLoggedIn = useUserStore((state) => state.setLoggedIn);
@@ -49,7 +52,7 @@ export default function Login({ drawerMode = false }: LoginProps) {
         fullWidth={drawerMode} // full width in drawer
         sx={{ mb: drawerMode ? 2 : 0 }}
       >
-        Login
+        {t('app.login.loginButton')}
       </Button>
     );
   }
@@ -61,14 +64,14 @@ export default function Login({ drawerMode = false }: LoginProps) {
       gap={drawerMode ? 1 : 2}
     >
       <Typography variant="body1">
-        Welcome <b>{data?.name}</b>
+        {t('app.login.welcome')} <b>{data?.name}</b>
       </Typography>
       <Button
         variant="contained"
         href={baseUrl + '/api/auth/logout'}
         fullWidth={drawerMode}
       >
-        Logout
+        {t('app.login.logoutButton')}
       </Button>
     </Box>
   );
