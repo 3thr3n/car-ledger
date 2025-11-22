@@ -5,12 +5,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.InputStream;
 
+import de.codeflowwizardry.carledger.data.CarEntity;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import de.codeflowwizardry.carledger.data.Account;
-import de.codeflowwizardry.carledger.data.Car;
+import de.codeflowwizardry.carledger.data.AccountEntity;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.BillRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
@@ -32,31 +32,31 @@ class ImportResourceTest
 	@Inject
 	BillRepository billRepository;
 
-	Car car;
+	CarEntity carEntity;
 
 	@BeforeEach
 	@Transactional
 	void setup()
 	{
-		Account account = new Account();
-		account.setMaxCars(1);
-		account.setUserId("bob");
-		accountRepository.persist(account);
+		AccountEntity accountEntity = new AccountEntity();
+		accountEntity.setMaxCars(1);
+		accountEntity.setUserId("bob");
+		accountRepository.persist(accountEntity);
 
 		setupPeter();
 	}
 
 	private void setupPeter()
 	{
-		Account account = new Account();
-		account.setMaxCars(1);
-		account.setUserId("peter");
-		accountRepository.persist(account);
+		AccountEntity accountEntity = new AccountEntity();
+		accountEntity.setMaxCars(1);
+		accountEntity.setUserId("peter");
+		accountRepository.persist(accountEntity);
 
-		car = new Car();
-		car.setUser(account);
-		car.setDescription("Neat car");
-		carRepository.persist(car);
+		carEntity = new CarEntity();
+		carEntity.setUser(accountEntity);
+		carEntity.setName("Neat car");
+		carRepository.persist(carEntity);
 	}
 
 	@Test
@@ -67,7 +67,7 @@ class ImportResourceTest
 	{
 		given().contentType(ContentType.MULTIPART)
 				.multiPart("file", "import.csv", getFile("csv/import_1.csv"), "text/csv").when()
-				.post("/api/import/" + car.getId()).then().statusCode(202);
+				.post("/api/import/" + carEntity.getId()).then().statusCode(202);
 
 		assertEquals(13, billRepository.count());
 	}
@@ -80,7 +80,7 @@ class ImportResourceTest
 	{
 		given().contentType(ContentType.MULTIPART)
 				.multiPart("file", "import.csv", getFile("csv/import_3_invalid.csv"), "text/csv").when()
-				.post("/api/import/" + car.getId()).then().statusCode(500);
+				.post("/api/import/" + carEntity.getId()).then().statusCode(500);
 
 		assertEquals(0, billRepository.count());
 	}
@@ -103,7 +103,7 @@ class ImportResourceTest
 
 		given().contentType(ContentType.MULTIPART)
 				.multiPart("file", "import.csv", getFile("csv/import_2.csv"), "text/csv").multiPart("order", order)
-				.when().post("/api/import/" + car.getId()).then().statusCode(202);
+				.when().post("/api/import/" + carEntity.getId()).then().statusCode(202);
 
 		assertEquals(13, billRepository.count());
 	}
@@ -116,7 +116,7 @@ class ImportResourceTest
 	{
 		given().contentType(ContentType.MULTIPART)
 				.multiPart("file", "import.csv", getFile("csv/import_4.csv"), "text/csv").when()
-				.post("/api/import/" + car.getId() + "?skipHeader=true").then().statusCode(202);
+				.post("/api/import/" + carEntity.getId() + "?skipHeader=true").then().statusCode(202);
 
 		assertEquals(13, billRepository.count());
 	}
@@ -129,7 +129,7 @@ class ImportResourceTest
 	{
 		given().contentType(ContentType.MULTIPART)
 				.multiPart("file", "import.csv", getFile("csv/import_1.csv"), "text/csv").when()
-				.post("/api/import/" + car.getId()).then().statusCode(400);
+				.post("/api/import/" + carEntity.getId()).then().statusCode(400);
 
 		assertEquals(0, billRepository.count());
 	}
@@ -142,11 +142,11 @@ class ImportResourceTest
 	{
 		given().contentType(ContentType.MULTIPART)
 				.multiPart("file", "import.csv", getFile("csv/import_1.csv"), "text/csv").when()
-				.post("/api/import/" + car.getId()).then().statusCode(202);
+				.post("/api/import/" + carEntity.getId()).then().statusCode(202);
 
 		given().contentType(ContentType.MULTIPART)
 				.multiPart("file", "import.csv", getFile("csv/import_1.csv"), "text/csv").when()
-				.post("/api/import/" + car.getId()).then().statusCode(202);
+				.post("/api/import/" + carEntity.getId()).then().statusCode(202);
 
 		assertEquals(13, billRepository.count());
 	}
@@ -159,7 +159,7 @@ class ImportResourceTest
 	{
 		given().contentType(ContentType.MULTIPART)
 				.multiPart("file", "import.png", getFile("white_with_dot.png"), "image/png").when()
-				.post("/api/import/" + car.getId()).then().statusCode(500);
+				.post("/api/import/" + carEntity.getId()).then().statusCode(500);
 	}
 
 	@AfterEach

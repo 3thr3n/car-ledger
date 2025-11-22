@@ -1,15 +1,18 @@
 package de.codeflowwizardry.carledger.rest;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import de.codeflowwizardry.carledger.data.BillEntity;
+import de.codeflowwizardry.carledger.data.CarEntity;
+import de.codeflowwizardry.carledger.data.repository.BillRepository;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import de.codeflowwizardry.carledger.data.Account;
-import de.codeflowwizardry.carledger.data.Car;
+import de.codeflowwizardry.carledger.data.AccountEntity;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
@@ -18,6 +21,10 @@ import io.quarkus.test.security.TestSecurity;
 import io.restassured.http.ContentType;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.time.LocalDate;
 
 @QuarkusTest
 @TestHTTPEndpoint(CarResource.class)
@@ -29,23 +36,35 @@ class CarResourceTest
 	@Inject
 	CarRepository carRepository;
 
+	@Inject
+	BillRepository billRepository;
+
 	long carId = 0;
 
 	@BeforeEach
 	@Transactional
 	void before()
 	{
-		Account account = new Account();
-		account.setMaxCars(2);
-		account.setUserId("peter");
-		accountRepository.persist(account);
+		AccountEntity accountEntity = new AccountEntity();
+		accountEntity.setMaxCars(2);
+		accountEntity.setUserId("peter");
+		accountRepository.persist(accountEntity);
 
-		Car car = new Car();
-		car.setUser(account);
-		car.setDescription("Normal car");
-		carRepository.persist(car);
+		CarEntity carEntity = new CarEntity();
+		carEntity.setUser(accountEntity);
+		carEntity.setName("Normal car");
+		carRepository.persist(carEntity);
 
-		carId = car.getId();
+		BillEntity billEntity = new BillEntity();
+		billEntity.setCar(carEntity);
+		billEntity.setDay(LocalDate.now());
+		billEntity.setDistance(BigDecimal.valueOf(500));
+		billEntity.setUnit(BigDecimal.valueOf(40));
+		billEntity.setPricePerUnit(BigDecimal.valueOf(199.9));
+		billEntity.setEstimate(BigDecimal.valueOf(8.0));
+		billRepository.persist(billEntity);
+
+		carId = carEntity.getId();
 	}
 
 	@Test
@@ -54,7 +73,29 @@ class CarResourceTest
 	})
 	void shouldGetMyCars()
 	{
-		given().when().get().then().statusCode(200).body("size()", Matchers.equalTo(1));
+		given()
+				.when()
+				.get()
+				.then()
+				.statusCode(200)
+				.body("size()", Matchers.equalTo(1));
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldGetMyCarOverview()
+	{
+		given()
+				.when()
+				.pathParam("id", carId)
+				.get("{id}/overview")
+				.then()
+				.statusCode(200)
+				.body("totalRefuels", is(1))
+				.body("totalCost", is(79.96F))
+				.body("avgConsumption", is(8.0F));
 	}
 
 	@Test
@@ -84,7 +125,7 @@ class CarResourceTest
 				.then()
 				.statusCode(200)
 				.body("id", Matchers.equalTo((int) carId))
-				.body("amountBills", Matchers.equalTo(0));
+				.body("amountBills", Matchers.equalTo(1));
 	}
 
 	@Test
@@ -102,7 +143,7 @@ class CarResourceTest
 	})
 	void shouldCreateACar()
 	{
-		String body = "{\"description\": \"Hansi\"}";
+		String body = "{\"name\": \"Hansi\", \"year\": \"2000\"}";
 		given()
 				.when()
 				.body(body)
@@ -119,7 +160,7 @@ class CarResourceTest
 	})
 	void shouldFailCreateCarIfAlreadyAtMaxCapacity()
 	{
-		String body = "{\"description\": \"Hansi\"}";
+		String body = "{\"name\": \"Hansi\", \"year\": \"2000\"}";
 		given()
 				.when()
 				.body(body)
@@ -129,7 +170,7 @@ class CarResourceTest
 				.then()
 				.statusCode(202);
 
-		body = "{\"description\": \"Hansi 2\"}";
+		body = "{\"name\": \"Hansi 2\", \"year\": \"2010\"}";
 
 		given()
 				.when()
@@ -137,6 +178,57 @@ class CarResourceTest
 				.accept(ContentType.JSON)
 				.contentType(ContentType.JSON)
 				.put()
+				.then()
+				.statusCode(400);
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldNotCreateCarWithInvalidBody()
+	{
+		String body = "{\"namxe\": \"Hans\", \"year\": \"2000\"}";
+		given()
+				.when()
+				.body(body)
+				.accept(ContentType.JSON)
+				.contentType(ContentType.JSON)
+				.put()
+				.then()
+				.statusCode(400);
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldUpdateMyCar()
+	{
+		String body = "{\"name\": \"Hans\", \"year\": \"2000\"}";
+		given()
+				.when()
+				.body(body)
+				.accept(ContentType.JSON)
+				.contentType(ContentType.JSON)
+				.post("{id}", carId)
+				.then()
+				.statusCode(200);
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldNotUpdateMyCarWithInvalidBody()
+	{
+		String body = "{\"name\": \"Hans\", \"years\": \"2000\"}";
+		given()
+				.when()
+				.body(body)
+				.accept(ContentType.JSON)
+				.contentType(ContentType.JSON)
+				.post("{id}", carId)
 				.then()
 				.statusCode(400);
 	}
@@ -161,6 +253,7 @@ class CarResourceTest
 	@Transactional
 	void cleanup()
 	{
+		billRepository.deleteAll();
 		carRepository.deleteAll();
 		accountRepository.deleteAll();
 	}

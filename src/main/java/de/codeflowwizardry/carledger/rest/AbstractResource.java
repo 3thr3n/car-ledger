@@ -2,7 +2,7 @@ package de.codeflowwizardry.carledger.rest;
 
 import java.security.Principal;
 
-import de.codeflowwizardry.carledger.data.Account;
+import de.codeflowwizardry.carledger.data.AccountEntity;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import jakarta.inject.Inject;
 
@@ -18,7 +18,7 @@ public abstract class AbstractResource
 		this.accountRepository = accountRepository;
 	}
 
-	protected Account getAccount()
+	protected AccountEntity getAccount()
 	{
 		return accountRepository.findByIdentifier(context.getName());
 	}

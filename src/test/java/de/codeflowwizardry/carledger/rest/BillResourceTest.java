@@ -1,20 +1,20 @@
 package de.codeflowwizardry.carledger.rest;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+import de.codeflowwizardry.carledger.data.BillEntity;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import de.codeflowwizardry.carledger.data.Account;
-import de.codeflowwizardry.carledger.data.Bill;
-import de.codeflowwizardry.carledger.data.Car;
+import de.codeflowwizardry.carledger.data.AccountEntity;
+import de.codeflowwizardry.carledger.data.CarEntity;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.BillRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
@@ -36,7 +36,7 @@ class BillResourceTest
 	@Inject
 	CarRepository carRepository;
 
-	Car car;
+	CarEntity carEntity;
 
 	@BeforeEach
 	@Transactional
@@ -50,50 +50,50 @@ class BillResourceTest
 
 	private void setupPeter()
 	{
-		Account account = new Account();
-		account.setMaxCars(1);
-		account.setUserId("peter");
-		accountRepository.persist(account);
+		AccountEntity accountEntity = new AccountEntity();
+		accountEntity.setMaxCars(1);
+		accountEntity.setUserId("peter");
+		accountRepository.persist(accountEntity);
 
-		car = new Car();
-		car.setUser(account);
-		car.setDescription("Neat car");
-		carRepository.persist(car);
+		carEntity = new CarEntity();
+		carEntity.setUser(accountEntity);
+		carEntity.setName("Neat car");
+		carRepository.persist(carEntity);
 
-		Bill bill = new Bill();
-		bill.setEstimate(BigDecimal.valueOf(8.5));
-		bill.setDay(LocalDate.of(2024, 8, 16));
-		bill.setDistance(BigDecimal.valueOf(500));
-		bill.setUnit(BigDecimal.valueOf(28d));
-		bill.setPricePerUnit(BigDecimal.valueOf(199.9d));
-		bill.setCar(car);
-		billRepository.persist(bill);
+		BillEntity billEntity = new BillEntity();
+		billEntity.setEstimate(BigDecimal.valueOf(8.5));
+		billEntity.setDay(LocalDate.of(2024, 8, 16));
+		billEntity.setDistance(BigDecimal.valueOf(500));
+		billEntity.setUnit(BigDecimal.valueOf(28d));
+		billEntity.setPricePerUnit(BigDecimal.valueOf(199.9d));
+		billEntity.setCar(carEntity);
+		billRepository.persist(billEntity);
 
-		bill = new Bill();
-		bill.setEstimate(BigDecimal.valueOf(9.1d));
-		bill.setDay(LocalDate.of(2022, 5, 22));
-		bill.setDistance(BigDecimal.valueOf(400));
-		bill.setUnit(BigDecimal.valueOf(20d));
-		bill.setPricePerUnit(BigDecimal.valueOf(189.9d));
-		bill.setCar(car);
-		billRepository.persist(bill);
+		billEntity = new BillEntity();
+		billEntity.setEstimate(BigDecimal.valueOf(9.1d));
+		billEntity.setDay(LocalDate.of(2022, 5, 22));
+		billEntity.setDistance(BigDecimal.valueOf(400));
+		billEntity.setUnit(BigDecimal.valueOf(20d));
+		billEntity.setPricePerUnit(BigDecimal.valueOf(189.9d));
+		billEntity.setCar(carEntity);
+		billRepository.persist(billEntity);
 
-		bill = new Bill();
-		bill.setEstimate(BigDecimal.valueOf(8.2d));
-		bill.setDay(LocalDate.of(2023, 6, 2));
-		bill.setDistance(BigDecimal.valueOf(480));
-		bill.setUnit(BigDecimal.valueOf(28d));
-		bill.setPricePerUnit(BigDecimal.valueOf(196.9d));
-		bill.setCar(car);
-		billRepository.persist(bill);
+		billEntity = new BillEntity();
+		billEntity.setEstimate(BigDecimal.valueOf(8.2d));
+		billEntity.setDay(LocalDate.of(2023, 6, 2));
+		billEntity.setDistance(BigDecimal.valueOf(480));
+		billEntity.setUnit(BigDecimal.valueOf(28d));
+		billEntity.setPricePerUnit(BigDecimal.valueOf(196.9d));
+		billEntity.setCar(carEntity);
+		billRepository.persist(billEntity);
 	}
 
 	private void setupBob()
 	{
-		Account account = new Account();
-		account.setMaxCars(1);
-		account.setUserId("bob");
-		accountRepository.persist(account);
+		AccountEntity accountEntity = new AccountEntity();
+		accountEntity.setMaxCars(1);
+		accountEntity.setUserId("bob");
+		accountRepository.persist(accountEntity);
 	}
 
 	@Test
@@ -104,7 +104,7 @@ class BillResourceTest
 	{
 		given()
 				.when()
-				.get("/api/bill/" + car.getId() + "/all")
+				.get("/api/bill/" + carEntity.getId() + "/all")
 				.then()
 				.statusCode(200)
 				.body("total", is(3))
@@ -139,7 +139,8 @@ class BillResourceTest
 				""";
 
 		// when
-		given().accept(ContentType.JSON).contentType(ContentType.JSON).body(body).put("/api/bill/" + car.getId()).then()
+		given().accept(ContentType.JSON).contentType(ContentType.JSON).body(body).put("/api/bill/" + carEntity.getId())
+				.then()
 				.statusCode(202).body("day", is("2024-08-22"));
 
 		// then
@@ -166,7 +167,8 @@ class BillResourceTest
 				""";
 
 		// when
-		given().accept(ContentType.JSON).contentType(ContentType.JSON).body(body).put("/api/bill/" + car.getId()).then()
+		given().accept(ContentType.JSON).contentType(ContentType.JSON).body(body).put("/api/bill/" + carEntity.getId())
+				.then()
 				.statusCode(400);
 
 		// then
@@ -185,7 +187,7 @@ class BillResourceTest
 		Long billId = billRepository.listAll().getFirst().getId();
 
 		// when
-		given().delete("/api/bill/" + car.getId() + "/" + billId).then().statusCode(202);
+		given().delete("/api/bill/" + carEntity.getId() + "/" + billId).then().statusCode(202);
 
 		// then
 		assertEquals(2, billRepository.count());
@@ -203,7 +205,7 @@ class BillResourceTest
 		Long billId = billRepository.listAll().getFirst().getId();
 
 		// when
-		given().delete("/api/bill/" + car.getId() + "/" + billId).then().statusCode(400);
+		given().delete("/api/bill/" + carEntity.getId() + "/" + billId).then().statusCode(400);
 
 		// then
 		assertEquals(3, billRepository.count());
@@ -212,9 +214,27 @@ class BillResourceTest
 	@Test
 	void shouldBeRedirectToLoginUrl()
 	{
-		String response = given().when().get("/api/bill/" + car.getId() + "/all").then().statusCode(200).extract()
+		String response = given().when().get("/api/bill/" + carEntity.getId() + "/all").then().statusCode(200).extract()
 				.response().getBody().asString();
 		assertTrue(response.contains("<html"));
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldGetYearsOfBills()
+	{
+		// given
+		assertEquals(3, billRepository.count());
+
+		// when
+		given()
+				.get("/api/bill/" + carEntity.getId() + "/years")
+				.then()
+				.statusCode(200)
+				.body("", contains(2024, 2023, 2022));
+
 	}
 
 	@AfterEach

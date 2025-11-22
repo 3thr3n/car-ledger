@@ -11,13 +11,21 @@
 import { createFileRoute } from '@tanstack/react-router'
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
+import { Route as CarIdRouteRouteImport } from './routes/car/$id/route'
 
 const ErrorLazyRouteImport = createFileRoute('/error')()
 const AboutLazyRouteImport = createFileRoute('/about')()
 const IndexLazyRouteImport = createFileRoute('/')()
 const CarIndexLazyRouteImport = createFileRoute('/car/')()
-const BillIndexLazyRouteImport = createFileRoute('/bill/')()
-const BillIdLazyRouteImport = createFileRoute('/bill/$id')()
+const Dev404LazyRouteImport = createFileRoute('/dev/404')()
+const CarNewLazyRouteImport = createFileRoute('/car/new')()
+const CarIdIndexLazyRouteImport = createFileRoute('/car/$id/')()
+const CarIdEditLazyRouteImport = createFileRoute('/car/$id/edit')()
+const CarIdBillAddLazyRouteImport = createFileRoute('/car/$id/bill/add')()
+const CarIdBillFuelIndexLazyRouteImport = createFileRoute(
+  '/car/$id/bill/fuel/',
+)()
 
 const ErrorLazyRoute = ErrorLazyRouteImport.update({
   id: '/error',
@@ -39,56 +47,145 @@ const CarIndexLazyRoute = CarIndexLazyRouteImport.update({
   path: '/car/',
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/car/index.lazy').then((d) => d.Route))
-const BillIndexLazyRoute = BillIndexLazyRouteImport.update({
-  id: '/bill/',
-  path: '/bill/',
+const DashboardIndexRoute = DashboardIndexRouteImport.update({
+  id: '/dashboard/',
+  path: '/dashboard/',
   getParentRoute: () => rootRouteImport,
-} as any).lazy(() => import('./routes/bill/index.lazy').then((d) => d.Route))
-const BillIdLazyRoute = BillIdLazyRouteImport.update({
-  id: '/bill/$id',
-  path: '/bill/$id',
+} as any)
+const Dev404LazyRoute = Dev404LazyRouteImport.update({
+  id: '/dev/404',
+  path: '/dev/404',
   getParentRoute: () => rootRouteImport,
-} as any).lazy(() => import('./routes/bill/$id.lazy').then((d) => d.Route))
+} as any).lazy(() => import('./routes/dev/404.lazy').then((d) => d.Route))
+const CarNewLazyRoute = CarNewLazyRouteImport.update({
+  id: '/car/new',
+  path: '/car/new',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/car/new.lazy').then((d) => d.Route))
+const CarIdRouteRoute = CarIdRouteRouteImport.update({
+  id: '/car/$id',
+  path: '/car/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CarIdIndexLazyRoute = CarIdIndexLazyRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => CarIdRouteRoute,
+} as any).lazy(() => import('./routes/car/$id/index.lazy').then((d) => d.Route))
+const CarIdEditLazyRoute = CarIdEditLazyRouteImport.update({
+  id: '/edit',
+  path: '/edit',
+  getParentRoute: () => CarIdRouteRoute,
+} as any).lazy(() => import('./routes/car/$id/edit.lazy').then((d) => d.Route))
+const CarIdBillAddLazyRoute = CarIdBillAddLazyRouteImport.update({
+  id: '/bill/add',
+  path: '/bill/add',
+  getParentRoute: () => CarIdRouteRoute,
+} as any).lazy(() =>
+  import('./routes/car/$id/bill/add.lazy').then((d) => d.Route),
+)
+const CarIdBillFuelIndexLazyRoute = CarIdBillFuelIndexLazyRouteImport.update({
+  id: '/bill/fuel/',
+  path: '/bill/fuel/',
+  getParentRoute: () => CarIdRouteRoute,
+} as any).lazy(() =>
+  import('./routes/car/$id/bill/fuel/index.lazy').then((d) => d.Route),
+)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexLazyRoute
   '/about': typeof AboutLazyRoute
   '/error': typeof ErrorLazyRoute
-  '/bill/$id': typeof BillIdLazyRoute
-  '/bill': typeof BillIndexLazyRoute
+  '/car/$id': typeof CarIdRouteRouteWithChildren
+  '/car/new': typeof CarNewLazyRoute
+  '/dev/404': typeof Dev404LazyRoute
+  '/dashboard': typeof DashboardIndexRoute
   '/car': typeof CarIndexLazyRoute
+  '/car/$id/edit': typeof CarIdEditLazyRoute
+  '/car/$id/': typeof CarIdIndexLazyRoute
+  '/car/$id/bill/add': typeof CarIdBillAddLazyRoute
+  '/car/$id/bill/fuel': typeof CarIdBillFuelIndexLazyRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexLazyRoute
   '/about': typeof AboutLazyRoute
   '/error': typeof ErrorLazyRoute
-  '/bill/$id': typeof BillIdLazyRoute
-  '/bill': typeof BillIndexLazyRoute
+  '/car/new': typeof CarNewLazyRoute
+  '/dev/404': typeof Dev404LazyRoute
+  '/dashboard': typeof DashboardIndexRoute
   '/car': typeof CarIndexLazyRoute
+  '/car/$id/edit': typeof CarIdEditLazyRoute
+  '/car/$id': typeof CarIdIndexLazyRoute
+  '/car/$id/bill/add': typeof CarIdBillAddLazyRoute
+  '/car/$id/bill/fuel': typeof CarIdBillFuelIndexLazyRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexLazyRoute
   '/about': typeof AboutLazyRoute
   '/error': typeof ErrorLazyRoute
-  '/bill/$id': typeof BillIdLazyRoute
-  '/bill/': typeof BillIndexLazyRoute
+  '/car/$id': typeof CarIdRouteRouteWithChildren
+  '/car/new': typeof CarNewLazyRoute
+  '/dev/404': typeof Dev404LazyRoute
+  '/dashboard/': typeof DashboardIndexRoute
   '/car/': typeof CarIndexLazyRoute
+  '/car/$id/edit': typeof CarIdEditLazyRoute
+  '/car/$id/': typeof CarIdIndexLazyRoute
+  '/car/$id/bill/add': typeof CarIdBillAddLazyRoute
+  '/car/$id/bill/fuel/': typeof CarIdBillFuelIndexLazyRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/error' | '/bill/$id' | '/bill' | '/car'
+  fullPaths:
+    | '/'
+    | '/about'
+    | '/error'
+    | '/car/$id'
+    | '/car/new'
+    | '/dev/404'
+    | '/dashboard'
+    | '/car'
+    | '/car/$id/edit'
+    | '/car/$id/'
+    | '/car/$id/bill/add'
+    | '/car/$id/bill/fuel'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/error' | '/bill/$id' | '/bill' | '/car'
-  id: '__root__' | '/' | '/about' | '/error' | '/bill/$id' | '/bill/' | '/car/'
+  to:
+    | '/'
+    | '/about'
+    | '/error'
+    | '/car/new'
+    | '/dev/404'
+    | '/dashboard'
+    | '/car'
+    | '/car/$id/edit'
+    | '/car/$id'
+    | '/car/$id/bill/add'
+    | '/car/$id/bill/fuel'
+  id:
+    | '__root__'
+    | '/'
+    | '/about'
+    | '/error'
+    | '/car/$id'
+    | '/car/new'
+    | '/dev/404'
+    | '/dashboard/'
+    | '/car/'
+    | '/car/$id/edit'
+    | '/car/$id/'
+    | '/car/$id/bill/add'
+    | '/car/$id/bill/fuel/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexLazyRoute: typeof IndexLazyRoute
   AboutLazyRoute: typeof AboutLazyRoute
   ErrorLazyRoute: typeof ErrorLazyRoute
-  BillIdLazyRoute: typeof BillIdLazyRoute
-  BillIndexLazyRoute: typeof BillIndexLazyRoute
+  CarIdRouteRoute: typeof CarIdRouteRouteWithChildren
+  CarNewLazyRoute: typeof CarNewLazyRoute
+  Dev404LazyRoute: typeof Dev404LazyRoute
+  DashboardIndexRoute: typeof DashboardIndexRoute
   CarIndexLazyRoute: typeof CarIndexLazyRoute
 }
 
@@ -122,29 +219,91 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CarIndexLazyRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/bill/': {
-      id: '/bill/'
-      path: '/bill'
-      fullPath: '/bill'
-      preLoaderRoute: typeof BillIndexLazyRouteImport
+    '/dashboard/': {
+      id: '/dashboard/'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/bill/$id': {
-      id: '/bill/$id'
-      path: '/bill/$id'
-      fullPath: '/bill/$id'
-      preLoaderRoute: typeof BillIdLazyRouteImport
+    '/dev/404': {
+      id: '/dev/404'
+      path: '/dev/404'
+      fullPath: '/dev/404'
+      preLoaderRoute: typeof Dev404LazyRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/car/new': {
+      id: '/car/new'
+      path: '/car/new'
+      fullPath: '/car/new'
+      preLoaderRoute: typeof CarNewLazyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/car/$id': {
+      id: '/car/$id'
+      path: '/car/$id'
+      fullPath: '/car/$id'
+      preLoaderRoute: typeof CarIdRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/car/$id/': {
+      id: '/car/$id/'
+      path: '/'
+      fullPath: '/car/$id/'
+      preLoaderRoute: typeof CarIdIndexLazyRouteImport
+      parentRoute: typeof CarIdRouteRoute
+    }
+    '/car/$id/edit': {
+      id: '/car/$id/edit'
+      path: '/edit'
+      fullPath: '/car/$id/edit'
+      preLoaderRoute: typeof CarIdEditLazyRouteImport
+      parentRoute: typeof CarIdRouteRoute
+    }
+    '/car/$id/bill/add': {
+      id: '/car/$id/bill/add'
+      path: '/bill/add'
+      fullPath: '/car/$id/bill/add'
+      preLoaderRoute: typeof CarIdBillAddLazyRouteImport
+      parentRoute: typeof CarIdRouteRoute
+    }
+    '/car/$id/bill/fuel/': {
+      id: '/car/$id/bill/fuel/'
+      path: '/bill/fuel'
+      fullPath: '/car/$id/bill/fuel'
+      preLoaderRoute: typeof CarIdBillFuelIndexLazyRouteImport
+      parentRoute: typeof CarIdRouteRoute
     }
   }
 }
+
+interface CarIdRouteRouteChildren {
+  CarIdEditLazyRoute: typeof CarIdEditLazyRoute
+  CarIdIndexLazyRoute: typeof CarIdIndexLazyRoute
+  CarIdBillAddLazyRoute: typeof CarIdBillAddLazyRoute
+  CarIdBillFuelIndexLazyRoute: typeof CarIdBillFuelIndexLazyRoute
+}
+
+const CarIdRouteRouteChildren: CarIdRouteRouteChildren = {
+  CarIdEditLazyRoute: CarIdEditLazyRoute,
+  CarIdIndexLazyRoute: CarIdIndexLazyRoute,
+  CarIdBillAddLazyRoute: CarIdBillAddLazyRoute,
+  CarIdBillFuelIndexLazyRoute: CarIdBillFuelIndexLazyRoute,
+}
+
+const CarIdRouteRouteWithChildren = CarIdRouteRoute._addFileChildren(
+  CarIdRouteRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexLazyRoute: IndexLazyRoute,
   AboutLazyRoute: AboutLazyRoute,
   ErrorLazyRoute: ErrorLazyRoute,
-  BillIdLazyRoute: BillIdLazyRoute,
-  BillIndexLazyRoute: BillIndexLazyRoute,
+  CarIdRouteRoute: CarIdRouteRouteWithChildren,
+  CarNewLazyRoute: CarNewLazyRoute,
+  Dev404LazyRoute: Dev404LazyRoute,
+  DashboardIndexRoute: DashboardIndexRoute,
   CarIndexLazyRoute: CarIndexLazyRoute,
 }
 export const routeTree = rootRouteImport

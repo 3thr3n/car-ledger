@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { getAllBillsOptions } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
-import { GridPaginationModel } from '@mui/x-data-grid';
+import { GridPaginationModel, GridSortModel } from '@mui/x-data-grid';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 
 export default function useBillPagination(
@@ -11,6 +11,8 @@ export default function useBillPagination(
   const [pagination, setPagination] = useState<GridPaginationModel>(
     page ?? { page: 0, pageSize: 20 },
   );
+  const [sort, setSort] = useState<GridSortModel>();
+  const [year, setYear] = useState<number>(-1);
 
   const options = getAllBillsOptions({
     path: {
@@ -19,6 +21,8 @@ export default function useBillPagination(
     query: {
       page: pagination.page + 1,
       size: pagination.pageSize,
+      // sort: sort,
+      year: year === -1 ? undefined : year,
     },
     client: localClient,
   });
@@ -28,5 +32,9 @@ export default function useBillPagination(
     placeholderData: keepPreviousData,
   });
 
-  return { data, refetch, pagination, setPagination };
+  useEffect(() => {
+    console.log('sort:', sort);
+  }, [sort]);
+
+  return { data, refetch, setPagination, setYear, setSort };
 }

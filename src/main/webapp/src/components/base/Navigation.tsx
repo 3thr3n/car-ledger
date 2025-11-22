@@ -2,21 +2,17 @@ import {
   AppBar,
   Box,
   Container,
-  Divider,
-  Drawer,
-  IconButton,
   Toolbar,
   Typography,
   useMediaQuery,
   useTheme,
 } from '@mui/material';
 import { QueryClientProvider } from '@tanstack/react-query';
-import Login from './Login';
 import queryClient from '@/utils/QueryClient';
 import productLogo from '@/assets/car-ledger.png';
 import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
-import MenuIcon from '@mui/icons-material/Menu';
+import UserNavigation from '@/components/base/UserNavigation';
 
 export default function Navigation() {
   const navi = useNavigate();
@@ -28,12 +24,19 @@ export default function Navigation() {
   };
 
   const theme = useTheme();
-  const isSm = useMediaQuery(theme.breakpoints.down('sm'));
+  const isSm = useMediaQuery(theme.breakpoints.down('md'));
 
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  const toggleDrawer = (open: boolean) => () => {
+  function toggleDrawer(open: boolean) {
     setDrawerOpen(open);
+  }
+
+  const navigate = async (path: string) => {
+    await navi({
+      to: path,
+    });
+    setDrawerOpen(false);
   };
 
   return (
@@ -69,45 +72,12 @@ export default function Navigation() {
                 </Typography>
               </Box>
             </Box>
-            <Box
-              sx={{
-                flexGrow: 1,
-              }}
+            <UserNavigation
+              isSm={isSm}
+              toggleDrawer={toggleDrawer}
+              drawerOpen={drawerOpen}
+              navigate={navigate}
             />
-            {isSm ? (
-              <>
-                <IconButton color="inherit" onClick={toggleDrawer(true)}>
-                  <MenuIcon />
-                </IconButton>
-
-                <Drawer
-                  anchor="right"
-                  open={drawerOpen}
-                  onClose={toggleDrawer(false)}
-                >
-                  <Box
-                    sx={{
-                      width: 250,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      p: 2,
-                      height: '100%',
-                    }}
-                    role="presentation"
-                  >
-                    <Typography variant="h6" gutterBottom>
-                      Menu
-                    </Typography>
-                    <Divider sx={{ mb: 2 }} />
-                    <Login drawerMode />
-                  </Box>
-                </Drawer>
-              </>
-            ) : (
-              <Box>
-                <Login />
-              </Box>
-            )}
           </Toolbar>
         </Container>
       </AppBar>
