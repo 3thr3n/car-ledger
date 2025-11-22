@@ -1,5 +1,6 @@
 app:
-  title: "Car Ledger"
+  title: "CarLedger"
+  slogan: "Collect fuel bills. Plan maintenance. Know your costs."
   menu:
     overview: "Overview"
     cars: "Cars"
@@ -7,3 +8,10 @@ app:
     loginButton: "Login"
     logoutButton: "Logout"
     welcome: "Welcome"
+  car:
+    edit: "Edit"
+
+    fuel:
+      add: "Add Bill"
+      recentTitle: "Recent Fuel Entries"
+      showMore: "See all entries"

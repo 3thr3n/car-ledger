@@ -1,6 +1,8 @@
 import { Box, Link, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { useTranslation } from 'react-i18next';
 
 export default function Copyright() {
+  const { t } = useTranslation();
   const theme = useTheme();
   const isSm = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -21,8 +23,7 @@ export default function Copyright() {
           >
             {'Copyright ©'}
             <Link href="https://www.codeflowwizardry.de">3thr3n</Link>{' '}
-            {new Date().getFullYear()}
-            {' CarLedger'}
+            {new Date().getFullYear()} {t('app.title')}
           </Typography>
           <Typography
             variant="body2"
@@ -31,7 +32,7 @@ export default function Copyright() {
               color: 'text.secondary',
             }}
           >
-            Collect fuel bills. Plan maintenance. Know your costs.
+            {t('app.slogan')}
           </Typography>
         </>
       ) : (
@@ -45,8 +46,7 @@ export default function Copyright() {
           >
             {'Copyright ©'}
             <Link href="https://www.codeflowwizardry.de">3thr3n</Link>{' '}
-            {new Date().getFullYear()} CarLedger — Collect fuel bills. Plan
-            maintenance. Know your costs.
+            {new Date().getFullYear()} {t('app.title')} — {t('app.slogan')}
           </Typography>
         </>
       )}

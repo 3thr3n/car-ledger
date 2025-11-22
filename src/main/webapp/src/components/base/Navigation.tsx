@@ -13,9 +13,11 @@ import productLogo from '@/assets/car-ledger.png';
 import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import UserNavigation from '@/components/base/UserNavigation';
+import { useTranslation } from 'react-i18next';
 
 export default function Navigation() {
   const navi = useNavigate();
+  const { t } = useTranslation();
 
   const goHome = async () => {
     await navi({
@@ -68,7 +70,7 @@ export default function Navigation() {
                 }}
               >
                 <Typography variant={isSm ? 'h6' : 'h4'} fontWeight={700}>
-                  CarLedger
+                  {t('app.title')}
                 </Typography>
               </Box>
             </Box>
