@@ -1,5 +1,6 @@
 app:
-  title: "Car Ledger"
+  title: "CarLedger"
+  slogan: "Rechnungen sammeln. Wartung planen. Kosten kennen."
   menu:
     overview: "Übersicht"
     cars: "Autos"
@@ -7,3 +8,10 @@ app:
     loginButton: "Einloggen"
     logoutButton: "Ausloggen"
     welcome: "Willkommen"
+  car:
+    edit: "Editieren"
+
+    fuel:
+      add: "Rechnung hinzufügen"
+      recentTitle: "Letzten Tank-Rechnungen"
+      showMore: "Alle anzeigen"

@@ -22,6 +22,8 @@ import useCsvStore from '@/store/CsvStore';
 import { CarOverviewStats } from '@/components/car/CarOverviewStats';
 import SingleLineStat from '@/components/base/SingleLineStat';
 import PageHeader from '@/components/base/PageHeader';
+import { useTranslation } from 'react-i18next';
+import { TFunction } from 'i18next';
 
 export interface CarViewPageProperties {
   id: string;
@@ -32,6 +34,7 @@ function renderRecentFuelTypes(
   isMobile: boolean,
   id: string,
   navigate: (opt: NavigateOptions) => void,
+  t: TFunction<'translation', undefined>,
 ) {
   const goToAll = () => navigate({ to: '/car/$id/bill/fuel', params: { id } });
 
@@ -42,14 +45,14 @@ function renderRecentFuelTypes(
           <Card>
             <CardContent>
               <SubPageHeader
-                title="Recent Fuel Entries"
+                title={t('app.car.fuel.recentTitle')}
                 isCardHeader
                 isMobile
               />
               <Divider sx={{ mb: 2 }} />
               <Box display="flex" justifyContent="flex-end" mt={2}>
                 <Button size="small" onClick={goToAll}>
-                  See all entries →
+                  {t('app.car.fuel.showMore')} →
                 </Button>
               </Box>
             </CardContent>
@@ -75,6 +78,7 @@ function renderRecentFuelTypes(
 }
 
 export default function CarViewPage({ navigate, id }: CarViewPageProperties) {
+  const { t } = useTranslation();
   const isMobile = useMediaQuery('(max-width:600px)');
   const openImportDialog = useCsvStore((state) => state.openDialog);
 
@@ -140,7 +144,7 @@ export default function CarViewPage({ navigate, id }: CarViewPageProperties) {
             variant="outlined"
             onClick={() => navigate({ to: '/car/$id/edit', params: { id } })}
           >
-            Edit Car
+            {t('app.car.edit')}
           </Button>
           <Button
             variant="contained"
@@ -148,7 +152,7 @@ export default function CarViewPage({ navigate, id }: CarViewPageProperties) {
               navigate({ to: '/car/$id/bill/add', params: { id } })
             }
           >
-            Add Bill
+            {t('app.car.fuel.add')}
           </Button>
           <Button
             variant="contained"
@@ -178,7 +182,7 @@ export default function CarViewPage({ navigate, id }: CarViewPageProperties) {
           <CarOverviewStats carId={Number(id)} />
         </Grid>
 
-        {renderRecentFuelTypes(isMobile, id, navigate)}
+        {renderRecentFuelTypes(isMobile, id, navigate, t)}
       </Grid>
     </Container>
   );
