@@ -78,6 +78,13 @@ export default function CarViewPage({ navigate, id }: CarViewPageProperties) {
   const isMobile = useMediaQuery('(max-width:600px)');
   const openImportDialog = useCsvStore((state) => state.openDialog);
 
+  // const [reloadToken, setReloadToken] = useState(0);
+  //
+  // const onCsvImported = () => {
+  //   // increment forces children to re-run effects
+  //   setReloadToken((prev) => prev + 1);
+  // };
+
   const {
     data: car,
     isLoading: isCarLoading,

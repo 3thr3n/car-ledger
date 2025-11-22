@@ -3,6 +3,14 @@ import DashboardDateRange from '@/components/dashboard/DashboardDateRange';
 import { NavigateOptions } from '@tanstack/router-core';
 import { DashboardPageSearch } from '@/pages/dashboard/DashboardPage';
 
+/**
+ * Loads and updates on demand the searchQueries in the URL
+ *
+ * @param navigate
+ * @param search SearchQuery of current page
+ * @param selectedCarId Current selected car
+ * @param dateRange
+ */
 export function useSyncQueryParams(
   navigate: (nav: NavigateOptions) => void,
   search: DashboardPageSearch,
