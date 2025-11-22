@@ -1,10 +1,10 @@
 INSERT INTO Account(max_cars, id, user_id)
 VALUES (1, nextval('sequence_account'), 'alice');
 
-INSERT INTO Car(id, user_id, _description)
-VALUES (nextval('sequence_car'), 5, 'Nothing');
+INSERT INTO Car(id, user_id, _name, _manufacture_year, _odometer)
+VALUES (nextval('sequence_car'), 5, 'i30N', 2021, 7);
 
-INSERT INTO public.bill (id, _day, distance, estimate, price_per_unit, unit, car_id)
+INSERT INTO Bill (id, _day, distance, estimate, price_per_unit, unit, car_id)
 VALUES (nextval('sequence_bill'), '2021-09-01', 0.00, 0.00, 162.90, 34.68, 5),
        (nextval('sequence_bill'), '2021-09-05', 396.00, 9.10, 163.90, 33.26, 5),
        (nextval('sequence_bill'), '2021-09-08', 408.60, 8.60, 164.90, 32.93, 5),

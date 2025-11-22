@@ -1,25 +1,23 @@
 package de.codeflowwizardry.carledger.rest;
 
 import java.security.Principal;
+import java.util.Calendar;
 import java.util.List;
 
+import de.codeflowwizardry.carledger.rest.records.CarOverview;
+import jakarta.transaction.Transactional;
+import jakarta.ws.rs.*;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
-import de.codeflowwizardry.carledger.data.Account;
-import de.codeflowwizardry.carledger.data.Car;
+import de.codeflowwizardry.carledger.data.AccountEntity;
+import de.codeflowwizardry.carledger.data.CarEntity;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
-import de.codeflowwizardry.carledger.rest.records.CarInputPojo;
-import de.codeflowwizardry.carledger.rest.records.CarPojo;
+import de.codeflowwizardry.carledger.rest.records.CarInput;
+import de.codeflowwizardry.carledger.rest.records.Car;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.BadRequestException;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.PUT;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
@@ -39,9 +37,9 @@ public class CarResource extends AbstractResource
 	@Operation(operationId = "getMyCars")
 	@Produces(MediaType.APPLICATION_JSON)
 	@APIResponse(responseCode = "200", description = "Get all cars.")
-	public List<CarPojo> getMyCars()
+	public List<Car> getMyCars()
 	{
-		return CarPojo.convert(getAccount().getCarList());
+		return Car.convert(getAccount().getCarList());
 	}
 
 	@GET
@@ -50,10 +48,49 @@ public class CarResource extends AbstractResource
 	@Produces(MediaType.APPLICATION_JSON)
 	@APIResponse(responseCode = "200", description = "Car found.")
 	@APIResponse(responseCode = "204", description = "Id was not found.")
-	public CarPojo getMyCar(@PathParam("id") Long id)
+	public Car getMyCar(@PathParam("id") Long id)
 	{
-		Car car = carRepository.findById(id, context.getName());
-		return CarPojo.convert(car);
+		CarEntity carEntity = carRepository.findById(id, context.getName());
+		return Car.convert(carEntity);
+	}
+
+	@GET
+	@Path("/{id}/overview")
+	@Operation(operationId = "getMyCarOverview")
+	@Produces(MediaType.APPLICATION_JSON)
+	@APIResponse(responseCode = "200", description = "Car found.")
+	@APIResponse(responseCode = "204", description = "Id was not found.")
+	public CarOverview getMyCarOverview(@PathParam("id") Long id)
+	{
+		CarEntity carEntity = carRepository.findById(id, context.getName());
+		return CarOverview.convert(carEntity);
+	}
+
+	@POST
+	@Path("/{id}")
+	@Transactional
+	@Operation(operationId = "updateMyCar")
+	@Produces(MediaType.APPLICATION_JSON)
+	@APIResponse(responseCode = "200", description = "Car found and updated.")
+	@APIResponse(responseCode = "400", description = "Input was invalid.")
+	public Response updateCar(@PathParam("id") Long id, CarInput carpojo)
+	{
+		if (isInputInvalid(carpojo))
+		{
+			return Response
+					.status(400)
+					.entity("Input was invalid")
+					.build();
+		}
+
+		CarEntity carEntity = carRepository.findById(id, context.getName());
+		carEntity.setName(carpojo.name());
+		carEntity.setOdometer(carpojo.odometer());
+		carEntity.setManufactureYear(carpojo.year());
+
+		carRepository.persist(carEntity);
+
+		return Response.ok().entity(Car.convert(carEntity)).build();
 	}
 
 	@PUT
@@ -61,24 +98,44 @@ public class CarResource extends AbstractResource
 	@Produces(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "createCar")
 	@APIResponse(responseCode = "202", description = "Car created.")
-	@APIResponse(responseCode = "400", description = "Maximal amount of cars created.")
+	@APIResponse(responseCode = "400", description = "Maximal amount of cars created or input was invalid.")
 	@APIResponse(responseCode = "500", description = "Something went wrong while saving. Please ask the server admin for help.")
-	public Response createCar(CarInputPojo carpojo)
+	public Response createCar(CarInput carpojo)
 	{
-		Account account = getAccount();
+		AccountEntity accountEntity = getAccount();
 
-		if (account.getMaxCars() == account.getCarList().size())
+		if (accountEntity.getMaxCars() == accountEntity.getCarList().size())
 		{
-			throw new BadRequestException(
-					"Max cars already reached! Delete one car or ask the administrator for an increase.");
+			return Response
+					.status(400)
+					.entity("Max cars already reached! Delete one car or ask the administrator for an increase.")
+					.build();
 		}
 
-		Car car = new Car();
-		car.setDescription(carpojo.description());
-		car.setUser(account);
+		if (isInputInvalid(carpojo))
+		{
+			return Response
+					.status(400)
+					.entity("Input was invalid")
+					.build();
+		}
 
-		carRepository.persist(car);
+		CarEntity carEntity = new CarEntity();
+		carEntity.setName(carpojo.name());
+		carEntity.setManufactureYear(carpojo.year());
+		carEntity.setOdometer(carpojo.odometer());
+		carEntity.setUser(accountEntity);
+
+		carRepository.persist(carEntity);
 
 		return Response.accepted().build();
+	}
+
+	private boolean isInputInvalid(CarInput carInput)
+	{
+		return StringUtils.isBlank(carInput.name())
+				|| carInput.odometer() < 0
+				|| carInput.year() < 1900
+				|| carInput.year() > Calendar.getInstance().get(Calendar.YEAR) + 1;
 	}
 }

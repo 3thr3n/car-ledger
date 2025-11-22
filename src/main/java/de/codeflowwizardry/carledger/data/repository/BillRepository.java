@@ -1,12 +1,9 @@
 package de.codeflowwizardry.carledger.data.repository;
 
 import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
-import de.codeflowwizardry.carledger.data.Bill;
+import de.codeflowwizardry.carledger.data.BillEntity;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import io.quarkus.panache.common.Page;
@@ -14,9 +11,9 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 
 @ApplicationScoped
-public class BillRepository implements PanacheRepository<Bill>
+public class BillRepository implements PanacheRepository<BillEntity>
 {
-	public List<Bill> getBills(long carId, String username, Optional<LocalDate> from, Optional<LocalDate> to)
+	public List<BillEntity> getBills(long carId, String username, Optional<LocalDate> from, Optional<LocalDate> to)
 	{
 		Map<String, Object> params = new HashMap<>();
 		params.put("carId", carId);
@@ -46,20 +43,43 @@ public class BillRepository implements PanacheRepository<Bill>
 		return find(query, params).list();
 	}
 
-	public PanacheQuery<Bill> getBills(long carId, String username, Page page)
+	public List<Integer> getBillYears(long carId, String username)
 	{
-		return find("car.id = ?1 and car.user.userId = ?2 order by day desc", carId, username)
+		return find("select b.day from Bill b where b.car.id = ?1 and b.car.user.userId = ?2", carId, username)
+				.project(LocalDate.class)
+				.list()
+				.stream()
+				.map(LocalDate::getYear)
+				.distinct()
+				.sorted(Comparator.reverseOrder())
+				.toList();
+	}
+
+	public PanacheQuery<BillEntity> getBills(long carId, String username, Page page, Optional<Integer> year)
+	{
+		String query = "car.id = :carId and car.user.userId = :username order by day desc";
+		Map<String, Object> params = new HashMap<>();
+		params.put("carId", carId);
+		params.put("username", username);
+
+		if (year.isPresent())
+		{
+			query = "year(day) = :year and " + query;
+			params.put("year", year.get());
+		}
+
+		return find(query, params)
 				.page(page);
 	}
 
-	public Optional<Bill> getBillById(long billId, long carId, String username)
+	public Optional<BillEntity> getBillById(long billId, long carId, String username)
 	{
 		return find("id = ?1 and car.id = ?2 and car.user.userId = ?3 order by day desc", billId, carId, username)
 				.firstResultOptional();
 	}
 
 	@Override
-	public boolean isPersistent(Bill entity)
+	public boolean isPersistent(BillEntity entity)
 	{
 		return find("day = ?1 and unit = ?2 and car.id = ?3 and distance = ?4", entity.getDay(), entity.getUnit(),
 				entity.getCarId(), entity.getDistance())
@@ -68,15 +88,15 @@ public class BillRepository implements PanacheRepository<Bill>
 
 	@Override
 	@Transactional
-	public void delete(Bill bill)
+	public void delete(BillEntity billEntity)
 	{
-		PanacheRepository.super.delete(bill);
+		PanacheRepository.super.delete(billEntity);
 	}
 
 	@Override
 	@Transactional
-	public void persist(Bill bill)
+	public void persist(BillEntity billEntity)
 	{
-		PanacheRepository.super.persist(bill);
+		PanacheRepository.super.persist(billEntity);
 	}
 }

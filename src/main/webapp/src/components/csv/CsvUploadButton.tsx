@@ -47,7 +47,7 @@ export function CsvUploadButton(props: CsvUploadProps) {
       tabIndex={-1}
       startIcon={<CloudUpload />}
     >
-      Upload Files
+      Upload CSV
       <VisuallyHiddenInput
         type="file"
         accept={'.csv'}

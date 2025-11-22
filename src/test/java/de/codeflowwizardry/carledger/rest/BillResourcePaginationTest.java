@@ -49,6 +49,22 @@ class BillResourcePaginationTest
 
 	@Test
 	@TestSecurity(user = "alice", roles = "user")
+	void shouldGetOnlyYear2024()
+	{
+		given()
+				.when()
+				.pathParam("carId", 5L)
+				.queryParam("page", 1)
+				.queryParam("size", 25)
+				.queryParam("year", 2024)
+				.get("all")
+				.then()
+				.statusCode(200)
+				.body("data.size()", is(15));
+	}
+
+	@Test
+	@TestSecurity(user = "alice", roles = "user")
 	void shouldNotAllowInvalidPage()
 	{
 		given()

@@ -70,7 +70,7 @@ export default function CsvUploadStepper(props: CsvUploadStepperProps) {
       toast.info('Import successful');
       setLoadingColor('success');
       setLoading(100);
-      // closeDialog();
+      setTimeout(closeDialog, 200);
     },
     onError: (error: BackendError) => {
       console.warn('Non successful response', error.status);

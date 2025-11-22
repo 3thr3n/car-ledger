@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <profiles version="13">
     <profile kind="CodeFormatterProfile" name="Eclipse" version="13">
+        <setting id="org.eclipse.jdt.core.formatter.compact_record_declarations" value="false"/>
+
         <setting id="org.eclipse.jdt.core.compiler.codegen.inlineJsrBytecode" value="enabled"/>
-        <setting id="org.eclipse.jdt.core.compiler.codegen.targetPlatform" value="10"/>
-        <setting id="org.eclipse.jdt.core.compiler.compliance" value="10"/>
+        <setting id="org.eclipse.jdt.core.compiler.codegen.targetPlatform" value="21"/>
+        <setting id="org.eclipse.jdt.core.compiler.compliance" value="21"/>
         <setting id="org.eclipse.jdt.core.compiler.problem.assertIdentifier" value="error"/>
         <setting id="org.eclipse.jdt.core.compiler.problem.enumIdentifier" value="error"/>
-        <setting id="org.eclipse.jdt.core.compiler.source" value="10"/>
+        <setting id="org.eclipse.jdt.core.compiler.source" value="21"/>
         <setting id="org.eclipse.jdt.core.formatter.align_fields_grouping_blank_lines" value="2147483647"/>
         <setting id="org.eclipse.jdt.core.formatter.align_type_members_on_columns" value="false"/>
         <setting id="org.eclipse.jdt.core.formatter.alignment_for_arguments_in_allocation_expression" value="16"/>

@@ -19,11 +19,13 @@ import type {
   DeleteBillData,
   DeleteBillErrors,
   DeleteBillResponses,
-  ErrorData,
-  ErrorResponses,
   GetAllBillsData,
   GetAllBillsResponses,
+  GetAllBillYearsData,
+  GetAllBillYearsResponses,
   GetMyCarData,
+  GetMyCarOverviewData,
+  GetMyCarOverviewResponses,
   GetMyCarResponses,
   GetMyCarsData,
   GetMyCarsResponses,
@@ -42,8 +44,13 @@ import type {
   ImportCsvResponses,
   LoginData,
   LoginResponses,
+  LogoutCallbackData,
+  LogoutCallbackResponses,
   LogoutData,
   LogoutResponses,
+  UpdateMyCarData,
+  UpdateMyCarErrors,
+  UpdateMyCarResponses,
 } from './types.gen';
 
 export type Options<
@@ -82,22 +89,6 @@ export const callback = <ThrowOnError extends boolean = false>(
 };
 
 /**
- * Error
- *
- * This redirects to a frontend error page!
- */
-export const error = <ThrowOnError extends boolean = false>(
-  options?: Options<ErrorData, ThrowOnError>,
-) => {
-  return (options?.client ?? client).get<ErrorResponses, unknown, ThrowOnError>(
-    {
-      url: '/api/auth/error',
-      ...options,
-    },
-  );
-};
-
-/**
  * Login
  *
  * Here should the browser redirect, when 'login' is pressed
@@ -127,6 +118,24 @@ export const logout = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     url: '/api/auth/logout',
+    ...options,
+  });
+};
+
+/**
+ * Logout Callback
+ *
+ * This only for redirect purposes of oauth!
+ */
+export const logoutCallback = <ThrowOnError extends boolean = false>(
+  options?: Options<LogoutCallbackData, ThrowOnError>,
+) => {
+  return (options?.client ?? client).get<
+    LogoutCallbackResponses,
+    unknown,
+    ThrowOnError
+  >({
+    url: '/api/auth/logout-callback',
     ...options,
   });
 };
@@ -165,6 +174,24 @@ export const getAllBills = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     url: '/api/bill/{carId}/all',
+    ...options,
+  });
+};
+
+/**
+ * Get All My Bills
+ *
+ * Gets all years of bills for specified car
+ */
+export const getAllBillYears = <ThrowOnError extends boolean = false>(
+  options: Options<GetAllBillYearsData, ThrowOnError>,
+) => {
+  return (options.client ?? client).get<
+    GetAllBillYearsResponses,
+    unknown,
+    ThrowOnError
+  >({
+    url: '/api/bill/{carId}/years',
     ...options,
   });
 };
@@ -238,9 +265,45 @@ export const getMyCar = <ThrowOnError extends boolean = false>(
 };
 
 /**
+ * Get My Car
+ */
+export const updateMyCar = <ThrowOnError extends boolean = false>(
+  options: Options<UpdateMyCarData, ThrowOnError>,
+) => {
+  return (options.client ?? client).post<
+    UpdateMyCarResponses,
+    UpdateMyCarErrors,
+    ThrowOnError
+  >({
+    url: '/api/car/my/{id}',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+};
+
+/**
+ * Get My Car Overview
+ */
+export const getMyCarOverview = <ThrowOnError extends boolean = false>(
+  options: Options<GetMyCarOverviewData, ThrowOnError>,
+) => {
+  return (options.client ?? client).get<
+    GetMyCarOverviewResponses,
+    unknown,
+    ThrowOnError
+  >({
+    url: '/api/car/my/{id}/overview',
+    ...options,
+  });
+};
+
+/**
  * Import Csv
  *
- * This is the description for the import of an csv of your bills.<br />
+ * This is the description for the import of an csv of your billEntities.<br />
  * <br />
  * You need to add the csv and optionally the order in the csv (starts with 0).<br />
  * If you're not adding the order, the default is: day, unit, pricePerUnit, distance, estimate
