@@ -47,10 +47,12 @@ export default function Login({ drawerMode = false }: LoginProps) {
   if (isLoading || !isLoggedIn) {
     return (
       <Button
-        variant="contained"
+        variant="outlined"
         href={baseUrl + '/api/auth/login'}
-        fullWidth={drawerMode} // full width in drawer
-        sx={{ mb: drawerMode ? 2 : 0 }}
+        fullWidth={drawerMode}
+        sx={{
+          mb: drawerMode ? 2 : 0,
+        }}
       >
         {t('app.login.loginButton')}
       </Button>
@@ -63,11 +65,19 @@ export default function Login({ drawerMode = false }: LoginProps) {
       alignItems={drawerMode ? 'flex-start' : 'center'}
       gap={drawerMode ? 1 : 2}
     >
-      <Typography variant="body1">
+      <Typography
+        variant="body1"
+        sx={{
+          fontWeight: 400,
+          color: 'text.primary',
+          whiteSpace: 'nowrap',
+        }}
+      >
         {t('app.login.welcome')} <b>{data?.name}</b>
       </Typography>
+
       <Button
-        variant="contained"
+        variant="outlined" // outlined in top nav
         href={baseUrl + '/api/auth/logout'}
         fullWidth={drawerMode}
       >

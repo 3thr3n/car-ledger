@@ -1,9 +1,11 @@
 app:
   title: "CarLedger"
   slogan: "Collect fuel bills. Plan maintenance. Know your costs."
-  menu:
+  nav:
+    title: "Menu"
     overview: "Overview"
     cars: "Cars"
+    dashboard: "Dashboard"
   login:
     loginButton: "Login"
     logoutButton: "Logout"

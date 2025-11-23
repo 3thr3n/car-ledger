@@ -1,7 +1,5 @@
 import {
   Box,
-  Button,
-  Card,
   Divider,
   Drawer,
   IconButton,
@@ -12,6 +10,10 @@ import MenuIcon from '@mui/icons-material/Menu';
 import Login from '@/components/base/Login';
 import useUserStore from '@/store/UserStore';
 import { LanguageSwitcher } from '@/components/base/LanguageSwitcher';
+import { useLocation } from '@tanstack/react-router';
+import { useTranslation } from 'react-i18next';
+import TopNav from '@/components/base/nav/TopNav';
+import TopDrawerNav from '@/components/base/nav/TopDrawerNav';
 
 export interface UserNavigationProps {
   isSm: boolean;
@@ -20,6 +22,11 @@ export interface UserNavigationProps {
   navigate: (path: string) => void;
 }
 
+const navItems = [
+  { labelKey: 'app.nav.dashboard', path: '/dashboard' },
+  { labelKey: 'app.nav.cars', path: '/car' },
+];
+
 export default function UserNavigation({
   isSm,
   toggleDrawer,
@@ -27,32 +34,8 @@ export default function UserNavigation({
   navigate,
 }: UserNavigationProps) {
   const isLoggedIn = useUserStore((state) => state.loggedIn);
-
-  function drawerNavigationButton(name: string, path: string) {
-    return (
-      <Card
-        sx={{
-          p: 1,
-          textAlign: 'center',
-          cursor: 'pointer',
-          bgcolor: 'background.paper',
-          color: 'text.primary',
-          transition: '0.2s',
-        }}
-        onClick={() => navigate(path)}
-      >
-        <Typography variant="body2">{name}</Typography>
-      </Card>
-    );
-  }
-
-  function navigationButton(name: string, path: string) {
-    return (
-      <Button variant="contained" onClick={() => navigate(path)}>
-        {name}
-      </Button>
-    );
-  }
+  const location = useLocation();
+  const { t } = useTranslation();
 
   if (isSm) {
     return (
@@ -81,12 +64,20 @@ export default function UserNavigation({
           >
             <Stack spacing={1} direction="column" sx={{ height: '100%' }}>
               <Typography variant="h6" gutterBottom>
-                Menu
+                {t('app.nav.title')}
               </Typography>
               <Divider sx={{ mb: 2 }} />
               <Login drawerMode />
-              {isLoggedIn && drawerNavigationButton('Dashboard', '/dashboard')}
-              {isLoggedIn && drawerNavigationButton('Cars', '/car')}
+              <Divider sx={{ mb: 2 }} />
+              {/* Navigation List */}
+              {isLoggedIn && (
+                <TopDrawerNav
+                  t={t}
+                  navigate={navigate}
+                  currentPathName={location.pathname}
+                  navItems={navItems}
+                />
+              )}
               <Box sx={{ flexGrow: 1 }} />
               <LanguageSwitcher drawerMode />
             </Stack>
@@ -103,8 +94,14 @@ export default function UserNavigation({
           marginY: '1rem',
         }}
       />
-      {isLoggedIn && navigationButton('Dashboard', '/dashboard')}
-      {isLoggedIn && navigationButton('Cars', '/car')}
+      {isLoggedIn && (
+        <TopNav
+          t={t}
+          navigate={navigate}
+          currentPathName={location.pathname}
+          navItems={navItems}
+        />
+      )}
       <Box
         sx={{
           flexGrow: 1,
