@@ -1,4 +1,4 @@
-import { QueryClient } from '@tanstack/react-query';
+import { QueryCache, QueryClient } from '@tanstack/react-query';
 import { BackendError } from './BackendError';
 import { Client, createClient } from '@/generated/client';
 import { toast } from 'react-toastify';
@@ -48,9 +48,12 @@ localClient.interceptors.response.use(async (res) => {
 export { localClient, baseUrl };
 
 const queryClient = new QueryClient({
+  queryCache: new QueryCache(),
   defaultOptions: {
     queries: {
       retry: false,
+      // gcTime: 60 * 1000,
+      // staleTime: 60 * 1000,
     },
   },
 });

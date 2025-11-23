@@ -13,18 +13,22 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { getAllBillsOptions } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
+import { useEffect } from 'react';
 
 export default function CarBillPreviewTable({
   id,
   onSeeMore,
+  reload,
 }: {
   id: string;
   onSeeMore: () => void;
+  reload: number;
 }) {
   const {
     data: bills,
     isLoading: isBillsLoading,
     isError: isBillsError,
+    refetch: billRefetch,
   } = useQuery({
     ...getAllBillsOptions({
       client: localClient,
@@ -37,6 +41,12 @@ export default function CarBillPreviewTable({
       },
     }),
   });
+
+  useEffect(() => {
+    if (reload != 0) {
+      billRefetch();
+    }
+  }, [billRefetch, reload]);
 
   if (isBillsLoading) {
     return (

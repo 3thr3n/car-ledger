@@ -35,6 +35,7 @@ function renderRecentFuelTypes(
   id: string,
   navigate: (opt: NavigateOptions) => void,
   t: TFunction<'translation', undefined>,
+  reloadToken: number,
 ) {
   const goToAll = () => navigate({ to: '/car/$id/bill/fuel', params: { id } });
 
@@ -69,7 +70,11 @@ function renderRecentFuelTypes(
           <CardContent>
             <SubPageHeader title="Recent Fuel Entries" isCardHeader />
             <Divider sx={{ mb: 2 }} />
-            <CarBillPreviewTable id={id} onSeeMore={goToAll} />
+            <CarBillPreviewTable
+              id={id}
+              onSeeMore={goToAll}
+              reload={reloadToken}
+            />
           </CardContent>
         </Card>
       </Grid>
@@ -81,13 +86,7 @@ export default function CarViewPage({ navigate, id }: CarViewPageProperties) {
   const { t } = useTranslation();
   const isMobile = useMediaQuery('(max-width:600px)');
   const openImportDialog = useCsvStore((state) => state.openDialog);
-
-  // const [reloadToken, setReloadToken] = useState(0);
-  //
-  // const onCsvImported = () => {
-  //   // increment forces children to re-run effects
-  //   setReloadToken((prev) => prev + 1);
-  // };
+  const csvImportedAt = useCsvStore((state) => state.csvImportedAt);
 
   const {
     data: car,
@@ -179,10 +178,10 @@ export default function CarViewPage({ navigate, id }: CarViewPageProperties) {
               />
             </CardContent>
           </Card>
-          <CarOverviewStats carId={Number(id)} />
+          <CarOverviewStats carId={Number(id)} reload={csvImportedAt ?? 0} />
         </Grid>
 
-        {renderRecentFuelTypes(isMobile, id, navigate, t)}
+        {renderRecentFuelTypes(isMobile, id, navigate, t, csvImportedAt ?? 0)}
       </Grid>
     </Container>
   );

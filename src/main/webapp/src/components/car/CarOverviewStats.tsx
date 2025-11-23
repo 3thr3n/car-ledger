@@ -4,9 +4,16 @@ import { getMyCarOverviewOptions } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
 import SingleLineStat from '@/components/base/SingleLineStat';
 import SubPageHeader from '@/components/base/SubPageHeader';
+import { useEffect } from 'react';
 
-export const CarOverviewStats = ({ carId }: { carId: number }) => {
-  const { data, isLoading } = useQuery({
+export const CarOverviewStats = ({
+  carId,
+  reload,
+}: {
+  carId: number;
+  reload: number;
+}) => {
+  const { data, isLoading, refetch } = useQuery({
     ...getMyCarOverviewOptions({
       client: localClient,
       path: {
@@ -14,6 +21,12 @@ export const CarOverviewStats = ({ carId }: { carId: number }) => {
       },
     }),
   });
+
+  useEffect(() => {
+    if (reload != 0) {
+      refetch();
+    }
+  }, [refetch, reload]);
 
   return (
     <Card sx={{ mt: 3 }}>

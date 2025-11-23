@@ -45,6 +45,7 @@ export function OptionBox(props: {
 
 export default function CsvUploadStepper(props: CsvUploadStepperProps) {
   const carId = useCsvStore((state) => state.carId);
+  const markImported = useCsvStore((state) => state.markImported);
 
   const [activeStep, setActiveStep] = useState(0);
   const [headers, setHeaders] = useState<string[]>([]);
@@ -70,6 +71,7 @@ export default function CsvUploadStepper(props: CsvUploadStepperProps) {
       toast.info('Import successful');
       setLoadingColor('success');
       setLoading(100);
+      markImported();
       setTimeout(closeDialog, 200);
     },
     onError: (error: BackendError) => {
