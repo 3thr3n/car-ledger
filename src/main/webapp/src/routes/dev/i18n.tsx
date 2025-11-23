@@ -55,7 +55,7 @@ function RouteComponent() {
   // collect all unique keys across all languages
   const allKeys = Array.from(
     new Set(Object.values(flattenedByLang).flatMap(Object.keys)),
-  );
+  ).sort();
 
   const entries: TranslationEntry[] = allKeys.map((key) => ({
     key,

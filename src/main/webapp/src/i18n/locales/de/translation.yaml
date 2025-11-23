@@ -1,9 +1,11 @@
 app:
   title: "CarLedger"
   slogan: "Rechnungen sammeln. Wartung planen. Kosten kennen."
-  menu:
+  nav:
+    title: "Menü"
     overview: "Übersicht"
     cars: "Autos"
+    dashboard: "Dashboard"
   login:
     loginButton: "Einloggen"
     logoutButton: "Ausloggen"
