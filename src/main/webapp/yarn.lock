@@ -972,14 +972,14 @@
   dependencies:
     "@tanstack/query-core" "5.90.10"
 
-"@tanstack/react-router@^1.139.0":
-  version "1.139.0"
-  resolved "https://registry.yarnpkg.com/@tanstack/react-router/-/react-router-1.139.0.tgz#2c374cc7388c10b245aad07766854c26258b4599"
-  integrity sha512-7QZ5SBJDwgJeiAZK1SrE6/Ol15lrayAhjW6NXKnxWGtXH8p9wKj6+iWzp57bYDFNxgAeG02/odfqQcMctyqV/Q==
+"@tanstack/react-router@^1.139.3":
+  version "1.139.3"
+  resolved "https://registry.yarnpkg.com/@tanstack/react-router/-/react-router-1.139.3.tgz#3123337fda9b8f24497d1a1ceacb463a02e357c9"
+  integrity sha512-lhqK0DnbA7PgHOnmhzOoWVzx8qd8oEpR4cOUbxAjwb3+ExFQWrEvRf9+ZdSxs49ZrtZL2S2UltxBv3vBV4Si5g==
   dependencies:
     "@tanstack/history" "1.139.0"
     "@tanstack/react-store" "^0.8.0"
-    "@tanstack/router-core" "1.139.0"
+    "@tanstack/router-core" "1.139.3"
     isbot "^5.1.22"
     tiny-invariant "^1.3.3"
     tiny-warning "^1.0.3"
@@ -996,6 +996,19 @@
   version "1.139.0"
   resolved "https://registry.yarnpkg.com/@tanstack/router-core/-/router-core-1.139.0.tgz#e9e12b2250ad8e6d8d6e1bd89d9ab2310aebe893"
   integrity sha512-IKD0ET1mTWoaRppuJ+nRHIM2bxyuQKgDVSlXlrPXts/QSUuOSQBAAuc5yLTYqeMlqVRNa37RL0ZDwLSubug8BQ==
+  dependencies:
+    "@tanstack/history" "1.139.0"
+    "@tanstack/store" "^0.8.0"
+    cookie-es "^2.0.0"
+    seroval "^1.4.0"
+    seroval-plugins "^1.4.0"
+    tiny-invariant "^1.3.3"
+    tiny-warning "^1.0.3"
+
+"@tanstack/router-core@1.139.3":
+  version "1.139.3"
+  resolved "https://registry.yarnpkg.com/@tanstack/router-core/-/router-core-1.139.3.tgz#12a9e0a80012a496073d59a1b6b4990ac495f054"
+  integrity sha512-j3v1e739jmozBdtnmA45xHQHjCC2aKqBtfkMT3t2ZPijVrueaVP6qNRIAWmDK4ZSqd67TF5wP8vyqeTShJsEQQ==
   dependencies:
     "@tanstack/history" "1.139.0"
     "@tanstack/store" "^0.8.0"
