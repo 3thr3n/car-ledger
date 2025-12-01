@@ -1005,12 +1005,25 @@
     tiny-invariant "^1.3.3"
     tiny-warning "^1.0.3"
 
-"@tanstack/router-generator@1.139.0":
-  version "1.139.0"
-  resolved "https://registry.yarnpkg.com/@tanstack/router-generator/-/router-generator-1.139.0.tgz#084e7707696a3c8d14b759ac9f3b9d5290986b16"
-  integrity sha512-hBFwtuq46o4oAHdkGHHhgdyIFvwwopbM/jlavuUg6miiGyAjBXcS0L9pzAsdnowK0ZA4ajvsa263/qBYuWGznw==
+"@tanstack/router-core@1.139.12":
+  version "1.139.12"
+  resolved "https://registry.yarnpkg.com/@tanstack/router-core/-/router-core-1.139.12.tgz#1370df9b207dfe4ecaebdda47e139d4527d62a78"
+  integrity sha512-HCDi4fpnAFeDDogT0C61yd2nJn0FrIyFDhyHG3xJji8emdn8Ni4rfyrN4Av46xKkXTPUGdbsqih45+uuNtunew==
   dependencies:
-    "@tanstack/router-core" "1.139.0"
+    "@tanstack/history" "1.139.0"
+    "@tanstack/store" "^0.8.0"
+    cookie-es "^2.0.0"
+    seroval "^1.4.0"
+    seroval-plugins "^1.4.0"
+    tiny-invariant "^1.3.3"
+    tiny-warning "^1.0.3"
+
+"@tanstack/router-generator@1.139.12":
+  version "1.139.12"
+  resolved "https://registry.yarnpkg.com/@tanstack/router-generator/-/router-generator-1.139.12.tgz#448e0d6ca41582192a969271790a53476ebc8a97"
+  integrity sha512-HGs35aBml+2TVwoynsEc00/9Duw19GeT1fX+JzrY0TKNfMzq/nbjR+xxU8M1w3+gHqfKiITmW70XSZoWkXu9tw==
+  dependencies:
+    "@tanstack/router-core" "1.139.12"
     "@tanstack/router-utils" "1.139.0"
     "@tanstack/virtual-file-routes" "1.139.0"
     prettier "^3.5.0"
@@ -1019,10 +1032,10 @@
     tsx "^4.19.2"
     zod "^3.24.2"
 
-"@tanstack/router-plugin@^1.139.0":
-  version "1.139.0"
-  resolved "https://registry.yarnpkg.com/@tanstack/router-plugin/-/router-plugin-1.139.0.tgz#2d7879e517e6c22815aa563be4539b32cfb847eb"
-  integrity sha512-3lheElsEHhnRxWv2ezfX6MAigOSZg0xEiDcxYY+Dafc6BqrOn2qZHXuWkrvwGV+hLQUQFiHyW4eFH4KmzEkaEg==
+"@tanstack/router-plugin@^1.139.12":
+  version "1.139.12"
+  resolved "https://registry.yarnpkg.com/@tanstack/router-plugin/-/router-plugin-1.139.12.tgz#87637df56e66ff4302b818ac50f8aba8c165b641"
+  integrity sha512-xX39CcU6GLMaahr6YGNQYRZOQsd1WefgCH99PtY0cxZr9VNAIpJMYPsQY8h/g8A4JI10rHI1tdKxZAvodWjZxw==
   dependencies:
     "@babel/core" "^7.27.7"
     "@babel/plugin-syntax-jsx" "^7.27.1"
@@ -1030,8 +1043,8 @@
     "@babel/template" "^7.27.2"
     "@babel/traverse" "^7.27.7"
     "@babel/types" "^7.27.7"
-    "@tanstack/router-core" "1.139.0"
-    "@tanstack/router-generator" "1.139.0"
+    "@tanstack/router-core" "1.139.12"
+    "@tanstack/router-generator" "1.139.12"
     "@tanstack/router-utils" "1.139.0"
     "@tanstack/virtual-file-routes" "1.139.0"
     babel-dead-code-elimination "^1.0.10"
