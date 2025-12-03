@@ -3,7 +3,6 @@ import { useQuery } from '@tanstack/react-query';
 import React, { useState } from 'react';
 import {
   getStatsAverageOptions,
-  getStatsMinimalOptions,
   getStatsTotalOptions,
 } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
@@ -50,15 +49,6 @@ export default function DashboardPage({
     enabled: selectedCarId !== null,
   });
 
-  const { data: minimal, isLoading: isMinimalLoading } = useQuery({
-    ...getStatsMinimalOptions({
-      client: localClient,
-      path: { carId: selectedCarId },
-      query: dateRange,
-    }),
-    enabled: selectedCarId !== null,
-  });
-
   const { data: average, isLoading: isAverageLoading } = useQuery({
     ...getStatsAverageOptions({
       client: localClient,
@@ -79,11 +69,11 @@ export default function DashboardPage({
         onChangeDateRange={setDateRange}
       />
 
-      {isMinimalLoading || isAverageLoading || isTotalLoading ? (
+      {isAverageLoading || isTotalLoading ? (
         <CircularProgress />
       ) : (
         <Box sx={{ mt: 3 }}>
-          <DashboardCards minimal={minimal} average={average} total={total} />
+          <DashboardCards average={average} total={total} />
         </Box>
       )}
     </Container>

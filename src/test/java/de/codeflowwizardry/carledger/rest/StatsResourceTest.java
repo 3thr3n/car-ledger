@@ -201,21 +201,4 @@ class StatsResourceTest
 				.body("pricePerUnit.max", is("199.9"))
 				.body("pricePerUnit.min", is("189.9"));
 	}
-
-	@Test
-	@TestSecurity(user = "peter", roles = {
-			"user"
-	})
-	void shouldGetMinimalStats()
-	{
-		given()
-				.pathParam("carId", carEntity.getId())
-				.when()
-				.get("/minimal")
-				.then()
-				.statusCode(200)
-				.body("total", is("149.08"))
-				.body("avgDistance", is("460.00"))
-				.body("avgFuelConsumption", is("5.48"));
-	}
 }

@@ -10,15 +10,9 @@ import de.codeflowwizardry.carledger.StatsCalculator;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.rest.records.stats.AverageStats;
 import de.codeflowwizardry.carledger.rest.records.stats.HiLoStats;
-import de.codeflowwizardry.carledger.rest.records.stats.MinimalStats;
 import de.codeflowwizardry.carledger.rest.records.stats.TotalStats;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.BeanParam;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 
 @Path("stats/{carId}")
@@ -58,15 +52,6 @@ public class StatsResource extends AbstractResource
 	public HiLoStats getHiLo(@BeanParam DefaultParams params)
 	{
 		return statsCalculator.calculateHighLow(params.carId, context.getName(), params.from, params.to);
-	}
-
-	@GET
-	@Path("minimal")
-	@Produces(MediaType.APPLICATION_JSON)
-	@Operation(operationId = "getStatsMinimal", description = "Gets a small amount of stats to show in a dashboard")
-	public MinimalStats getMinimalStats(@BeanParam DefaultParams params)
-	{
-		return statsCalculator.getMinimalStats(params.carId, context.getName(), params.from, params.to);
 	}
 
 	public static class DefaultParams
