@@ -16,10 +16,15 @@ public class BillRepository implements PanacheRepository<BillEntity>
 	public List<BillEntity> getBills(long carId, String username, Optional<LocalDate> from, Optional<LocalDate> to)
 	{
 		Map<String, Object> params = new HashMap<>();
-		params.put("carId", carId);
+
+		String query = "car.user.userId = :userId";
 		params.put("userId", username);
 
-		String query = "car.id = :carId and car.user.userId = :userId";
+		if (carId >= 0)
+		{
+			query += " and car.id = :carId";
+			params.put("carId", carId);
+		}
 
 		if (from.isPresent() && to.isPresent())
 		{
