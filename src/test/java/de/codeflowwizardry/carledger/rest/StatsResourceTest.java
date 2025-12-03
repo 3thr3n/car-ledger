@@ -122,6 +122,23 @@ class StatsResourceTest
 	@TestSecurity(user = "peter", roles = {
 			"user"
 	})
+	void shouldGetAllTotalStatsForEveryOfMyCars()
+	{
+		given()
+				.pathParam("carId", -1)
+				.when()
+				.get("/total")
+				.then()
+				.statusCode(200)
+				.body("distance", is("1380.00"))
+				.body("unit", is("76.00"))
+				.body("calculatedPrice", is("149.08"));
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
 	void shouldGetAllTotalStatsAfter2022()
 	{
 		String localDateString = LocalDate.of(2023, 1, 1).atStartOfDay().format(DateTimeFormatter.ISO_LOCAL_DATE);
