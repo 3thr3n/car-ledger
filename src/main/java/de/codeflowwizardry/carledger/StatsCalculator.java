@@ -1,5 +1,8 @@
 package de.codeflowwizardry.carledger;
 
+import static de.codeflowwizardry.carledger.data.BillEntity.GERMAN_UST;
+import static java.math.BigDecimal.ZERO;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
@@ -14,13 +17,9 @@ import de.codeflowwizardry.carledger.data.repository.BillRepository;
 import de.codeflowwizardry.carledger.rest.records.stats.AverageStats;
 import de.codeflowwizardry.carledger.rest.records.stats.HiLo;
 import de.codeflowwizardry.carledger.rest.records.stats.HiLoStats;
-import de.codeflowwizardry.carledger.rest.records.stats.MinimalStats;
 import de.codeflowwizardry.carledger.rest.records.stats.TotalStats;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-
-import static de.codeflowwizardry.carledger.data.BillEntity.*;
-import static java.math.BigDecimal.ZERO;
 
 @ApplicationScoped
 public class StatsCalculator
@@ -200,22 +199,5 @@ public class StatsCalculator
 			Function<BillEntity, BigDecimal> bigDecimalFunction)
 	{
 		return calculateHiLo(billEntities, bigDecimalFunction, 2);
-	}
-
-	public MinimalStats getMinimalStats(Long carId, String username, Optional<LocalDate> from, Optional<LocalDate> to)
-	{
-		List<BillEntity> billEntities = billRepository.getBills(carId, username, from, to);
-
-		if (billEntities.isEmpty())
-		{
-			return new MinimalStats(ZERO, ZERO, new HiLo(ZERO, ZERO, 2), ZERO);
-		}
-
-		BigDecimal calculatedPrice = calculateTotalCalculatedPrice(billEntities);
-		BigDecimal averageCalculated = calculateAverageCalculated(billEntities);
-		HiLo hiLoCalculated = calculateHiLoCalculated(billEntities);
-		BigDecimal averageDistance = calculateAverageDistance(billEntities);
-
-		return new MinimalStats(calculatedPrice, averageCalculated, hiLoCalculated, averageDistance);
 	}
 }

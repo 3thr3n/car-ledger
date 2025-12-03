@@ -1,18 +1,16 @@
 import { Grid, useMediaQuery, useTheme } from '@mui/material';
 import DashboardMetric from '@/components/dashboard/DashboardMetric';
 import LocalGasStationIcon from '@mui/icons-material/LocalGasStation';
-import { AverageStats, MinimalStats, TotalStats } from '@/generated';
+import { AverageStats, TotalStats } from '@/generated';
 import SpeedIcon from '@mui/icons-material/Speed';
 import EuroIcon from '@mui/icons-material/Euro';
 import RouteIcon from '@mui/icons-material/Route';
 import { AnimatedCard } from '@/components/base/AnimatedCard';
 
 export default function DashboardCards({
-  minimal,
   average,
   total,
 }: {
-  minimal?: MinimalStats;
   average?: AverageStats;
   total?: TotalStats;
 }) {
@@ -20,7 +18,7 @@ export default function DashboardCards({
   const isMd = useMediaQuery(theme.breakpoints.up('md'));
   const isSm = useMediaQuery(theme.breakpoints.up('sm'));
 
-  if (!minimal || !average || !total) return null;
+  if (!average || !total) return null;
 
   const width = isMd
     ? `calc(100% / 12 * 3.75)` // md → 3 columns
@@ -51,7 +49,7 @@ export default function DashboardCards({
           <DashboardMetric
             label="Avg Consumption"
             value={
-              average?.calculated ? Number(average.calculated).toFixed(1) : '-'
+              average?.calculated ? Number(average.calculated).toFixed(2) : '-'
             }
             unit="l/100km"
             color="#ffb74d"
@@ -81,7 +79,7 @@ export default function DashboardCards({
           <DashboardMetric
             label="Avg Distance"
             value={
-              average?.distance ? Number(average.distance).toFixed(0) : '-'
+              average?.distance ? Number(average.distance).toFixed(2) : '-'
             }
             unit="km"
             color="#4dd0e1"
