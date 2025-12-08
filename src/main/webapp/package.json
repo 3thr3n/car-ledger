@@ -24,7 +24,7 @@
     "@mui/x-data-grid": "^8.21.0",
     "@mui/x-date-pickers": "^8.21.0",
     "@tanstack/react-query": "^5.90.12",
-    "@tanstack/react-router": "^1.139.14",
+    "@tanstack/react-router": "^1.140.0",
     "dayjs": "^1.11.19",
     "framer-motion": "^12.23.25",
     "i18next": "^25.7.1",
