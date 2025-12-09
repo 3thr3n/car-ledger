@@ -2,6 +2,7 @@ package de.codeflowwizardry.carledger.rest.records;
 
 import de.codeflowwizardry.carledger.data.BillEntity;
 import de.codeflowwizardry.carledger.data.CarEntity;
+import de.codeflowwizardry.carledger.data.FuelBillEntity;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -15,13 +16,18 @@ public record CarOverview(BigInteger totalRefuels, BigDecimal totalCost, BigDeci
 {
 	public static CarOverview convert(CarEntity carEntity)
 	{
-		List<BillEntity> billEntities = carEntity.getBills();
-		BigDecimal totalCost = billEntities.stream().map(x -> x.getCalculatedPrice(GERMAN_UST)).reduce(BigDecimal.ZERO,
+		List<FuelBillEntity> billEntities = carEntity.getBills()
+                .stream()
+                .filter(f -> f instanceof FuelBillEntity)
+				.map(f -> (FuelBillEntity) f)
+                .toList();
+
+		BigDecimal totalCost = billEntities.stream().map(BillEntity::getTotal).reduce(BigDecimal.ZERO,
 				BigDecimal::add);
 
 		BigDecimal avgConsumption = BigDecimal.ZERO;
 		Optional<BigDecimal[]> optAvgConsumptionArray = billEntities.stream()
-				.map(BillEntity::getCalculateConsumption).map(bd -> new BigDecimal[] {
+				.map(FuelBillEntity::getAvgConsumption).map(bd -> new BigDecimal[] {
 						bd, BigDecimal.ONE
 				})
 				.reduce((a, b) -> new BigDecimal[] {

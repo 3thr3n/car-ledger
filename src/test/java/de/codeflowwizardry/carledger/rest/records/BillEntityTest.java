@@ -4,11 +4,13 @@ import static de.codeflowwizardry.carledger.rest.records.Bill.calculateConsumpti
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 
-import de.codeflowwizardry.carledger.data.BillEntity;
 import org.junit.jupiter.api.Test;
+
+import de.codeflowwizardry.carledger.data.FuelBillEntity;
 
 class BillEntityTest
 {
@@ -29,8 +31,8 @@ class BillEntityTest
 	@Test
 	void shouldCalculatePrice()
 	{
-		Bill bill = Bill.convert(new BillEntity(new BillInput(LocalDate.now(), BigDecimal.ZERO,
-				BigDecimal.valueOf(10), BigDecimal.valueOf(200), BigDecimal.ZERO)));
+        FuelBill bill = FuelBill.convert(FuelBillEntity.toEntity(new FuelBillInput(LocalDate.now(), BigDecimal.ZERO,
+				BigDecimal.valueOf(10), BigDecimal.valueOf(200), BigDecimal.ZERO, BigInteger.ZERO)));
 
 		assertEquals("20.00", bill.getCalculatedPrice());
 	}

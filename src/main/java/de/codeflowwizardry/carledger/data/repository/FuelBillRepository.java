@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.*;
 
 import de.codeflowwizardry.carledger.data.BillEntity;
+import de.codeflowwizardry.carledger.data.FuelBillEntity;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import io.quarkus.panache.common.Page;
@@ -11,9 +12,9 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 
 @ApplicationScoped
-public class BillRepository implements PanacheRepository<BillEntity>
+public class FuelBillRepository implements PanacheRepository<FuelBillEntity>
 {
-	public List<BillEntity> getBills(long carId, String username, Optional<LocalDate> from, Optional<LocalDate> to)
+	public List<FuelBillEntity> getBills(long carId, String username, Optional<LocalDate> from, Optional<LocalDate> to)
 	{
 		Map<String, Object> params = new HashMap<>();
 
@@ -60,7 +61,7 @@ public class BillRepository implements PanacheRepository<BillEntity>
 				.toList();
 	}
 
-	public PanacheQuery<BillEntity> getBills(long carId, String username, Page page, Optional<Integer> year)
+	public PanacheQuery<FuelBillEntity> getBills(long carId, String username, Page page, Optional<Integer> year)
 	{
 		String query = "car.id = :carId and car.user.userId = :username order by day desc";
 		Map<String, Object> params = new HashMap<>();
@@ -77,14 +78,14 @@ public class BillRepository implements PanacheRepository<BillEntity>
 				.page(page);
 	}
 
-	public Optional<BillEntity> getBillById(long billId, long carId, String username)
+	public Optional<FuelBillEntity> getBillById(long billId, long carId, String username)
 	{
 		return find("id = ?1 and car.id = ?2 and car.user.userId = ?3 order by day desc", billId, carId, username)
 				.firstResultOptional();
 	}
 
 	@Override
-	public boolean isPersistent(BillEntity entity)
+	public boolean isPersistent(FuelBillEntity entity)
 	{
 		return find("day = ?1 and unit = ?2 and car.id = ?3 and distance = ?4", entity.getDay(), entity.getUnit(),
 				entity.getCarId(), entity.getDistance())
@@ -93,14 +94,14 @@ public class BillRepository implements PanacheRepository<BillEntity>
 
 	@Override
 	@Transactional
-	public void delete(BillEntity billEntity)
+	public void delete(FuelBillEntity billEntity)
 	{
 		PanacheRepository.super.delete(billEntity);
 	}
 
 	@Override
 	@Transactional
-	public void persist(BillEntity billEntity)
+	public void persist(FuelBillEntity billEntity)
 	{
 		PanacheRepository.super.persist(billEntity);
 	}

@@ -4,27 +4,26 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import de.codeflowwizardry.carledger.data.BillEntity;
-import de.codeflowwizardry.carledger.data.CarEntity;
-import de.codeflowwizardry.carledger.data.repository.BillRepository;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import de.codeflowwizardry.carledger.data.AccountEntity;
+import de.codeflowwizardry.carledger.data.CarEntity;
+import de.codeflowwizardry.carledger.data.FuelBillEntity;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
+import de.codeflowwizardry.carledger.data.repository.FuelBillRepository;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
 import io.restassured.http.ContentType;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.time.LocalDate;
 
 @QuarkusTest
 @TestHTTPEndpoint(CarResource.class)
@@ -37,7 +36,7 @@ class CarResourceTest
 	CarRepository carRepository;
 
 	@Inject
-	BillRepository billRepository;
+	FuelBillRepository billRepository;
 
 	long carId = 0;
 
@@ -55,7 +54,7 @@ class CarResourceTest
 		carEntity.setName("Normal car");
 		carRepository.persist(carEntity);
 
-		BillEntity billEntity = new BillEntity();
+		FuelBillEntity billEntity = new FuelBillEntity();
 		billEntity.setCar(carEntity);
 		billEntity.setDay(LocalDate.now());
 		billEntity.setDistance(BigDecimal.valueOf(500));

@@ -9,8 +9,9 @@ import java.util.List;
 import java.util.Objects;
 
 import de.codeflowwizardry.carledger.data.BillEntity;
+import de.codeflowwizardry.carledger.data.FuelBillEntity;
 
-public final class Bill
+public final class FuelBill
 {
 	private final Long id;
 	private final LocalDate day;
@@ -22,8 +23,8 @@ public final class Bill
 	private final BigDecimal calculated;
 	private final BigDecimal calculatedPrice;
 
-	Bill(Long id, LocalDate day, BigDecimal distance, BigDecimal unit, BigDecimal pricePerUnit, BigDecimal estimate,
-			BigDecimal calculated, BigDecimal calculatedPrice)
+	FuelBill(Long id, LocalDate day, BigDecimal distance, BigDecimal unit, BigDecimal pricePerUnit, BigDecimal estimate,
+             BigDecimal calculated, BigDecimal calculatedPrice)
 	{
 		this.id = id;
 		this.day = day;
@@ -34,6 +35,35 @@ public final class Bill
 		this.estimate = estimate;
 		this.calculated = Objects.requireNonNullElse(calculated, BigDecimal.ZERO);
 		this.calculatedPrice = Objects.requireNonNullElse(calculatedPrice, BigDecimal.ZERO);
+	}
+
+	public static FuelBill convert(FuelBillEntity billEntity)
+	{
+		return new FuelBillBuilder()
+                .setId(billEntity.getId())
+                .setDay(billEntity.getDay())
+				.setDistance(billEntity.getDistance())
+				.setUnit(billEntity.getUnit()).setPricePerUnit(billEntity.getPricePerUnit())
+				.setEstimate(billEntity.getEstimate())
+				.setCalculated(billEntity.getAvgConsumption())
+				.setCalculatedPrice(billEntity.getTotal())
+                .createBillPojo();
+	}
+
+	public static List<FuelBill> convert(List<FuelBillEntity> billEntityList)
+	{
+		return billEntityList.stream()
+				.map(t -> new FuelBillBuilder()
+                        .setId(t.getId())
+                        .setDay(t.getDay())
+                        .setDistance(t.getDistance())
+						.setUnit(t.getUnit())
+                        .setPricePerUnit(t.getPricePerUnit())
+                        .setEstimate(t.getEstimate())
+						.setCalculated(t.getAvgConsumption())
+						.setCalculatedPrice(t.getTotal())
+                        .createBillPojo())
+				.toList();
 	}
 
 	static BigDecimal calculateConsumption(BigDecimal unit, BigDecimal distance)

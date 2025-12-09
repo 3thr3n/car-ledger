@@ -17,9 +17,9 @@ import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
 import com.opencsv.exceptions.CsvValidationException;
 
-import de.codeflowwizardry.carledger.data.BillEntity;
 import de.codeflowwizardry.carledger.data.CarEntity;
-import de.codeflowwizardry.carledger.data.repository.BillRepository;
+import de.codeflowwizardry.carledger.data.FuelBillEntity;
+import de.codeflowwizardry.carledger.data.repository.FuelBillRepository;
 import de.codeflowwizardry.carledger.rest.records.CsvOrder;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -32,10 +32,10 @@ public class CsvProcessor
 {
 	private final static Logger LOG = LoggerFactory.getLogger(CsvProcessor.class);
 
-	private final BillRepository billRepository;
+	private final FuelBillRepository billRepository;
 
 	@Inject
-	public CsvProcessor(BillRepository billRepository)
+	public CsvProcessor(FuelBillRepository billRepository)
 	{
 		this.billRepository = billRepository;
 	}
@@ -65,12 +65,12 @@ public class CsvProcessor
 	{
 		try (CSVReader csvReader = new CSVReaderBuilder(new FileReader(csv)).withSkipLines(skipLines).build())
 		{
-			List<BillEntity> billEntityList = new ArrayList<>();
+			List<FuelBillEntity> billEntityList = new ArrayList<>();
 
 			String[] line;
 			while ((line = csvReader.readNext()) != null)
 			{
-				BillEntity billEntity = new BillEntity();
+				FuelBillEntity billEntity = new FuelBillEntity();
 				billEntity.setCar(carEntity);
 
 				billEntity.setUnit(parseToBigDecimal(line, csvOrder.unit()));
