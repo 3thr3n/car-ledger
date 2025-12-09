@@ -1,59 +1,50 @@
 package de.codeflowwizardry.carledger.data;
 
-import static de.codeflowwizardry.carledger.StatsCalculator.ONE_HUNDRED;
-
 import java.math.BigDecimal;
-import java.math.RoundingMode;
+import java.math.BigInteger;
 import java.time.LocalDate;
-import java.util.Objects;
 
-import de.codeflowwizardry.carledger.rest.records.BillInput;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.SequenceGenerator;
-import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
+import jakarta.persistence.*;
 
-@Entity(name = "Bill")
+@Entity(name = "bill")
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = {
-		"_day", "unit", "distance", "car_id"
+		"b_day", "car_id"
 }))
-@SequenceGenerator(name = "sequence_bill", allocationSize = 1, initialValue = 5, sequenceName = "sequence_bill")
-public class BillEntity
+@Inheritance(strategy = InheritanceType.JOINED)
+public abstract class BillEntity
 {
 	public static final BigDecimal GERMAN_UST = BigDecimal.valueOf(1.19);
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequence_bill")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(insertable = false, updatable = false)
 	private Long id;
-	@Column(name = "_day", updatable = false)
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "b_type", nullable = false)
+    private BillType type;
+
+	@Column(name = "b_day", updatable = false)
 	private LocalDate day = LocalDate.now();
-	@Column(updatable = false)
-	private BigDecimal unit = BigDecimal.ZERO;
-	@Column(name = "price_per_unit")
-	private BigDecimal pricePerUnit = BigDecimal.ZERO;
-	private BigDecimal distance = BigDecimal.ZERO;
-	private BigDecimal estimate = BigDecimal.ZERO;
+
+	@Column(name = "b_total", nullable = false)
+	private BigDecimal total;
+
+    @Column(name = "b_vat_rate")
+    private BigInteger vatRate = BigInteger.ZERO;
+
+    @Column(name = "b_net_amount")
+    private BigDecimal netAmount = BigDecimal.ZERO;
+
+    @Column(name = "b_ust_amount")
+    private BigDecimal ustAmount = BigDecimal.ZERO;
 
 	@ManyToOne(optional = false)
-	private CarEntity car;
+	@JoinColumn(name = "b_car_id", nullable = false)
+	protected CarEntity car;
 
 	public BillEntity()
 	{
-	}
-
-	public BillEntity(BillInput billPojo)
-	{
-		this.day = billPojo.day();
-		this.distance = Objects.requireNonNullElse(billPojo.distance(), BigDecimal.ZERO);
-		this.estimate = Objects.requireNonNullElse(billPojo.estimate(), BigDecimal.ZERO);
-		this.pricePerUnit = Objects.requireNonNullElse(billPojo.pricePerUnit(), BigDecimal.ZERO);
-		this.unit = Objects.requireNonNullElse(billPojo.unit(), BigDecimal.ZERO);
 	}
 
 	public Long getId()
@@ -61,7 +52,19 @@ public class BillEntity
 		return id;
 	}
 
-	public LocalDate getDay()
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public BillType getType() {
+        return type;
+    }
+
+    public void setType(BillType type) {
+        this.type = type;
+    }
+
+    public LocalDate getDay()
 	{
 		return day;
 	}
@@ -71,81 +74,57 @@ public class BillEntity
 		this.day = day;
 	}
 
-	public BigDecimal getUnit()
+	public BigDecimal getTotal()
 	{
-		return unit;
+		return total;
 	}
 
-	public void setUnit(BigDecimal unit)
+	public void setTotal(BigDecimal total)
 	{
-		this.unit = unit;
+		this.total = total;
 	}
 
-	public BigDecimal getPricePerUnit()
-	{
-		return pricePerUnit;
-	}
+    public BigDecimal getNetAmount()
+    {
+        return netAmount;
+    }
 
-	public void setPricePerUnit(BigDecimal pricePerUnit)
-	{
-		this.pricePerUnit = pricePerUnit;
-	}
+    public void setNetAmount(BigDecimal netAmount)
+    {
+        this.netAmount = netAmount;
+    }
 
-	public BigDecimal getDistance()
-	{
-		return distance;
-	}
+    public BigDecimal getUstAmount()
+    {
+        return ustAmount;
+    }
 
-	public boolean isDistanceSet()
-	{
-		return !BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP).equals(distance);
-	}
+    public void setUstAmount(BigDecimal ustAmount)
+    {
+        this.ustAmount = ustAmount;
+    }
 
-	public void setDistance(BigDecimal distance)
-	{
-		this.distance = distance;
-	}
+    public BigInteger getVatRate()
+    {
+        return vatRate;
+    }
 
-	public BigDecimal getEstimate()
-	{
-		return estimate;
-	}
+    public void setVatRate(BigInteger vatRate)
+    {
+        this.vatRate = vatRate;
+    }
 
-	public void setEstimate(BigDecimal estimate)
-	{
-		this.estimate = estimate;
-	}
+    public CarEntity getCar() {
+        return car;
+    }
 
-	public CarEntity getCar()
-	{
-		return car;
-	}
+    public void setCar(CarEntity carEntity)
+    {
+        this.car = carEntity;
+    }
 
-	public void setCar(CarEntity carEntity)
-	{
-		this.car = carEntity;
-	}
-
-	public Long getCarId()
-	{
-		return car.getId();
-	}
-
-	public BigDecimal getCalculatedPrice(BigDecimal mwst)
-	{
-		return pricePerUnit
-				.divide(mwst, 4, RoundingMode.HALF_UP)
-				.multiply(unit)
-				.multiply(mwst)
-				.divide(ONE_HUNDRED, 2, RoundingMode.HALF_UP);
-	}
-
-	public BigDecimal getCalculateConsumption()
-	{
-		if (unit.compareTo(BigDecimal.ZERO) <= 0 || distance.compareTo(BigDecimal.ZERO) <= 0)
-		{
-			return BigDecimal.ZERO;
-		}
-		return unit.divide(distance, 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100));
-	}
+    public Long getCarId()
+    {
+        return car.getId();
+    }
 }

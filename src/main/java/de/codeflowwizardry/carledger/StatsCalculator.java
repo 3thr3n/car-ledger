@@ -13,7 +13,8 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import de.codeflowwizardry.carledger.data.BillEntity;
-import de.codeflowwizardry.carledger.data.repository.BillRepository;
+import de.codeflowwizardry.carledger.data.FuelBillEntity;
+import de.codeflowwizardry.carledger.data.repository.FuelBillRepository;
 import de.codeflowwizardry.carledger.rest.records.stats.AverageStats;
 import de.codeflowwizardry.carledger.rest.records.stats.HiLo;
 import de.codeflowwizardry.carledger.rest.records.stats.HiLoStats;
@@ -26,17 +27,17 @@ public class StatsCalculator
 {
 	public static final BigDecimal ONE_HUNDRED = BigDecimal.valueOf(100);
 
-	private final BillRepository billRepository;
+	private final FuelBillRepository billRepository;
 
 	@Inject
-	public StatsCalculator(BillRepository billRepository)
+	public StatsCalculator(FuelBillRepository billRepository)
 	{
 		this.billRepository = billRepository;
 	}
 
 	public TotalStats calculateTotal(Long carId, String username, Optional<LocalDate> from, Optional<LocalDate> to)
 	{
-		List<BillEntity> billEntities = billRepository.getBills(carId, username, from, to);
+		List<FuelBillEntity> billEntities = billRepository.getBills(carId, username, from, to);
 
 		if (billEntities.isEmpty())
 		{
@@ -50,22 +51,22 @@ public class StatsCalculator
 		return new TotalStats(unit, distance, calculatedPrice);
 	}
 
-	private BigDecimal calculateTotalUnit(List<BillEntity> billEntities)
+	private BigDecimal calculateTotalUnit(List<FuelBillEntity> billEntities)
 	{
-		Stream<BigDecimal> totalUnit = billEntities.stream().map(BillEntity::getUnit);
+		Stream<BigDecimal> totalUnit = billEntities.stream().map(FuelBillEntity::getUnit);
 		return handleReduceTotalResult(totalUnit);
 	}
 
-	private BigDecimal calculateTotalDistance(List<BillEntity> billEntities)
+	private BigDecimal calculateTotalDistance(List<FuelBillEntity> billEntities)
 	{
-		Stream<BigDecimal> totalUnit = billEntities.stream().map(BillEntity::getDistance);
+		Stream<BigDecimal> totalUnit = billEntities.stream().map(FuelBillEntity::getDistance);
 		return handleReduceTotalResult(totalUnit);
 	}
 
-	private BigDecimal calculateTotalCalculatedPrice(List<BillEntity> billEntities)
+	private BigDecimal calculateTotalCalculatedPrice(List<FuelBillEntity> billEntities)
 	{
 		Stream<BigDecimal> totalCost = billEntities.stream()
-				.map(bill -> bill.getCalculatedPrice(GERMAN_UST));
+				.map(BillEntity::getTotal);
 		return handleReduceTotalResult(totalCost);
 	}
 
@@ -82,7 +83,7 @@ public class StatsCalculator
 
 	public AverageStats calculateAverage(Long carId, String username, Optional<LocalDate> from, Optional<LocalDate> to)
 	{
-		List<BillEntity> billEntities = billRepository.getBills(carId, username, from, to);
+		List<FuelBillEntity> billEntities = billRepository.getBills(carId, username, from, to);
 
 		BigDecimal averagePricePerUnit = calculateAveragePricePerUnit(billEntities);
 		BigDecimal averageDistance = calculateAverageDistance(billEntities);
@@ -92,34 +93,33 @@ public class StatsCalculator
 		return new AverageStats(averagePricePerUnit, averageDistance, averageCalculated, averageCalculatedPrice);
 	}
 
-	private static BigDecimal calculateAverageDistance(List<BillEntity> billEntities)
+	private static BigDecimal calculateAverageDistance(List<FuelBillEntity> billEntities)
 	{
-		return handleReduceAverageResult(billEntities, BillEntity::getDistance);
+		return handleReduceAverageResult(billEntities, FuelBillEntity::getDistance);
 	}
 
-	private static BigDecimal calculateAveragePricePerUnit(List<BillEntity> billEntities)
+	private static BigDecimal calculateAveragePricePerUnit(List<FuelBillEntity> billEntities)
 	{
-		return handleReduceAverageResult(billEntities, BillEntity::getPricePerUnit);
+		return handleReduceAverageResult(billEntities, FuelBillEntity::getPricePerUnit);
 	}
 
-	private static BigDecimal calculateAverageCalculated(List<BillEntity> billEntities)
+	private static BigDecimal calculateAverageCalculated(List<FuelBillEntity> billEntities)
 	{
 		return handleReduceAverageResult(billEntities,
 				bill -> bill.getUnit().divide(bill.getDistance(), 6, RoundingMode.HALF_UP)
 						.multiply(ONE_HUNDRED));
 	}
 
-	private static BigDecimal calculateAverageCalculatedPrice(List<BillEntity> billEntities)
+	private static BigDecimal calculateAverageCalculatedPrice(List<FuelBillEntity> billEntities)
 	{
-		return handleReduceAverageResult(billEntities,
-				bill -> bill.getCalculatedPrice(GERMAN_UST));
+		return handleReduceAverageResult(billEntities, BillEntity::getTotal);
 	}
 
-	private static BigDecimal handleReduceAverageResult(List<BillEntity> billEntities,
-			Function<BillEntity, BigDecimal> bigDecimalMapFunction)
+	private static BigDecimal handleReduceAverageResult(List<FuelBillEntity> billEntities,
+			Function<FuelBillEntity, BigDecimal> bigDecimalMapFunction)
 	{
 		Optional<BigDecimal[]> optionalBigDecimal = billEntities.stream()
-				.filter(BillEntity::isDistanceSet)
+				.filter(FuelBillEntity::isDistanceSet)
 				.map(bigDecimalMapFunction)
 				.map(bd -> new BigDecimal[] {
 						bd, BigDecimal.ONE
@@ -138,7 +138,7 @@ public class StatsCalculator
 
 	public HiLoStats calculateHighLow(Long carId, String username, Optional<LocalDate> from, Optional<LocalDate> to)
 	{
-		List<BillEntity> billEntities = billRepository.getBills(carId, username, from, to);
+		List<FuelBillEntity> billEntities = billRepository.getBills(carId, username, from, to);
 
 		HiLo hiLoDistance = calculateHiLoDistance(billEntities);
 		HiLo hiLoUnit = calculateHiLoUnit(billEntities);
@@ -149,45 +149,44 @@ public class StatsCalculator
 		return new HiLoStats(hiLoCalculatedPrice, hiLoCalculated, hiLoDistance, hiLoUnit, hiLoPricePerUnit);
 	}
 
-	private static HiLo calculateHiLoDistance(List<BillEntity> billEntities)
+	private static HiLo calculateHiLoDistance(List<FuelBillEntity> billEntities)
 	{
-		return calculateHiLo(billEntities, BillEntity::getDistance);
+		return calculateHiLo(billEntities, FuelBillEntity::getDistance);
 	}
 
-	private static HiLo calculateHiLoUnit(List<BillEntity> billEntities)
+	private static HiLo calculateHiLoUnit(List<FuelBillEntity> billEntities)
 	{
-		return calculateHiLo(billEntities, BillEntity::getUnit);
+		return calculateHiLo(billEntities, FuelBillEntity::getUnit);
 	}
 
-	private static HiLo calculateHiLoPricePerUnit(List<BillEntity> billEntities)
+	private static HiLo calculateHiLoPricePerUnit(List<FuelBillEntity> billEntities)
 	{
-		return calculateHiLo(billEntities, BillEntity::getPricePerUnit, 1);
+		return calculateHiLo(billEntities, FuelBillEntity::getPricePerUnit, 1);
 	}
 
-	private static HiLo calculateHiLoCalculated(List<BillEntity> billEntities)
+	private static HiLo calculateHiLoCalculated(List<FuelBillEntity> billEntities)
 	{
 		return calculateHiLo(billEntities,
 				bill -> bill.getUnit().divide(bill.getDistance(), 6, RoundingMode.HALF_UP)
 						.multiply(ONE_HUNDRED));
 	}
 
-	private static HiLo calculateHiLoCalculatedPrice(List<BillEntity> billEntities)
+	private static HiLo calculateHiLoCalculatedPrice(List<FuelBillEntity> billEntities)
 	{
-		return calculateHiLo(billEntities,
-				bill -> bill.getCalculatedPrice(GERMAN_UST));
+		return calculateHiLo(billEntities, BillEntity::getTotal);
 	}
 
-	private static HiLo calculateHiLo(List<BillEntity> billEntities,
-			Function<BillEntity, BigDecimal> bigDecimalFunction, int scale)
+	private static HiLo calculateHiLo(List<FuelBillEntity> billEntities,
+			Function<FuelBillEntity, BigDecimal> bigDecimalFunction, int scale)
 	{
 		BigDecimal min = billEntities.stream()
-				.filter(BillEntity::isDistanceSet)
+				.filter(FuelBillEntity::isDistanceSet)
 				.map(bigDecimalFunction)
 				.min(Comparator.naturalOrder())
 				.orElse(ZERO);
 
 		BigDecimal max = billEntities.stream()
-				.filter(BillEntity::isDistanceSet)
+				.filter(FuelBillEntity::isDistanceSet)
 				.map(bigDecimalFunction)
 				.max(Comparator.naturalOrder())
 				.orElse(ZERO);
@@ -195,8 +194,8 @@ public class StatsCalculator
 		return new HiLo(min, max, scale);
 	}
 
-	private static HiLo calculateHiLo(List<BillEntity> billEntities,
-			Function<BillEntity, BigDecimal> bigDecimalFunction)
+	private static HiLo calculateHiLo(List<FuelBillEntity> billEntities,
+			Function<FuelBillEntity, BigDecimal> bigDecimalFunction)
 	{
 		return calculateHiLo(billEntities, bigDecimalFunction, 2);
 	}

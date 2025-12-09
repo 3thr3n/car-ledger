@@ -1,23 +1,24 @@
 package de.codeflowwizardry.carledger.rest;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-import de.codeflowwizardry.carledger.data.BillEntity;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import de.codeflowwizardry.carledger.data.AccountEntity;
 import de.codeflowwizardry.carledger.data.CarEntity;
+import de.codeflowwizardry.carledger.data.FuelBillEntity;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
-import de.codeflowwizardry.carledger.data.repository.BillRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
+import de.codeflowwizardry.carledger.data.repository.FuelBillRepository;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
 import io.restassured.http.ContentType;
@@ -28,7 +29,7 @@ import jakarta.transaction.Transactional;
 class BillResourceTest
 {
 	@Inject
-	BillRepository billRepository;
+	FuelBillRepository billRepository;
 
 	@Inject
 	AccountRepository accountRepository;
@@ -60,7 +61,7 @@ class BillResourceTest
 		carEntity.setName("Neat car");
 		carRepository.persist(carEntity);
 
-		BillEntity billEntity = new BillEntity();
+		FuelBillEntity billEntity = new FuelBillEntity();
 		billEntity.setEstimate(BigDecimal.valueOf(8.5));
 		billEntity.setDay(LocalDate.of(2024, 8, 16));
 		billEntity.setDistance(BigDecimal.valueOf(500));
@@ -69,7 +70,7 @@ class BillResourceTest
 		billEntity.setCar(carEntity);
 		billRepository.persist(billEntity);
 
-		billEntity = new BillEntity();
+		billEntity = new FuelBillEntity();
 		billEntity.setEstimate(BigDecimal.valueOf(9.1d));
 		billEntity.setDay(LocalDate.of(2022, 5, 22));
 		billEntity.setDistance(BigDecimal.valueOf(400));
@@ -78,7 +79,7 @@ class BillResourceTest
 		billEntity.setCar(carEntity);
 		billRepository.persist(billEntity);
 
-		billEntity = new BillEntity();
+		billEntity = new FuelBillEntity();
 		billEntity.setEstimate(BigDecimal.valueOf(8.2d));
 		billEntity.setDay(LocalDate.of(2023, 6, 2));
 		billEntity.setDistance(BigDecimal.valueOf(480));

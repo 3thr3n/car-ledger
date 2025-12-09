@@ -7,10 +7,10 @@ import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
 
-import de.codeflowwizardry.carledger.data.BillEntity;
 import org.junit.jupiter.api.Test;
 
-import de.codeflowwizardry.carledger.data.repository.BillRepository;
+import de.codeflowwizardry.carledger.data.FuelBillEntity;
+import de.codeflowwizardry.carledger.data.repository.FuelBillRepository;
 import de.codeflowwizardry.carledger.rest.records.CsvOrder;
 
 class CsvProcessorTest
@@ -32,15 +32,15 @@ class CsvProcessorTest
 	void shouldProcessValidCsv() throws URISyntaxException
 	{
 		// given
-		BillRepository billRepository = new BillRepository() {
+		FuelBillRepository billRepository = new FuelBillRepository() {
 			@Override
-			public boolean isPersistent(BillEntity entity)
+			public boolean isPersistent(FuelBillEntity entity)
 			{
 				return false;
 			}
 
 			@Override
-			public void persist(Iterable<BillEntity> entities)
+			public void persist(Iterable<FuelBillEntity> entities)
 			{
 				// Do nothing
 			}

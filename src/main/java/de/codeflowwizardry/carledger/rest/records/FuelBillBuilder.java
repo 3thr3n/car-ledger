@@ -3,7 +3,7 @@ package de.codeflowwizardry.carledger.rest.records;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-public class BillBuilder
+public class FuelBillBuilder
 {
 	private Long id;
 	private LocalDate day;
@@ -14,56 +14,56 @@ public class BillBuilder
 	private BigDecimal calculated;
 	private BigDecimal calculatedPrice;
 
-	public BillBuilder setId(Long id)
+	public FuelBillBuilder setId(Long id)
 	{
 		this.id = id;
 		return this;
 	}
 
-	public BillBuilder setDay(LocalDate day)
+	public FuelBillBuilder setDay(LocalDate day)
 	{
 		this.day = day;
 		return this;
 	}
 
-	public BillBuilder setDistance(BigDecimal distance)
+	public FuelBillBuilder setDistance(BigDecimal distance)
 	{
 		this.distance = distance;
 		return this;
 	}
 
-	public BillBuilder setUnit(BigDecimal unit)
+	public FuelBillBuilder setUnit(BigDecimal unit)
 	{
 		this.unit = unit;
 		return this;
 	}
 
-	public BillBuilder setPricePerUnit(BigDecimal pricePerUnit)
+	public FuelBillBuilder setPricePerUnit(BigDecimal pricePerUnit)
 	{
 		this.pricePerUnit = pricePerUnit;
 		return this;
 	}
 
-	public BillBuilder setEstimate(BigDecimal estimate)
+	public FuelBillBuilder setEstimate(BigDecimal estimate)
 	{
 		this.estimate = estimate;
 		return this;
 	}
 
-	public BillBuilder setCalculated(BigDecimal calculated)
+	public FuelBillBuilder setCalculated(BigDecimal calculated)
 	{
 		this.calculated = calculated;
 		return this;
 	}
 
-	public BillBuilder setCalculatedPrice(BigDecimal calculatedPrice)
+	public FuelBillBuilder setCalculatedPrice(BigDecimal calculatedPrice)
 	{
 		this.calculatedPrice = calculatedPrice;
 		return this;
 	}
 
-	public Bill createBillPojo()
+	public FuelBill createBillPojo()
 	{
-		return new Bill(id, day, distance, unit, pricePerUnit, estimate, calculated, calculatedPrice);
+		return new FuelBill(id, day, distance, unit, pricePerUnit, estimate, calculated, calculatedPrice);
 	}
 }

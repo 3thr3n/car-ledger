@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
+import de.codeflowwizardry.carledger.data.FuelBillEntity;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,8 +16,8 @@ import de.codeflowwizardry.carledger.data.AccountEntity;
 import de.codeflowwizardry.carledger.data.BillEntity;
 import de.codeflowwizardry.carledger.data.CarEntity;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
-import de.codeflowwizardry.carledger.data.repository.BillRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
+import de.codeflowwizardry.carledger.data.repository.FuelBillRepository;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
@@ -34,7 +35,7 @@ class StatsResourceTest
 	CarRepository carRepository;
 
 	@Inject
-	BillRepository billRepository;
+	FuelBillRepository billRepository;
 
 	CarEntity carEntity;
 
@@ -67,7 +68,7 @@ class StatsResourceTest
 		carEntity.setName("Neat car");
 		carRepository.persist(carEntity);
 
-		BillEntity billEntity = new BillEntity();
+        FuelBillEntity billEntity = new FuelBillEntity();
 		billEntity.setEstimate(BigDecimal.valueOf(8.5));
 		billEntity.setDay(LocalDate.now());
 		billEntity.setDistance(BigDecimal.valueOf(500));
@@ -78,7 +79,7 @@ class StatsResourceTest
 		billEntity.setCar(carEntity);
 		billRepository.persist(billEntity);
 
-		billEntity = new BillEntity();
+		billEntity = new FuelBillEntity();
 		billEntity.setEstimate(BigDecimal.valueOf(9.1d));
 		billEntity.setDay(LocalDate.of(2022, 5, 22));
 		billEntity.setDistance(BigDecimal.valueOf(400));
@@ -89,7 +90,7 @@ class StatsResourceTest
 		billEntity.setCar(carEntity);
 		billRepository.persist(billEntity);
 
-		billEntity = new BillEntity();
+		billEntity = new FuelBillEntity();
 		billEntity.setEstimate(BigDecimal.valueOf(8.2d));
 		billEntity.setDay(LocalDate.of(2023, 6, 2));
 		billEntity.setDistance(BigDecimal.valueOf(480));
