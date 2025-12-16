@@ -6,10 +6,12 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.util.Date;
 
+import de.codeflowwizardry.carledger.builders.FuelBillEntityBuilder;
+import de.codeflowwizardry.carledger.rest.records.FuelBillBuilder;
 import de.codeflowwizardry.carledger.rest.records.FuelBillInput;
 import jakarta.persistence.*;
+import jakarta.ws.rs.WebApplicationException;
 
 @Entity
 @Table(name = "bill_fuel")
@@ -17,13 +19,13 @@ public class FuelBillEntity extends BillEntity
 {
 	@MapsId
 	@OneToOne
-	@JoinColumn(name = "id")
+	@JoinColumn(name = "bill_id")
 	private BillEntity bill;
 
-	@Column(name = "f_unit", updatable = false)
+	@Column(name = "f_unit", updatable = false, nullable = false)
 	private BigDecimal unit = BigDecimal.ZERO;
 
-	@Column(name = "f_price_per_unit")
+	@Column(name = "f_price_per_unit", nullable = false)
 	private BigDecimal pricePerUnit = BigDecimal.ZERO;
 
 	@Column(name = "f_distance")
@@ -40,23 +42,7 @@ public class FuelBillEntity extends BillEntity
 
 	public FuelBillEntity()
 	{
-	}
-
-	private FuelBillEntity(Long id, LocalDate day, BigDecimal distance, BigDecimal unit, BigDecimal pricePerUnit,
-			BigInteger vatRate, BigDecimal totalNet, BigDecimal totalGross, BigDecimal totalUst, BigDecimal estimate,
-			BigDecimal avgConsumption)
-	{
-		setId(id);
-		setDay(day);
-		setDistance(distance);
-		setUnit(unit);
-		setPricePerUnit(pricePerUnit);
-		setVatRate(vatRate);
-		setNetAmount(totalNet);
-        setUstAmount(totalUst);
-		setTotal(totalGross);
-		setEstimate(estimate);
-		setAvgConsumption(avgConsumption);
+		setType(BillType.FUEL);
 	}
 
 	public BillEntity getBill()
@@ -129,49 +115,47 @@ public class FuelBillEntity extends BillEntity
 		this.costPerKm = costPerKm;
 	}
 
-	public BigDecimal getCalculateConsumption()
+	static FuelBillEntity toEntity(FuelBillInput input)
 	{
-		if (unit.compareTo(BigDecimal.ZERO) <= 0 || distance.compareTo(BigDecimal.ZERO) <= 0)
-		{
-			return BigDecimal.ZERO;
-		}
-		return unit.divide(distance, 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100));
-	}
+		return new FuelBillEntityBuilder()
+				.setDate(input.day())
+				.setVatRate(input.vatRate())
+				.setDistance(input.distance())
+				.setUnit(input.unit())
+				.setPricePerUnit(input.pricePerUnit())
+				.setTotal(input.total())
+				.setEstimate(input.estimate())
+				.build();
 
-	public static FuelBillEntity toEntity(FuelBillInput input)
-	{
-        BigDecimal vatRate = new BigDecimal(input.vatRate());
-        vatRate = BigDecimal.ONE.add(vatRate.divide(ONE_HUNDRED, 2, RoundingMode.HALF_UP));
+//
+//		BigDecimal totalRaw;
+//		BigDecimal totalNet;
+//		BigDecimal totalGross;
+//
 
-        BigDecimal totalRaw = input.pricePerUnit()
-                .divide(vatRate, 4, RoundingMode.HALF_UP)
-                .multiply(input.unit());
-
-        BigDecimal totalNet = totalRaw
-                .divide(ONE_HUNDRED, 2, RoundingMode.HALF_UP);
-
-        BigDecimal totalGross = totalRaw
-                .multiply(vatRate)
-                .divide(ONE_HUNDRED, 2, RoundingMode.HALF_UP);
-
-        BigDecimal totalUst = totalGross.subtract(totalNet);
-
-		var avgConsumption = input.distance().compareTo(BigDecimal.ZERO) == 0
-				? null
-				: input.unit().multiply(ONE_HUNDRED)
-						.divide(input.distance(), RoundingMode.HALF_UP);
-
-		return new FuelBillEntity(
-				null,
-				input.day(),
-				input.distance(),
-				input.unit(),
-				input.pricePerUnit(),
-                input.vatRate(),
-				totalNet,
-				totalGross,
-                totalUst,
-                input.estimate(),
-				avgConsumption);
+//
+//		totalNet = totalRaw
+//				.divide(ONE_HUNDRED, 2, RoundingMode.HALF_UP);
+//
+//		totalGross = totalRaw
+//				.multiply(vatRate)
+//				.divide(ONE_HUNDRED, 2, RoundingMode.HALF_UP);
+//
+//		BigDecimal totalUst = totalGross.subtract(totalNet);
+//
+//		var avgConsumption = input.calculateAverageConsumption();
+//
+//		return new FuelBillEntity(
+//				null,
+//				input.day(),
+//				input.distance(),
+//				input.unit(),
+//				input.pricePerUnit(),
+//				input.vatRate(),
+//				totalNet,
+//				totalGross,
+//				totalUst,
+//				input.estimate(),
+//				avgConsumption);
 	}
 }

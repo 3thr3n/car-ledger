@@ -13,13 +13,13 @@ public class CarEntity
 	@Id
 	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "carSequence")
 	private Long id;
-	@Column(name = "_name")
+	@Column(name = "c_name")
 	private String name;
-	@Column(name = "_manufacture_year")
+	@Column(name = "c_manufacture_year")
 	private int manufactureYear;
 	@DefaultValue("0")
-	@Column(name = "_odometer", nullable = false)
-	private int odometer;
+	@Column(name = "c_odometer", nullable = false)
+	private int odometer = 0;
 	@OneToMany(mappedBy = "car")
 	private final List<BillEntity> billEntities = new ArrayList<>();
 	@ManyToOne

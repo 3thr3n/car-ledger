@@ -8,6 +8,7 @@ import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 
+import de.codeflowwizardry.carledger.builders.FuelBillEntityBuilder;
 import org.junit.jupiter.api.Test;
 
 import de.codeflowwizardry.carledger.data.FuelBillEntity;
@@ -31,8 +32,10 @@ class BillEntityTest
 	@Test
 	void shouldCalculatePrice()
 	{
-        FuelBill bill = FuelBill.convert(FuelBillEntity.toEntity(new FuelBillInput(LocalDate.now(), BigDecimal.ZERO,
-				BigDecimal.valueOf(10), BigDecimal.valueOf(200), BigDecimal.ZERO, BigInteger.ZERO)));
+		FuelBill bill = FuelBill.convert(
+				FuelBillEntityBuilder.toEntity(
+						new FuelBillInput(LocalDate.now(), BigDecimal.ZERO, BigDecimal.valueOf(10),
+								BigDecimal.valueOf(200), BigDecimal.ZERO, BigInteger.ZERO, BigDecimal.ZERO)));
 
 		assertEquals("20.00", bill.getCalculatedPrice());
 	}

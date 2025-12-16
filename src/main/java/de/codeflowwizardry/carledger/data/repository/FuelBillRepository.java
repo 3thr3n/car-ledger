@@ -3,7 +3,6 @@ package de.codeflowwizardry.carledger.data.repository;
 import java.time.LocalDate;
 import java.util.*;
 
-import de.codeflowwizardry.carledger.data.BillEntity;
 import de.codeflowwizardry.carledger.data.FuelBillEntity;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
@@ -87,7 +86,7 @@ public class FuelBillRepository implements PanacheRepository<FuelBillEntity>
 	@Override
 	public boolean isPersistent(FuelBillEntity entity)
 	{
-		return find("day = ?1 and unit = ?2 and car.id = ?3 and distance = ?4", entity.getDay(), entity.getUnit(),
+		return find("day = ?1 and unit = ?2 and car.id = ?3 and distance = ?4", entity.getDate(), entity.getUnit(),
 				entity.getCarId(), entity.getDistance())
 				.firstResultOptional().isPresent();
 	}

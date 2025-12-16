@@ -63,7 +63,7 @@ class BillResourceTest
 
 		FuelBillEntity billEntity = new FuelBillEntity();
 		billEntity.setEstimate(BigDecimal.valueOf(8.5));
-		billEntity.setDay(LocalDate.of(2024, 8, 16));
+		billEntity.setDate(LocalDate.of(2024, 8, 16));
 		billEntity.setDistance(BigDecimal.valueOf(500));
 		billEntity.setUnit(BigDecimal.valueOf(28d));
 		billEntity.setPricePerUnit(BigDecimal.valueOf(199.9d));
@@ -72,7 +72,7 @@ class BillResourceTest
 
 		billEntity = new FuelBillEntity();
 		billEntity.setEstimate(BigDecimal.valueOf(9.1d));
-		billEntity.setDay(LocalDate.of(2022, 5, 22));
+		billEntity.setDate(LocalDate.of(2022, 5, 22));
 		billEntity.setDistance(BigDecimal.valueOf(400));
 		billEntity.setUnit(BigDecimal.valueOf(20d));
 		billEntity.setPricePerUnit(BigDecimal.valueOf(189.9d));
@@ -81,7 +81,7 @@ class BillResourceTest
 
 		billEntity = new FuelBillEntity();
 		billEntity.setEstimate(BigDecimal.valueOf(8.2d));
-		billEntity.setDay(LocalDate.of(2023, 6, 2));
+		billEntity.setDate(LocalDate.of(2023, 6, 2));
 		billEntity.setDistance(BigDecimal.valueOf(480));
 		billEntity.setUnit(BigDecimal.valueOf(28d));
 		billEntity.setPricePerUnit(BigDecimal.valueOf(196.9d));

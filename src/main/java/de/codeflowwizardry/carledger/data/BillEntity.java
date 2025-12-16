@@ -8,7 +8,7 @@ import jakarta.persistence.*;
 
 @Entity(name = "bill")
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = {
-		"b_day", "car_id"
+		"b_date", "b_car_id", "b_total"
 }))
 @Inheritance(strategy = InheritanceType.JOINED)
 public abstract class BillEntity
@@ -16,28 +16,28 @@ public abstract class BillEntity
 	public static final BigDecimal GERMAN_UST = BigDecimal.valueOf(1.19);
 
 	@Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(insertable = false, updatable = false)
 	private Long id;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "b_type", nullable = false)
-    private BillType type;
+	@Enumerated(EnumType.STRING)
+	@Column(name = "b_type", nullable = false, length = 50)
+	private BillType type;
 
-	@Column(name = "b_day", updatable = false)
-	private LocalDate day = LocalDate.now();
+	@Column(name = "b_date", updatable = false)
+	private LocalDate date = LocalDate.now();
 
 	@Column(name = "b_total", nullable = false)
-	private BigDecimal total;
+	private BigDecimal total = BigDecimal.ZERO;
 
-    @Column(name = "b_vat_rate")
-    private BigInteger vatRate = BigInteger.ZERO;
+	@Column(name = "b_vat_rate", nullable = false)
+	private BigInteger vatRate = BigInteger.ZERO;
 
-    @Column(name = "b_net_amount")
-    private BigDecimal netAmount = BigDecimal.ZERO;
+	@Column(name = "b_net_amount", nullable = false)
+	private BigDecimal netAmount = BigDecimal.ZERO;
 
-    @Column(name = "b_ust_amount")
-    private BigDecimal ustAmount = BigDecimal.ZERO;
+	@Column(name = "b_ust_amount", nullable = false)
+	private BigDecimal ustAmount = BigDecimal.ZERO;
 
 	@ManyToOne(optional = false)
 	@JoinColumn(name = "b_car_id", nullable = false)
@@ -52,26 +52,29 @@ public abstract class BillEntity
 		return id;
 	}
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public BillType getType() {
-        return type;
-    }
-
-    public void setType(BillType type) {
-        this.type = type;
-    }
-
-    public LocalDate getDay()
+	public void setId(Long id)
 	{
-		return day;
+		this.id = id;
 	}
 
-	public void setDay(LocalDate day)
+	public BillType getType()
 	{
-		this.day = day;
+		return type;
+	}
+
+	protected void setType(BillType type)
+	{
+		this.type = type;
+	}
+
+	public LocalDate getDate()
+	{
+		return date;
+	}
+
+	public void setDate(LocalDate day)
+	{
+		this.date = day;
 	}
 
 	public BigDecimal getTotal()
@@ -84,47 +87,48 @@ public abstract class BillEntity
 		this.total = total;
 	}
 
-    public BigDecimal getNetAmount()
-    {
-        return netAmount;
-    }
+	public BigDecimal getNetAmount()
+	{
+		return netAmount;
+	}
 
-    public void setNetAmount(BigDecimal netAmount)
-    {
-        this.netAmount = netAmount;
-    }
+	public void setNetAmount(BigDecimal netAmount)
+	{
+		this.netAmount = netAmount;
+	}
 
-    public BigDecimal getUstAmount()
-    {
-        return ustAmount;
-    }
+	public BigDecimal getUstAmount()
+	{
+		return ustAmount;
+	}
 
-    public void setUstAmount(BigDecimal ustAmount)
-    {
-        this.ustAmount = ustAmount;
-    }
+	public void setUstAmount(BigDecimal ustAmount)
+	{
+		this.ustAmount = ustAmount;
+	}
 
-    public BigInteger getVatRate()
-    {
-        return vatRate;
-    }
+	public BigInteger getVatRate()
+	{
+		return vatRate;
+	}
 
-    public void setVatRate(BigInteger vatRate)
-    {
-        this.vatRate = vatRate;
-    }
+	public void setVatRate(BigInteger vatRate)
+	{
+		this.vatRate = vatRate;
+	}
 
-    public CarEntity getCar() {
-        return car;
-    }
+	public CarEntity getCar()
+	{
+		return car;
+	}
 
-    public void setCar(CarEntity carEntity)
-    {
-        this.car = carEntity;
-    }
+	public void setCar(CarEntity carEntity)
+	{
+		this.car = carEntity;
+	}
 
-    public Long getCarId()
-    {
-        return car.getId();
-    }
+	public Long getCarId()
+	{
+		return car.getId();
+	}
 }
