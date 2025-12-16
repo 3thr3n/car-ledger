@@ -1,26 +1,24 @@
 package de.codeflowwizardry.carledger.rest.records;
 
-import de.codeflowwizardry.carledger.data.BillEntity;
-import de.codeflowwizardry.carledger.data.CarEntity;
-import de.codeflowwizardry.carledger.data.FuelBillEntity;
-
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.util.List;
 import java.util.Optional;
 
-import static de.codeflowwizardry.carledger.data.BillEntity.GERMAN_UST;
+import de.codeflowwizardry.carledger.data.BillEntity;
+import de.codeflowwizardry.carledger.data.CarEntity;
+import de.codeflowwizardry.carledger.data.FuelBillEntity;
 
 public record CarOverview(BigInteger totalRefuels, BigDecimal totalCost, BigDecimal avgConsumption)
 {
 	public static CarOverview convert(CarEntity carEntity)
 	{
 		List<FuelBillEntity> billEntities = carEntity.getBills()
-                .stream()
-                .filter(f -> f instanceof FuelBillEntity)
+				.stream()
+				.filter(f -> f instanceof FuelBillEntity)
 				.map(f -> (FuelBillEntity) f)
-                .toList();
+				.toList();
 
 		BigDecimal totalCost = billEntities.stream().map(BillEntity::getTotal).reduce(BigDecimal.ZERO,
 				BigDecimal::add);

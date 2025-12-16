@@ -77,7 +77,7 @@ public class CsvProcessor
 				billEntity.setEstimate(parseToBigDecimal(line, csvOrder.estimate()));
 				billEntity.setDistance(parseToBigDecimal(line, csvOrder.distance()));
 				billEntity.setPricePerUnit(parseToBigDecimal(line, csvOrder.pricePerUnit()));
-				billEntity.setDay(parseToLocalDate(line, csvOrder.day()));
+				billEntity.setDate(parseToLocalDate(line, csvOrder.day()));
 
 				if (!billRepository.isPersistent(billEntity))
 				{

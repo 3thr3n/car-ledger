@@ -4,6 +4,7 @@ import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 
+import de.codeflowwizardry.carledger.builders.FuelBillEntityBuilder;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
@@ -84,7 +85,7 @@ public class BillResource extends AbstractResource
 					.build());
 		}
 
-		FuelBillEntity billEntity = FuelBillEntity.toEntity(fuelBillPojo);
+		FuelBillEntity billEntity = FuelBillEntityBuilder.toEntity(fuelBillPojo);
 		billEntity.setCar(carEntity);
 		billRepository.persist(billEntity);
 

@@ -1,14 +1,11 @@
 package de.codeflowwizardry.carledger.rest.records;
 
-import static de.codeflowwizardry.carledger.data.BillEntity.GERMAN_UST;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 
-import de.codeflowwizardry.carledger.data.BillEntity;
 import de.codeflowwizardry.carledger.data.FuelBillEntity;
 
 public final class FuelBill
@@ -24,7 +21,7 @@ public final class FuelBill
 	private final BigDecimal calculatedPrice;
 
 	FuelBill(Long id, LocalDate day, BigDecimal distance, BigDecimal unit, BigDecimal pricePerUnit, BigDecimal estimate,
-             BigDecimal calculated, BigDecimal calculatedPrice)
+			BigDecimal calculated, BigDecimal calculatedPrice)
 	{
 		this.id = id;
 		this.day = day;
@@ -40,29 +37,29 @@ public final class FuelBill
 	public static FuelBill convert(FuelBillEntity billEntity)
 	{
 		return new FuelBillBuilder()
-                .setId(billEntity.getId())
-                .setDay(billEntity.getDay())
+				.setId(billEntity.getId())
+				.setDay(billEntity.getDate())
 				.setDistance(billEntity.getDistance())
 				.setUnit(billEntity.getUnit()).setPricePerUnit(billEntity.getPricePerUnit())
 				.setEstimate(billEntity.getEstimate())
 				.setCalculated(billEntity.getAvgConsumption())
 				.setCalculatedPrice(billEntity.getTotal())
-                .createBillPojo();
+				.createBillPojo();
 	}
 
 	public static List<FuelBill> convert(List<FuelBillEntity> billEntityList)
 	{
 		return billEntityList.stream()
 				.map(t -> new FuelBillBuilder()
-                        .setId(t.getId())
-                        .setDay(t.getDay())
-                        .setDistance(t.getDistance())
+						.setId(t.getId())
+						.setDay(t.getDate())
+						.setDistance(t.getDistance())
 						.setUnit(t.getUnit())
-                        .setPricePerUnit(t.getPricePerUnit())
-                        .setEstimate(t.getEstimate())
+						.setPricePerUnit(t.getPricePerUnit())
+						.setEstimate(t.getEstimate())
 						.setCalculated(t.getAvgConsumption())
 						.setCalculatedPrice(t.getTotal())
-                        .createBillPojo())
+						.createBillPojo())
 				.toList();
 	}
 

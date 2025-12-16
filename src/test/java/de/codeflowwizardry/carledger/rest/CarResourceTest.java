@@ -56,11 +56,12 @@ class CarResourceTest
 
 		FuelBillEntity billEntity = new FuelBillEntity();
 		billEntity.setCar(carEntity);
-		billEntity.setDay(LocalDate.now());
+		billEntity.setDate(LocalDate.now());
 		billEntity.setDistance(BigDecimal.valueOf(500));
 		billEntity.setUnit(BigDecimal.valueOf(40));
 		billEntity.setPricePerUnit(BigDecimal.valueOf(199.9));
 		billEntity.setEstimate(BigDecimal.valueOf(8.0));
+		billEntity.setTotal(BigDecimal.ZERO);
 		billRepository.persist(billEntity);
 
 		carId = carEntity.getId();

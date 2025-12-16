@@ -13,7 +13,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import de.codeflowwizardry.carledger.data.AccountEntity;
-import de.codeflowwizardry.carledger.data.BillEntity;
 import de.codeflowwizardry.carledger.data.CarEntity;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
@@ -68,9 +67,9 @@ class StatsResourceTest
 		carEntity.setName("Neat car");
 		carRepository.persist(carEntity);
 
-        FuelBillEntity billEntity = new FuelBillEntity();
+		FuelBillEntity billEntity = new FuelBillEntity();
 		billEntity.setEstimate(BigDecimal.valueOf(8.5));
-		billEntity.setDay(LocalDate.now());
+		billEntity.setDate(LocalDate.now());
 		billEntity.setDistance(BigDecimal.valueOf(500));
 		billEntity.setUnit(BigDecimal.valueOf(28d));
 		billEntity.setPricePerUnit(BigDecimal.valueOf(199.9d));
@@ -81,7 +80,7 @@ class StatsResourceTest
 
 		billEntity = new FuelBillEntity();
 		billEntity.setEstimate(BigDecimal.valueOf(9.1d));
-		billEntity.setDay(LocalDate.of(2022, 5, 22));
+		billEntity.setDate(LocalDate.of(2022, 5, 22));
 		billEntity.setDistance(BigDecimal.valueOf(400));
 		billEntity.setUnit(BigDecimal.valueOf(20d));
 		billEntity.setPricePerUnit(BigDecimal.valueOf(189.9d));
@@ -92,7 +91,7 @@ class StatsResourceTest
 
 		billEntity = new FuelBillEntity();
 		billEntity.setEstimate(BigDecimal.valueOf(8.2d));
-		billEntity.setDay(LocalDate.of(2023, 6, 2));
+		billEntity.setDate(LocalDate.of(2023, 6, 2));
 		billEntity.setDistance(BigDecimal.valueOf(480));
 		billEntity.setUnit(BigDecimal.valueOf(28d));
 		billEntity.setPricePerUnit(BigDecimal.valueOf(196.9d));

@@ -58,6 +58,7 @@ class AccountResourceTest
 				.then()
 				.statusCode(200)
 				.body("maxCars", Matchers.is(1));
+
 		given()
 				.when()
 				.get("/api/user/me")
