@@ -1,24 +1,19 @@
 package de.codeflowwizardry.carledger.data;
 
-import static de.codeflowwizardry.carledger.StatsCalculator.ONE_HUNDRED;
-
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.math.RoundingMode;
-import java.time.LocalDate;
 
-import de.codeflowwizardry.carledger.builders.FuelBillEntityBuilder;
-import de.codeflowwizardry.carledger.rest.records.FuelBillBuilder;
-import de.codeflowwizardry.carledger.rest.records.FuelBillInput;
 import jakarta.persistence.*;
-import jakarta.ws.rs.WebApplicationException;
 
 @Entity
 @Table(name = "bill_fuel")
-public class FuelBillEntity extends BillEntity
+public class FuelBillEntity
 {
+	@Id
+	private Long id;
+
 	@MapsId
-	@OneToOne
+	@OneToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name = "bill_id")
 	private BillEntity bill;
 
@@ -40,9 +35,13 @@ public class FuelBillEntity extends BillEntity
 	@Column(name = "f_cost_per_km")
 	private BigDecimal costPerKm = BigDecimal.ZERO;
 
-	public FuelBillEntity()
+	protected FuelBillEntity()
 	{
-		setType(BillType.FUEL);
+	}
+
+	public FuelBillEntity(BillEntity bill)
+	{
+		this.bill = bill;
 	}
 
 	public BillEntity getBill()
@@ -113,49 +112,5 @@ public class FuelBillEntity extends BillEntity
 	public void setCostPerKm(BigDecimal costPerKm)
 	{
 		this.costPerKm = costPerKm;
-	}
-
-	static FuelBillEntity toEntity(FuelBillInput input)
-	{
-		return new FuelBillEntityBuilder()
-				.setDate(input.day())
-				.setVatRate(input.vatRate())
-				.setDistance(input.distance())
-				.setUnit(input.unit())
-				.setPricePerUnit(input.pricePerUnit())
-				.setTotal(input.total())
-				.setEstimate(input.estimate())
-				.build();
-
-//
-//		BigDecimal totalRaw;
-//		BigDecimal totalNet;
-//		BigDecimal totalGross;
-//
-
-//
-//		totalNet = totalRaw
-//				.divide(ONE_HUNDRED, 2, RoundingMode.HALF_UP);
-//
-//		totalGross = totalRaw
-//				.multiply(vatRate)
-//				.divide(ONE_HUNDRED, 2, RoundingMode.HALF_UP);
-//
-//		BigDecimal totalUst = totalGross.subtract(totalNet);
-//
-//		var avgConsumption = input.calculateAverageConsumption();
-//
-//		return new FuelBillEntity(
-//				null,
-//				input.day(),
-//				input.distance(),
-//				input.unit(),
-//				input.pricePerUnit(),
-//				input.vatRate(),
-//				totalNet,
-//				totalGross,
-//				totalUst,
-//				input.estimate(),
-//				avgConsumption);
 	}
 }

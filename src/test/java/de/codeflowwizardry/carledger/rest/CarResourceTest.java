@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.time.LocalDate;
 
 import org.hamcrest.Matchers;
@@ -14,10 +15,11 @@ import org.junit.jupiter.api.Test;
 
 import de.codeflowwizardry.carledger.data.AccountEntity;
 import de.codeflowwizardry.carledger.data.CarEntity;
-import de.codeflowwizardry.carledger.data.FuelBillEntity;
+import de.codeflowwizardry.carledger.data.factory.FuelBillFactory;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
+import de.codeflowwizardry.carledger.data.repository.BillRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
-import de.codeflowwizardry.carledger.data.repository.FuelBillRepository;
+import de.codeflowwizardry.carledger.rest.records.FuelBillInput;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
@@ -30,13 +32,16 @@ import jakarta.transaction.Transactional;
 class CarResourceTest
 {
 	@Inject
+	FuelBillFactory fuelBillFactory;
+
+	@Inject
 	AccountRepository accountRepository;
 
 	@Inject
 	CarRepository carRepository;
 
 	@Inject
-	FuelBillRepository billRepository;
+	BillRepository billRepository;
 
 	long carId = 0;
 
@@ -54,16 +59,16 @@ class CarResourceTest
 		carEntity.setName("Normal car");
 		carRepository.persist(carEntity);
 
-		FuelBillEntity billEntity = new FuelBillEntity();
-		billEntity.setCar(carEntity);
-		billEntity.setDate(LocalDate.now());
-		billEntity.setDistance(BigDecimal.valueOf(500));
-		billEntity.setUnit(BigDecimal.valueOf(40));
-		billEntity.setPricePerUnit(BigDecimal.valueOf(199.9));
-		billEntity.setEstimate(BigDecimal.valueOf(8.0));
-		billEntity.setTotal(BigDecimal.ZERO);
-		billRepository.persist(billEntity);
+		FuelBillInput fuelBillInput = new FuelBillInput(
+				LocalDate.now(),
+				BigDecimal.valueOf(500),
+				BigDecimal.valueOf(40d),
+				BigDecimal.valueOf(199.9d),
+				BigDecimal.valueOf(8.0),
+				BigInteger.valueOf(19),
+				BigDecimal.ZERO);
 
+		fuelBillFactory.create(fuelBillInput, carEntity.getId(), carEntity.getUser().getUserId());
 		carId = carEntity.getId();
 	}
 

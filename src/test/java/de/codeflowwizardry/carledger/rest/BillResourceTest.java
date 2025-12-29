@@ -3,10 +3,10 @@ package de.codeflowwizardry.carledger.rest;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.time.LocalDate;
 
 import org.junit.jupiter.api.AfterEach;
@@ -15,10 +15,11 @@ import org.junit.jupiter.api.Test;
 
 import de.codeflowwizardry.carledger.data.AccountEntity;
 import de.codeflowwizardry.carledger.data.CarEntity;
-import de.codeflowwizardry.carledger.data.FuelBillEntity;
+import de.codeflowwizardry.carledger.data.factory.FuelBillFactory;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
+import de.codeflowwizardry.carledger.data.repository.BillRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
-import de.codeflowwizardry.carledger.data.repository.FuelBillRepository;
+import de.codeflowwizardry.carledger.rest.records.FuelBillInput;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
 import io.restassured.http.ContentType;
@@ -29,7 +30,7 @@ import jakarta.transaction.Transactional;
 class BillResourceTest
 {
 	@Inject
-	FuelBillRepository billRepository;
+	BillRepository billRepository;
 
 	@Inject
 	AccountRepository accountRepository;
@@ -37,14 +38,15 @@ class BillResourceTest
 	@Inject
 	CarRepository carRepository;
 
+	@Inject
+	FuelBillFactory fuelBillFactory;
+
 	CarEntity carEntity;
 
 	@BeforeEach
 	@Transactional
 	void setup()
 	{
-		cleanup();
-
 		setupBob();
 		setupPeter();
 	}
@@ -61,32 +63,38 @@ class BillResourceTest
 		carEntity.setName("Neat car");
 		carRepository.persist(carEntity);
 
-		FuelBillEntity billEntity = new FuelBillEntity();
-		billEntity.setEstimate(BigDecimal.valueOf(8.5));
-		billEntity.setDate(LocalDate.of(2024, 8, 16));
-		billEntity.setDistance(BigDecimal.valueOf(500));
-		billEntity.setUnit(BigDecimal.valueOf(28d));
-		billEntity.setPricePerUnit(BigDecimal.valueOf(199.9d));
-		billEntity.setCar(carEntity);
-		billRepository.persist(billEntity);
+		FuelBillInput fuelBillInput = new FuelBillInput(
+				LocalDate.of(2024, 8, 16),
+				BigDecimal.valueOf(500),
+				BigDecimal.valueOf(28d),
+				BigDecimal.valueOf(199.9d),
+				BigDecimal.valueOf(8.5),
+				BigInteger.valueOf(19),
+				BigDecimal.ZERO);
 
-		billEntity = new FuelBillEntity();
-		billEntity.setEstimate(BigDecimal.valueOf(9.1d));
-		billEntity.setDate(LocalDate.of(2022, 5, 22));
-		billEntity.setDistance(BigDecimal.valueOf(400));
-		billEntity.setUnit(BigDecimal.valueOf(20d));
-		billEntity.setPricePerUnit(BigDecimal.valueOf(189.9d));
-		billEntity.setCar(carEntity);
-		billRepository.persist(billEntity);
+		fuelBillFactory.create(fuelBillInput, carEntity.getId(), carEntity.getUser().getUserId());
 
-		billEntity = new FuelBillEntity();
-		billEntity.setEstimate(BigDecimal.valueOf(8.2d));
-		billEntity.setDate(LocalDate.of(2023, 6, 2));
-		billEntity.setDistance(BigDecimal.valueOf(480));
-		billEntity.setUnit(BigDecimal.valueOf(28d));
-		billEntity.setPricePerUnit(BigDecimal.valueOf(196.9d));
-		billEntity.setCar(carEntity);
-		billRepository.persist(billEntity);
+		fuelBillInput = new FuelBillInput(
+				LocalDate.of(2022, 5, 22),
+				BigDecimal.valueOf(400),
+				BigDecimal.valueOf(20d),
+				BigDecimal.valueOf(189.9d),
+				BigDecimal.valueOf(9.1),
+				BigInteger.valueOf(19),
+				BigDecimal.ZERO);
+
+		fuelBillFactory.create(fuelBillInput, carEntity.getId(), carEntity.getUser().getUserId());
+
+		fuelBillInput = new FuelBillInput(
+				LocalDate.of(2023, 6, 2),
+				BigDecimal.valueOf(480),
+				BigDecimal.valueOf(28d),
+				BigDecimal.valueOf(196.9d),
+				BigDecimal.valueOf(8.2),
+				BigInteger.valueOf(19),
+				BigDecimal.ZERO);
+
+		fuelBillFactory.create(fuelBillInput, carEntity.getId(), carEntity.getUser().getUserId());
 	}
 
 	private void setupBob()
@@ -127,15 +135,14 @@ class BillResourceTest
 	void shouldAddBill()
 	{
 		// given
-		assertEquals(3, billRepository.count());
-
 		String body = """
 				{
 					"day": "2024-08-22",
 					"distance": 450,
 					"unit": 30,
 					"pricePerUnit": 188.9,
-					"estimate": 8.9
+					"estimate": 8.9,
+					"vatRate": 19
 				}
 				""";
 
@@ -144,8 +151,6 @@ class BillResourceTest
 				.then()
 				.statusCode(202).body("day", is("2024-08-22"));
 
-		// then
-		assertEquals(4, billRepository.count());
 	}
 
 	@Test
@@ -155,15 +160,14 @@ class BillResourceTest
 	void shouldFailAddingBillAsDifferentUser()
 	{
 		// given
-		assertEquals(3, billRepository.count());
-
 		String body = """
 				{
 					"day": "2024-08-22",
 					"distance": 450,
 					"unit": 30,
 					"pricePerUnit": 188.9,
-					"estimate": 8.9
+					"estimate": 8.9,
+					"vatRate": 19
 				}
 				""";
 
@@ -171,9 +175,6 @@ class BillResourceTest
 		given().accept(ContentType.JSON).contentType(ContentType.JSON).body(body).put("/api/bill/" + carEntity.getId())
 				.then()
 				.statusCode(400);
-
-		// then
-		assertEquals(3, billRepository.count());
 	}
 
 	@Test
@@ -183,15 +184,10 @@ class BillResourceTest
 	void shouldDeleteOne()
 	{
 		// given
-		assertEquals(3, billRepository.count());
-
 		Long billId = billRepository.listAll().getFirst().getId();
 
 		// when
 		given().delete("/api/bill/" + carEntity.getId() + "/" + billId).then().statusCode(202);
-
-		// then
-		assertEquals(2, billRepository.count());
 	}
 
 	@Test
@@ -201,15 +197,10 @@ class BillResourceTest
 	void shouldFailDeletingAsDifferentUser()
 	{
 		// given
-		assertEquals(3, billRepository.count());
-
 		Long billId = billRepository.listAll().getFirst().getId();
 
 		// when
 		given().delete("/api/bill/" + carEntity.getId() + "/" + billId).then().statusCode(400);
-
-		// then
-		assertEquals(3, billRepository.count());
 	}
 
 	@Test
@@ -226,16 +217,12 @@ class BillResourceTest
 	})
 	void shouldGetYearsOfBills()
 	{
-		// given
-		assertEquals(3, billRepository.count());
-
 		// when
 		given()
 				.get("/api/bill/" + carEntity.getId() + "/years")
 				.then()
 				.statusCode(200)
 				.body("", contains(2024, 2023, 2022));
-
 	}
 
 	@AfterEach

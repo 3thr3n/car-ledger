@@ -8,10 +8,9 @@ import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 
-import de.codeflowwizardry.carledger.builders.FuelBillEntityBuilder;
 import org.junit.jupiter.api.Test;
 
-import de.codeflowwizardry.carledger.data.FuelBillEntity;
+import de.codeflowwizardry.carledger.builders.FuelBillEntityBuilder;
 
 class BillEntityTest
 {
