@@ -4,14 +4,17 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.File;
-import java.net.URISyntaxException;
 import java.net.URL;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
-import de.codeflowwizardry.carledger.data.FuelBillEntity;
-import de.codeflowwizardry.carledger.data.repository.FuelBillRepository;
+import de.codeflowwizardry.carledger.data.AccountEntity;
+import de.codeflowwizardry.carledger.data.CarEntity;
+import de.codeflowwizardry.carledger.data.factory.FuelBillFactory;
+import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import de.codeflowwizardry.carledger.rest.records.CsvOrder;
+import jakarta.persistence.EntityManager;
 
 class CsvProcessorTest
 {
@@ -29,28 +32,32 @@ class CsvProcessorTest
 	}
 
 	@Test
-	void shouldProcessValidCsv() throws URISyntaxException
+	void shouldProcessValidCsv()
 	{
 		// given
-		FuelBillRepository billRepository = new FuelBillRepository() {
-			@Override
-			public boolean isPersistent(FuelBillEntity entity)
-			{
-				return false;
-			}
+		EntityManager entityManager = new TestEntityManager();
 
+		AccountEntity accountEntity = Mockito.mock(AccountEntity.class);
+		CarEntity carEntity = Mockito.mock(CarEntity.class);
+		Mockito.when(carEntity.getId()).thenReturn(1L);
+		Mockito.when(carEntity.getUser()).thenReturn(accountEntity);
+		Mockito.when(accountEntity.getUserId()).thenReturn("bob");
+
+		CarRepository carRepository = new CarRepository() {
 			@Override
-			public void persist(Iterable<FuelBillEntity> entities)
+			public CarEntity findById(Long id, String user)
 			{
-				// Do nothing
+				return carEntity;
 			}
 		};
 
-		CsvProcessor csvProcessor = new CsvProcessor(billRepository);
+		FuelBillFactory fuelBillFactory = new FuelBillFactory(entityManager, carRepository);
+
+		CsvProcessor csvProcessor = new CsvProcessor(fuelBillFactory);
 
 		URL url = Thread.currentThread().getContextClassLoader().getResource("csv/import_1.csv");
 
 		// when/then
-		assertDoesNotThrow(() -> csvProcessor.processCsv(new File(url.toURI()), new CsvOrder(), null, false));
+		assertDoesNotThrow(() -> csvProcessor.processCsv(new File(url.toURI()), new CsvOrder(), carEntity, false));
 	}
 }

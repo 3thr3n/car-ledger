@@ -4,18 +4,18 @@ import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 
-import de.codeflowwizardry.carledger.builders.FuelBillEntityBuilder;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import de.codeflowwizardry.carledger.data.CarEntity;
 import de.codeflowwizardry.carledger.data.FuelBillEntity;
+import de.codeflowwizardry.carledger.data.factory.FuelBillFactory;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
-import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import de.codeflowwizardry.carledger.data.repository.FuelBillRepository;
-import de.codeflowwizardry.carledger.rest.records.FuelBillInput;
 import de.codeflowwizardry.carledger.rest.records.BillPaged;
 import de.codeflowwizardry.carledger.rest.records.FuelBill;
+import de.codeflowwizardry.carledger.rest.records.FuelBillInput;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.panache.common.Page;
 import jakarta.inject.Inject;
@@ -26,16 +26,18 @@ import jakarta.ws.rs.core.Response;
 @Path("bill/{carId}")
 public class BillResource extends AbstractResource
 {
+	private final static Logger LOG = LoggerFactory.getLogger(BillResource.class);
+
 	private final FuelBillRepository billRepository;
-	private final CarRepository carRepository;
+	private final FuelBillFactory fuelBillFactory;
 
 	@Inject
 	public BillResource(Principal context, AccountRepository accountRepository, FuelBillRepository billRepository,
-			CarRepository carRepository)
+			FuelBillFactory fuelBillFactory)
 	{
 		super(context, accountRepository);
 		this.billRepository = billRepository;
-		this.carRepository = carRepository;
+		this.fuelBillFactory = fuelBillFactory;
 	}
 
 	@GET
@@ -76,27 +78,18 @@ public class BillResource extends AbstractResource
 	@APIResponse(responseCode = "500", description = "Something went wrong while saving. Please ask the server admin for help.")
 	public Response addNewBill(@PathParam("carId") long carId, FuelBillInput fuelBillPojo)
 	{
-		CarEntity carEntity = carRepository.findById(carId, context.getName());
-
-		if (carEntity == null)
+		try
 		{
+			FuelBillEntity fuelBill = fuelBillFactory.create(fuelBillPojo, carId, context.getName());
+			return Response.accepted(FuelBill.convert(fuelBill)).build();
+		}
+		catch (IllegalStateException e)
+		{
+			LOG.warn("Car cannot be found under your user {}!", context.getName(), e);
 			throw new BadRequestException(Response.status(Response.Status.BAD_REQUEST)
 					.entity("Car cannot be found under your user!")
 					.build());
 		}
-
-		FuelBillEntity billEntity = FuelBillEntityBuilder.toEntity(fuelBillPojo);
-		billEntity.setCar(carEntity);
-		billRepository.persist(billEntity);
-
-		if (!billRepository.isPersistent(billEntity))
-		{
-			throw new InternalServerErrorException(Response.status(Response.Status.BAD_REQUEST)
-					.entity("Could not save Bill")
-					.build());
-		}
-
-		return Response.accepted(FuelBill.convert(billEntity)).build();
 	}
 
 	@DELETE

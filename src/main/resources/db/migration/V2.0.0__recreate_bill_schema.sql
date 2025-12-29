@@ -22,7 +22,6 @@ CREATE TABLE bill
 -- 3. Create fuel-specific table
 CREATE TABLE bill_fuel
 (
-    id                BIGINT,
     bill_id           BIGINT PRIMARY KEY REFERENCES bill (id) ON DELETE CASCADE,
 
     f_distance        NUMERIC(38, 2),
@@ -38,7 +37,6 @@ CREATE TABLE bill_fuel
 -- 4. Create maintenance-specific table
 CREATE TABLE bill_maintenance
 (
-    id            BIGINT,
     bill_id       BIGINT PRIMARY KEY REFERENCES bill (id) ON DELETE CASCADE,
 
     m_odometer    BIGINT,

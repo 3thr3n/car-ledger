@@ -4,19 +4,21 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.is;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
-import de.codeflowwizardry.carledger.data.FuelBillEntity;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import de.codeflowwizardry.carledger.data.AccountEntity;
 import de.codeflowwizardry.carledger.data.CarEntity;
+import de.codeflowwizardry.carledger.data.factory.FuelBillFactory;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
+import de.codeflowwizardry.carledger.data.repository.BillRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
-import de.codeflowwizardry.carledger.data.repository.FuelBillRepository;
+import de.codeflowwizardry.carledger.rest.records.FuelBillInput;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
@@ -28,13 +30,16 @@ import jakarta.transaction.Transactional;
 class StatsResourceTest
 {
 	@Inject
+	FuelBillFactory fuelBillFactory;
+
+	@Inject
 	AccountRepository accountRepository;
 
 	@Inject
 	CarRepository carRepository;
 
 	@Inject
-	FuelBillRepository billRepository;
+	BillRepository billRepository;
 
 	CarEntity carEntity;
 
@@ -67,38 +72,44 @@ class StatsResourceTest
 		carEntity.setName("Neat car");
 		carRepository.persist(carEntity);
 
-		FuelBillEntity billEntity = new FuelBillEntity();
-		billEntity.setEstimate(BigDecimal.valueOf(8.5));
-		billEntity.setDate(LocalDate.now());
-		billEntity.setDistance(BigDecimal.valueOf(500));
-		billEntity.setUnit(BigDecimal.valueOf(28d));
-		billEntity.setPricePerUnit(BigDecimal.valueOf(199.9d));
 		// 55,972
 		// 5.6
-		billEntity.setCar(carEntity);
-		billRepository.persist(billEntity);
+		FuelBillInput fuelBillInput = new FuelBillInput(
+				LocalDate.now(),
+				BigDecimal.valueOf(500),
+				BigDecimal.valueOf(28d),
+				BigDecimal.valueOf(199.9d),
+				BigDecimal.valueOf(8.5),
+				BigInteger.valueOf(19),
+				BigDecimal.ZERO);
 
-		billEntity = new FuelBillEntity();
-		billEntity.setEstimate(BigDecimal.valueOf(9.1d));
-		billEntity.setDate(LocalDate.of(2022, 5, 22));
-		billEntity.setDistance(BigDecimal.valueOf(400));
-		billEntity.setUnit(BigDecimal.valueOf(20d));
-		billEntity.setPricePerUnit(BigDecimal.valueOf(189.9d));
+		fuelBillFactory.create(fuelBillInput, carEntity.getId(), carEntity.getUser().getUserId());
+
 		// 37,98
 		// 5.0
-		billEntity.setCar(carEntity);
-		billRepository.persist(billEntity);
+		fuelBillInput = new FuelBillInput(
+				LocalDate.of(2022, 5, 22),
+				BigDecimal.valueOf(400),
+				BigDecimal.valueOf(20d),
+				BigDecimal.valueOf(189.9d),
+				BigDecimal.valueOf(9.1),
+				BigInteger.valueOf(19),
+				BigDecimal.ZERO);
 
-		billEntity = new FuelBillEntity();
-		billEntity.setEstimate(BigDecimal.valueOf(8.2d));
-		billEntity.setDate(LocalDate.of(2023, 6, 2));
-		billEntity.setDistance(BigDecimal.valueOf(480));
-		billEntity.setUnit(BigDecimal.valueOf(28d));
-		billEntity.setPricePerUnit(BigDecimal.valueOf(196.9d));
+		fuelBillFactory.create(fuelBillInput, carEntity.getId(), carEntity.getUser().getUserId());
+
 		// 55,132
 		// 5.83
-		billEntity.setCar(carEntity);
-		billRepository.persist(billEntity);
+		fuelBillInput = new FuelBillInput(
+				LocalDate.of(2023, 6, 2),
+				BigDecimal.valueOf(480),
+				BigDecimal.valueOf(28d),
+				BigDecimal.valueOf(196.9d),
+				BigDecimal.valueOf(8.2),
+				BigInteger.valueOf(19),
+				BigDecimal.ZERO);
+
+		fuelBillFactory.create(fuelBillInput, carEntity.getId(), carEntity.getUser().getUserId());
 	}
 
 	@Test

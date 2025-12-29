@@ -1,13 +1,16 @@
 package de.codeflowwizardry.carledger.data;
 
-import jakarta.persistence.*;
-
 import java.math.BigDecimal;
+
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "bill_maintenance")
-public class MaintenanceBillEntity extends BillEntity
+public class MaintenanceBillEntity
 {
+	@Id
+	private Long id;
+
 	@MapsId
 	@OneToOne
 	@JoinColumn(name = "bill_id")
@@ -24,9 +27,13 @@ public class MaintenanceBillEntity extends BillEntity
 	@Column(name = "m_parts_cost")
 	private BigDecimal partsCost;
 
-	public MaintenanceBillEntity()
+	protected MaintenanceBillEntity()
 	{
-		setType(BillType.MAINTENANCE);
+	}
+
+	public MaintenanceBillEntity(BillEntity bill)
+	{
+		this.bill = bill;
 	}
 
 	public BillEntity getBill()

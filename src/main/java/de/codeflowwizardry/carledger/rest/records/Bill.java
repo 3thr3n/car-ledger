@@ -1,14 +1,9 @@
 package de.codeflowwizardry.carledger.rest.records;
 
-import static de.codeflowwizardry.carledger.data.BillEntity.GERMAN_UST;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Objects;
-
-import de.codeflowwizardry.carledger.data.BillEntity;
 
 public final class Bill
 {

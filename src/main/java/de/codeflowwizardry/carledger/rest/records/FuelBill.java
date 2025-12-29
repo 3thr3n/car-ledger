@@ -37,13 +37,13 @@ public final class FuelBill
 	public static FuelBill convert(FuelBillEntity billEntity)
 	{
 		return new FuelBillBuilder()
-				.setId(billEntity.getId())
-				.setDay(billEntity.getDate())
+				.setId(billEntity.getBill().getId())
+				.setDay(billEntity.getBill().getDate())
 				.setDistance(billEntity.getDistance())
 				.setUnit(billEntity.getUnit()).setPricePerUnit(billEntity.getPricePerUnit())
 				.setEstimate(billEntity.getEstimate())
 				.setCalculated(billEntity.getAvgConsumption())
-				.setCalculatedPrice(billEntity.getTotal())
+				.setCalculatedPrice(billEntity.getBill().getTotal())
 				.createBillPojo();
 	}
 
@@ -51,25 +51,16 @@ public final class FuelBill
 	{
 		return billEntityList.stream()
 				.map(t -> new FuelBillBuilder()
-						.setId(t.getId())
-						.setDay(t.getDate())
+						.setId(t.getBill().getId())
+						.setDay(t.getBill().getDate())
 						.setDistance(t.getDistance())
 						.setUnit(t.getUnit())
 						.setPricePerUnit(t.getPricePerUnit())
 						.setEstimate(t.getEstimate())
 						.setCalculated(t.getAvgConsumption())
-						.setCalculatedPrice(t.getTotal())
+						.setCalculatedPrice(t.getBill().getTotal())
 						.createBillPojo())
 				.toList();
-	}
-
-	static BigDecimal calculateConsumption(BigDecimal unit, BigDecimal distance)
-	{
-		if (unit.compareTo(BigDecimal.ZERO) <= 0 || distance.compareTo(BigDecimal.ZERO) <= 0)
-		{
-			return BigDecimal.ZERO;
-		}
-		return unit.divide(distance, 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100));
 	}
 
 	public Long getId()

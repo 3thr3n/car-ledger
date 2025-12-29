@@ -10,11 +10,8 @@ import jakarta.persistence.*;
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = {
 		"b_date", "b_car_id", "b_total"
 }))
-@Inheritance(strategy = InheritanceType.JOINED)
-public abstract class BillEntity
+public class BillEntity
 {
-	public static final BigDecimal GERMAN_UST = BigDecimal.valueOf(1.19);
-
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(insertable = false, updatable = false)
@@ -43,6 +40,9 @@ public abstract class BillEntity
 	@JoinColumn(name = "b_car_id", nullable = false)
 	protected CarEntity car;
 
+	@OneToOne(mappedBy = "bill", cascade = CascadeType.ALL)
+	private FuelBillEntity fuelBill;
+
 	public BillEntity()
 	{
 	}
@@ -62,7 +62,7 @@ public abstract class BillEntity
 		return type;
 	}
 
-	protected void setType(BillType type)
+	public void setType(BillType type)
 	{
 		this.type = type;
 	}

@@ -1,6 +1,5 @@
 package de.codeflowwizardry.carledger;
 
-import static de.codeflowwizardry.carledger.data.BillEntity.GERMAN_UST;
 import static java.math.BigDecimal.ZERO;
 
 import java.math.BigDecimal;
@@ -12,7 +11,6 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import de.codeflowwizardry.carledger.data.BillEntity;
 import de.codeflowwizardry.carledger.data.FuelBillEntity;
 import de.codeflowwizardry.carledger.data.repository.FuelBillRepository;
 import de.codeflowwizardry.carledger.rest.records.stats.AverageStats;
@@ -66,7 +64,7 @@ public class StatsCalculator
 	private BigDecimal calculateTotalCalculatedPrice(List<FuelBillEntity> billEntities)
 	{
 		Stream<BigDecimal> totalCost = billEntities.stream()
-				.map(BillEntity::getTotal);
+				.map(x -> x.getBill().getTotal());
 		return handleReduceTotalResult(totalCost);
 	}
 
@@ -112,7 +110,7 @@ public class StatsCalculator
 
 	private static BigDecimal calculateAverageCalculatedPrice(List<FuelBillEntity> billEntities)
 	{
-		return handleReduceAverageResult(billEntities, BillEntity::getTotal);
+		return handleReduceAverageResult(billEntities, x -> x.getBill().getTotal());
 	}
 
 	private static BigDecimal handleReduceAverageResult(List<FuelBillEntity> billEntities,
@@ -173,7 +171,7 @@ public class StatsCalculator
 
 	private static HiLo calculateHiLoCalculatedPrice(List<FuelBillEntity> billEntities)
 	{
-		return calculateHiLo(billEntities, BillEntity::getTotal);
+		return calculateHiLo(billEntities, x -> x.getBill().getTotal());
 	}
 
 	private static HiLo calculateHiLo(List<FuelBillEntity> billEntities,

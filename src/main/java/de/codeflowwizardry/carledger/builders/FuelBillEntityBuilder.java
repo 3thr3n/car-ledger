@@ -8,10 +8,12 @@ import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 
-import de.codeflowwizardry.carledger.data.FuelBillEntity;
-import de.codeflowwizardry.carledger.rest.records.FuelBillInput;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import de.codeflowwizardry.carledger.data.BillEntity;
+import de.codeflowwizardry.carledger.data.FuelBillEntity;
+import de.codeflowwizardry.carledger.rest.records.FuelBillInput;
 
 /**
  *
@@ -33,6 +35,9 @@ public class FuelBillEntityBuilder
 	private BigDecimal costPerKm = BigDecimal.ZERO;
 
 	private BigDecimal vatFactor;
+
+	private FuelBillEntity fuelBill;
+	private BillEntity bill;
 
 	/**
 	 * Sets the day on which the fuel bill was issued, if not set it will be today's
@@ -129,25 +134,14 @@ public class FuelBillEntityBuilder
 		return this;
 	}
 
+	/**
+	 * This creates two object, which can be fetched by getBill() and getFuelBill()
+	 */
 	public FuelBillEntity build()
 	{
 		validate();
 
-		FuelBillEntity entity = new FuelBillEntity();
-
-		entity.setDate(date);
-		entity.setVatRate(vatRate);
-		entity.setDistance(distance);
-		entity.setEstimate(estimate);
-		entity.setPricePerUnit(pricePerUnit);
-
-		// Calculations
-		calculateUnit(entity);
-		calculateTotal(entity);
-		calculateNet(entity);
-		calculateUst(entity);
-		// ToDo: average consumption
-		// ToDo: cost per km
+		FuelBillEntity entity = new FuelBillEntity(null);
 
 		return entity;
 	}
@@ -166,49 +160,6 @@ public class FuelBillEntityBuilder
 			LOG.warn("Vat rate was not set!");
 			throw new IllegalArgumentException("Vat rate cannot be null!");
 		}
-	}
-
-	private void calculateTotal(FuelBillEntity entity)
-	{
-		if (total == null)
-		{
-			total = unit
-					.multiply(pricePerUnit)
-					.divide(ONE_HUNDRED, 2, RoundingMode.HALF_UP);
-		}
-		entity.setTotal(total);
-	}
-
-	private void calculateNet(FuelBillEntity entity)
-	{
-		if (netAmount == null)
-		{
-			netAmount = total
-					.divide(vatFactor, 2, RoundingMode.HALF_UP);
-		}
-		entity.setNetAmount(netAmount);
-	}
-
-	private void calculateUst(FuelBillEntity entity)
-	{
-		if (ustAmount == null)
-		{
-			ustAmount = total
-					.subtract(netAmount);
-		}
-		entity.setUstAmount(ustAmount);
-	}
-
-	private void calculateUnit(FuelBillEntity entity)
-	{
-		if (unit == null)
-		{
-			unit = total
-					.divide(vatFactor, 4, RoundingMode.HALF_UP)
-					.divide(pricePerUnit, 4, RoundingMode.HALF_UP)
-					.setScale(2, RoundingMode.HALF_UP);
-		}
-		entity.setUnit(unit);
 	}
 
 	public static FuelBillEntity toEntity(FuelBillInput input)

@@ -3,7 +3,7 @@ package de.codeflowwizardry.carledger.data.repository;
 import java.time.LocalDate;
 import java.util.*;
 
-import de.codeflowwizardry.carledger.data.FuelBillEntity;
+import de.codeflowwizardry.carledger.data.BillEntity;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import io.quarkus.panache.common.Page;
@@ -11,47 +11,46 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 
 @ApplicationScoped
-public class FuelBillRepository implements PanacheRepository<FuelBillEntity>
+public class BillRepository implements PanacheRepository<BillEntity>
 {
-	public List<FuelBillEntity> getBills(long carId, String username, Optional<LocalDate> from, Optional<LocalDate> to)
+	public List<BillEntity> getBills(long carId, String username, Optional<LocalDate> from, Optional<LocalDate> to)
 	{
 		Map<String, Object> params = new HashMap<>();
 
-		String query = "bill.car.user.userId = :userId";
+		String query = "car.user.userId = :userId";
 		params.put("userId", username);
 
 		if (carId >= 0)
 		{
-			query += " and bill.car.id = :carId";
+			query += " and car.id = :carId";
 			params.put("carId", carId);
 		}
 
 		if (from.isPresent() && to.isPresent())
 		{
-			query += " and bill.date >= :from and bill.date <= :to";
+			query += " and date >= :from and date <= :to";
 			params.put("from", from.get());
 			params.put("to", to.get());
 
 		} else if (from.isPresent())
 		{
-			query += " and bill.date >= :from";
+			query += " and date >= :from";
 			params.put("from", from.get());
 
 		} else if (to.isPresent())
 		{
-			query += " and bill.date <= :to";
+			query += " and date <= :to";
 			params.put("to", to.get());
 		}
 
-		query += " order by bill.date desc";
+		query += " order by date desc";
 
 		return find(query, params).list();
 	}
 
 	public List<Integer> getBillYears(long carId, String username)
 	{
-		return find("select bill.date from FuelBillEntity where bill.car.id = ?1 and bill.car.user.userId = ?2", carId,
-				username)
+		return find("select b.date from Bill b where b.car.id = ?1 and b.car.user.userId = ?2", carId, username)
 				.project(LocalDate.class)
 				.list()
 				.stream()
@@ -61,16 +60,16 @@ public class FuelBillRepository implements PanacheRepository<FuelBillEntity>
 				.toList();
 	}
 
-	public PanacheQuery<FuelBillEntity> getBills(long carId, String username, Page page, Optional<Integer> year)
+	public PanacheQuery<BillEntity> getBills(long carId, String username, Page page, Optional<Integer> year)
 	{
-		String query = "bill.car.id = :carId and bill.car.user.userId = :username order by bill.date desc";
+		String query = "car.id = :carId and car.user.userId = :username order by date desc";
 		Map<String, Object> params = new HashMap<>();
 		params.put("carId", carId);
 		params.put("username", username);
 
 		if (year.isPresent())
 		{
-			query = "year(bill.date) = :year and " + query;
+			query = "year(date) = :year and " + query;
 			params.put("year", year.get());
 		}
 
@@ -78,34 +77,30 @@ public class FuelBillRepository implements PanacheRepository<FuelBillEntity>
 				.page(page);
 	}
 
-	public Optional<FuelBillEntity> getBillById(long billId, long carId, String username)
+	public Optional<BillEntity> getBillById(long billId, long carId, String username)
 	{
-		return find("id = ?1 and bill.car.id = ?2 and bill.car.user.userId = ?3 order by bill.date desc", billId, carId,
-				username)
+		return find("id = ?1 and car.id = ?2 and car.user.userId = ?3 order by date desc", billId, carId, username)
 				.firstResultOptional();
 	}
 
 	@Override
-	public boolean isPersistent(FuelBillEntity entity)
+	public boolean isPersistent(BillEntity entity)
 	{
-		return find("bill.date = ?1 and unit = ?2 and bill.car.id = ?3 and distance = ?4",
-				entity.getBill().getDate(),
-				entity.getUnit(),
-				entity.getBill().getCarId(),
-				entity.getDistance())
+		return find("date = ?1 and total = ?2 and car.id = ?3 and type = ?4", entity.getDate(), entity.getTotal(),
+				entity.getCarId(), entity.getType())
 				.firstResultOptional().isPresent();
 	}
 
 	@Override
 	@Transactional
-	public void delete(FuelBillEntity billEntity)
+	public void delete(BillEntity billEntity)
 	{
 		PanacheRepository.super.delete(billEntity);
 	}
 
 	@Override
 	@Transactional
-	public void persist(FuelBillEntity billEntity)
+	public void persist(BillEntity billEntity)
 	{
 		PanacheRepository.super.persist(billEntity);
 	}
