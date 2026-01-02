@@ -1,10 +1,10 @@
 package de.codeflowwizardry.carledger.data;
 
-import jakarta.persistence.*;
-import jakarta.ws.rs.DefaultValue;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import jakarta.persistence.*;
+import jakarta.ws.rs.DefaultValue;
 
 @Entity(name = "Car")
 @SequenceGenerator(allocationSize = 1, sequenceName = "sequence_car", initialValue = 5, name = "carSequence")
@@ -20,8 +20,10 @@ public class CarEntity
 	@DefaultValue("0")
 	@Column(name = "c_odometer", nullable = false)
 	private int odometer = 0;
+
 	@OneToMany(mappedBy = "car")
 	private final List<BillEntity> billEntities = new ArrayList<>();
+
 	@ManyToOne
 	private AccountEntity user;
 

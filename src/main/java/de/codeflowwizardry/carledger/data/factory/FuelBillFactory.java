@@ -2,11 +2,13 @@ package de.codeflowwizardry.carledger.data.factory;
 
 import static de.codeflowwizardry.carledger.StatsCalculator.ONE_HUNDRED;
 import static de.codeflowwizardry.carledger.Utils.atLeastTwoNotNull;
+import static de.codeflowwizardry.carledger.Utils.valueWasSet;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 import org.hibernate.exception.ConstraintViolationException;
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,6 +17,8 @@ import de.codeflowwizardry.carledger.data.BillType;
 import de.codeflowwizardry.carledger.data.CarEntity;
 import de.codeflowwizardry.carledger.data.FuelBillEntity;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
+import de.codeflowwizardry.carledger.exception.AlreadyPresentException;
+import de.codeflowwizardry.carledger.exception.WrongUserException;
 import de.codeflowwizardry.carledger.rest.records.FuelBillInput;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -46,7 +50,7 @@ public class FuelBillFactory
 
 		if (car == null)
 		{
-			throw new IllegalStateException("Car cannot be found under your user!");
+			throw new WrongUserException("Car cannot be found under your user!");
 		}
 
 		BigDecimal vatFactor = new BigDecimal(input.vatRate());
@@ -58,14 +62,7 @@ public class FuelBillFactory
 		bill.setDate(input.day());
 		bill.setVatRate(input.vatRate());
 
-		BigDecimal unit = input.unit();
-		if (unit == null || unit.signum() == 0)
-		{
-			unit = input.total()
-					.divide(vatFactor, 4, RoundingMode.HALF_UP)
-					.divide(input.pricePerUnit(), 4, RoundingMode.HALF_UP)
-					.setScale(2, RoundingMode.HALF_UP);
-		}
+		BigDecimal unit = calculateUnit(input, vatFactor);
 		calculateTotal(bill, unit, input);
 		calculateNet(bill, vatFactor);
 		calculateUst(bill);
@@ -78,7 +75,7 @@ public class FuelBillFactory
 		{
 			if (e instanceof ConstraintViolationException cve)
 			{
-				throw new IllegalStateException("A bill for this car, date and total already exists.", cve);
+				throw new AlreadyPresentException("A bill for this car, date and total already exists.", cve);
 			}
 			throw e;
 		}
@@ -89,9 +86,28 @@ public class FuelBillFactory
 		fuelBill.setPricePerUnit(input.pricePerUnit());
 		fuelBill.setUnit(unit);
 
+		calculateAvgConsumption(fuelBill);
+
+		// Needs to be calculated
+		fuelBill.setCostPerKm(BigDecimal.ZERO);
+
 		em.persist(fuelBill);
 
 		return fuelBill;
+	}
+
+	private static @NonNull
+	BigDecimal calculateUnit(FuelBillInput input, BigDecimal vatFactor)
+	{
+		BigDecimal unit = input.unit();
+		if (!valueWasSet(unit))
+		{
+			unit = input.total()
+					.divide(vatFactor, 4, RoundingMode.HALF_UP)
+					.divide(input.pricePerUnit(), 4, RoundingMode.HALF_UP)
+					.setScale(2, RoundingMode.HALF_UP);
+		}
+		return unit;
 	}
 
 	private void validate(FuelBillInput input)
@@ -113,9 +129,9 @@ public class FuelBillFactory
 	private void calculateTotal(BillEntity entity, BigDecimal unit, FuelBillInput input)
 	{
 		BigDecimal total = input.total();
-		if (total == null || total.signum() == 0)
+		if (!valueWasSet(total))
 		{
-			BigDecimal tmp = input.pricePerUnit().divide(ONE_HUNDRED, 4, RoundingMode.HALF_UP);
+			BigDecimal tmp = input.pricePerUnit().divide(ONE_HUNDRED, 6, RoundingMode.HALF_UP);
 			total = unit.multiply(tmp);
 		}
 		entity.setTotal(total);
@@ -123,11 +139,25 @@ public class FuelBillFactory
 
 	private void calculateNet(BillEntity entity, BigDecimal vatFactor)
 	{
-		entity.setNetAmount(entity.getTotal().divide(vatFactor, 2, RoundingMode.HALF_UP));
+		entity.setNetAmount(entity.getTotal().divide(vatFactor, 4, RoundingMode.HALF_UP));
 	}
 
 	private void calculateUst(BillEntity entity)
 	{
 		entity.setUstAmount(entity.getTotal().subtract(entity.getNetAmount()));
+	}
+
+	private void calculateAvgConsumption(FuelBillEntity entity)
+	{
+		BigDecimal distance = entity.getDistance();
+		BigDecimal unit = entity.getUnit();
+
+		if (!valueWasSet(distance) || !valueWasSet(unit))
+		{
+			return;
+		}
+
+		BigDecimal avgConsumption = unit.divide(distance, 6, RoundingMode.HALF_UP).multiply(ONE_HUNDRED);
+		entity.setAvgConsumption(avgConsumption);
 	}
 }

@@ -1,7 +1,8 @@
 package de.codeflowwizardry.carledger.data;
 
+import static de.codeflowwizardry.carledger.Utils.valueWasSet;
+
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 
 import jakarta.persistence.*;
 
@@ -76,7 +77,7 @@ public class FuelBillEntity
 
 	public boolean isDistanceSet()
 	{
-		return !BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP).equals(distance);
+		return valueWasSet(distance);
 	}
 
 	public void setDistance(BigDecimal distance)
