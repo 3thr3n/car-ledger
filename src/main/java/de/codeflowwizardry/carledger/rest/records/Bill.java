@@ -31,15 +31,6 @@ public final class Bill
 		this.calculatedPrice = Objects.requireNonNullElse(calculatedPrice, BigDecimal.ZERO);
 	}
 
-	static BigDecimal calculateConsumption(BigDecimal unit, BigDecimal distance)
-	{
-		if (unit.compareTo(BigDecimal.ZERO) <= 0 || distance.compareTo(BigDecimal.ZERO) <= 0)
-		{
-			return BigDecimal.ZERO;
-		}
-		return unit.divide(distance, 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100));
-	}
-
 	public Long getId()
 	{
 		return id;

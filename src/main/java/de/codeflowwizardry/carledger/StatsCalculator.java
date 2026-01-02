@@ -103,9 +103,7 @@ public class StatsCalculator
 
 	private static BigDecimal calculateAverageCalculated(List<FuelBillEntity> billEntities)
 	{
-		return handleReduceAverageResult(billEntities,
-				bill -> bill.getUnit().divide(bill.getDistance(), 6, RoundingMode.HALF_UP)
-						.multiply(ONE_HUNDRED));
+		return handleReduceAverageResult(billEntities, FuelBillEntity::getAvgConsumption);
 	}
 
 	private static BigDecimal calculateAverageCalculatedPrice(List<FuelBillEntity> billEntities)
@@ -117,7 +115,6 @@ public class StatsCalculator
 			Function<FuelBillEntity, BigDecimal> bigDecimalMapFunction)
 	{
 		Optional<BigDecimal[]> optionalBigDecimal = billEntities.stream()
-				.filter(FuelBillEntity::isDistanceSet)
 				.map(bigDecimalMapFunction)
 				.map(bd -> new BigDecimal[] {
 						bd, BigDecimal.ONE

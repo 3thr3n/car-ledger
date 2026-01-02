@@ -18,6 +18,7 @@ import com.opencsv.exceptions.CsvValidationException;
 
 import de.codeflowwizardry.carledger.data.CarEntity;
 import de.codeflowwizardry.carledger.data.factory.FuelBillFactory;
+import de.codeflowwizardry.carledger.exception.AlreadyPresentException;
 import de.codeflowwizardry.carledger.rest.records.CsvOrder;
 import de.codeflowwizardry.carledger.rest.records.FuelBillInput;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -79,6 +80,10 @@ public class CsvProcessor
 				try
 				{
 					fuelBillFactory.create(input, carEntity.getId(), carEntity.getUser().getUserId());
+				}
+				catch (AlreadyPresentException e)
+				{
+					LOG.debug("Already present in database! {}", input);
 				}
 				catch (IllegalStateException e)
 				{

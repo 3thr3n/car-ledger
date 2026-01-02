@@ -13,6 +13,7 @@ import de.codeflowwizardry.carledger.data.FuelBillEntity;
 import de.codeflowwizardry.carledger.data.factory.FuelBillFactory;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.FuelBillRepository;
+import de.codeflowwizardry.carledger.exception.WrongUserException;
 import de.codeflowwizardry.carledger.rest.records.BillPaged;
 import de.codeflowwizardry.carledger.rest.records.FuelBill;
 import de.codeflowwizardry.carledger.rest.records.FuelBillInput;
@@ -83,7 +84,7 @@ public class BillResource extends AbstractResource
 			FuelBillEntity fuelBill = fuelBillFactory.create(fuelBillPojo, carId, context.getName());
 			return Response.accepted(FuelBill.convert(fuelBill)).build();
 		}
-		catch (IllegalStateException e)
+		catch (WrongUserException e)
 		{
 			LOG.warn("Car cannot be found under your user {}!", context.getName(), e);
 			throw new BadRequestException(Response.status(Response.Status.BAD_REQUEST)
