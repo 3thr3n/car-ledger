@@ -131,4 +131,9 @@ public class BillEntity
 	{
 		return car.getId();
 	}
+
+	public FuelBillEntity getFuelBill()
+	{
+		return fuelBill;
+	}
 }

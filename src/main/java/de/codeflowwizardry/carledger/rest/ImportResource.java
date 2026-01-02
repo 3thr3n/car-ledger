@@ -3,7 +3,6 @@ package de.codeflowwizardry.carledger.rest;
 import java.io.File;
 import java.security.Principal;
 
-import de.codeflowwizardry.carledger.data.CarEntity;
 import org.apache.commons.lang3.ObjectUtils;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
@@ -12,19 +11,13 @@ import org.jboss.resteasy.reactive.RestForm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.codeflowwizardry.carledger.data.CarEntity;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import de.codeflowwizardry.carledger.rest.processors.CsvProcessor;
 import de.codeflowwizardry.carledger.rest.records.CsvOrder;
 import jakarta.inject.Inject;
-import jakarta.transaction.Transactional;
-import jakarta.ws.rs.BadRequestException;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.InternalServerErrorException;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
@@ -53,7 +46,6 @@ public class ImportResource extends AbstractResource
 			separator between columns is ',' (comma)
 			""")
 	@POST
-	@Transactional
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	@APIResponse(responseCode = "202", description = "CSV was imported.")
 	@APIResponse(responseCode = "400", description = "- Order is invalid\n- Car not found")
