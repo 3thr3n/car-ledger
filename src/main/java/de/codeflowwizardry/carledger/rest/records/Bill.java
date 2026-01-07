@@ -1,34 +1,48 @@
 package de.codeflowwizardry.carledger.rest.records;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
+import java.math.BigInteger;
 import java.time.LocalDate;
-import java.util.Objects;
+import java.util.List;
 
-public final class Bill
+import de.codeflowwizardry.carledger.data.BillEntity;
+import de.codeflowwizardry.carledger.data.BillType;
+
+public class Bill extends AbstractBill<BillEntity>
 {
 	private final Long id;
-	private final LocalDate day;
+	private final LocalDate date;
 	private final int year;
-	private final BigDecimal distance;
-	private final BigDecimal unit;
-	private final BigDecimal pricePerUnit;
-	private final BigDecimal estimate;
-	private final BigDecimal calculated;
-	private final BigDecimal calculatedPrice;
+	private final BigDecimal total;
+	private final BigInteger vatRate;
+	private final BigDecimal ustAmount;
+	private final BigDecimal netAmount;
+	private final BillType type;
 
-	Bill(Long id, LocalDate day, BigDecimal distance, BigDecimal unit, BigDecimal pricePerUnit, BigDecimal estimate,
-			BigDecimal calculated, BigDecimal calculatedPrice)
+	Bill(Long id, LocalDate date, int year, BigDecimal total, BigInteger vatRate, BigDecimal ustAmount,
+			BigDecimal netAmount, BillType type)
 	{
 		this.id = id;
-		this.day = day;
-		this.year = day.getYear();
-		this.distance = Objects.requireNonNullElse(distance, BigDecimal.ZERO);
-		this.unit = unit;
-		this.pricePerUnit = pricePerUnit;
-		this.estimate = estimate;
-		this.calculated = Objects.requireNonNullElse(calculated, BigDecimal.ZERO);
-		this.calculatedPrice = Objects.requireNonNullElse(calculatedPrice, BigDecimal.ZERO);
+		this.date = date;
+		this.year = year;
+		this.total = total;
+		this.vatRate = vatRate;
+		this.ustAmount = ustAmount;
+		this.netAmount = netAmount;
+		this.type = type;
+	}
+
+	public static Bill convert(BillEntity entity)
+	{
+		return new Bill(entity.getId(), entity.getDate(), entity.getDate().getYear(), entity.getTotal(),
+				entity.getVatRate(), entity.getUstAmount(), entity.getNetAmount(), entity.getType());
+	}
+
+	public static List<Bill> convert(List<BillEntity> entityList)
+	{
+		return entityList.stream()
+				.map(Bill::convert)
+				.toList();
 	}
 
 	public Long getId()
@@ -36,9 +50,9 @@ public final class Bill
 		return id;
 	}
 
-	public LocalDate getDay()
+	public LocalDate getDate()
 	{
-		return day;
+		return date;
 	}
 
 	public int getYear()
@@ -46,33 +60,28 @@ public final class Bill
 		return year;
 	}
 
-	public String getDistance()
+	public BigDecimal getTotal()
 	{
-		return distance.setScale(2, RoundingMode.HALF_UP).toString();
+		return total;
 	}
 
-	public String getUnit()
+	public BigInteger getVatRate()
 	{
-		return unit.setScale(2, RoundingMode.HALF_UP).toString();
+		return vatRate;
 	}
 
-	public String getPricePerUnit()
+	public BigDecimal getUstAmount()
 	{
-		return pricePerUnit.setScale(2, RoundingMode.HALF_UP).toString();
+		return ustAmount;
 	}
 
-	public String getEstimate()
+	public BigDecimal getNetAmount()
 	{
-		return estimate.setScale(2, RoundingMode.HALF_UP).toString();
+		return netAmount;
 	}
 
-	public String getCalculated()
+	public BillType getType()
 	{
-		return calculated.setScale(2, RoundingMode.HALF_UP).toString();
-	}
-
-	public String getCalculatedPrice()
-	{
-		return calculatedPrice.setScale(2, RoundingMode.HALF_UP).toString();
+		return type;
 	}
 }

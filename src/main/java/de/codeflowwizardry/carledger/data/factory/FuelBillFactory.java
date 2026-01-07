@@ -8,18 +8,15 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 import org.hibernate.exception.ConstraintViolationException;
-import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.codeflowwizardry.carledger.data.BillEntity;
 import de.codeflowwizardry.carledger.data.BillType;
-import de.codeflowwizardry.carledger.data.CarEntity;
 import de.codeflowwizardry.carledger.data.FuelBillEntity;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import de.codeflowwizardry.carledger.exception.AlreadyPresentException;
-import de.codeflowwizardry.carledger.exception.WrongUserException;
-import de.codeflowwizardry.carledger.rest.records.FuelBillInput;
+import de.codeflowwizardry.carledger.rest.records.input.FuelBillInput;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
@@ -27,40 +24,26 @@ import jakarta.persistence.PersistenceException;
 import jakarta.transaction.Transactional;
 
 @ApplicationScoped
-public class FuelBillFactory
+public class FuelBillFactory extends AbstractBillFactory<FuelBillInput, FuelBillEntity>
 {
 	private final static Logger LOG = LoggerFactory.getLogger(FuelBillFactory.class);
-
-	private final EntityManager em;
-	private final CarRepository carRepository;
 
 	@Inject
 	public FuelBillFactory(EntityManager em, CarRepository carRepository)
 	{
-		this.em = em;
-		this.carRepository = carRepository;
+		super(BillType.FUEL, em, carRepository);
 	}
 
+	@Override
 	@Transactional
 	public FuelBillEntity create(FuelBillInput input, long carId, String user)
 	{
 		validate(input);
 
-		CarEntity car = carRepository.findById(carId, user);
-
-		if (car == null)
-		{
-			throw new WrongUserException("Car cannot be found under your user!");
-		}
-
-		BigDecimal vatFactor = new BigDecimal(input.vatRate());
+		BigDecimal vatFactor = new BigDecimal(input.getVatRate());
 		vatFactor = BigDecimal.ONE.add(vatFactor.divide(ONE_HUNDRED, 2, RoundingMode.HALF_UP));
 
-		BillEntity bill = new BillEntity();
-		bill.setType(BillType.FUEL);
-		bill.setCar(car);
-		bill.setDate(input.day());
-		bill.setVatRate(input.vatRate());
+		BillEntity bill = createEntity(carId, user, input);
 
 		BigDecimal unit = calculateUnit(input, vatFactor);
 		calculateTotal(bill, unit, input);
@@ -75,15 +58,20 @@ public class FuelBillFactory
 		{
 			if (e instanceof ConstraintViolationException cve)
 			{
+				LOG.info(cve.getMessage());
+				if (cve.getMessage().contains("not allowed"))
+				{
+					throw new RuntimeException("Something is null where it should not be null!");
+				}
 				throw new AlreadyPresentException("A bill for this car, date and total already exists.", cve);
 			}
 			throw e;
 		}
 
 		FuelBillEntity fuelBill = new FuelBillEntity(bill);
-		fuelBill.setDistance(input.distance());
-		fuelBill.setEstimate(input.estimate());
-		fuelBill.setPricePerUnit(input.pricePerUnit());
+		fuelBill.setDistance(input.getDistance());
+		fuelBill.setEstimate(input.getEstimate());
+		fuelBill.setPricePerUnit(input.getPricePerUnit());
 		fuelBill.setUnit(unit);
 
 		calculateAvgConsumption(fuelBill);
@@ -96,58 +84,65 @@ public class FuelBillFactory
 		return fuelBill;
 	}
 
-	private static @NonNull
-	BigDecimal calculateUnit(FuelBillInput input, BigDecimal vatFactor)
+	private static BigDecimal calculateUnit(FuelBillInput input, BigDecimal vatFactor)
 	{
-		BigDecimal unit = input.unit();
+		BigDecimal unit = input.getUnit();
 		if (!valueWasSet(unit))
 		{
-			unit = input.total()
+			unit = input.getTotal()
 					.divide(vatFactor, 4, RoundingMode.HALF_UP)
-					.divide(input.pricePerUnit(), 4, RoundingMode.HALF_UP)
+					.divide(input.getPricePerUnit(), 4, RoundingMode.HALF_UP)
 					.setScale(2, RoundingMode.HALF_UP);
 		}
 		return unit;
 	}
 
-	private void validate(FuelBillInput input)
+	@Override
+	void validate(FuelBillInput input)
 	{
-		if (!atLeastTwoNotNull(input.unit(), input.pricePerUnit(), input.total()))
+		if (!atLeastTwoNotNull(input.getUnit(), input.getPricePerUnit(), input.getTotal()))
 		{
-			LOG.warn("At least two of the following was empty! Total: {} - Price per unit: {} - Unit: {}", input.unit(),
-					input.pricePerUnit(), input.total());
+			LOG.warn("At least two of the following was empty! Total: {} - Price per unit: {} - Unit: {}",
+					input.getUnit(),
+					input.getPricePerUnit(), input.getTotal());
 			throw new IllegalArgumentException("At least two of 'unit', 'total' or 'pricePerUnit' must be set!");
 		}
 
-		if (input.vatRate() == null)
+		if (input.getDate() == null)
+		{
+			LOG.warn("Date cannot be empty!");
+			throw new IllegalArgumentException("Date cannot be null!");
+		}
+
+		if (input.getVatRate() == null)
 		{
 			LOG.warn("Vat rate was not set!");
 			throw new IllegalArgumentException("Vat rate cannot be null!");
 		}
 	}
 
-	private void calculateTotal(BillEntity entity, BigDecimal unit, FuelBillInput input)
+	private static void calculateTotal(BillEntity entity, BigDecimal unit, FuelBillInput input)
 	{
-		BigDecimal total = input.total();
+		BigDecimal total = input.getTotal();
 		if (!valueWasSet(total))
 		{
-			BigDecimal tmp = input.pricePerUnit().divide(ONE_HUNDRED, 6, RoundingMode.HALF_UP);
+			BigDecimal tmp = input.getPricePerUnit().divide(ONE_HUNDRED, 6, RoundingMode.HALF_UP);
 			total = unit.multiply(tmp);
 		}
 		entity.setTotal(total);
 	}
 
-	private void calculateNet(BillEntity entity, BigDecimal vatFactor)
+	private static void calculateNet(BillEntity entity, BigDecimal vatFactor)
 	{
 		entity.setNetAmount(entity.getTotal().divide(vatFactor, 4, RoundingMode.HALF_UP));
 	}
 
-	private void calculateUst(BillEntity entity)
+	private static void calculateUst(BillEntity entity)
 	{
 		entity.setUstAmount(entity.getTotal().subtract(entity.getNetAmount()));
 	}
 
-	private void calculateAvgConsumption(FuelBillEntity entity)
+	private static void calculateAvgConsumption(FuelBillEntity entity)
 	{
 		BigDecimal distance = entity.getDistance();
 		BigDecimal unit = entity.getUnit();

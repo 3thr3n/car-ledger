@@ -8,7 +8,7 @@ import jakarta.persistence.*;
 
 @Entity
 @Table(name = "bill_fuel")
-public class FuelBillEntity
+public class FuelBillEntity extends AbstractBillEntity
 {
 	@Id
 	private Long id;
@@ -45,9 +45,16 @@ public class FuelBillEntity
 		this.bill = bill;
 	}
 
+	@Override
 	public BillEntity getBill()
 	{
 		return bill;
+	}
+
+	@Override
+	public BillType getType()
+	{
+		return bill.getType();
 	}
 
 	public BigDecimal getUnit()

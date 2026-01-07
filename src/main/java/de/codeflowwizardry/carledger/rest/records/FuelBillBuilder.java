@@ -6,7 +6,7 @@ import java.time.LocalDate;
 public class FuelBillBuilder
 {
 	private Long id;
-	private LocalDate day;
+	private LocalDate date;
 	private BigDecimal distance;
 	private BigDecimal unit;
 	private BigDecimal pricePerUnit;
@@ -20,9 +20,9 @@ public class FuelBillBuilder
 		return this;
 	}
 
-	public FuelBillBuilder setDay(LocalDate day)
+	public FuelBillBuilder setDate(LocalDate date)
 	{
-		this.day = day;
+		this.date = date;
 		return this;
 	}
 
@@ -64,6 +64,6 @@ public class FuelBillBuilder
 
 	public FuelBill createBillPojo()
 	{
-		return new FuelBill(id, day, distance, unit, pricePerUnit, estimate, calculated, calculatedPrice);
+		return new FuelBill(id, date, distance, unit, pricePerUnit, estimate, calculated, calculatedPrice);
 	}
 }
