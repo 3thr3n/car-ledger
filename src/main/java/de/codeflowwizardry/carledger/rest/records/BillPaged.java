@@ -2,6 +2,6 @@ package de.codeflowwizardry.carledger.rest.records;
 
 import java.util.List;
 
-public record BillPaged(Long total, int page, int size, List<FuelBill> data)
+public record BillPaged<T extends AbstractBill<?>>(Long total, int page, int size, List<T> data)
 {
 }

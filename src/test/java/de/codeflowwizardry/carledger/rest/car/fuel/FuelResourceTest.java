@@ -1,12 +1,13 @@
-package de.codeflowwizardry.carledger.rest;
+package de.codeflowwizardry.carledger.rest.car.fuel;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,20 +19,20 @@ import de.codeflowwizardry.carledger.data.factory.FuelBillFactory;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.BillRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
-import de.codeflowwizardry.carledger.rest.car.StatsResource;
 import de.codeflowwizardry.carledger.rest.records.input.FuelBillInput;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
+import io.restassured.http.ContentType;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
 @QuarkusTest
-@TestHTTPEndpoint(StatsResource.class)
-class StatsResourceTest
+@TestHTTPEndpoint(FuelResource.class)
+public class FuelResourceTest
 {
 	@Inject
-	FuelBillFactory fuelBillFactory;
+	BillRepository billRepository;
 
 	@Inject
 	AccountRepository accountRepository;
@@ -40,7 +41,7 @@ class StatsResourceTest
 	CarRepository carRepository;
 
 	@Inject
-	BillRepository billRepository;
+	FuelBillFactory fuelBillFactory;
 
 	CarEntity carEntity;
 
@@ -48,17 +49,8 @@ class StatsResourceTest
 	@Transactional
 	void setup()
 	{
-		cleanup();
+		setupBob();
 		setupPeter();
-	}
-
-	@AfterEach
-	@Transactional
-	void cleanup()
-	{
-		billRepository.deleteAll();
-		carRepository.deleteAll();
-		accountRepository.deleteAll();
 	}
 
 	private void setupPeter()
@@ -73,10 +65,8 @@ class StatsResourceTest
 		carEntity.setName("Neat car");
 		carRepository.persist(carEntity);
 
-		// 55,972
-		// 5.6
 		FuelBillInput fuelBillInput = new FuelBillInput(
-				LocalDate.now(),
+				LocalDate.of(2024, 8, 16),
 				BigDecimal.ZERO,
 				BigInteger.valueOf(19),
 				BigDecimal.valueOf(500),
@@ -86,8 +76,6 @@ class StatsResourceTest
 
 		fuelBillFactory.create(fuelBillInput, carEntity.getId(), carEntity.getUser().getUserId());
 
-		// 37,98
-		// 5.0
 		fuelBillInput = new FuelBillInput(
 				LocalDate.of(2022, 5, 22),
 				BigDecimal.ZERO,
@@ -99,8 +87,6 @@ class StatsResourceTest
 
 		fuelBillFactory.create(fuelBillInput, carEntity.getId(), carEntity.getUser().getUserId());
 
-		// 55,132
-		// 5.83
 		fuelBillInput = new FuelBillInput(
 				LocalDate.of(2023, 6, 2),
 				BigDecimal.ZERO,
@@ -113,121 +99,172 @@ class StatsResourceTest
 		fuelBillFactory.create(fuelBillInput, carEntity.getId(), carEntity.getUser().getUserId());
 	}
 
-	@Test
-	@TestSecurity(user = "peter", roles = {
-			"user"
-	})
-	void shouldGetAllTotalStats()
+	private void setupBob()
 	{
-		given()
-				.pathParam("carId", carEntity.getId())
-				.when()
-				.get("/total")
-				.then()
-				.statusCode(200)
-				.body("distance", is("1380.00"))
-				.body("unit", is("76.00"))
-				.body("calculatedPrice", is("149.08"));
+		AccountEntity accountEntity = new AccountEntity();
+		accountEntity.setMaxCars(1);
+		accountEntity.setUserId("bob");
+		accountRepository.persist(accountEntity);
 	}
 
 	@Test
 	@TestSecurity(user = "peter", roles = {
 			"user"
 	})
-	void shouldGetAllTotalStatsForEveryOfMyCars()
+	void shouldGetAllMyBillsInOrder()
 	{
 		given()
-				.pathParam("carId", -1)
+				.pathParam("carId", carEntity.getId())
 				.when()
-				.get("/total")
+				.get("all")
 				.then()
 				.statusCode(200)
-				.body("distance", is("1380.00"))
-				.body("unit", is("76.00"))
-				.body("calculatedPrice", is("149.08"));
+				.body("total", is(3))
+				.body("page", is(1))
+				.body("size", is(10))
+				.body("data.size()", is(3))
+				.body("data[0].distance", is("500.00"))
+				.body("data[0].date", is("2024-08-16"))
+				.body("data[1].distance", is("480.00"))
+				.body("data[1].date", is("2023-06-02"))
+				.body("data[2].distance", is("400.00"))
+				.body("data[2].date", is("2022-05-22"));
 	}
 
 	@Test
 	@TestSecurity(user = "peter", roles = {
 			"user"
 	})
-	void shouldGetAllTotalStatsAfter2022()
+	void shouldAddBill()
 	{
-		String localDateString = LocalDate.of(2023, 1, 1).atStartOfDay().format(DateTimeFormatter.ISO_LOCAL_DATE);
+		// given
+		String body = """
+				{
+					"date": "2024-08-22",
+					"distance": 450,
+					"unit": 30,
+					"pricePerUnit": 188.9,
+					"estimate": 8.9,
+					"vatRate": 19
+				}
+				""";
 
+		// when
 		given()
 				.pathParam("carId", carEntity.getId())
-				.queryParam("from", localDateString)
-				.when()
-				.get("/total")
+				.accept(ContentType.JSON)
+				.contentType(ContentType.JSON)
+				.body(body)
+				.put()
 				.then()
-				.statusCode(200)
-				.body("distance", is("980.00"))
-				.body("unit", is("56.00"))
-				.body("calculatedPrice", is("111.10"));
+				.statusCode(202)
+				.body("date", is("2024-08-22"));
+
+	}
+
+	@Test
+	@TestSecurity(user = "bob", roles = {
+			"user"
+	})
+	void shouldFailAddingBillAsDifferentUser()
+	{
+		// given
+		String body = """
+				{
+					"date": "2024-08-22",
+					"distance": 450,
+					"unit": 30,
+					"pricePerUnit": 188.9,
+					"estimate": 8.9,
+					"vatRate": 19
+				}
+				""";
+
+		// when
+		given()
+				.pathParam("carId", carEntity.getId())
+				.accept(ContentType.JSON)
+				.contentType(ContentType.JSON)
+				.body(body)
+				.put()
+				.then()
+				.statusCode(400);
 	}
 
 	@Test
 	@TestSecurity(user = "peter", roles = {
 			"user"
 	})
-	void shouldGetAllTotalStatsOf2023()
+	void shouldDeleteOne()
 	{
-		String fromLocalDate = LocalDate.of(2023, 1, 1).atStartOfDay().format(DateTimeFormatter.ISO_LOCAL_DATE);
-		String toLocalDate = LocalDate.of(2023, 12, 31).atStartOfDay().format(DateTimeFormatter.ISO_LOCAL_DATE);
+		// given
+		Long billId = billRepository.listAll().getFirst().getId();
 
+		// when
 		given()
 				.pathParam("carId", carEntity.getId())
-				.queryParam("from", fromLocalDate)
-				.queryParam("to", toLocalDate)
 				.when()
-				.get("/total")
+				.delete("{billId}", billId)
 				.then()
-				.statusCode(200)
-				.body("distance", is("480.00"))
-				.body("unit", is("28.00"))
-				.body("calculatedPrice", is("55.13"));
+				.statusCode(202);
+	}
+
+	@Test
+	@TestSecurity(user = "bob", roles = {
+			"user"
+	})
+	void shouldFailDeletingAsDifferentUser()
+	{
+		// given
+		Long billId = billRepository.listAll().getFirst().getId();
+
+		// when
+		given()
+				.pathParam("carId", carEntity.getId())
+				.when()
+				.delete("{billId}", billId)
+				.then()
+				.statusCode(400);
+	}
+
+	@Test
+	void shouldBeRedirectToLoginUrl()
+	{
+		String response = given()
+				.pathParam("carId", carEntity.getId())
+				.when()
+				.get("all")
+				.then()
+				.statusCode(200).extract()
+				.response()
+				.getBody()
+				.asString();
+
+		assertTrue(response.contains("<html"));
 	}
 
 	@Test
 	@TestSecurity(user = "peter", roles = {
 			"user"
 	})
-	void shouldGetAllAverageStats()
+	void shouldGetYearsOfBills()
 	{
+		// when
 		given()
 				.pathParam("carId", carEntity.getId())
 				.when()
-				.get("/average")
+				.get("years")
 				.then()
 				.statusCode(200)
-				.body("pricePerUnit", is("195.6"))
-				.body("distance", is("460.00"))
-				.body("calculated", is("5.48"))
-				.body("calculatedPrice", is("49.69"));
+				.body("", contains(2024, 2023, 2022));
 	}
 
-	@Test
-	@TestSecurity(user = "peter", roles = {
-			"user"
-	})
-	void shouldGetAllHiLoStats()
+	@AfterEach
+	@Transactional
+	void cleanup()
 	{
-		given()
-				.pathParam("carId", carEntity.getId())
-				.when()
-				.get("/hi_lo")
-				.then()
-				.statusCode(200)
-				.body("distance.max", is("500.00"))
-				.body("distance.min", is("400.00"))
-				.body("unit.max", is("28.00"))
-				.body("unit.min", is("20.00"))
-				.body("calculatedPrice.max", is("55.97"))
-				.body("calculatedPrice.min", is("37.98"))
-				.body("calculated.max", is("5.83"))
-				.body("calculated.min", is("5.00"))
-				.body("pricePerUnit.max", is("199.9"))
-				.body("pricePerUnit.min", is("189.9"));
+		billRepository.deleteAll();
+		carRepository.deleteAll();
+		accountRepository.deleteAll();
 	}
 }

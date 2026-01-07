@@ -10,7 +10,7 @@ import jakarta.persistence.*;
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = {
 		"b_date", "b_car_id", "b_total"
 }))
-public class BillEntity
+public class BillEntity extends AbstractBillEntity
 {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -43,8 +43,17 @@ public class BillEntity
 	@OneToOne(mappedBy = "bill", cascade = CascadeType.ALL)
 	private FuelBillEntity fuelBill;
 
+	@OneToOne(mappedBy = "bill", cascade = CascadeType.ALL)
+	private MaintenanceBillEntity maintenanceBill;
+
 	public BillEntity()
 	{
+	}
+
+	@Override
+	public BillEntity getBill()
+	{
+		return this;
 	}
 
 	public Long getId()
@@ -72,9 +81,9 @@ public class BillEntity
 		return date;
 	}
 
-	public void setDate(LocalDate day)
+	public void setDate(LocalDate date)
 	{
-		this.date = day;
+		this.date = date;
 	}
 
 	public BigDecimal getTotal()
@@ -135,5 +144,10 @@ public class BillEntity
 	public FuelBillEntity getFuelBill()
 	{
 		return fuelBill;
+	}
+
+	public MaintenanceBillEntity getMaintenanceBill()
+	{
+		return maintenanceBill;
 	}
 }

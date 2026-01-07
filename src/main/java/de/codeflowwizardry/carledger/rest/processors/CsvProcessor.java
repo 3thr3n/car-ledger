@@ -20,7 +20,7 @@ import de.codeflowwizardry.carledger.data.CarEntity;
 import de.codeflowwizardry.carledger.data.factory.FuelBillFactory;
 import de.codeflowwizardry.carledger.exception.AlreadyPresentException;
 import de.codeflowwizardry.carledger.rest.records.CsvOrder;
-import de.codeflowwizardry.carledger.rest.records.FuelBillInput;
+import de.codeflowwizardry.carledger.rest.records.input.FuelBillInput;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;
@@ -69,13 +69,13 @@ public class CsvProcessor
 			while ((line = csvReader.readNext()) != null)
 			{
 				FuelBillInput input = new FuelBillInput(
-						parseToLocalDate(line, csvOrder.day()),
+						parseToLocalDate(line, csvOrder.date()),
+						BigDecimal.ZERO,
+						BigInteger.valueOf(19),
 						parseToBigDecimal(line, csvOrder.distance()),
 						parseToBigDecimal(line, csvOrder.unit()),
 						parseToBigDecimal(line, csvOrder.pricePerUnit()),
-						parseToBigDecimal(line, csvOrder.estimate()),
-						BigInteger.valueOf(19),
-						BigDecimal.ZERO);
+						parseToBigDecimal(line, csvOrder.estimate()));
 
 				try
 				{
@@ -107,11 +107,11 @@ public class CsvProcessor
 
 	private LocalDate parseToLocalDate(String[] line, int position)
 	{
-		String day = line[position];
+		String date = line[position];
 
 		try
 		{
-			return LocalDate.parse(day);
+			return LocalDate.parse(date);
 		}
 		catch (DateTimeParseException ignored)
 		{
@@ -120,7 +120,7 @@ public class CsvProcessor
 
 		try
 		{
-			return LocalDate.parse(day, DateTimeFormatter.ofPattern("dd.MM.yyyy"));
+			return LocalDate.parse(date, DateTimeFormatter.ofPattern("dd.MM.yyyy"));
 		}
 		catch (DateTimeParseException ignored)
 		{

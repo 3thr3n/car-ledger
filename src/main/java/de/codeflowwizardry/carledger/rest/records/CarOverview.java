@@ -21,21 +21,6 @@ public record CarOverview(BigInteger totalRefuels, BigDecimal totalCost, BigDeci
 		BigDecimal totalCost = billEntities.stream().map(BillEntity::getTotal).reduce(BigDecimal.ZERO,
 				BigDecimal::add);
 
-		// BigDecimal avgConsumption = BigDecimal.ZERO;
-		// Optional<BigDecimal[]> optAvgConsumptionArray = billEntities.stream()
-		// .map(FuelBillEntity::getAvgConsumption).map(bd -> new BigDecimal[] {
-		// bd, BigDecimal.ONE
-		// })
-		// .reduce((a, b) -> new BigDecimal[] {
-		// a[0].add(b[0]), a[1].add(BigDecimal.ONE)
-		// });
-		// if (optAvgConsumptionArray.isPresent())
-		// {
-		// BigDecimal[] avgConsumptionArray = optAvgConsumptionArray.get();
-		// avgConsumption = avgConsumptionArray[0].divide(avgConsumptionArray[1],
-		// RoundingMode.HALF_UP);
-		// }
-
 		BigDecimal avgConsumption = BigDecimal.ZERO;
 		Optional<BigDecimal[]> optAvgConsumptionArray = billEntities.stream()
 				.map(BillEntity::getFuelBill)

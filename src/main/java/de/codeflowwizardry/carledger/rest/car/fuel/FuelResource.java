@@ -1,4 +1,4 @@
-package de.codeflowwizardry.carledger.rest;
+package de.codeflowwizardry.carledger.rest.car.fuel;
 
 import java.security.Principal;
 import java.util.List;
@@ -9,14 +9,16 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.codeflowwizardry.carledger.data.BillType;
 import de.codeflowwizardry.carledger.data.FuelBillEntity;
 import de.codeflowwizardry.carledger.data.factory.FuelBillFactory;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.FuelBillRepository;
 import de.codeflowwizardry.carledger.exception.WrongUserException;
+import de.codeflowwizardry.carledger.rest.AbstractResource;
 import de.codeflowwizardry.carledger.rest.records.BillPaged;
 import de.codeflowwizardry.carledger.rest.records.FuelBill;
-import de.codeflowwizardry.carledger.rest.records.FuelBillInput;
+import de.codeflowwizardry.carledger.rest.records.input.FuelBillInput;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.panache.common.Page;
 import jakarta.inject.Inject;
@@ -24,37 +26,37 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
-@Path("bill/{carId}")
-public class BillResource extends AbstractResource
+@Path("bill/{carId}/fuel")
+public class FuelResource extends AbstractResource
 {
-	private final static Logger LOG = LoggerFactory.getLogger(BillResource.class);
+	private final static Logger LOG = LoggerFactory.getLogger(FuelResource.class);
 
-	private final FuelBillRepository billRepository;
+	private final FuelBillRepository fuelBillRepository;
 	private final FuelBillFactory fuelBillFactory;
 
 	@Inject
-	public BillResource(Principal context, AccountRepository accountRepository, FuelBillRepository billRepository,
-			FuelBillFactory fuelBillFactory)
+	public FuelResource(Principal context, AccountRepository accountRepository,
+			FuelBillRepository fuelBillRepository, FuelBillFactory fuelBillFactory)
 	{
 		super(context, accountRepository);
-		this.billRepository = billRepository;
+		this.fuelBillRepository = fuelBillRepository;
 		this.fuelBillFactory = fuelBillFactory;
 	}
 
 	@GET
 	@Path("years")
-	@Operation(operationId = "getAllBillYears", description = "Gets all years of bills for specified car")
+	@Operation(operationId = "getAllFuelBillYears", description = "Gets all years of bills for specified car")
 	@APIResponse(responseCode = "200", description = "Bills found and years extracted.")
 	public List<Integer> getAllMyBills(@PathParam("carId") long carId)
 	{
-		return billRepository.getBillYears(carId, context.getName());
+		return fuelBillRepository.getBillYears(carId, context.getName(), BillType.FUEL);
 	}
 
 	@GET
 	@Path("all")
-	@Operation(operationId = "getAllBills", description = "Gets all bills for specified car")
+	@Operation(operationId = "getAllFuelBills", description = "Gets all bills for specified car, Pages starting at 1")
 	@APIResponse(responseCode = "200", description = "Bills found.")
-	public BillPaged getAllMyBills(@PathParam("carId") long carId,
+	public BillPaged<FuelBill> getAllMyBills(@PathParam("carId") long carId,
 			@QueryParam("page") @DefaultValue("1") int page,
 			@QueryParam("size") @DefaultValue("10") int size,
 			@QueryParam("year") Integer year)
@@ -65,9 +67,10 @@ public class BillResource extends AbstractResource
 		}
 		Page queryPage = new Page(page - 1, size);
 
-		PanacheQuery<FuelBillEntity> billQuery = billRepository.getBills(carId, context.getName(), queryPage,
-				Optional.ofNullable(year));
-		return new BillPaged(billQuery.count(), page, size, FuelBill.convert(billQuery.list()));
+		PanacheQuery<FuelBillEntity> billQuery = fuelBillRepository
+				.getBills(carId, context.getName(), queryPage,
+						Optional.ofNullable(year));
+		return new BillPaged<>(billQuery.count(), page, size, FuelBill.convert(billQuery.list()));
 	}
 
 	@PUT
@@ -101,19 +104,14 @@ public class BillResource extends AbstractResource
 	@APIResponse(responseCode = "500", description = "Something went wrong while deleting. Please ask the server admin for help.")
 	public Response deleteBill(@PathParam("carId") long carId, @PathParam("billId") long billId)
 	{
-		Optional<FuelBillEntity> optBill = billRepository.getBillById(billId, carId, context.getName());
+		Optional<FuelBillEntity> optBill = fuelBillRepository.getBillById(billId, carId, context.getName());
 		if (optBill.isEmpty())
 		{
 			throw new BadRequestException("Bill with id " + billId + " not found on car!");
 		}
 		FuelBillEntity billEntity = optBill.get();
 
-		billRepository.delete(billEntity);
-
-		if (billRepository.isPersistent(billEntity))
-		{
-			throw new InternalServerErrorException("Could not delete bill!");
-		}
+		fuelBillRepository.delete(billEntity);
 
 		return Response.accepted().build();
 	}

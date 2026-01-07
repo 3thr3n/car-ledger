@@ -1,12 +1,13 @@
 package de.codeflowwizardry.carledger.data;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 
 import jakarta.persistence.*;
 
 @Entity
 @Table(name = "bill_maintenance")
-public class MaintenanceBillEntity
+public class MaintenanceBillEntity extends AbstractBillEntity
 {
 	@Id
 	private Long id;
@@ -27,6 +28,9 @@ public class MaintenanceBillEntity
 	@Column(name = "m_parts_cost")
 	private BigDecimal partsCost;
 
+	@Column(name = "m_odometer")
+	private BigInteger odometer;
+
 	protected MaintenanceBillEntity()
 	{
 	}
@@ -36,9 +40,16 @@ public class MaintenanceBillEntity
 		this.bill = bill;
 	}
 
+	@Override
 	public BillEntity getBill()
 	{
 		return bill;
+	}
+
+	@Override
+	public BillType getType()
+	{
+		return bill.getType();
 	}
 
 	public String getDescription()
@@ -79,5 +90,15 @@ public class MaintenanceBillEntity
 	public void setPartsCost(BigDecimal partsCost)
 	{
 		this.partsCost = partsCost;
+	}
+
+	public BigInteger getOdometer()
+	{
+		return odometer;
+	}
+
+	public void setOdometer(BigInteger odometer)
+	{
+		this.odometer = odometer;
 	}
 }

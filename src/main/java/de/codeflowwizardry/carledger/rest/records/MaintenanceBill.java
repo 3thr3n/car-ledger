@@ -6,9 +6,9 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 
-import de.codeflowwizardry.carledger.data.FuelBillEntity;
+import de.codeflowwizardry.carledger.data.MaintenanceBillEntity;
 
-public final class FuelBill extends AbstractBill<FuelBillEntity>
+public final class MaintenanceBill extends AbstractBill<MaintenanceBillEntity>
 {
 	private final Long id;
 	private final LocalDate date;
@@ -20,7 +20,7 @@ public final class FuelBill extends AbstractBill<FuelBillEntity>
 	private final BigDecimal calculated;
 	private final BigDecimal calculatedPrice;
 
-	FuelBill(Long id, LocalDate date, BigDecimal distance, BigDecimal unit, BigDecimal pricePerUnit,
+	MaintenanceBill(Long id, LocalDate date, BigDecimal distance, BigDecimal unit, BigDecimal pricePerUnit,
 			BigDecimal estimate,
 			BigDecimal calculated, BigDecimal calculatedPrice)
 	{
@@ -35,23 +35,15 @@ public final class FuelBill extends AbstractBill<FuelBillEntity>
 		this.calculatedPrice = Objects.requireNonNullElse(calculatedPrice, BigDecimal.ZERO);
 	}
 
-	public static FuelBill convert(FuelBillEntity billEntity)
+	public static MaintenanceBill convert(MaintenanceBillEntity billEntity)
 	{
-		return new FuelBillBuilder()
-				.setId(billEntity.getBill().getId())
-				.setDate(billEntity.getBill().getDate())
-				.setDistance(billEntity.getDistance())
-				.setUnit(billEntity.getUnit()).setPricePerUnit(billEntity.getPricePerUnit())
-				.setEstimate(billEntity.getEstimate())
-				.setCalculated(billEntity.getAvgConsumption())
-				.setCalculatedPrice(billEntity.getBill().getTotal())
-				.createBillPojo();
+		return new MaintenanceBill(null, LocalDate.now(), null, null, null, null, null, null);
 	}
 
-	public static List<FuelBill> convert(List<FuelBillEntity> billEntityList)
+	public static List<MaintenanceBill> convert(List<MaintenanceBillEntity> billEntityList)
 	{
 		return billEntityList.stream()
-				.map(FuelBill::convert)
+				.map(MaintenanceBill::convert)
 				.toList();
 	}
 

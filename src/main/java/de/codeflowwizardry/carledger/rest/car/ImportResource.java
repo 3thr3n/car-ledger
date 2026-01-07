@@ -1,4 +1,4 @@
-package de.codeflowwizardry.carledger.rest;
+package de.codeflowwizardry.carledger.rest.car;
 
 import java.io.File;
 import java.security.Principal;
@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import de.codeflowwizardry.carledger.data.CarEntity;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
+import de.codeflowwizardry.carledger.rest.AbstractResource;
 import de.codeflowwizardry.carledger.rest.processors.CsvProcessor;
 import de.codeflowwizardry.carledger.rest.records.CsvOrder;
 import jakarta.inject.Inject;
@@ -42,7 +43,7 @@ public class ImportResource extends AbstractResource
 			This is the description for the import of an csv of your billEntities.<br />
 			<br />
 			You need to add the csv and optionally the order in the csv (starts with 0).<br />
-			If you're not adding the order, the default is: day, unit, pricePerUnit, distance, estimate
+			If you're not adding the order, the default is: date, unit, pricePerUnit, distance, estimate
 			separator between columns is ',' (comma)
 			""")
 	@POST
