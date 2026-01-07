@@ -18,7 +18,7 @@ public class Utils
 
 	/**
 	 * Check if the BigDecimal value is grater than 0. <b>Null safe</b>
-	 * 
+	 *
 	 * @param unit
 	 *            to check
 	 * @return <code>true</code> if value is set.
