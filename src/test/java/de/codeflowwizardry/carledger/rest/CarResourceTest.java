@@ -19,7 +19,7 @@ import de.codeflowwizardry.carledger.data.factory.FuelBillFactory;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.BillRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
-import de.codeflowwizardry.carledger.rest.records.FuelBillInput;
+import de.codeflowwizardry.carledger.rest.records.input.FuelBillInput;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
@@ -61,12 +61,12 @@ class CarResourceTest
 
 		FuelBillInput fuelBillInput = new FuelBillInput(
 				LocalDate.now(),
+				BigDecimal.ZERO,
+				BigInteger.valueOf(19),
 				BigDecimal.valueOf(500),
 				BigDecimal.valueOf(40d),
 				BigDecimal.valueOf(199.9d),
-				BigDecimal.valueOf(8.0),
-				BigInteger.valueOf(19),
-				BigDecimal.ZERO);
+				BigDecimal.valueOf(8.0));
 
 		fuelBillFactory.create(fuelBillInput, carEntity.getId(), carEntity.getUser().getUserId());
 		carId = carEntity.getId();
