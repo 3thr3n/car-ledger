@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import DashboardDateRange from '@/components/dashboard/DashboardDateRange';
 import { NavigateOptions } from '@tanstack/router-core';
 import { DashboardPageSearch } from '@/pages/dashboard/DashboardPage';
+import { formatDayjs } from '@/utils/DateUtils';
 
 /**
  * Loads and updates on demand the searchQueries in the URL
@@ -31,11 +32,11 @@ export function useSyncQueryParams(
 
     // Update date range params
     if (dateRange.to) {
-      newParams.to = dateRange.to;
+      newParams.to = formatDayjs(dateRange.to);
     }
 
     if (dateRange.from) {
-      newParams.from = dateRange.from;
+      newParams.from = formatDayjs(dateRange.from);
     }
 
     // Only update if something actually changed

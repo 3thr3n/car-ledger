@@ -2,12 +2,12 @@ import i18n, { Resource } from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 
-import enTranslation from './locales/en/translation.yaml';
+import enTranslation from './locales/enUs/translation.yaml';
 import deTranslation from './locales/de/translation.yaml';
 
 const resources: Resource = {
-  en: { translation: enTranslation },
-  de: { translation: deTranslation },
+  EN: { translation: enTranslation },
+  DE: { translation: deTranslation },
 };
 
 i18n
@@ -15,8 +15,8 @@ i18n
   .use(initReactI18next)
   .init({
     resources: resources,
-    lng: 'en',
-    fallbackLng: 'en',
+    lng: 'EN',
+    fallbackLng: 'EN',
     interpolation: {
       escapeValue: false, // React already escapes
     },

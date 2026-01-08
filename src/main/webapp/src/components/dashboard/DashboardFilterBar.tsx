@@ -1,8 +1,9 @@
-import { Button, MenuItem, Stack, TextField } from '@mui/material';
+import { Button, MenuItem, Select, Stack } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
 import { getMyCarsOptions } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
 import DashboardDateRange from '@/components/dashboard/DashboardDateRange';
+import { DatePicker } from '@mui/x-date-pickers';
 
 export interface DashboardFilterBarProps {
   selectedCarId: number;
@@ -21,12 +22,11 @@ export default function DashboardFilterBar({
 
   return (
     <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} mb={3}>
-      <TextField
-        select
+      <Select
         label="Car"
         value={selectedCarId}
         onChange={(e) =>
-          onSelectCar(e.target.value === 'all' ? -1 : Number(e.target.value))
+          onSelectCar(e.target.name === 'all' ? -1 : Number(e.target.value))
         }
         sx={{ minWidth: 200 }}
       >
@@ -36,29 +36,19 @@ export default function DashboardFilterBar({
             {c.name}
           </MenuItem>
         ))}
-      </TextField>
+      </Select>
 
-      <TextField
+      <DatePicker
         label="From"
-        type="date"
-        slotProps={{
-          inputLabel: { shrink: true },
-        }}
-        value={dateRange.from || ''}
-        onChange={(e) =>
-          onChangeDateRange({ ...dateRange, from: e.target.value })
-        }
+        name="date"
+        value={dateRange.from}
+        onChange={(e) => onChangeDateRange({ ...dateRange, from: e })}
       />
-      <TextField
+      <DatePicker
         label="To"
-        type="date"
-        slotProps={{
-          inputLabel: { shrink: true },
-        }}
-        value={dateRange.to || ''}
-        onChange={(e) =>
-          onChangeDateRange({ ...dateRange, to: e.target.value })
-        }
+        name="date"
+        value={dateRange.to}
+        onChange={(e) => onChangeDateRange({ ...dateRange, to: e })}
       />
       <Button variant="outlined">Refresh</Button>
     </Stack>

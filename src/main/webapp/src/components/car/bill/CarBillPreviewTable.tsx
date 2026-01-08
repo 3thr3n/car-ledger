@@ -11,7 +11,7 @@ import {
   Typography,
 } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
-import { getAllBillsOptions } from '@/generated/@tanstack/react-query.gen';
+import { getAllFuelBillsOptions } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
 import { useEffect } from 'react';
 
@@ -30,7 +30,7 @@ export default function CarBillPreviewTable({
     isError: isBillsError,
     refetch: billRefetch,
   } = useQuery({
-    ...getAllBillsOptions({
+    ...getAllFuelBillsOptions({
       client: localClient,
       path: {
         carId: Number(id),
@@ -83,7 +83,7 @@ export default function CarBillPreviewTable({
           <TableBody>
             {latestBills.map((bill) => (
               <TableRow key={bill.id}>
-                <TableCell>{bill.day}</TableCell>
+                <TableCell>{bill.date}</TableCell>
                 <TableCell align="right">{bill.distance}</TableCell>
                 <TableCell align="right">{bill.unit}</TableCell>
                 <TableCell align="right">{bill.pricePerUnit} €</TableCell>

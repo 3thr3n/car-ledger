@@ -8,12 +8,13 @@ import {
 import { localClient } from '@/utils/QueryClient';
 import DashboardFilterBar from '@/components/dashboard/DashboardFilterBar';
 import DashboardCards from '@/components/dashboard/DashboardCards';
-import DashboardDateRange from '@/components/dashboard/DashboardDateRange';
+import DashboardDateRange, {
+  convertDateRangeToQuery,
+} from '@/components/dashboard/DashboardDateRange';
 import { NavigateOptions } from '@tanstack/router-core';
 import { useSyncQueryParams } from '@/hooks/useSyncQueryParams';
 import PageHeader from '@/components/base/PageHeader';
-
-// import HiLoSummary from '@/components/dashboard/HiLoSummary';
+import dayjs from 'dayjs';
 
 export interface DashboardPageProps {
   navigate: (nav: NavigateOptions) => void;
@@ -34,8 +35,8 @@ export default function DashboardPage({
     isNaN(Number(search.selectedCar)) ? -1 : Number(search.selectedCar),
   );
   const [dateRange, setDateRange] = useState<DashboardDateRange>({
-    to: search.to,
-    from: search.from,
+    to: search.to ? dayjs(search.to) : undefined,
+    from: search.from ? dayjs(search.from) : undefined,
   });
 
   useSyncQueryParams(navigate, search, selectedCarId, dateRange);
@@ -44,7 +45,7 @@ export default function DashboardPage({
     ...getStatsTotalOptions({
       client: localClient,
       path: { carId: selectedCarId },
-      query: dateRange,
+      query: convertDateRangeToQuery(dateRange),
     }),
     enabled: selectedCarId !== null,
   });
@@ -53,7 +54,7 @@ export default function DashboardPage({
     ...getStatsAverageOptions({
       client: localClient,
       path: { carId: selectedCarId },
-      query: dateRange,
+      query: convertDateRangeToQuery(dateRange),
     }),
     enabled: selectedCarId !== null,
   });
