@@ -9,6 +9,8 @@ import { toast } from 'react-toastify';
 import { BackendError } from '@/utils/BackendError';
 import dayjs, { Dayjs } from 'dayjs';
 import { DatePicker } from '@mui/x-date-pickers';
+import CountrySelection from '@/components/car/bill/CountrySelection';
+import countryVat from 'country-vat';
 
 const MAX_NUMBER_INPUT = 10000;
 
@@ -18,14 +20,17 @@ export interface AddFuelFormProps {
 }
 
 export default function AddFuelForm({ carId, navigate }: AddFuelFormProps) {
+  // TODO: Get the initial state from the backend (User preference!)
+  const [countryCode, setCountryCode] = useState('DE');
+
   const [form, setForm] = useState<{
-    day: Dayjs;
+    date: Dayjs;
     distance?: number;
     unit?: number;
     pricePerUnit?: number;
     estimate?: number;
   }>({
-    day: dayjs(),
+    date: dayjs(),
     distance: 0.0,
     unit: 0.0,
     pricePerUnit: 0.0,
@@ -53,18 +58,19 @@ export default function AddFuelForm({ carId, navigate }: AddFuelFormProps) {
         carId,
       },
       body: {
-        day: dayjs(form.day, 'DD.MM.YYYY').format('YYYY-MM-DD'),
+        date: dayjs(form.date, 'DD.MM.YYYY').format('YYYY-MM-DD'),
         distance: form.distance,
         unit: form.unit,
         pricePerUnit: form.pricePerUnit,
         estimate: form.estimate,
+        vatRate: countryVat(countryCode)! * 100,
       },
     });
   };
 
   const formReset = () => {
     setForm({
-      day: dayjs(),
+      date: dayjs(),
       distance: 0.0,
       estimate: 0.0,
       unit: 0.0,
@@ -76,14 +82,18 @@ export default function AddFuelForm({ carId, navigate }: AddFuelFormProps) {
     <Card>
       <CardContent>
         <Stack spacing={2}>
+          <CountrySelection
+            value={countryCode}
+            onChange={(countryCode) => setCountryCode(countryCode)}
+          />
           <DatePicker
             sx={{
               margin: 1,
             }}
             label="day"
-            name="day"
-            value={form.day}
-            onChange={(e) => setForm({ ...form, day: e ?? dayjs() })}
+            name="date"
+            value={form.date}
+            onChange={(e) => setForm({ ...form, date: e ?? dayjs() })}
             disableFuture
           />
           <BillNumericInput

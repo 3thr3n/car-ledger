@@ -1,6 +1,7 @@
 app:
   title: "CarLedger"
   slogan: "Rechnungen sammeln. Wartung planen. Kosten kennen."
+  language: "Sprache"
   nav:
     title: "Menü"
     overview: "Übersicht"

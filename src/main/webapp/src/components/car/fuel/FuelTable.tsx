@@ -13,7 +13,7 @@ import {
   GridPaginationModel,
   GridSortModel,
 } from '@mui/x-data-grid';
-import { Bill } from '@/generated';
+import { FuelBill } from '@/generated';
 
 export interface FuelTableProps {
   onDelete: (id: number) => void;
@@ -21,7 +21,7 @@ export interface FuelTableProps {
   setSortModel: (sort: GridSortModel) => void;
   isMobile?: boolean;
   totalBills: number;
-  bills: Bill[];
+  bills: FuelBill[];
 }
 
 export default function FuelTable({
@@ -38,7 +38,7 @@ export default function FuelTable({
         {bills.map((bill) => (
           <Card key={bill.id}>
             <CardContent>
-              <Typography variant="subtitle1">{bill.day}</Typography>
+              <Typography variant="subtitle1">{bill.date}</Typography>
               <Typography variant="body2">
                 Distance: {bill.distance} km
               </Typography>
@@ -57,7 +57,7 @@ export default function FuelTable({
   }
 
   const columns: GridColDef[] = [
-    { field: 'day', headerName: 'Day', flex: 1 },
+    { field: 'date', headerName: 'Day', flex: 1 },
     { field: 'distance', headerName: 'Distance (km)', flex: 1 },
     { field: 'unit', headerName: 'Unit (L)', flex: 1 },
     { field: 'pricePerUnit', headerName: 'PPU (ct)', flex: 1 },

@@ -39,7 +39,7 @@ CREATE TABLE bill_maintenance
 (
     bill_id       BIGINT PRIMARY KEY REFERENCES bill (id) ON DELETE CASCADE,
 
-    m_odometer    BIGINT,
+    m_odometer    NUMERIC(38, 0),
     m_description TEXT,
     m_workshop    TEXT,
     m_labor_cost  NUMERIC(38, 2),

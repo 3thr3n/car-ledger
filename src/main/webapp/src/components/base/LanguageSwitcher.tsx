@@ -2,23 +2,25 @@ import { useTranslation } from 'react-i18next';
 import React, { useCallback } from 'react';
 import {
   FormControl,
+  IconButton,
   InputLabel,
   MenuItem,
   Select,
   SelectChangeEvent,
 } from '@mui/material';
+import ReactCountryFlag from 'react-country-flag';
 
 export interface LanguageSwitcherProps {
   drawerMode?: boolean;
 }
 
 const languages = [
-  { code: 'en', label: 'English' },
-  { code: 'de', label: 'Deutsch' },
+  { flag: 'US', code: 'EN', label: 'English (US)' },
+  { flag: 'DE', code: 'DE', label: 'Deutsch' },
 ];
 
 export function LanguageSwitcher({ drawerMode }: LanguageSwitcherProps) {
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
 
   const onSelectChange = useCallback((event: SelectChangeEvent) => {
     i18n.changeLanguage(event.target.value as string);
@@ -27,35 +29,46 @@ export function LanguageSwitcher({ drawerMode }: LanguageSwitcherProps) {
   if (drawerMode) {
     return (
       <div style={{ display: 'flex', gap: 8 }}>
-        <button
-          onClick={() => i18n.changeLanguage('en')}
-          disabled={i18n.language === 'en'}
-        >
-          EN
-        </button>
-
-        <button
-          onClick={() => i18n.changeLanguage('de')}
-          disabled={i18n.language === 'de'}
-        >
-          DE
-        </button>
+        {languages.map((lang) => (
+          <IconButton
+            key={lang.code}
+            onClick={() => i18n.changeLanguage(lang.code)}
+            disabled={i18n.language === lang.code}
+            size="small"
+            sx={{
+              border: i18n.language === lang.code ? '2px solid' : 'none',
+              borderRadius: 'var(--mui-shape-borderRadius)',
+              borderColor: 'rgba(var(--mui-palette-primary-mainChannel) / 0.5)',
+            }}
+          >
+            <ReactCountryFlag svg countryCode={lang.flag} title={lang.label} />
+          </IconButton>
+        ))}
       </div>
     );
   }
 
   return (
-    <FormControl size="small" variant="outlined" sx={{ minWidth: 100 }}>
-      <InputLabel id="language-select-label">Lang</InputLabel>
+    <FormControl size="small" variant="outlined" sx={{ minWidth: 80 }}>
+      <InputLabel id="language-select-label">{t('app.language')}</InputLabel>
       <Select
         labelId="language-select-label"
         value={i18n.language}
         label="Lang"
+        sx={{
+          alignSelf: 'center',
+        }}
         onChange={onSelectChange}
       >
         {languages.map((lang) => (
-          <MenuItem key={lang.code} value={lang.code}>
-            {lang.label}
+          <MenuItem
+            key={lang.code}
+            value={lang.code}
+            sx={{
+              justifyContent: 'center',
+            }}
+          >
+            <ReactCountryFlag svg countryCode={lang.flag} title={lang.label} />
           </MenuItem>
         ))}
       </Select>
