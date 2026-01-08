@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getAllBillsOptions } from '@/generated/@tanstack/react-query.gen';
+import { getAllFuelBillsOptions } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
 import { GridPaginationModel, GridSortModel } from '@mui/x-data-grid';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
@@ -14,7 +14,7 @@ export default function useBillPagination(
   const [sort, setSort] = useState<GridSortModel>();
   const [year, setYear] = useState<number>(-1);
 
-  const options = getAllBillsOptions({
+  const options = getAllFuelBillsOptions({
     path: {
       carId,
     },

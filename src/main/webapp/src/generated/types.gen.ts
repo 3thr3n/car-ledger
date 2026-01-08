@@ -18,30 +18,37 @@ export type AverageStats = {
 
 export type Bill = {
     id?: number;
-    day?: LocalDate;
+    date?: LocalDate;
     year?: number;
-    distance?: number;
-    unit?: number;
-    pricePerUnit?: number;
-    estimate?: number;
-    calculated?: number;
-    calculatedPrice?: number;
+    total?: number;
+    vatRate?: number;
+    ustAmount?: number;
+    netAmount?: number;
+    type?: BillType;
 };
 
-export type BillInput = {
-    day?: LocalDate;
-    distance?: number;
-    unit?: number;
-    pricePerUnit?: number;
-    estimate?: number;
-};
-
-export type BillPaged = {
+export type BillPagedBill = {
     total?: number;
     page?: number;
     size?: number;
     data?: Array<Bill>;
 };
+
+export type BillPagedFuelBill = {
+    total?: number;
+    page?: number;
+    size?: number;
+    data?: Array<FuelBill>;
+};
+
+export type BillPagedMaintenanceBill = {
+    total?: number;
+    page?: number;
+    size?: number;
+    data?: Array<MaintenanceBill>;
+};
+
+export type BillType = 'FUEL' | 'MAINTENANCE';
 
 export type Car = {
     id?: number;
@@ -64,10 +71,32 @@ export type CarOverview = {
 };
 
 export type CsvOrder = {
-    day?: number;
+    date?: number;
     unit?: number;
     pricePerUnit?: number;
     distance?: number;
+    estimate?: number;
+};
+
+export type FuelBill = {
+    id?: number;
+    date?: LocalDate;
+    year?: number;
+    distance?: number;
+    unit?: number;
+    pricePerUnit?: number;
+    estimate?: number;
+    calculated?: number;
+    calculatedPrice?: number;
+};
+
+export type FuelBillInput = {
+    total?: number;
+    vatRate?: number;
+    date?: LocalDate;
+    distance?: number;
+    unit?: number;
+    pricePerUnit?: number;
     estimate?: number;
 };
 
@@ -85,6 +114,18 @@ export type HiLoStats = {
 };
 
 export type LocalDate = string;
+
+export type MaintenanceBill = {
+    id?: number;
+    date?: LocalDate;
+    year?: number;
+    distance?: number;
+    unit?: number;
+    pricePerUnit?: number;
+    estimate?: number;
+    calculated?: number;
+    calculatedPrice?: number;
+};
 
 export type TotalStats = {
     unit?: number;
@@ -162,13 +203,35 @@ export type LogoutCallbackResponses = {
     200: unknown;
 };
 
+export type GetAllBillsData = {
+    body?: never;
+    path: {
+        carId: number;
+    };
+    query?: {
+        page?: number;
+        size?: number;
+        year?: number;
+    };
+    url: '/api/bill/{carId}/all';
+};
+
+export type GetAllBillsResponses = {
+    /**
+     * Bills found.
+     */
+    200: BillPagedBill;
+};
+
+export type GetAllBillsResponse = GetAllBillsResponses[keyof GetAllBillsResponses];
+
 export type AddNewBillData = {
-    body: BillInput;
+    body: FuelBillInput;
     path: {
         carId: number;
     };
     query?: never;
-    url: '/api/bill/{carId}';
+    url: '/api/bill/{carId}/fuel';
 };
 
 export type AddNewBillErrors = {
@@ -189,7 +252,7 @@ export type AddNewBillResponses = {
     200: unknown;
 };
 
-export type GetAllBillsData = {
+export type GetAllFuelBillsData = {
     body?: never;
     path: {
         carId: number;
@@ -199,35 +262,35 @@ export type GetAllBillsData = {
         size?: number;
         year?: number;
     };
-    url: '/api/bill/{carId}/all';
+    url: '/api/bill/{carId}/fuel/all';
 };
 
-export type GetAllBillsResponses = {
+export type GetAllFuelBillsResponses = {
     /**
      * Bills found.
      */
-    200: BillPaged;
+    200: BillPagedFuelBill;
 };
 
-export type GetAllBillsResponse = GetAllBillsResponses[keyof GetAllBillsResponses];
+export type GetAllFuelBillsResponse = GetAllFuelBillsResponses[keyof GetAllFuelBillsResponses];
 
-export type GetAllBillYearsData = {
+export type GetAllFuelBillYearsData = {
     body?: never;
     path: {
         carId: number;
     };
     query?: never;
-    url: '/api/bill/{carId}/years';
+    url: '/api/bill/{carId}/fuel/years';
 };
 
-export type GetAllBillYearsResponses = {
+export type GetAllFuelBillYearsResponses = {
     /**
      * Bills found and years extracted.
      */
     200: Array<number>;
 };
 
-export type GetAllBillYearsResponse = GetAllBillYearsResponses[keyof GetAllBillYearsResponses];
+export type GetAllFuelBillYearsResponse = GetAllFuelBillYearsResponses[keyof GetAllFuelBillYearsResponses];
 
 export type DeleteBillData = {
     body?: never;
@@ -236,7 +299,7 @@ export type DeleteBillData = {
         carId: number;
     };
     query?: never;
-    url: '/api/bill/{carId}/{billId}';
+    url: '/api/bill/{carId}/fuel/{billId}';
 };
 
 export type DeleteBillErrors = {
@@ -256,6 +319,64 @@ export type DeleteBillResponses = {
      */
     202: unknown;
 };
+
+export type GetAllMaintenanceBillsData = {
+    body?: never;
+    path: {
+        carId: number;
+    };
+    query?: {
+        page?: number;
+        size?: number;
+        year?: number;
+    };
+    url: '/api/bill/{carId}/maintenance/all';
+};
+
+export type GetAllMaintenanceBillsResponses = {
+    /**
+     * Bills found.
+     */
+    200: BillPagedMaintenanceBill;
+};
+
+export type GetAllMaintenanceBillsResponse = GetAllMaintenanceBillsResponses[keyof GetAllMaintenanceBillsResponses];
+
+export type GetAllMaintenanceBillYearsData = {
+    body?: never;
+    path: {
+        carId: number;
+    };
+    query?: never;
+    url: '/api/bill/{carId}/maintenance/years';
+};
+
+export type GetAllMaintenanceBillYearsResponses = {
+    /**
+     * Bills found and years extracted.
+     */
+    200: Array<number>;
+};
+
+export type GetAllMaintenanceBillYearsResponse = GetAllMaintenanceBillYearsResponses[keyof GetAllMaintenanceBillYearsResponses];
+
+export type GetAllBillYearsData = {
+    body?: never;
+    path: {
+        carId: number;
+    };
+    query?: never;
+    url: '/api/bill/{carId}/years';
+};
+
+export type GetAllBillYearsResponses = {
+    /**
+     * Bills found and years extracted.
+     */
+    200: Array<number>;
+};
+
+export type GetAllBillYearsResponse = GetAllBillYearsResponses[keyof GetAllBillYearsResponses];
 
 export type GetMyCarsData = {
     body?: never;

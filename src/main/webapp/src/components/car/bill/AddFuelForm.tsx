@@ -19,13 +19,13 @@ export interface AddFuelFormProps {
 
 export default function AddFuelForm({ carId, navigate }: AddFuelFormProps) {
   const [form, setForm] = useState<{
-    day: Dayjs;
+    date: Dayjs;
     distance?: number;
     unit?: number;
     pricePerUnit?: number;
     estimate?: number;
   }>({
-    day: dayjs(),
+    date: dayjs(),
     distance: 0.0,
     unit: 0.0,
     pricePerUnit: 0.0,
@@ -53,7 +53,7 @@ export default function AddFuelForm({ carId, navigate }: AddFuelFormProps) {
         carId,
       },
       body: {
-        day: dayjs(form.day, 'DD.MM.YYYY').format('YYYY-MM-DD'),
+        date: dayjs(form.date, 'DD.MM.YYYY').format('YYYY-MM-DD'),
         distance: form.distance,
         unit: form.unit,
         pricePerUnit: form.pricePerUnit,
@@ -64,7 +64,7 @@ export default function AddFuelForm({ carId, navigate }: AddFuelFormProps) {
 
   const formReset = () => {
     setForm({
-      day: dayjs(),
+      date: dayjs(),
       distance: 0.0,
       estimate: 0.0,
       unit: 0.0,
@@ -81,9 +81,9 @@ export default function AddFuelForm({ carId, navigate }: AddFuelFormProps) {
               margin: 1,
             }}
             label="day"
-            name="day"
-            value={form.day}
-            onChange={(e) => setForm({ ...form, day: e ?? dayjs() })}
+            name="date"
+            value={form.date}
+            onChange={(e) => setForm({ ...form, date: e ?? dayjs() })}
             disableFuture
           />
           <BillNumericInput
