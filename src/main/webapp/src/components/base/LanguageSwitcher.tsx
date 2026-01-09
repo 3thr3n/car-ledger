@@ -15,8 +15,8 @@ export interface LanguageSwitcherProps {
 }
 
 const languages = [
-  { code: 'US', label: 'English (US)' },
-  { code: 'DE', label: 'Deutsch' },
+  { flag: 'US', code: 'EN', label: 'English (US)' },
+  { flag: 'DE', code: 'DE', label: 'Deutsch' },
 ];
 
 export function LanguageSwitcher({ drawerMode }: LanguageSwitcherProps) {
@@ -41,7 +41,7 @@ export function LanguageSwitcher({ drawerMode }: LanguageSwitcherProps) {
               borderColor: 'rgba(var(--mui-palette-primary-mainChannel) / 0.5)',
             }}
           >
-            <ReactCountryFlag svg countryCode={lang.code} title={lang.label} />
+            <ReactCountryFlag svg countryCode={lang.flag} title={lang.label} />
           </IconButton>
         ))}
       </div>
@@ -68,7 +68,7 @@ export function LanguageSwitcher({ drawerMode }: LanguageSwitcherProps) {
               justifyContent: 'center',
             }}
           >
-            <ReactCountryFlag svg countryCode={lang.code} title={lang.label} />
+            <ReactCountryFlag svg countryCode={lang.flag} title={lang.label} />
           </MenuItem>
         ))}
       </Select>

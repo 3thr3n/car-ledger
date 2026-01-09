@@ -9,6 +9,8 @@ import { toast } from 'react-toastify';
 import { BackendError } from '@/utils/BackendError';
 import dayjs, { Dayjs } from 'dayjs';
 import { DatePicker } from '@mui/x-date-pickers';
+import CountrySelection from '@/components/car/bill/CountrySelection';
+import countryVat from 'country-vat';
 
 const MAX_NUMBER_INPUT = 10000;
 
@@ -18,6 +20,9 @@ export interface AddFuelFormProps {
 }
 
 export default function AddFuelForm({ carId, navigate }: AddFuelFormProps) {
+  // TODO: Get the initial state from the backend (User preference!)
+  const [countryCode, setCountryCode] = useState('DE');
+
   const [form, setForm] = useState<{
     date: Dayjs;
     distance?: number;
@@ -58,6 +63,7 @@ export default function AddFuelForm({ carId, navigate }: AddFuelFormProps) {
         unit: form.unit,
         pricePerUnit: form.pricePerUnit,
         estimate: form.estimate,
+        vatRate: countryVat(countryCode)! * 100,
       },
     });
   };
@@ -76,6 +82,10 @@ export default function AddFuelForm({ carId, navigate }: AddFuelFormProps) {
     <Card>
       <CardContent>
         <Stack spacing={2}>
+          <CountrySelection
+            value={countryCode}
+            onChange={(countryCode) => setCountryCode(countryCode)}
+          />
           <DatePicker
             sx={{
               margin: 1,
