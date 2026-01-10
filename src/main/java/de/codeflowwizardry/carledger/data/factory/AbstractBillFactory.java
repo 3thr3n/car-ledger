@@ -37,20 +37,7 @@ public abstract class AbstractBillFactory<I extends AbstractBillInput, O extends
 	 * Validates by default if the date and vat rate is set
 	 *
 	 */
-	void validate(I input)
-	{
-		if (input.getDate() == null)
-		{
-			LOG.warn("Date cannot be empty!");
-			throw new IllegalArgumentException("Date cannot be null!");
-		}
-
-		if (input.getVatRate() == null)
-		{
-			LOG.warn("Vat rate was not set!");
-			throw new IllegalArgumentException("Vat rate cannot be null!");
-		}
-	}
+	abstract void validate(I input);
 
 	abstract O create(I input, long carId, String user);
 
