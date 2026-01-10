@@ -13,7 +13,7 @@ import {
   GridPaginationModel,
   GridSortModel,
 } from '@mui/x-data-grid';
-import { Bill } from '@/generated';
+import { FuelBill } from '@/generated';
 
 export interface FuelTableProps {
   onDelete: (id: number) => void;
@@ -21,7 +21,7 @@ export interface FuelTableProps {
   setSortModel: (sort: GridSortModel) => void;
   isMobile?: boolean;
   totalBills: number;
-  bills: Bill[];
+  bills: FuelBill[];
 }
 
 export default function FuelTable({
@@ -38,16 +38,17 @@ export default function FuelTable({
         {bills.map((bill) => (
           <Card key={bill.id}>
             <CardContent>
-              <Typography variant="subtitle1">{bill.day}</Typography>
+              <Typography variant="subtitle1">{bill.date}</Typography>
               <Typography variant="body2">
                 Distance: {bill.distance} km
               </Typography>
               <Typography variant="body2">Fuel: {bill.unit} L</Typography>
               <Typography variant="body2">
-                Price Paid: {Number(bill.calculatedPrice ?? 0).toFixed(2)} €
+                Price Paid: {Number(bill.total ?? 0).toFixed(2)} €
               </Typography>
               <Typography variant="body2">
-                Consumption: {Number(bill.calculated ?? 0).toFixed(2)} l/100km
+                Consumption: {Number(bill.avgConsumption ?? 0).toFixed(2)}{' '}
+                l/100km
               </Typography>
             </CardContent>
           </Card>
@@ -57,13 +58,13 @@ export default function FuelTable({
   }
 
   const columns: GridColDef[] = [
-    { field: 'day', headerName: 'Day', flex: 1 },
+    { field: 'date', headerName: 'Day', flex: 1 },
     { field: 'distance', headerName: 'Distance (km)', flex: 1 },
     { field: 'unit', headerName: 'Unit (L)', flex: 1 },
     { field: 'pricePerUnit', headerName: 'PPU (ct)', flex: 1 },
-    { field: 'estimate', headerName: 'Estimate (l/100km)', flex: 1 },
-    { field: 'calculated', headerName: 'Fuel Used (l/100km)', flex: 1 },
-    { field: 'calculatedPrice', headerName: 'Price Paid (€)', flex: 1 },
+    { field: 'estimateConsumption', headerName: 'Estimate (l/100km)', flex: 1 },
+    { field: 'avgConsumption', headerName: 'Fuel Used (l/100km)', flex: 1 },
+    { field: 'total', headerName: 'Price Paid (€)', flex: 1 },
     {
       field: 'actions',
       headerName: '',

@@ -4,11 +4,10 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,10 +16,11 @@ import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
 import com.opencsv.exceptions.CsvValidationException;
 
-import de.codeflowwizardry.carledger.data.BillEntity;
 import de.codeflowwizardry.carledger.data.CarEntity;
-import de.codeflowwizardry.carledger.data.repository.BillRepository;
+import de.codeflowwizardry.carledger.data.factory.FuelBillFactory;
+import de.codeflowwizardry.carledger.exception.AlreadyPresentException;
 import de.codeflowwizardry.carledger.rest.records.CsvOrder;
+import de.codeflowwizardry.carledger.rest.records.input.FuelBillInput;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;
@@ -32,12 +32,12 @@ public class CsvProcessor
 {
 	private final static Logger LOG = LoggerFactory.getLogger(CsvProcessor.class);
 
-	private final BillRepository billRepository;
+	private final FuelBillFactory fuelBillFactory;
 
 	@Inject
-	public CsvProcessor(BillRepository billRepository)
+	public CsvProcessor(FuelBillFactory fuelBillFactory)
 	{
-		this.billRepository = billRepository;
+		this.fuelBillFactory = fuelBillFactory;
 	}
 
 	public void processCsv(File csv, CsvOrder csvOrder, CarEntity carEntity, boolean hasHeader)
@@ -65,27 +65,32 @@ public class CsvProcessor
 	{
 		try (CSVReader csvReader = new CSVReaderBuilder(new FileReader(csv)).withSkipLines(skipLines).build())
 		{
-			List<BillEntity> billEntityList = new ArrayList<>();
-
 			String[] line;
 			while ((line = csvReader.readNext()) != null)
 			{
-				BillEntity billEntity = new BillEntity();
-				billEntity.setCar(carEntity);
+				FuelBillInput input = new FuelBillInput(
+						parseToLocalDate(line, csvOrder.date()),
+						BigDecimal.ZERO,
+						BigInteger.valueOf(19),
+						parseToBigDecimal(line, csvOrder.distance()),
+						parseToBigDecimal(line, csvOrder.unit()),
+						parseToBigDecimal(line, csvOrder.pricePerUnit()),
+						parseToBigDecimal(line, csvOrder.estimate()));
 
-				billEntity.setUnit(parseToBigDecimal(line, csvOrder.unit()));
-				billEntity.setEstimate(parseToBigDecimal(line, csvOrder.estimate()));
-				billEntity.setDistance(parseToBigDecimal(line, csvOrder.distance()));
-				billEntity.setPricePerUnit(parseToBigDecimal(line, csvOrder.pricePerUnit()));
-				billEntity.setDay(parseToLocalDate(line, csvOrder.day()));
-
-				if (!billRepository.isPersistent(billEntity))
+				try
 				{
-					billEntityList.add(billEntity);
+					fuelBillFactory.create(input, carEntity.getId(), carEntity.getUser().getUserId());
+				}
+				catch (AlreadyPresentException e)
+				{
+					LOG.debug("Already present in database! {}", input);
+				}
+				catch (IllegalStateException e)
+				{
+					LOG.error("Could not save entity: {}", input);
+					throw e;
 				}
 			}
-
-			billRepository.persist(billEntityList);
 		}
 		catch (CsvValidationException e)
 		{
@@ -102,11 +107,11 @@ public class CsvProcessor
 
 	private LocalDate parseToLocalDate(String[] line, int position)
 	{
-		String day = line[position];
+		String date = line[position];
 
 		try
 		{
-			return LocalDate.parse(day);
+			return LocalDate.parse(date);
 		}
 		catch (DateTimeParseException ignored)
 		{
@@ -115,7 +120,7 @@ public class CsvProcessor
 
 		try
 		{
-			return LocalDate.parse(day, DateTimeFormatter.ofPattern("dd.MM.yyyy"));
+			return LocalDate.parse(date, DateTimeFormatter.ofPattern("dd.MM.yyyy"));
 		}
 		catch (DateTimeParseException ignored)
 		{
