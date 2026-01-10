@@ -87,7 +87,7 @@ export default function CarBillPreviewTable({
                 <TableCell align="right">{bill.distance}</TableCell>
                 <TableCell align="right">{bill.unit}</TableCell>
                 <TableCell align="right">{bill.pricePerUnit} €</TableCell>
-                <TableCell align="right">{bill.calculatedPrice} €</TableCell>
+                <TableCell align="right">{bill.total} €</TableCell>
               </TableRow>
             ))}
           </TableBody>

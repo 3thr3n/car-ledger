@@ -6,9 +6,4 @@ public class WrongUserException extends CarLedgerException
 	{
 		super(message);
 	}
-
-	public WrongUserException(String message, Throwable cause)
-	{
-		super(message, cause);
-	}
 }

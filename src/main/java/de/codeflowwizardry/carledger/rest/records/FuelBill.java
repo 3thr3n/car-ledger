@@ -1,10 +1,11 @@
 package de.codeflowwizardry.carledger.rest.records;
 
+import static java.util.Objects.requireNonNullElse;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Objects;
 
 import de.codeflowwizardry.carledger.data.FuelBillEntity;
 
@@ -16,36 +17,35 @@ public final class FuelBill extends AbstractBill<FuelBillEntity>
 	private final BigDecimal distance;
 	private final BigDecimal unit;
 	private final BigDecimal pricePerUnit;
-	private final BigDecimal estimate;
-	private final BigDecimal calculated;
-	private final BigDecimal calculatedPrice;
+	private final BigDecimal estimateConsumption;
+	private final BigDecimal avgConsumption;
+	private final BigDecimal total;
 
 	FuelBill(Long id, LocalDate date, BigDecimal distance, BigDecimal unit, BigDecimal pricePerUnit,
-			BigDecimal estimate,
-			BigDecimal calculated, BigDecimal calculatedPrice)
+			BigDecimal estimateConsumption,
+			BigDecimal avgConsumption, BigDecimal total)
 	{
 		this.id = id;
 		this.date = date;
 		this.year = date.getYear();
-		this.distance = Objects.requireNonNullElse(distance, BigDecimal.ZERO);
+		this.distance = requireNonNullElse(distance, BigDecimal.ZERO);
 		this.unit = unit;
 		this.pricePerUnit = pricePerUnit;
-		this.estimate = estimate;
-		this.calculated = Objects.requireNonNullElse(calculated, BigDecimal.ZERO);
-		this.calculatedPrice = Objects.requireNonNullElse(calculatedPrice, BigDecimal.ZERO);
+		this.estimateConsumption = estimateConsumption;
+		this.avgConsumption = requireNonNullElse(avgConsumption, BigDecimal.ZERO);
+		this.total = requireNonNullElse(total, BigDecimal.ZERO);
 	}
 
 	public static FuelBill convert(FuelBillEntity billEntity)
 	{
-		return new FuelBillBuilder()
-				.setId(billEntity.getBill().getId())
-				.setDate(billEntity.getBill().getDate())
-				.setDistance(billEntity.getDistance())
-				.setUnit(billEntity.getUnit()).setPricePerUnit(billEntity.getPricePerUnit())
-				.setEstimate(billEntity.getEstimate())
-				.setCalculated(billEntity.getAvgConsumption())
-				.setCalculatedPrice(billEntity.getBill().getTotal())
-				.createBillPojo();
+		return new FuelBill(billEntity.getBill().getId(),
+				billEntity.getBill().getDate(),
+				billEntity.getDistance(),
+				billEntity.getUnit(),
+				billEntity.getPricePerUnit(),
+				billEntity.getEstimate(),
+				billEntity.getAvgConsumption(),
+				billEntity.getBill().getTotal());
 	}
 
 	public static List<FuelBill> convert(List<FuelBillEntity> billEntityList)
@@ -85,18 +85,18 @@ public final class FuelBill extends AbstractBill<FuelBillEntity>
 		return pricePerUnit.setScale(2, RoundingMode.HALF_UP).toString();
 	}
 
-	public String getEstimate()
+	public String getEstimateConsumption()
 	{
-		return estimate.setScale(2, RoundingMode.HALF_UP).toString();
+		return estimateConsumption.setScale(2, RoundingMode.HALF_UP).toString();
 	}
 
-	public String getCalculated()
+	public String getAvgConsumption()
 	{
-		return calculated.setScale(2, RoundingMode.HALF_UP).toString();
+		return avgConsumption.setScale(2, RoundingMode.HALF_UP).toString();
 	}
 
-	public String getCalculatedPrice()
+	public String getTotal()
 	{
-		return calculatedPrice.setScale(2, RoundingMode.HALF_UP).toString();
+		return total.setScale(2, RoundingMode.HALF_UP).toString();
 	}
 }

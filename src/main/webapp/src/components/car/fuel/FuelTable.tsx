@@ -1,18 +1,6 @@
-import {
-  Box,
-  Card,
-  CardContent,
-  IconButton,
-  Stack,
-  Typography,
-} from '@mui/material';
+import { Box, Card, CardContent, IconButton, Stack, Typography } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
-import {
-  DataGrid,
-  GridColDef,
-  GridPaginationModel,
-  GridSortModel,
-} from '@mui/x-data-grid';
+import { DataGrid, GridColDef, GridPaginationModel, GridSortModel } from '@mui/x-data-grid';
 import { FuelBill } from '@/generated';
 
 export interface FuelTableProps {
@@ -44,10 +32,11 @@ export default function FuelTable({
               </Typography>
               <Typography variant="body2">Fuel: {bill.unit} L</Typography>
               <Typography variant="body2">
-                Price Paid: {Number(bill.calculatedPrice ?? 0).toFixed(2)} €
+                Price Paid: {Number(bill.total ?? 0).toFixed(2)} €
               </Typography>
               <Typography variant="body2">
-                Consumption: {Number(bill.calculated ?? 0).toFixed(2)} l/100km
+                Consumption: {Number(bill.avgConsumption ?? 0).toFixed(2)}{' '}
+                l/100km
               </Typography>
             </CardContent>
           </Card>
@@ -61,9 +50,9 @@ export default function FuelTable({
     { field: 'distance', headerName: 'Distance (km)', flex: 1 },
     { field: 'unit', headerName: 'Unit (L)', flex: 1 },
     { field: 'pricePerUnit', headerName: 'PPU (ct)', flex: 1 },
-    { field: 'estimate', headerName: 'Estimate (l/100km)', flex: 1 },
-    { field: 'calculated', headerName: 'Fuel Used (l/100km)', flex: 1 },
-    { field: 'calculatedPrice', headerName: 'Price Paid (€)', flex: 1 },
+    { field: 'estimateConsumption', headerName: 'Estimate (l/100km)', flex: 1 },
+    { field: 'avgConsumption', headerName: 'Fuel Used (l/100km)', flex: 1 },
+    { field: 'total', headerName: 'Price Paid (€)', flex: 1 },
     {
       field: 'actions',
       headerName: '',

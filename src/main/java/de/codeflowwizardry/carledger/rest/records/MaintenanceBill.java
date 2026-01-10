@@ -1,10 +1,9 @@
 package de.codeflowwizardry.carledger.rest.records;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
+import java.math.BigInteger;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Objects;
 
 import de.codeflowwizardry.carledger.data.MaintenanceBillEntity;
 
@@ -13,31 +12,32 @@ public final class MaintenanceBill extends AbstractBill<MaintenanceBillEntity>
 	private final Long id;
 	private final LocalDate date;
 	private final int year;
-	private final BigDecimal distance;
-	private final BigDecimal unit;
-	private final BigDecimal pricePerUnit;
-	private final BigDecimal estimate;
-	private final BigDecimal calculated;
-	private final BigDecimal calculatedPrice;
+	private final String workshop;
+	private final String description;
+	private final BigDecimal total;
+	private final BigDecimal laborCost;
+	private final BigDecimal partsCost;
+	private final BigInteger odometer;
 
-	MaintenanceBill(Long id, LocalDate date, BigDecimal distance, BigDecimal unit, BigDecimal pricePerUnit,
-			BigDecimal estimate,
-			BigDecimal calculated, BigDecimal calculatedPrice)
+	MaintenanceBill(Long id, LocalDate date, String workshop, String description, BigDecimal total,
+			BigDecimal laborCost, BigDecimal partsCost, BigInteger odometer)
 	{
 		this.id = id;
 		this.date = date;
 		this.year = date.getYear();
-		this.distance = Objects.requireNonNullElse(distance, BigDecimal.ZERO);
-		this.unit = unit;
-		this.pricePerUnit = pricePerUnit;
-		this.estimate = estimate;
-		this.calculated = Objects.requireNonNullElse(calculated, BigDecimal.ZERO);
-		this.calculatedPrice = Objects.requireNonNullElse(calculatedPrice, BigDecimal.ZERO);
+		this.workshop = workshop;
+		this.description = description;
+		this.total = total;
+		this.laborCost = laborCost;
+		this.partsCost = partsCost;
+		this.odometer = odometer;
 	}
 
 	public static MaintenanceBill convert(MaintenanceBillEntity billEntity)
 	{
-		return new MaintenanceBill(null, LocalDate.now(), null, null, null, null, null, null);
+		return new MaintenanceBill(billEntity.getBill().getId(), billEntity.getBill().getDate(),
+				billEntity.getWorkshop(), billEntity.getDescription(), billEntity.getBill().getTotal(),
+				billEntity.getLaborCost(), billEntity.getPartsCost(), billEntity.getOdometer());
 	}
 
 	public static List<MaintenanceBill> convert(List<MaintenanceBillEntity> billEntityList)
@@ -62,33 +62,33 @@ public final class MaintenanceBill extends AbstractBill<MaintenanceBillEntity>
 		return year;
 	}
 
-	public String getDistance()
+	public String getWorkshop()
 	{
-		return distance.setScale(2, RoundingMode.HALF_UP).toString();
+		return workshop;
 	}
 
-	public String getUnit()
+	public String getDescription()
 	{
-		return unit.setScale(2, RoundingMode.HALF_UP).toString();
+		return description;
 	}
 
-	public String getPricePerUnit()
+	public BigDecimal getTotal()
 	{
-		return pricePerUnit.setScale(2, RoundingMode.HALF_UP).toString();
+		return total;
 	}
 
-	public String getEstimate()
+	public BigDecimal getLaborCost()
 	{
-		return estimate.setScale(2, RoundingMode.HALF_UP).toString();
+		return laborCost;
 	}
 
-	public String getCalculated()
+	public BigDecimal getPartsCost()
 	{
-		return calculated.setScale(2, RoundingMode.HALF_UP).toString();
+		return partsCost;
 	}
 
-	public String getCalculatedPrice()
+	public BigInteger getOdometer()
 	{
-		return calculatedPrice.setScale(2, RoundingMode.HALF_UP).toString();
+		return odometer;
 	}
 }
