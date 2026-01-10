@@ -85,9 +85,9 @@ export type FuelBill = {
     distance?: number;
     unit?: number;
     pricePerUnit?: number;
-    estimate?: number;
-    calculated?: number;
-    calculatedPrice?: number;
+    estimateConsumption?: number;
+    avgConsumption?: number;
+    total?: number;
 };
 
 export type FuelBillInput = {
@@ -119,12 +119,12 @@ export type MaintenanceBill = {
     id?: number;
     date?: LocalDate;
     year?: number;
-    distance?: number;
-    unit?: number;
-    pricePerUnit?: number;
-    estimate?: number;
-    calculated?: number;
-    calculatedPrice?: number;
+    workshop?: string;
+    description?: string;
+    total?: number;
+    laborCost?: number;
+    partsCost?: number;
+    odometer?: number;
 };
 
 export type TotalStats = {

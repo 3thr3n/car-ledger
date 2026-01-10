@@ -237,13 +237,13 @@
           "pricePerUnit" : {
             "type" : "number"
           },
-          "estimate" : {
+          "estimateConsumption" : {
             "type" : "number"
           },
-          "calculated" : {
+          "avgConsumption" : {
             "type" : "number"
           },
-          "calculatedPrice" : {
+          "total" : {
             "type" : "number"
           }
         }
@@ -329,23 +329,23 @@
             "type" : "integer",
             "format" : "int32"
           },
-          "distance" : {
+          "workshop" : {
+            "type" : "string"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "total" : {
             "type" : "number"
           },
-          "unit" : {
+          "laborCost" : {
             "type" : "number"
           },
-          "pricePerUnit" : {
+          "partsCost" : {
             "type" : "number"
           },
-          "estimate" : {
-            "type" : "number"
-          },
-          "calculated" : {
-            "type" : "number"
-          },
-          "calculatedPrice" : {
-            "type" : "number"
+          "odometer" : {
+            "type" : "integer"
           }
         }
       },

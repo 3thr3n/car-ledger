@@ -84,15 +84,13 @@ public class FuelBillFactory extends AbstractBillFactory<FuelBillInput, FuelBill
 		return fuelBill;
 	}
 
-	private static BigDecimal calculateUnit(FuelBillInput input, BigDecimal vatFactor)
+	static BigDecimal calculateUnit(FuelBillInput input, BigDecimal vatFactor)
 	{
 		BigDecimal unit = input.getUnit();
 		if (!valueWasSet(unit))
 		{
-			unit = input.getTotal()
-					.divide(vatFactor, 4, RoundingMode.HALF_UP)
-					.divide(input.getPricePerUnit(), 4, RoundingMode.HALF_UP)
-					.setScale(2, RoundingMode.HALF_UP);
+			BigDecimal priceInEur = input.getPricePerUnit().divide(ONE_HUNDRED, 3, RoundingMode.HALF_UP);
+			unit = input.getTotal().divide(priceInEur, 2, RoundingMode.HALF_UP);
 		}
 		return unit;
 	}
@@ -100,14 +98,6 @@ public class FuelBillFactory extends AbstractBillFactory<FuelBillInput, FuelBill
 	@Override
 	void validate(FuelBillInput input)
 	{
-		if (!atLeastTwoNotNull(input.getUnit(), input.getPricePerUnit(), input.getTotal()))
-		{
-			LOG.warn("At least two of the following was empty! Total: {} - Price per unit: {} - Unit: {}",
-					input.getUnit(),
-					input.getPricePerUnit(), input.getTotal());
-			throw new IllegalArgumentException("At least two of 'unit', 'total' or 'pricePerUnit' must be set!");
-		}
-
 		if (input.getDate() == null)
 		{
 			LOG.warn("Date cannot be empty!");
@@ -119,9 +109,17 @@ public class FuelBillFactory extends AbstractBillFactory<FuelBillInput, FuelBill
 			LOG.warn("Vat rate was not set!");
 			throw new IllegalArgumentException("Vat rate cannot be null!");
 		}
+
+		if (!atLeastTwoNotNull(input.getUnit(), input.getPricePerUnit(), input.getTotal()))
+		{
+			LOG.warn("At least two of the following was empty! Total: {} - Price per unit: {} - Unit: {}",
+					input.getUnit(),
+					input.getPricePerUnit(), input.getTotal());
+			throw new IllegalArgumentException("At least two of 'unit', 'total' or 'pricePerUnit' must be set!");
+		}
 	}
 
-	private static void calculateTotal(BillEntity entity, BigDecimal unit, FuelBillInput input)
+	static void calculateTotal(BillEntity entity, BigDecimal unit, FuelBillInput input)
 	{
 		BigDecimal total = input.getTotal();
 		if (!valueWasSet(total))
@@ -132,17 +130,17 @@ public class FuelBillFactory extends AbstractBillFactory<FuelBillInput, FuelBill
 		entity.setTotal(total);
 	}
 
-	private static void calculateNet(BillEntity entity, BigDecimal vatFactor)
+	static void calculateNet(BillEntity entity, BigDecimal vatFactor)
 	{
 		entity.setNetAmount(entity.getTotal().divide(vatFactor, 4, RoundingMode.HALF_UP));
 	}
 
-	private static void calculateUst(BillEntity entity)
+	static void calculateUst(BillEntity entity)
 	{
 		entity.setUstAmount(entity.getTotal().subtract(entity.getNetAmount()));
 	}
 
-	private static void calculateAvgConsumption(FuelBillEntity entity)
+	static void calculateAvgConsumption(FuelBillEntity entity)
 	{
 		BigDecimal distance = entity.getDistance();
 		BigDecimal unit = entity.getUnit();
