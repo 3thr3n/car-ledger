@@ -50,7 +50,7 @@ export default function CsvUploadStepper(props: CsvUploadStepperProps) {
   const [activeStep, setActiveStep] = useState(0);
   const [headers, setHeaders] = useState<string[]>([]);
   const [csvOrder, setCsvOrder] = useState<CsvOrder>({
-    day: 0,
+    date: 0,
     unit: 1,
     pricePerUnit: 2,
     distance: 3,
@@ -137,7 +137,7 @@ export default function CsvUploadStepper(props: CsvUploadStepperProps) {
           <OptionBox
             headers={headers}
             title={'Day'}
-            onOptionChanged={(value) => updateCsvOrder({ day: value })}
+            onOptionChanged={(value) => updateCsvOrder({ date: value })}
           />
           <OptionBox
             headers={headers}
