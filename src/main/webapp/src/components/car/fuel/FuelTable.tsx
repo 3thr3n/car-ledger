@@ -1,12 +1,4 @@
-import {
-  Box,
-  Card,
-  CardContent,
-  IconButton,
-  Stack,
-  Typography,
-} from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
+import { Box, Card, CardContent, Stack, Typography } from '@mui/material';
 import {
   DataGrid,
   GridColDef,
@@ -14,6 +6,8 @@ import {
   GridSortModel,
 } from '@mui/x-data-grid';
 import { FuelBill } from '@/generated';
+import { useTranslation } from 'react-i18next';
+import CarLedgerDeleteIcon from '@/components/CarLedgerDeleteIcon';
 
 export interface FuelTableProps {
   onDelete: (id: number) => void;
@@ -32,6 +26,8 @@ export default function FuelTable({
   totalBills,
   bills,
 }: FuelTableProps) {
+  const { t } = useTranslation();
+
   if (isMobile) {
     return (
       <Stack spacing={2}>
@@ -58,22 +54,44 @@ export default function FuelTable({
   }
 
   const columns: GridColDef[] = [
-    { field: 'date', headerName: 'Day', flex: 1 },
-    { field: 'distance', headerName: 'Distance (km)', flex: 1 },
-    { field: 'unit', headerName: 'Unit (L)', flex: 1 },
-    { field: 'pricePerUnit', headerName: 'PPU (ct)', flex: 1 },
-    { field: 'estimateConsumption', headerName: 'Estimate (l/100km)', flex: 1 },
-    { field: 'avgConsumption', headerName: 'Fuel Used (l/100km)', flex: 1 },
-    { field: 'total', headerName: 'Price Paid (€)', flex: 1 },
+    { field: 'date', headerName: t('app.car.fuel.table.date'), flex: 1 },
+    {
+      field: 'distance',
+      headerName: `${t('app.car.fuel.table.distance')} (km)`,
+      flex: 1,
+    },
+    {
+      field: 'unit',
+      headerName: `${t('app.car.fuel.table.unit')} (L)`,
+      flex: 1,
+    },
+    {
+      field: 'pricePerUnit',
+      headerName: `${t('app.car.fuel.table.pricePerUnit')} (ct)`,
+      flex: 1,
+    },
+    {
+      field: 'estimateConsumption',
+      headerName: `${t('app.car.fuel.table.estimateConsumption')} (l/100km)`,
+      flex: 1,
+    },
+    {
+      field: 'avgConsumption',
+      headerName: `${t('app.car.fuel.table.avgConsumption')} (l/100km)`,
+      flex: 1,
+    },
+    {
+      field: 'total',
+      headerName: `${t('app.car.fuel.table.total')} (€)`,
+      flex: 1,
+    },
     {
       field: 'actions',
       headerName: '',
       sortable: false,
       flex: 0.4,
       renderCell: (params) => (
-        <IconButton color="error" onClick={() => onDelete(params.row.id)}>
-          <DeleteIcon />
-        </IconButton>
+        <CarLedgerDeleteIcon onDelete={() => onDelete(params.row.id)} />
       ),
     },
   ];
@@ -95,6 +113,9 @@ export default function FuelTable({
           pagination: { paginationModel: { pageSize: 20, page: 0 } },
         }}
         disableRowSelectionOnClick
+        getRowClassName={(params) =>
+          params.indexRelativeToCurrentPage % 2 === 0 ? 'even' : 'odd'
+        }
       />
     </Box>
   );

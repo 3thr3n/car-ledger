@@ -1,5 +1,5 @@
 import { Grid, Typography } from '@mui/material';
-import carPlaceholder from '@/assets/car_placeholder.png';
+import carPlaceholder from '@/assets/car_placeholder.svg';
 import React, { useEffect } from 'react';
 import { CarGrid, CarGridContent } from './CarGrid';
 import NewCar from './NewCar';
@@ -7,7 +7,7 @@ import CarGridMenu from './CarGridMenu';
 import useCarStore from '@/store/CarStore';
 import { NavigateOptions } from '@tanstack/router-core';
 import { Car } from '@/generated';
-import { AnimatedCard } from '@/components/base/AnimatedCard';
+import { CarLedgerAnimatedCard } from '@/components/CarLedgerAnimatedCard';
 
 export interface CarGridListProps {
   navigate: (path: NavigateOptions) => void;
@@ -56,6 +56,8 @@ export default function CarGridList({ navigate, data }: CarGridListProps) {
               maxHeight: '200px',
               width: '100%',
               objectFit: 'contain',
+              filter:
+                'blur(0.3em) invert(0.7) opacity(0.2) sepia(.88) hue-rotate(180deg)',
             }}
           />
           <Typography>{props.description}</Typography>
@@ -68,14 +70,14 @@ export default function CarGridList({ navigate, data }: CarGridListProps) {
     return (
       <React.Fragment>
         {data?.map((car, i) => (
-          <AnimatedCard index={i} key={car.id} maxWidth={400}>
+          <CarLedgerAnimatedCard index={i} key={car.id} maxWidth={400}>
             <GridItem
               id={car.id ?? -1}
               index={i}
               description={car.name ?? ''}
               handleOpenCar={handleOpenCar}
             />
-          </AnimatedCard>
+          </CarLedgerAnimatedCard>
         ))}
       </React.Fragment>
     );

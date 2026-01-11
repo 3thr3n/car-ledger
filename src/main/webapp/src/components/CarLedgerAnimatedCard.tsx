@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { ReactNode } from 'react';
 
-export const AnimatedCard = ({
+export const CarLedgerAnimatedCard = ({
   index,
   children,
   maxWidth,

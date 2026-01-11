@@ -5,7 +5,7 @@ import useCarStore from '@/store/CarStore';
 import useUserStore from '@/store/UserStore';
 import { CarGrid, CarGridContent } from './CarGrid';
 import { useNavigate } from '@tanstack/react-router';
-import { AnimatedCard } from '@/components/base/AnimatedCard';
+import { CarLedgerAnimatedCard } from '@/components/CarLedgerAnimatedCard';
 
 export default function NewCar({ index }: { index: number }) {
   const navigate = useNavigate();
@@ -32,7 +32,7 @@ export default function NewCar({ index }: { index: number }) {
     'Add new Car, you can still add ' + (maxCars - currentCarSize) + ' cars';
   if (disabled) {
     return (
-      <AnimatedCard index={index} maxWidth={400}>
+      <CarLedgerAnimatedCard index={index} maxWidth={400}>
         <CarGrid>
           <CarGridContent>
             <Box
@@ -51,12 +51,12 @@ export default function NewCar({ index }: { index: number }) {
             </Box>
           </CarGridContent>
         </CarGrid>
-      </AnimatedCard>
+      </CarLedgerAnimatedCard>
     );
   }
 
   return (
-    <AnimatedCard index={index} maxWidth={400}>
+    <CarLedgerAnimatedCard index={index} maxWidth={400}>
       <CarGrid click={handleOpen}>
         <CarGridContent>
           <Tooltip title={tooltip} placement="top">
@@ -74,6 +74,6 @@ export default function NewCar({ index }: { index: number }) {
           </Tooltip>
         </CarGridContent>
       </CarGrid>
-    </AnimatedCard>
+    </CarLedgerAnimatedCard>
   );
 }

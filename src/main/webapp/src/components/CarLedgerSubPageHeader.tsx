@@ -1,6 +1,6 @@
 import { Typography, TypographyVariant } from '@mui/material';
 
-export default function SubPageHeader({
+export default function CarLedgerSubPageHeader({
   title,
   isMobile,
   isCardHeader,

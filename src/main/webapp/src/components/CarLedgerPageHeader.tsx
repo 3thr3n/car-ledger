@@ -1,17 +1,20 @@
 import { ArrowBack } from '@mui/icons-material';
 import { Box, IconButton, Typography, TypographyVariant } from '@mui/material';
 import { NavigateOptions } from '@tanstack/router-core';
+import { ReactNode } from 'react';
 
-export default function PageHeader({
+export default function CarLedgerPageHeader({
   title,
   isMobile,
   navigateTo,
   navigate,
+  children,
 }: {
   title: string;
   isMobile?: boolean;
   navigateTo?: NavigateOptions;
   navigate: (path: NavigateOptions) => void;
+  children?: ReactNode;
 }) {
   let variant: TypographyVariant = 'h4';
 
@@ -27,9 +30,10 @@ export default function PageHeader({
       >
         <ArrowBack fontSize="large" />
       </IconButton>
-      <Typography variant={variant} sx={{ pt: '2px' }}>
+      <Typography variant={variant} sx={{ pt: 1 }}>
         {title}
       </Typography>
+      {children}
     </Box>
   );
 }

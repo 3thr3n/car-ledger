@@ -11,7 +11,7 @@ import { localClient } from '@/utils/QueryClient';
 import useBillPagination from '@/hooks/useBillPagination';
 import FuelTable from '@/components/car/fuel/FuelTable';
 import { toast } from 'react-toastify';
-import PageHeader from '@/components/base/PageHeader';
+import CarLedgerPageHeader from '@/components/CarLedgerPageHeader';
 import { NavigateOptions } from '@tanstack/router-core';
 
 interface CarBillOverviewProps {
@@ -93,7 +93,7 @@ export default function AllViewPage({ id, navigate }: CarBillOverviewProps) {
   if (isMobile) {
     return (
       <Box sx={{ p: 2 }}>
-        <PageHeader
+        <CarLedgerPageHeader
           title="Fuel Entries"
           navigate={navigate}
           navigateTo={navigateTo}
@@ -122,7 +122,7 @@ export default function AllViewPage({ id, navigate }: CarBillOverviewProps) {
   // 💻 Desktop view: sidebar selector + table
   return (
     <Box sx={{ p: 2 }}>
-      <PageHeader
+      <CarLedgerPageHeader
         title="Fuel Entries"
         navigate={navigate}
         navigateTo={navigateTo}

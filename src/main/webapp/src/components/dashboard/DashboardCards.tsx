@@ -5,7 +5,7 @@ import { AverageStats, TotalStats } from '@/generated';
 import SpeedIcon from '@mui/icons-material/Speed';
 import EuroIcon from '@mui/icons-material/Euro';
 import RouteIcon from '@mui/icons-material/Route';
-import { AnimatedCard } from '@/components/base/AnimatedCard';
+import { CarLedgerAnimatedCard } from '@/components/CarLedgerAnimatedCard';
 
 export default function DashboardCards({
   average,
@@ -29,7 +29,7 @@ export default function DashboardCards({
   return (
     <Grid container spacing={3} justifyContent="center" sx={{ mt: 3 }}>
       <Grid columns={{ xs: 12, sm: 6, md: 3 }} sx={{ width }}>
-        <AnimatedCard index={0}>
+        <CarLedgerAnimatedCard index={0}>
           <DashboardMetric
             label="Total Spent"
             value={
@@ -41,11 +41,11 @@ export default function DashboardCards({
             color="#4bc0c0"
             icon={<EuroIcon />}
           />
-        </AnimatedCard>
+        </CarLedgerAnimatedCard>
       </Grid>
 
       <Grid columns={{ xs: 12, sm: 6, md: 3 }} sx={{ width }}>
-        <AnimatedCard index={1}>
+        <CarLedgerAnimatedCard index={1}>
           <DashboardMetric
             label="Avg Consumption"
             value={
@@ -55,11 +55,11 @@ export default function DashboardCards({
             color="#ffb74d"
             icon={<SpeedIcon />}
           />
-        </AnimatedCard>
+        </CarLedgerAnimatedCard>
       </Grid>
 
       <Grid columns={{ xs: 12, sm: 6, md: 3 }} sx={{ width }}>
-        <AnimatedCard index={2}>
+        <CarLedgerAnimatedCard index={2}>
           <DashboardMetric
             label="Avg Price per L"
             value={
@@ -71,11 +71,11 @@ export default function DashboardCards({
             color="#ba68c8"
             icon={<LocalGasStationIcon />}
           />
-        </AnimatedCard>
+        </CarLedgerAnimatedCard>
       </Grid>
 
       <Grid columns={{ xs: 12, sm: 6, md: 3 }} sx={{ width }}>
-        <AnimatedCard index={3}>
+        <CarLedgerAnimatedCard index={3}>
           <DashboardMetric
             label="Avg Distance"
             value={
@@ -85,7 +85,7 @@ export default function DashboardCards({
             color="#4dd0e1"
             icon={<RouteIcon />}
           />
-        </AnimatedCard>
+        </CarLedgerAnimatedCard>
       </Grid>
     </Grid>
   );

@@ -14,6 +14,7 @@ import { useQuery } from '@tanstack/react-query';
 import { getAllFuelBillsOptions } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
 import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export default function CarBillPreviewTable({
   id,
@@ -24,6 +25,8 @@ export default function CarBillPreviewTable({
   onSeeMore: () => void;
   reload: number;
 }) {
+  const { t } = useTranslation();
+
   const {
     data: bills,
     isLoading: isBillsLoading,
@@ -52,7 +55,7 @@ export default function CarBillPreviewTable({
     return (
       <Box>
         <CircularProgress />
-        <Typography>Loading bills...</Typography>
+        <Typography>{t('app.car.fuel.table.loading')}...</Typography>
       </Box>
     );
   }
@@ -60,7 +63,9 @@ export default function CarBillPreviewTable({
   if (isBillsError) {
     return (
       <Box>
-        <Typography color="error">Loading bills failed!</Typography>
+        <Typography color="error">
+          {t('app.car.fuel.table.loadingFailed')}
+        </Typography>
       </Box>
     );
   }
@@ -73,20 +78,28 @@ export default function CarBillPreviewTable({
         <Table size="small" stickyHeader>
           <TableHead>
             <TableRow>
-              <TableCell>Date</TableCell>
-              <TableCell align="right">Distance</TableCell>
-              <TableCell align="right">Unit (L)</TableCell>
-              <TableCell align="right">Price/Unit</TableCell>
-              <TableCell align="right">Total</TableCell>
+              <TableCell>{t('app.car.fuel.table.date')}</TableCell>
+              <TableCell align="right">
+                {t('app.car.fuel.table.distance')}
+              </TableCell>
+              <TableCell align="right">
+                {t('app.car.fuel.table.unit')}
+              </TableCell>
+              <TableCell align="right">
+                {t('app.car.fuel.table.pricePerUnit')}
+              </TableCell>
+              <TableCell align="right">
+                {t('app.car.fuel.table.total')}
+              </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {latestBills.map((bill) => (
-              <TableRow key={bill.id}>
+            {latestBills.map((bill, i) => (
+              <TableRow key={bill.id} className={i % 2 === 0 ? 'even' : 'odd'}>
                 <TableCell>{bill.date}</TableCell>
                 <TableCell align="right">{bill.distance}</TableCell>
                 <TableCell align="right">{bill.unit}</TableCell>
-                <TableCell align="right">{bill.pricePerUnit} €</TableCell>
+                <TableCell align="right">{bill.pricePerUnit} ct</TableCell>
                 <TableCell align="right">{bill.total} €</TableCell>
               </TableRow>
             ))}
@@ -96,7 +109,7 @@ export default function CarBillPreviewTable({
 
       <Box display="flex" justifyContent="flex-end" mt={2}>
         <Button size="small" onClick={onSeeMore}>
-          See all entries →
+          {t('app.car.fuel.table.seeMore')} →
         </Button>
       </Box>
     </Box>
