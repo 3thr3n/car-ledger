@@ -13,7 +13,7 @@ import DashboardDateRange, {
 } from '@/components/dashboard/DashboardDateRange';
 import { NavigateOptions } from '@tanstack/router-core';
 import { useSyncQueryParams } from '@/hooks/useSyncQueryParams';
-import PageHeader from '@/components/base/PageHeader';
+import CarLedgerPageHeader from '@/components/CarLedgerPageHeader';
 import dayjs from 'dayjs';
 
 export interface DashboardPageProps {
@@ -61,7 +61,7 @@ export default function DashboardPage({
 
   return (
     <Container sx={{ py: 4 }}>
-      <PageHeader title="Dashboard" navigate={navigate} />
+      <CarLedgerPageHeader title="Dashboard" navigate={navigate} />
 
       <DashboardFilterBar
         selectedCarId={selectedCarId}

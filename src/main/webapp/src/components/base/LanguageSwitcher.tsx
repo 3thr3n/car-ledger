@@ -35,10 +35,11 @@ export function LanguageSwitcher({ drawerMode }: LanguageSwitcherProps) {
             onClick={() => i18n.changeLanguage(lang.code)}
             disabled={i18n.language === lang.code}
             size="small"
+            className={i18n.language === lang.code ? 'secondary-border' : ''}
             sx={{
               border: i18n.language === lang.code ? '2px solid' : 'none',
-              borderRadius: 'var(--mui-shape-borderRadius)',
-              borderColor: 'rgba(var(--mui-palette-primary-mainChannel) / 0.5)',
+              borderRadius: 1,
+              borderColor: 'primary !important',
             }}
           >
             <ReactCountryFlag svg countryCode={lang.flag} title={lang.label} />

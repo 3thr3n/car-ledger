@@ -2,6 +2,12 @@ app:
   title: "CarLedger"
   slogan: "Collect fuel bills. Plan maintenance. Know your costs."
   language: "Language"
+  button:
+    continue: "Continue"
+    done: "Done"
+    refresh: "Refresh"
+    cancel: "Cancel"
+    back: "Back"
   nav:
     title: "Menu"
     overview: "Overview"
@@ -13,8 +19,28 @@ app:
     welcome: "Welcome"
   car:
     edit: "Edit"
+    csvImport: "Import CSV"
+    add: "Add Bill"
 
     fuel:
-      add: "Add Bill"
-      recentTitle: "Recent Fuel Entries"
+      recentTitle: "Recent fuel entries"
       showMore: "See all entries"
+
+      stepper:
+        upload: "Upload CSV"
+        configureOrder: "Configure order/import"
+        importData: "Import data"
+
+      table:
+        date: "Date"
+        distance: "Distance"
+        unit: "Unit"
+        pricePerUnit: "Price/Unit"
+        total: "Total"
+
+        estimateConsumption: "Estimate"
+        avgConsumption: "Avg"
+        
+        seeMore: "See all entries"
+        loading: "Loading fuel entries"
+        loadingFailed: "Loading fuel entries failed!"

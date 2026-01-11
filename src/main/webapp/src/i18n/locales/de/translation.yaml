@@ -2,6 +2,12 @@ app:
   title: "CarLedger"
   slogan: "Rechnungen sammeln. Wartung planen. Kosten kennen."
   language: "Sprache"
+  button:
+    continue: "Weiter"
+    done: "Fertig"
+    refresh: "Neuladen"
+    cancel: "Abbrechen"
+    back: "Zurück"
   nav:
     title: "Menü"
     overview: "Übersicht"
@@ -13,8 +19,28 @@ app:
     welcome: "Willkommen"
   car:
     edit: "Editieren"
+    csvImport: "CSV importieren"
+    add: "Rechnung hinzufügen"
 
     fuel:
-      add: "Rechnung hinzufügen"
       recentTitle: "Letzten Tank-Rechnungen"
       showMore: "Alle anzeigen"
+
+      stepper:
+        upload: "CSV hochladen"
+        configureOrder: "Reihenfolge anpassen"
+        importData: "Daten importieren"
+
+      table:
+        date: "Datum"
+        distance: "Strecke"
+        unit: "Einheit"
+        pricePerUnit: "Kosten/Einheit"
+        total: "Kosten"
+
+        estimateConsumption: "Estimate"
+        avgConsumption: "Avg"
+
+        seeMore: "Alle Einträge"
+        loading: "Lade Einträge"
+        loadingFailed: "Laden der Einträge fehlgeschlagen!"

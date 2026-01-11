@@ -1,4 +1,4 @@
-import { Box, Button, Typography } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
 
 import { getMyselfOptions } from '@/generated/@tanstack/react-query.gen';
@@ -6,6 +6,7 @@ import { baseUrl, localClient } from '@/utils/QueryClient';
 import { useEffect } from 'react';
 import useUserStore from '@/store/UserStore';
 import { useTranslation } from 'react-i18next';
+import CarLedgerButton from '@/components/CarLedgerButton';
 
 interface LoginProps {
   drawerMode?: boolean;
@@ -46,16 +47,12 @@ export default function Login({ drawerMode = false }: LoginProps) {
 
   if (isLoading || !isLoggedIn) {
     return (
-      <Button
-        variant="outlined"
+      <CarLedgerButton
         href={baseUrl + '/api/auth/login'}
         fullWidth={drawerMode}
-        sx={{
-          mb: drawerMode ? 2 : 0,
-        }}
       >
         {t('app.login.loginButton')}
-      </Button>
+      </CarLedgerButton>
     );
   }
   return (
@@ -76,13 +73,12 @@ export default function Login({ drawerMode = false }: LoginProps) {
         {t('app.login.welcome')} <b>{data?.name}</b>
       </Typography>
 
-      <Button
-        variant="outlined" // outlined in top nav
+      <CarLedgerButton
         href={baseUrl + '/api/auth/logout'}
         fullWidth={drawerMode}
       >
         {t('app.login.logoutButton')}
-      </Button>
+      </CarLedgerButton>
     </Box>
   );
 }

@@ -1,18 +1,19 @@
 import { Button, Stack } from '@mui/material';
+import { useTranslation } from 'react-i18next';
 
 const TopNav = ({
-  t,
   navigate,
   currentPathName,
   navItems,
 }: {
-  t: any;
   navigate: (path: string) => void;
   currentPathName: string;
   navItems: { labelKey: string; path: string }[];
 }) => {
+  const { t } = useTranslation();
+
   return (
-    <Stack direction="row" spacing={2}>
+    <Stack direction="row" spacing={1}>
       {navItems.map(({ labelKey, path }) => {
         const isActive = currentPathName.startsWith(path);
         return (

@@ -1,23 +1,17 @@
 import {
   Box,
-  Button,
   Card,
   CardContent,
   Container,
   Grid,
   Typography,
 } from '@mui/material';
-import SubPageHeader from '@/components/base/SubPageHeader';
+import CarLedgerSubPageHeader from '@/components/CarLedgerSubPageHeader';
 
 export default function LandingPage() {
   return (
-    <Box
-      sx={{
-        bgcolor: 'background.default',
-        color: 'text.primary',
-      }}
-    >
-      <Box component="section" sx={{ py: 6 }}>
+    <Box>
+      <Box component="section" sx={{ pt: 6 }}>
         <Container>
           <Typography variant="h5" fontWeight={600} gutterBottom>
             Collect fuel receipts. See your true cost per kilometer.
@@ -26,24 +20,19 @@ export default function LandingPage() {
             Upload or enter fuel bills and CarLedger organizes them, shows
             trends and helps you plan.
           </Typography>
-          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-            <Button variant="contained" color="primary" href="#features">
-              Learn more
-            </Button>
-            <Button variant="outlined" color="primary" href="#get-started">
-              Get started
-            </Button>
-          </Box>
         </Container>
       </Box>
 
-      <Box id="features" sx={{ py: 5, bgcolor: 'background.paper' }}>
+      <Box id="features" sx={{ py: 5 }}>
         <Container>
           <Grid container spacing={3}>
             <Grid size={{ xs: 12, md: 4 }}>
               <Card variant="outlined" sx={{ height: '100%' }}>
                 <CardContent>
-                  <SubPageHeader title="Organized Fuel Records" isCardHeader />
+                  <CarLedgerSubPageHeader
+                    title="Organized Fuel Records"
+                    isCardHeader
+                  />
                   <Typography variant="body2" color="text.secondary">
                     Store date, liters, price, odometer and receipt image.
                     Search and filter by car or date range.
@@ -55,7 +44,7 @@ export default function LandingPage() {
             <Grid size={{ xs: 12, md: 4 }}>
               <Card variant="outlined" sx={{ height: '100%' }}>
                 <CardContent>
-                  <SubPageHeader title="Cost Insights" isCardHeader />
+                  <CarLedgerSubPageHeader title="Cost Insights" isCardHeader />
                   <Typography variant="body2" color="text.secondary">
                     Automatic cost-per-km calculations and monthly spending
                     summaries so you spot trends fast.
@@ -67,7 +56,7 @@ export default function LandingPage() {
             <Grid size={{ xs: 12, md: 4 }}>
               <Card variant="outlined" sx={{ height: '100%' }}>
                 <CardContent>
-                  <SubPageHeader title="Multiple Cars" isCardHeader />
+                  <CarLedgerSubPageHeader title="Multiple Cars" isCardHeader />
                   <Typography variant="body2" color="text.secondary">
                     Add one or many cars and keep each vehicle's history
                     separate for accurate comparisons.
@@ -84,11 +73,14 @@ export default function LandingPage() {
         sx={{
           py: 5,
           background: (theme) =>
-            `linear-gradient(180deg, transparent, ${theme.palette.primary.light}11)`,
+            `linear-gradient(90deg, ${theme.palette.secondary.dark}, transparent)`,
         }}
       >
         <Container>
-          <SubPageHeader title="Planned — Maintenance & Costs" isCardHeader />
+          <CarLedgerSubPageHeader
+            title="Planned — Maintenance & Costs"
+            isCardHeader
+          />
           <Typography variant="body2" color="text.secondary">
             Soon you'll be able to add maintenance entries (one-off, monthly,
             yearly) per car — oil changes, tyres, inspections — and the app will
@@ -99,7 +91,7 @@ export default function LandingPage() {
 
       <Box id="get-started" sx={{ py: 5 }}>
         <Container>
-          <SubPageHeader title="Get started" isCardHeader />
+          <CarLedgerSubPageHeader title="Get started" isCardHeader />
           <Box component="ol" sx={{ pl: 3, mb: 2 }}>
             <Typography component="li">
               Create a free account (coming soon).

@@ -18,6 +18,7 @@ import { importCsvMutation } from '@/generated/@tanstack/react-query.gen';
 import useCsvStore from '@/store/CsvStore';
 import { toast } from 'react-toastify';
 import { BackendError } from '@/utils/BackendError';
+import { useTranslation } from 'react-i18next';
 
 export interface CsvUploadStepperProps {
   close: () => void;
@@ -44,6 +45,8 @@ export function OptionBox(props: {
 }
 
 export default function CsvUploadStepper(props: CsvUploadStepperProps) {
+  const { t } = useTranslation();
+
   const carId = useCsvStore((state) => state.carId);
   const markImported = useCsvStore((state) => state.markImported);
 
@@ -124,7 +127,7 @@ export default function CsvUploadStepper(props: CsvUploadStepperProps) {
   return (
     <Stepper orientation="vertical" activeStep={activeStep}>
       <Step>
-        <StepLabel>Upload CSV</StepLabel>
+        <StepLabel>{t('app.car.fuel.stepper.upload')}</StepLabel>
         <StepContent>
           <Box display={'flex'} justifyContent={'center'}>
             <CsvUploadButton onParseComplete={onParseComplete} />
@@ -132,34 +135,34 @@ export default function CsvUploadStepper(props: CsvUploadStepperProps) {
         </StepContent>
       </Step>
       <Step>
-        <StepLabel>Configure order/import</StepLabel>
+        <StepLabel>{t('app.car.fuel.stepper.configureOrder')}</StepLabel>
         <StepContent>
           <OptionBox
             headers={headers}
-            title={'Day'}
+            title={t('app.car.fuel.table.date')}
             onOptionChanged={(value) => updateCsvOrder({ date: value })}
           />
           <OptionBox
             headers={headers}
-            title={'Unit'}
+            title={t('app.car.fuel.table.unit')}
             defaultColumn={1}
             onOptionChanged={(value) => updateCsvOrder({ unit: value })}
           />
           <OptionBox
             headers={headers}
-            title={'Price per unit'}
+            title={t('app.car.fuel.table.pricePerUnit')}
             defaultColumn={2}
             onOptionChanged={(value) => updateCsvOrder({ pricePerUnit: value })}
           />
           <OptionBox
             headers={headers}
-            title={'Distance'}
+            title={t('app.car.fuel.table.distance')}
             defaultColumn={3}
             onOptionChanged={(value) => updateCsvOrder({ distance: value })}
           />
           <OptionBox
             headers={headers}
-            title={'Estimate'}
+            title={t('app.car.fuel.table.estimateConsumption')}
             defaultColumn={4}
             onOptionChanged={(value) => updateCsvOrder({ estimate: value })}
           />
@@ -167,13 +170,13 @@ export default function CsvUploadStepper(props: CsvUploadStepperProps) {
           <Box display={'flex'}>
             <Box flexGrow={1} />
             <Button onClick={nextStep} variant={'outlined'}>
-              Continue
+              {t('app.button.continue')}
             </Button>
           </Box>
         </StepContent>
       </Step>
       <Step>
-        <StepLabel>Import data</StepLabel>
+        <StepLabel>{t('app.car.fuel.stepper.importData')}</StepLabel>
         <StepContent>
           <LinearProgress
             color={loadingColor}
@@ -183,7 +186,7 @@ export default function CsvUploadStepper(props: CsvUploadStepperProps) {
           <Box display={'flex'} mt={2}>
             <Box flexGrow={1} />
             <Button onClick={closeDialog} variant={'outlined'}>
-              Finish
+              {t('app.button.done')}
             </Button>
           </Box>
         </StepContent>
