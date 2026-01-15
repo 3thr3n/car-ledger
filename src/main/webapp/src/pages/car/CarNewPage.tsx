@@ -14,12 +14,15 @@ import { createCarMutation } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
 import { toast } from 'react-toastify';
 import { BackendError } from '@/utils/BackendError';
+import { useTranslation } from 'react-i18next';
 
 export interface CarNewPageProperties {
   navigate: (path: NavigateOptions) => void;
 }
 
 export default function CarNewPage({ navigate }: CarNewPageProperties) {
+  const { t } = useTranslation();
+
   const [name, setName] = useState('');
   const [year, setYear] = useState<number>(2025);
   const [km, setKm] = useState<number>(0);
@@ -80,16 +83,17 @@ export default function CarNewPage({ navigate }: CarNewPageProperties) {
   return (
     <Container maxWidth="sm" sx={{ py: 5 }}>
       <Typography variant="h4" gutterBottom>
-        Add New Car
+        {t('app.car.newCar.title')}
       </Typography>
       <Typography variant="body1" color="text.secondary" gutterBottom>
-        Enter the details of your new vehicle.
+        {t('app.car.newCar.description')}
       </Typography>
 
       <Box component="form" sx={{ mt: 3 }}>
         <Stack spacing={3}>
           <TextField
-            label="Car Name / Model"
+            placeholder={t('app.car.newUpdateCar.name')}
+            label={t('app.car.newUpdateCar.name')}
             value={name}
             onBlur={handleValidate}
             onChange={(e) => setName(e.target.value)}
@@ -98,8 +102,8 @@ export default function CarNewPage({ navigate }: CarNewPageProperties) {
             helperText={errors.name}
           />
           <NumericFormat
-            placeholder="Manufacture year"
-            label="Manfucature year"
+            placeholder={t('app.car.newUpdateCar.year')}
+            label={t('app.car.newUpdateCar.year')}
             value={year}
             onBlur={handleValidate}
             customInput={TextField}
@@ -112,8 +116,8 @@ export default function CarNewPage({ navigate }: CarNewPageProperties) {
             helperText={errors.year}
           />
           <NumericFormat
-            placeholder="Current Odometer (KM)"
-            label="Current Odometer (KM)"
+            placeholder={t('app.car.newUpdateCar.odometer')}
+            label={t('app.car.newUpdateCar.odometer')}
             value={km}
             prefix="KM "
             thousandSeparator
@@ -130,10 +134,10 @@ export default function CarNewPage({ navigate }: CarNewPageProperties) {
 
           <Stack direction="row" spacing={2} justifyContent="flex-end">
             <Button variant="outlined" onClick={handleCancel}>
-              Cancel
+              {t('app.button.cancel')}
             </Button>
             <Button variant="contained" onClick={handleSave}>
-              Save
+              {t('app.button.save')}
             </Button>
           </Stack>
         </Stack>

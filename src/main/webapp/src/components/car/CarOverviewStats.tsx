@@ -5,6 +5,7 @@ import { localClient } from '@/utils/QueryClient';
 import SingleLineStat from '@/components/base/SingleLineStat';
 import CarLedgerSubPageHeader from '@/components/CarLedgerSubPageHeader';
 import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export const CarOverviewStats = ({
   carId,
@@ -13,6 +14,7 @@ export const CarOverviewStats = ({
   carId: number;
   reload: number;
 }) => {
+  const { t } = useTranslation();
   const { data, isLoading, refetch } = useQuery({
     ...getMyCarOverviewOptions({
       client: localClient,
@@ -31,7 +33,10 @@ export const CarOverviewStats = ({
   return (
     <Card sx={{ mt: 3 }}>
       <CardContent>
-        <CarLedgerSubPageHeader title="Fuel Statistics" isCardHeader />
+        <CarLedgerSubPageHeader
+          title={t('app.car.stats.fuel.title')}
+          isCardHeader
+        />
 
         <Divider sx={{ mb: 2 }} />
 
@@ -43,14 +48,17 @@ export const CarOverviewStats = ({
           </>
         ) : (
           <>
-            <SingleLineStat label="Total Refuels:" value={data?.totalRefuels} />
             <SingleLineStat
-              label="Total Cost:"
+              label={t('app.car.stats.fuel.refuels') + ':'}
+              value={data?.totalRefuels}
+            />
+            <SingleLineStat
+              label={t('app.car.stats.fuel.cost') + ':'}
               value={data?.totalCost?.toFixed(2)}
               type="€"
             />
             <SingleLineStat
-              label="Avg Consumption:"
+              label={t('app.car.stats.fuel.consumption') + ':'}
               value={data?.avgConsumption?.toFixed(2)}
               type="l/100km"
             />
