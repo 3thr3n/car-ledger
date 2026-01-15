@@ -4,6 +4,7 @@ import { getMyCarsOptions } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
 import DashboardDateRange from '@/components/dashboard/DashboardDateRange';
 import { DatePicker } from '@mui/x-date-pickers';
+import { useTranslation } from 'react-i18next';
 
 export interface DashboardFilterBarProps {
   selectedCarId: number;
@@ -18,12 +19,12 @@ export default function DashboardFilterBar({
   dateRange,
   onChangeDateRange,
 }: DashboardFilterBarProps) {
+  const { t } = useTranslation();
   const { data: cars } = useQuery(getMyCarsOptions({ client: localClient }));
 
   return (
     <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} mb={3}>
       <Select
-        label="Car"
         value={selectedCarId}
         onChange={(e) =>
           onSelectCar(e.target.name === 'all' ? -1 : Number(e.target.value))
@@ -50,7 +51,7 @@ export default function DashboardFilterBar({
         value={dateRange.to}
         onChange={(e) => onChangeDateRange({ ...dateRange, to: e })}
       />
-      <Button variant="outlined">Refresh</Button>
+      <Button variant="outlined">{t('app.button.refresh')}</Button>
     </Stack>
   );
 }

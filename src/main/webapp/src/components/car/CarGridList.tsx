@@ -3,7 +3,6 @@ import carPlaceholder from '@/assets/car_placeholder.svg';
 import React, { useEffect } from 'react';
 import { CarGrid, CarGridContent } from './CarGrid';
 import NewCar from './NewCar';
-import CarGridMenu from './CarGridMenu';
 import useCarStore from '@/store/CarStore';
 import { NavigateOptions } from '@tanstack/router-core';
 import { Car } from '@/generated';
@@ -41,12 +40,12 @@ export default function CarGridList({ navigate, data }: CarGridListProps) {
     return (
       <CarGrid click={() => props.handleOpenCar(props.id)} index={props.index}>
         <CarGridContent>
-          <CarGridMenu
-            id={props.id}
-            sx={{
-              position: 'relative',
-            }}
-          />
+          {/*<CarGridMenu*/}
+          {/*  id={props.id}*/}
+          {/*  sx={{*/}
+          {/*    position: 'relative',*/}
+          {/*  }}*/}
+          {/*/>*/}
           <img
             src={carPlaceholder}
             alt="car"

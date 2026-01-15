@@ -8,6 +8,7 @@ app:
     refresh: "Refresh"
     cancel: "Cancel"
     back: "Back"
+    save: "Save"
   nav:
     title: "Menu"
     overview: "Overview"
@@ -18,9 +19,34 @@ app:
     logoutButton: "Logout"
     welcome: "Welcome"
   car:
-    edit: "Edit"
+    myCars: "My Cars"
+    description: "View, add, and manage your vehicles"
+
+    newCar:
+      button: "New car"
+      title: "New car"
+      description: "Insert your car details"
+
+    updateCar:
+      button: "Edit"
+      title: "Edit car"
+      description: "Update your car details"
+
+    newUpdateCar:
+      name: "Car name / Model"
+      year: "Manufacture year"
+      odometer: "Odometer (KM)"
+      odometerDescription: "Odometer e.g. when bought"
+
     csvImport: "Import CSV"
     add: "Add Bill"
+
+    stats:
+      fuel:
+        title: "Fuel statistics"
+        refuels: "Refuels"
+        cost: "Costs"
+        consumption: "Consumption"
 
     fuel:
       recentTitle: "Recent fuel entries"
@@ -32,6 +58,8 @@ app:
         importData: "Import data"
 
       table:
+        title: "Fuel entries"
+
         date: "Date"
         distance: "Distance"
         unit: "Unit"

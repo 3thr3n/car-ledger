@@ -6,8 +6,10 @@ import useUserStore from '@/store/UserStore';
 import { CarGrid, CarGridContent } from './CarGrid';
 import { useNavigate } from '@tanstack/react-router';
 import { CarLedgerAnimatedCard } from '@/components/CarLedgerAnimatedCard';
+import { useTranslation } from 'react-i18next';
 
 export default function NewCar({ index }: { index: number }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [disabled, setDisabled] = useState(true);
 
@@ -69,7 +71,8 @@ export default function NewCar({ index }: { index: number }) {
                 justifyContent: 'center',
               }}
             >
-              <Add sx={{ mr: 1 }} /> <Typography>New car</Typography>
+              <Add sx={{ mr: 1 }} />{' '}
+              <Typography>{t('app.car.newCar')}</Typography>
             </Box>
           </Tooltip>
         </CarGridContent>

@@ -13,6 +13,7 @@ import FuelTable from '@/components/car/fuel/FuelTable';
 import { toast } from 'react-toastify';
 import CarLedgerPageHeader from '@/components/CarLedgerPageHeader';
 import { NavigateOptions } from '@tanstack/router-core';
+import { useTranslation } from 'react-i18next';
 
 interface CarBillOverviewProps {
   id: number;
@@ -20,6 +21,7 @@ interface CarBillOverviewProps {
 }
 
 export default function AllViewPage({ id, navigate }: CarBillOverviewProps) {
+  const { t } = useTranslation();
   const isMobile = useMediaQuery('(max-width:900px)');
 
   const {
@@ -89,16 +91,20 @@ export default function AllViewPage({ id, navigate }: CarBillOverviewProps) {
     params: { id: `${id}` },
   };
 
+  const getHeader = (isMobile: boolean) => (
+    <CarLedgerPageHeader
+      title={t('app.car.fuel.table.title')}
+      navigate={navigate}
+      navigateTo={navigateTo}
+      isMobile={isMobile}
+    />
+  );
+
   // 📱 Mobile view: cards
   if (isMobile) {
     return (
       <Box sx={{ p: 2 }}>
-        <CarLedgerPageHeader
-          title="Fuel Entries"
-          navigate={navigate}
-          navigateTo={navigateTo}
-          isMobile
-        />
+        {getHeader(isMobile)}
 
         <YearSelection
           years={years}
@@ -122,12 +128,7 @@ export default function AllViewPage({ id, navigate }: CarBillOverviewProps) {
   // 💻 Desktop view: sidebar selector + table
   return (
     <Box sx={{ p: 2 }}>
-      <CarLedgerPageHeader
-        title="Fuel Entries"
-        navigate={navigate}
-        navigateTo={navigateTo}
-      />
-
+      {getHeader(isMobile)}
       <Box sx={{ display: 'flex', gap: 3 }}>
         {/* Year Selector */}
         <YearSelection
