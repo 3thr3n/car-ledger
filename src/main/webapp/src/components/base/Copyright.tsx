@@ -1,5 +1,21 @@
 import { Box, Link, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { useTranslation } from 'react-i18next';
+import { TFunction } from 'i18next';
+
+function getCopyright(t: TFunction<'translation', undefined>) {
+  return (
+    <>
+      {'Copyright ©'}
+      <Link target="_blank" href="https://www.codeflowwizardry.de">
+        3thr3n
+      </Link>{' '}
+      {new Date().getFullYear()}{' '}
+      <Link target="_blank" href="https://github.com/3thr3n/car-ledger">
+        {t('app.title')}
+      </Link>{' '}
+    </>
+  );
+}
 
 export default function Copyright() {
   const { t } = useTranslation();
@@ -21,9 +37,7 @@ export default function Copyright() {
               color: 'text.secondary',
             }}
           >
-            {'Copyright ©'}
-            <Link href="https://www.codeflowwizardry.de">3thr3n</Link>{' '}
-            {new Date().getFullYear()} {t('app.title')}
+            {getCopyright(t)}
           </Typography>
           <Typography
             variant="body2"
@@ -44,9 +58,7 @@ export default function Copyright() {
               color: 'text.secondary',
             }}
           >
-            {'Copyright ©'}
-            <Link href="https://www.codeflowwizardry.de">3thr3n</Link>{' '}
-            {new Date().getFullYear()} {t('app.title')} — {t('app.slogan')}
+            {getCopyright(t)} — {t('app.slogan')}
           </Typography>
         </>
       )}

@@ -1,7 +1,7 @@
 import Copyright from '@/components/base/Copyright';
 import Navigation from '@/components/base/Navigation';
 
-import theme from '@/utils/theme';
+import theme from '@/theme';
 import queryClient from '@/utils/QueryClient';
 
 import { Box, CssBaseline, ThemeProvider } from '@mui/material';
@@ -30,6 +30,7 @@ export const Route = createRootRoute({
         // redirect to original page
         throw redirect({ to: redirectUrl });
       }
+      throw redirect({ to: '/dashboard' });
     } else {
       const redirectUrl = localStorage.getItem('postLoginRedirect');
       if (redirectUrl) {
@@ -52,7 +53,6 @@ export const Route = createRootRoute({
               flexDirection="column"
               overflow="auto"
               height="100%"
-              px={{ xs: 2, sm: 4 }}
               py={3}
             >
               <Outlet />

@@ -5,9 +5,11 @@ import useCarStore from '@/store/CarStore';
 import useUserStore from '@/store/UserStore';
 import { CarGrid, CarGridContent } from './CarGrid';
 import { useNavigate } from '@tanstack/react-router';
-import { AnimatedCard } from '@/components/base/AnimatedCard';
+import { CarLedgerAnimatedCard } from '@/components/CarLedgerAnimatedCard';
+import { useTranslation } from 'react-i18next';
 
 export default function NewCar({ index }: { index: number }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [disabled, setDisabled] = useState(true);
 
@@ -32,7 +34,7 @@ export default function NewCar({ index }: { index: number }) {
     'Add new Car, you can still add ' + (maxCars - currentCarSize) + ' cars';
   if (disabled) {
     return (
-      <AnimatedCard index={index} maxWidth={400}>
+      <CarLedgerAnimatedCard index={index} maxWidth={400}>
         <CarGrid>
           <CarGridContent>
             <Box
@@ -51,12 +53,12 @@ export default function NewCar({ index }: { index: number }) {
             </Box>
           </CarGridContent>
         </CarGrid>
-      </AnimatedCard>
+      </CarLedgerAnimatedCard>
     );
   }
 
   return (
-    <AnimatedCard index={index} maxWidth={400}>
+    <CarLedgerAnimatedCard index={index} maxWidth={400}>
       <CarGrid click={handleOpen}>
         <CarGridContent>
           <Tooltip title={tooltip} placement="top">
@@ -69,11 +71,12 @@ export default function NewCar({ index }: { index: number }) {
                 justifyContent: 'center',
               }}
             >
-              <Add sx={{ mr: 1 }} /> <Typography>New car</Typography>
+              <Add sx={{ mr: 1 }} />{' '}
+              <Typography>{t('app.car.newCar')}</Typography>
             </Box>
           </Tooltip>
         </CarGridContent>
       </CarGrid>
-    </AnimatedCard>
+    </CarLedgerAnimatedCard>
   );
 }

@@ -72,7 +72,6 @@ export default function UserNavigation({
               {/* Navigation List */}
               {isLoggedIn && (
                 <TopDrawerNav
-                  t={t}
                   navigate={navigate}
                   currentPathName={location.pathname}
                   navItems={navItems}
@@ -91,12 +90,11 @@ export default function UserNavigation({
     <>
       <Box
         sx={{
-          marginY: '1rem',
+          marginY: 1,
         }}
       />
       {isLoggedIn && (
         <TopNav
-          t={t}
           navigate={navigate}
           currentPathName={location.pathname}
           navItems={navItems}

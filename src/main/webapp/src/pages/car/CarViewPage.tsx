@@ -1,13 +1,12 @@
 import { NavigateOptions } from '@tanstack/router-core';
 import {
-  Box,
-  Button,
   Card,
   CardContent,
   CircularProgress,
   Container,
   Divider,
   Grid,
+  IconButton,
   Stack,
   Typography,
   useMediaQuery,
@@ -15,71 +14,20 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { getMyCarOptions } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
-import CarBillPreviewTable from '@/components/car/bill/CarBillPreviewTable';
-import SubPageHeader from '@/components/base/SubPageHeader';
+import CarLedgerSubPageHeader from '@/components/CarLedgerSubPageHeader';
 import NotFoundPage from '@/pages/NotFoundPage';
 import useCsvStore from '@/store/CsvStore';
 import { CarOverviewStats } from '@/components/car/CarOverviewStats';
 import SingleLineStat from '@/components/base/SingleLineStat';
-import PageHeader from '@/components/base/PageHeader';
+import CarLedgerPageHeader from '@/components/CarLedgerPageHeader';
 import { useTranslation } from 'react-i18next';
-import { TFunction } from 'i18next';
+import RecentRefuels from '@/components/car/fuel/RecentRefuels';
+import CarLedgerButton from '@/components/CarLedgerButton';
+import { Edit } from '@mui/icons-material';
 
 export interface CarViewPageProperties {
   id: string;
   navigate: (opt: NavigateOptions) => void;
-}
-
-function renderRecentFuelTypes(
-  isMobile: boolean,
-  id: string,
-  navigate: (opt: NavigateOptions) => void,
-  t: TFunction<'translation', undefined>,
-  reloadToken: number,
-) {
-  const goToAll = () => navigate({ to: '/car/$id/bill/fuel', params: { id } });
-
-  if (isMobile) {
-    return (
-      <>
-        <Grid size={{ xs: 12, md: 8 }}>
-          <Card>
-            <CardContent>
-              <SubPageHeader
-                title={t('app.car.fuel.recentTitle')}
-                isCardHeader
-                isMobile
-              />
-              <Divider sx={{ mb: 2 }} />
-              <Box display="flex" justifyContent="flex-end" mt={2}>
-                <Button size="small" onClick={goToAll}>
-                  {t('app.car.fuel.showMore')} →
-                </Button>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-      </>
-    );
-  }
-  return (
-    <>
-      {/* Fuel bills */}
-      <Grid size={{ xs: 12, md: 8 }}>
-        <Card>
-          <CardContent>
-            <SubPageHeader title="Recent Fuel Entries" isCardHeader />
-            <Divider sx={{ mb: 2 }} />
-            <CarBillPreviewTable
-              id={id}
-              onSeeMore={goToAll}
-              reload={reloadToken}
-            />
-          </CardContent>
-        </Card>
-      </Grid>
-    </>
-  );
 }
 
 export default function CarViewPage({ navigate, id }: CarViewPageProperties) {
@@ -134,32 +82,36 @@ export default function CarViewPage({ navigate, id }: CarViewPageProperties) {
         spacing={2}
         mb={3}
       >
-        <PageHeader
+        <CarLedgerPageHeader
           title={`${car.name} ${car.year && '(' + car.year + ')'}`}
           navigate={navigate}
-        />
-        <Stack direction="row" spacing={2}>
-          <Button
-            variant="outlined"
+        >
+          <IconButton
+            sx={{
+              ml: 1,
+            }}
             onClick={() => navigate({ to: '/car/$id/edit', params: { id } })}
           >
-            {t('app.car.edit')}
-          </Button>
-          <Button
+            <Edit />
+          </IconButton>
+        </CarLedgerPageHeader>
+
+        <Stack direction="row" spacing={2}>
+          <CarLedgerButton
             variant="contained"
             onClick={() =>
               navigate({ to: '/car/$id/bill/add', params: { id } })
             }
           >
-            {t('app.car.fuel.add')}
-          </Button>
-          <Button
-            variant="contained"
+            {t('app.car.add')}
+          </CarLedgerButton>
+          <CarLedgerButton
+            variant="outlined"
             color="secondary"
             onClick={() => openImportDialog(Number(id))}
           >
-            Import CSV
-          </Button>
+            {t('app.car.csvImport')}
+          </CarLedgerButton>
         </Stack>
       </Stack>
 
@@ -168,7 +120,7 @@ export default function CarViewPage({ navigate, id }: CarViewPageProperties) {
         <Grid size={{ xs: 12, md: 4 }}>
           <Card>
             <CardContent>
-              <SubPageHeader title="Car Information" isCardHeader />
+              <CarLedgerSubPageHeader title="Car Information" isCardHeader />
               <Divider sx={{ mb: 2 }} />
               <SingleLineStat label="Year:" value={car.year} />
               <SingleLineStat
@@ -181,7 +133,12 @@ export default function CarViewPage({ navigate, id }: CarViewPageProperties) {
           <CarOverviewStats carId={Number(id)} reload={csvImportedAt ?? 0} />
         </Grid>
 
-        {renderRecentFuelTypes(isMobile, id, navigate, t, csvImportedAt ?? 0)}
+        <RecentRefuels
+          isMobile={isMobile}
+          id={id}
+          navigate={navigate}
+          reloadToken={csvImportedAt ?? 0}
+        />
       </Grid>
     </Container>
   );

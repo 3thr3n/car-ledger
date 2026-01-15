@@ -1,6 +1,6 @@
 import { Box, CircularProgress, useMediaQuery } from '@mui/material';
 import React, { useState } from 'react';
-import { Bill } from '@/generated';
+import { FuelBill } from '@/generated';
 import YearSelection from '@/components/car/fuel/YearSelection';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import {
@@ -11,8 +11,9 @@ import { localClient } from '@/utils/QueryClient';
 import useBillPagination from '@/hooks/useBillPagination';
 import FuelTable from '@/components/car/fuel/FuelTable';
 import { toast } from 'react-toastify';
-import PageHeader from '@/components/base/PageHeader';
+import CarLedgerPageHeader from '@/components/CarLedgerPageHeader';
 import { NavigateOptions } from '@tanstack/router-core';
+import { useTranslation } from 'react-i18next';
 
 interface CarBillOverviewProps {
   id: number;
@@ -20,6 +21,7 @@ interface CarBillOverviewProps {
 }
 
 export default function AllViewPage({ id, navigate }: CarBillOverviewProps) {
+  const { t } = useTranslation();
   const isMobile = useMediaQuery('(max-width:900px)');
 
   const {
@@ -67,7 +69,7 @@ export default function AllViewPage({ id, navigate }: CarBillOverviewProps) {
   }
 
   const years: number[] = yearData ?? [];
-  const bills: Bill[] = billData?.data ?? [];
+  const bills: FuelBill[] = billData?.data ?? [];
 
   const currentYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = useState<number>(
@@ -89,16 +91,20 @@ export default function AllViewPage({ id, navigate }: CarBillOverviewProps) {
     params: { id: `${id}` },
   };
 
+  const getHeader = (isMobile: boolean) => (
+    <CarLedgerPageHeader
+      title={t('app.car.fuel.table.title')}
+      navigate={navigate}
+      navigateTo={navigateTo}
+      isMobile={isMobile}
+    />
+  );
+
   // 📱 Mobile view: cards
   if (isMobile) {
     return (
       <Box sx={{ p: 2 }}>
-        <PageHeader
-          title="Fuel Entries"
-          navigate={navigate}
-          navigateTo={navigateTo}
-          isMobile
-        />
+        {getHeader(isMobile)}
 
         <YearSelection
           years={years}
@@ -122,12 +128,7 @@ export default function AllViewPage({ id, navigate }: CarBillOverviewProps) {
   // 💻 Desktop view: sidebar selector + table
   return (
     <Box sx={{ p: 2 }}>
-      <PageHeader
-        title="Fuel Entries"
-        navigate={navigate}
-        navigateTo={navigateTo}
-      />
-
+      {getHeader(isMobile)}
       <Box sx={{ display: 'flex', gap: 3 }}>
         {/* Year Selector */}
         <YearSelection

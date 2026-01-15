@@ -1,16 +1,16 @@
 import { List, ListItemButton, ListItemText } from '@mui/material';
+import { useTranslation } from 'react-i18next';
 
 const TopNav = ({
-  t,
   navigate,
   currentPathName,
   navItems,
 }: {
-  t: any;
   navigate: (path: string) => void;
   currentPathName: string;
   navItems: { labelKey: string; path: string }[];
 }) => {
+  const { t } = useTranslation();
   return (
     <List>
       {navItems.map(({ labelKey, path }) => {

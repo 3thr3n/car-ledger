@@ -16,6 +16,7 @@ import {
 import { localClient } from '@/utils/QueryClient';
 import { toast } from 'react-toastify';
 import { BackendError } from '@/utils/BackendError';
+import { useTranslation } from 'react-i18next';
 
 export interface CarEditPageProperties {
   id: string;
@@ -23,6 +24,8 @@ export interface CarEditPageProperties {
 }
 
 export default function CarEditPage({ id, navigate }: CarEditPageProperties) {
+  const { t } = useTranslation();
+
   const thisYear = new Date().getFullYear();
 
   const [name, setName] = useState('');
@@ -96,29 +99,29 @@ export default function CarEditPage({ id, navigate }: CarEditPageProperties) {
   return (
     <Container maxWidth="sm" sx={{ py: 5 }}>
       <Typography variant="h4" gutterBottom>
-        Edit Car
+        {t('app.car.updateCar.title')}
       </Typography>
       <Typography variant="body1" color="text.secondary" gutterBottom>
-        Update your vehicle details below.
+        {t('app.car.updateCar.description')}
       </Typography>
 
       <Box component="form" sx={{ mt: 3 }}>
         <Stack spacing={3}>
           <TextField
-            label="Car Name / Model"
+            label={t('app.car.newUpdateCar.name')}
             value={name}
             onChange={(e) => setName(e.target.value)}
             fullWidth
           />
           <TextField
-            label="Year"
+            label={t('app.car.newUpdateCar.year')}
             type="number"
             value={year}
             onChange={(e) => setYear(Number(e.target.value))}
             fullWidth
           />
           <TextField
-            label="Current Odometer (KM)"
+            label={t('app.car.newUpdateCar.odometer')}
             type="number"
             value={km}
             onChange={(e) => setKm(Number(e.target.value))}
@@ -127,10 +130,10 @@ export default function CarEditPage({ id, navigate }: CarEditPageProperties) {
 
           <Stack direction="row" spacing={2} justifyContent="flex-end">
             <Button variant="outlined" onClick={handleCancel}>
-              Cancel
+              {t('app.button.cancel')}
             </Button>
             <Button variant="contained" onClick={handleSave}>
-              Save
+              {t('app.button.save')}
             </Button>
           </Stack>
         </Stack>

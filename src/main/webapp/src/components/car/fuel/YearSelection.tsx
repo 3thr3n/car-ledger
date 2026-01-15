@@ -43,7 +43,7 @@ export default function YearSelection({
             textAlign: 'center',
             cursor: 'pointer',
             bgcolor: -1 === selectedYear ? 'primary.main' : 'background.paper',
-            color: -1 === selectedYear ? 'white' : 'text.primary',
+            color: -1 === selectedYear ? 'black' : 'text.primary',
             transition: '0.2s',
           }}
           onClick={() => setSelectedYear(-1)}
@@ -58,7 +58,7 @@ export default function YearSelection({
               textAlign: 'center',
               cursor: 'pointer',
               bgcolor: y === selectedYear ? 'primary.main' : 'background.paper',
-              color: y === selectedYear ? 'white' : 'text.primary',
+              color: y === selectedYear ? 'black' : 'text.primary',
               transition: '0.2s',
             }}
             onClick={() => setSelectedYear(y)}

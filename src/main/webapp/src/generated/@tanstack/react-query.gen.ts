@@ -3,8 +3,8 @@
 import { type DefaultError, type InfiniteData, infiniteQueryOptions, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen';
-import { addNewBill, callback, createCar, deleteBill, getAllBills, getAllBillYears, getMyCar, getMyCarOverview, getMyCars, getMyself, getStatsAverage, getStatsHiLo, getStatsTotal, importCsv, login, logout, logoutCallback, type Options, updateMyCar } from '../sdk.gen';
-import type { AddNewBillData, CallbackData, CreateCarData, DeleteBillData, GetAllBillsData, GetAllBillsResponse, GetAllBillYearsData, GetAllBillYearsResponse, GetMyCarData, GetMyCarOverviewData, GetMyCarOverviewResponse, GetMyCarResponse, GetMyCarsData, GetMyCarsResponse, GetMyselfData, GetMyselfResponse, GetStatsAverageData, GetStatsAverageResponse, GetStatsHiLoData, GetStatsHiLoResponse, GetStatsTotalData, GetStatsTotalResponse, ImportCsvData, LoginData, LogoutCallbackData, LogoutData, UpdateMyCarData } from '../types.gen';
+import { addNewBill, callback, createCar, deleteBill, getAllBills, getAllBillYears, getAllFuelBills, getAllFuelBillYears, getAllMaintenanceBills, getAllMaintenanceBillYears, getMyCar, getMyCarOverview, getMyCars, getMyself, getStatsAverage, getStatsHiLo, getStatsTotal, importCsv, login, logout, logoutCallback, type Options, updateMyCar } from '../sdk.gen';
+import type { AddNewBillData, CallbackData, CreateCarData, DeleteBillData, GetAllBillsData, GetAllBillsResponse, GetAllBillYearsData, GetAllBillYearsResponse, GetAllFuelBillsData, GetAllFuelBillsResponse, GetAllFuelBillYearsData, GetAllFuelBillYearsResponse, GetAllMaintenanceBillsData, GetAllMaintenanceBillsResponse, GetAllMaintenanceBillYearsData, GetAllMaintenanceBillYearsResponse, GetMyCarData, GetMyCarOverviewData, GetMyCarOverviewResponse, GetMyCarResponse, GetMyCarsData, GetMyCarsResponse, GetMyselfData, GetMyselfResponse, GetStatsAverageData, GetStatsAverageResponse, GetStatsHiLoData, GetStatsHiLoResponse, GetStatsTotalData, GetStatsTotalResponse, ImportCsvData, LoginData, LogoutCallbackData, LogoutData, UpdateMyCarData } from '../types.gen';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -119,29 +119,12 @@ export const logoutCallbackOptions = (options?: Options<LogoutCallbackData>) => 
     queryKey: logoutCallbackQueryKey(options)
 });
 
-/**
- * Add New Bill
- */
-export const addNewBillMutation = (options?: Partial<Options<AddNewBillData>>): UseMutationOptions<unknown, DefaultError, Options<AddNewBillData>> => {
-    const mutationOptions: UseMutationOptions<unknown, DefaultError, Options<AddNewBillData>> = {
-        mutationFn: async (fnOptions) => {
-            const { data } = await addNewBill({
-                ...options,
-                ...fnOptions,
-                throwOnError: true
-            });
-            return data;
-        }
-    };
-    return mutationOptions;
-};
-
 export const getAllBillsQueryKey = (options: Options<GetAllBillsData>) => createQueryKey('getAllBills', options);
 
 /**
  * Get All My Bills
  *
- * Gets all bills for specified car
+ * Gets all bills for specified car, Pages starting at 1
  */
 export const getAllBillsOptions = (options: Options<GetAllBillsData>) => queryOptions<GetAllBillsResponse, DefaultError, GetAllBillsResponse, ReturnType<typeof getAllBillsQueryKey>>({
     queryFn: async ({ queryKey, signal }) => {
@@ -190,7 +173,7 @@ export const getAllBillsInfiniteQueryKey = (options: Options<GetAllBillsData>): 
 /**
  * Get All My Bills
  *
- * Gets all bills for specified car
+ * Gets all bills for specified car, Pages starting at 1
  */
 export const getAllBillsInfiniteOptions = (options: Options<GetAllBillsData>) => infiniteQueryOptions<GetAllBillsResponse, DefaultError, InfiniteData<GetAllBillsResponse>, QueryKey<Options<GetAllBillsData>>, number | Pick<QueryKey<Options<GetAllBillsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
 // @ts-ignore
@@ -214,16 +197,33 @@ export const getAllBillsInfiniteOptions = (options: Options<GetAllBillsData>) =>
     queryKey: getAllBillsInfiniteQueryKey(options)
 });
 
-export const getAllBillYearsQueryKey = (options: Options<GetAllBillYearsData>) => createQueryKey('getAllBillYears', options);
+/**
+ * Add New Bill
+ */
+export const addNewBillMutation = (options?: Partial<Options<AddNewBillData>>): UseMutationOptions<unknown, DefaultError, Options<AddNewBillData>> => {
+    const mutationOptions: UseMutationOptions<unknown, DefaultError, Options<AddNewBillData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await addNewBill({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const getAllFuelBillsQueryKey = (options: Options<GetAllFuelBillsData>) => createQueryKey('getAllFuelBills', options);
 
 /**
  * Get All My Bills
  *
- * Gets all years of bills for specified car
+ * Gets all bills for specified car, Pages starting at 1
  */
-export const getAllBillYearsOptions = (options: Options<GetAllBillYearsData>) => queryOptions<GetAllBillYearsResponse, DefaultError, GetAllBillYearsResponse, ReturnType<typeof getAllBillYearsQueryKey>>({
+export const getAllFuelBillsOptions = (options: Options<GetAllFuelBillsData>) => queryOptions<GetAllFuelBillsResponse, DefaultError, GetAllFuelBillsResponse, ReturnType<typeof getAllFuelBillsQueryKey>>({
     queryFn: async ({ queryKey, signal }) => {
-        const { data } = await getAllBillYears({
+        const { data } = await getAllFuelBills({
             ...options,
             ...queryKey[0],
             signal,
@@ -231,7 +231,56 @@ export const getAllBillYearsOptions = (options: Options<GetAllBillYearsData>) =>
         });
         return data;
     },
-    queryKey: getAllBillYearsQueryKey(options)
+    queryKey: getAllFuelBillsQueryKey(options)
+});
+
+export const getAllFuelBillsInfiniteQueryKey = (options: Options<GetAllFuelBillsData>): QueryKey<Options<GetAllFuelBillsData>> => createQueryKey('getAllFuelBills', options, true);
+
+/**
+ * Get All My Bills
+ *
+ * Gets all bills for specified car, Pages starting at 1
+ */
+export const getAllFuelBillsInfiniteOptions = (options: Options<GetAllFuelBillsData>) => infiniteQueryOptions<GetAllFuelBillsResponse, DefaultError, InfiniteData<GetAllFuelBillsResponse>, QueryKey<Options<GetAllFuelBillsData>>, number | Pick<QueryKey<Options<GetAllFuelBillsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+// @ts-ignore
+{
+    queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<QueryKey<Options<GetAllFuelBillsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+            query: {
+                page: pageParam
+            }
+        };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await getAllFuelBills({
+            ...options,
+            ...params,
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getAllFuelBillsInfiniteQueryKey(options)
+});
+
+export const getAllFuelBillYearsQueryKey = (options: Options<GetAllFuelBillYearsData>) => createQueryKey('getAllFuelBillYears', options);
+
+/**
+ * Get All My Bills
+ *
+ * Gets all years of bills for specified car
+ */
+export const getAllFuelBillYearsOptions = (options: Options<GetAllFuelBillYearsData>) => queryOptions<GetAllFuelBillYearsResponse, DefaultError, GetAllFuelBillYearsResponse, ReturnType<typeof getAllFuelBillYearsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getAllFuelBillYears({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getAllFuelBillYearsQueryKey(options)
 });
 
 /**
@@ -250,6 +299,95 @@ export const deleteBillMutation = (options?: Partial<Options<DeleteBillData>>): 
     };
     return mutationOptions;
 };
+
+export const getAllMaintenanceBillsQueryKey = (options: Options<GetAllMaintenanceBillsData>) => createQueryKey('getAllMaintenanceBills', options);
+
+/**
+ * Get All My Bills
+ *
+ * Gets all bills for specified car, Pages starting at 1
+ */
+export const getAllMaintenanceBillsOptions = (options: Options<GetAllMaintenanceBillsData>) => queryOptions<GetAllMaintenanceBillsResponse, DefaultError, GetAllMaintenanceBillsResponse, ReturnType<typeof getAllMaintenanceBillsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getAllMaintenanceBills({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getAllMaintenanceBillsQueryKey(options)
+});
+
+export const getAllMaintenanceBillsInfiniteQueryKey = (options: Options<GetAllMaintenanceBillsData>): QueryKey<Options<GetAllMaintenanceBillsData>> => createQueryKey('getAllMaintenanceBills', options, true);
+
+/**
+ * Get All My Bills
+ *
+ * Gets all bills for specified car, Pages starting at 1
+ */
+export const getAllMaintenanceBillsInfiniteOptions = (options: Options<GetAllMaintenanceBillsData>) => infiniteQueryOptions<GetAllMaintenanceBillsResponse, DefaultError, InfiniteData<GetAllMaintenanceBillsResponse>, QueryKey<Options<GetAllMaintenanceBillsData>>, number | Pick<QueryKey<Options<GetAllMaintenanceBillsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+// @ts-ignore
+{
+    queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<QueryKey<Options<GetAllMaintenanceBillsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+            query: {
+                page: pageParam
+            }
+        };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await getAllMaintenanceBills({
+            ...options,
+            ...params,
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getAllMaintenanceBillsInfiniteQueryKey(options)
+});
+
+export const getAllMaintenanceBillYearsQueryKey = (options: Options<GetAllMaintenanceBillYearsData>) => createQueryKey('getAllMaintenanceBillYears', options);
+
+/**
+ * Get All My Bills
+ *
+ * Gets all years of bills for specified car
+ */
+export const getAllMaintenanceBillYearsOptions = (options: Options<GetAllMaintenanceBillYearsData>) => queryOptions<GetAllMaintenanceBillYearsResponse, DefaultError, GetAllMaintenanceBillYearsResponse, ReturnType<typeof getAllMaintenanceBillYearsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getAllMaintenanceBillYears({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getAllMaintenanceBillYearsQueryKey(options)
+});
+
+export const getAllBillYearsQueryKey = (options: Options<GetAllBillYearsData>) => createQueryKey('getAllBillYears', options);
+
+/**
+ * Get All My Bills Years
+ *
+ * Gets all years of bills for specified car
+ */
+export const getAllBillYearsOptions = (options: Options<GetAllBillYearsData>) => queryOptions<GetAllBillYearsResponse, DefaultError, GetAllBillYearsResponse, ReturnType<typeof getAllBillYearsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getAllBillYears({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getAllBillYearsQueryKey(options)
+});
 
 export const getMyCarsQueryKey = (options?: Options<GetMyCarsData>) => createQueryKey('getMyCars', options);
 
@@ -345,7 +483,7 @@ export const getMyCarOverviewOptions = (options: Options<GetMyCarOverviewData>) 
  * This is the description for the import of an csv of your billEntities.<br />
  * <br />
  * You need to add the csv and optionally the order in the csv (starts with 0).<br />
- * If you're not adding the order, the default is: day, unit, pricePerUnit, distance, estimate
+ * If you're not adding the order, the default is: date, unit, pricePerUnit, distance, estimate
  * separator between columns is ',' (comma)
  *
  */

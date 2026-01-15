@@ -8,13 +8,16 @@ import { LoadingCarGrid } from '@/components/car/LoadingCarGrid';
 import React from 'react';
 import ErrorPage from '@/pages/ErrorPage';
 import { BackendError } from '@/utils/BackendError';
-import PageHeader from '@/components/base/PageHeader';
+import CarLedgerPageHeader from '@/components/CarLedgerPageHeader';
+import { useTranslation } from 'react-i18next';
 
 export interface CarListPageProperties {
   navigate: (path: NavigateOptions) => void;
 }
 
 export default function CarListPage({ navigate }: CarListPageProperties) {
+  const { t } = useTranslation();
+
   const { data, isError, isLoading, error } = useQuery({
     ...getMyCarsOptions({
       client: localClient,
@@ -43,9 +46,9 @@ export default function CarListPage({ navigate }: CarListPageProperties) {
 
   return (
     <Container>
-      <PageHeader title="My Cars" navigate={navigate} />
+      <CarLedgerPageHeader title={t('app.car.myCars')} navigate={navigate} />
       <Typography variant="body1" color="text.secondary" gutterBottom>
-        View, add, and manage your vehicles.
+        {t('app.car.description')}
       </Typography>
       {renderComponents()}
     </Container>

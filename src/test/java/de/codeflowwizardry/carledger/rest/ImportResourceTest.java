@@ -5,12 +5,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.InputStream;
 
-import de.codeflowwizardry.carledger.data.CarEntity;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import de.codeflowwizardry.carledger.data.AccountEntity;
+import de.codeflowwizardry.carledger.data.CarEntity;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.BillRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;

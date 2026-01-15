@@ -1,6 +1,14 @@
 app:
   title: "CarLedger"
   slogan: "Rechnungen sammeln. Wartung planen. Kosten kennen."
+  language: "Sprache"
+  button:
+    continue: "Weiter"
+    done: "Fertig"
+    refresh: "Neuladen"
+    cancel: "Abbrechen"
+    back: "Zurück"
+    save: "Speichern"
   nav:
     title: "Menü"
     overview: "Übersicht"
@@ -11,9 +19,56 @@ app:
     logoutButton: "Ausloggen"
     welcome: "Willkommen"
   car:
-    edit: "Editieren"
+    myCars: "Meine Fahrzeuge"
+    description: "Fahrzeuge anzeigen, hinzufügen und verwalten"
+
+    newCar:
+      button: "Neues Fahrzeug"
+      title: "Neues Fahrzeug"
+      description: "Trage deine Fahrzeugdaten ein"
+
+    updateCar:
+      button: "Editieren"
+      title: "Fahrzeug bearbeiten"
+      description: "Aktualisiere deine Fahrzeugdaten"
+
+    newUpdateCar:
+      name: "Name oder Modell"
+      year: "Baujahr"
+      odometer: "Kilometerstand (KM)"
+      odometerDescription: "Kilometerstand von z.B. beim Kauf"
+
+    csvImport: "CSV importieren"
+    add: "Rechnung hinzufügen"
+
+    stats:
+      fuel:
+        title: "Tank Statistik"
+        refuels: "Tankfüllungen"
+        cost: "Kosten"
+        consumption: "Verbrauch"
 
     fuel:
-      add: "Rechnung hinzufügen"
       recentTitle: "Letzten Tank-Rechnungen"
       showMore: "Alle anzeigen"
+
+      stepper:
+        upload: "CSV hochladen"
+        configureOrder: "Reihenfolge anpassen"
+        importData: "Daten importieren"
+
+      table:
+        title: "Tank-Rechnungen"
+
+        date: "Datum"
+        distance: "Strecke"
+        unit: "Einheit"
+        pricePerUnit: "Kosten/Einheit"
+        total: "Kosten"
+
+        estimateConsumption: "Estimate"
+        avgConsumption: "Avg"
+
+        seeMore: "Alle Einträge"
+        loading: "Lade Einträge"
+        loadingFailed: "Laden der Einträge fehlgeschlagen!"

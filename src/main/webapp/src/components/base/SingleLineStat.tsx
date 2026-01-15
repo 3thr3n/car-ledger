@@ -1,4 +1,4 @@
-import { Typography } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 
 export default function SingleLineStat({
   label,
@@ -10,9 +10,10 @@ export default function SingleLineStat({
   type?: string;
 }) {
   return (
-    <Typography variant="body1">
-      <strong>{label}</strong> {value ?? '—'}{' '}
-      {type ? <Typography variant="caption">{type}</Typography> : ''}
+    <Typography variant="body1" display="flex">
+      <strong>{label}</strong> <Box flexGrow={1} />
+      {value ?? '—'}
+      {type ? ' ' + type : ''}
     </Typography>
   );
 }

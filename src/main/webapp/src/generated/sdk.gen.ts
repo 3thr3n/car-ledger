@@ -2,7 +2,7 @@
 
 import { type Client, formDataBodySerializer, type Options as Options2, type TDataShape } from './client';
 import { client } from './client.gen';
-import type { AddNewBillData, AddNewBillErrors, AddNewBillResponses, CallbackData, CallbackResponses, CreateCarData, CreateCarErrors, CreateCarResponses, DeleteBillData, DeleteBillErrors, DeleteBillResponses, GetAllBillsData, GetAllBillsResponses, GetAllBillYearsData, GetAllBillYearsResponses, GetMyCarData, GetMyCarOverviewData, GetMyCarOverviewResponses, GetMyCarResponses, GetMyCarsData, GetMyCarsResponses, GetMyselfData, GetMyselfResponses, GetStatsAverageData, GetStatsAverageResponses, GetStatsHiLoData, GetStatsHiLoResponses, GetStatsTotalData, GetStatsTotalResponses, ImportCsvData, ImportCsvErrors, ImportCsvResponses, LoginData, LoginResponses, LogoutCallbackData, LogoutCallbackResponses, LogoutData, LogoutResponses, UpdateMyCarData, UpdateMyCarErrors, UpdateMyCarResponses } from './types.gen';
+import type { AddNewBillData, AddNewBillErrors, AddNewBillResponses, CallbackData, CallbackResponses, CreateCarData, CreateCarErrors, CreateCarResponses, DeleteBillData, DeleteBillErrors, DeleteBillResponses, GetAllBillsData, GetAllBillsResponses, GetAllBillYearsData, GetAllBillYearsResponses, GetAllFuelBillsData, GetAllFuelBillsResponses, GetAllFuelBillYearsData, GetAllFuelBillYearsResponses, GetAllMaintenanceBillsData, GetAllMaintenanceBillsResponses, GetAllMaintenanceBillYearsData, GetAllMaintenanceBillYearsResponses, GetMyCarData, GetMyCarOverviewData, GetMyCarOverviewResponses, GetMyCarResponses, GetMyCarsData, GetMyCarsResponses, GetMyselfData, GetMyselfResponses, GetStatsAverageData, GetStatsAverageResponses, GetStatsHiLoData, GetStatsHiLoResponses, GetStatsTotalData, GetStatsTotalResponses, ImportCsvData, ImportCsvErrors, ImportCsvResponses, LoginData, LoginResponses, LogoutCallbackData, LogoutCallbackResponses, LogoutData, LogoutResponses, UpdateMyCarData, UpdateMyCarErrors, UpdateMyCarResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -47,10 +47,17 @@ export const logout = <ThrowOnError extends boolean = false>(options?: Options<L
 export const logoutCallback = <ThrowOnError extends boolean = false>(options?: Options<LogoutCallbackData, ThrowOnError>) => (options?.client ?? client).get<LogoutCallbackResponses, unknown, ThrowOnError>({ url: '/api/auth/logout-callback', ...options });
 
 /**
+ * Get All My Bills
+ *
+ * Gets all bills for specified car, Pages starting at 1
+ */
+export const getAllBills = <ThrowOnError extends boolean = false>(options: Options<GetAllBillsData, ThrowOnError>) => (options.client ?? client).get<GetAllBillsResponses, unknown, ThrowOnError>({ url: '/api/bill/{carId}/all', ...options });
+
+/**
  * Add New Bill
  */
 export const addNewBill = <ThrowOnError extends boolean = false>(options: Options<AddNewBillData, ThrowOnError>) => (options.client ?? client).put<AddNewBillResponses, AddNewBillErrors, ThrowOnError>({
-    url: '/api/bill/{carId}',
+    url: '/api/bill/{carId}/fuel',
     ...options,
     headers: {
         'Content-Type': 'application/json',
@@ -61,21 +68,42 @@ export const addNewBill = <ThrowOnError extends boolean = false>(options: Option
 /**
  * Get All My Bills
  *
- * Gets all bills for specified car
+ * Gets all bills for specified car, Pages starting at 1
  */
-export const getAllBills = <ThrowOnError extends boolean = false>(options: Options<GetAllBillsData, ThrowOnError>) => (options.client ?? client).get<GetAllBillsResponses, unknown, ThrowOnError>({ url: '/api/bill/{carId}/all', ...options });
+export const getAllFuelBills = <ThrowOnError extends boolean = false>(options: Options<GetAllFuelBillsData, ThrowOnError>) => (options.client ?? client).get<GetAllFuelBillsResponses, unknown, ThrowOnError>({ url: '/api/bill/{carId}/fuel/all', ...options });
 
 /**
  * Get All My Bills
  *
  * Gets all years of bills for specified car
  */
-export const getAllBillYears = <ThrowOnError extends boolean = false>(options: Options<GetAllBillYearsData, ThrowOnError>) => (options.client ?? client).get<GetAllBillYearsResponses, unknown, ThrowOnError>({ url: '/api/bill/{carId}/years', ...options });
+export const getAllFuelBillYears = <ThrowOnError extends boolean = false>(options: Options<GetAllFuelBillYearsData, ThrowOnError>) => (options.client ?? client).get<GetAllFuelBillYearsResponses, unknown, ThrowOnError>({ url: '/api/bill/{carId}/fuel/years', ...options });
 
 /**
  * Delete Bill
  */
-export const deleteBill = <ThrowOnError extends boolean = false>(options: Options<DeleteBillData, ThrowOnError>) => (options.client ?? client).delete<DeleteBillResponses, DeleteBillErrors, ThrowOnError>({ url: '/api/bill/{carId}/{billId}', ...options });
+export const deleteBill = <ThrowOnError extends boolean = false>(options: Options<DeleteBillData, ThrowOnError>) => (options.client ?? client).delete<DeleteBillResponses, DeleteBillErrors, ThrowOnError>({ url: '/api/bill/{carId}/fuel/{billId}', ...options });
+
+/**
+ * Get All My Bills
+ *
+ * Gets all bills for specified car, Pages starting at 1
+ */
+export const getAllMaintenanceBills = <ThrowOnError extends boolean = false>(options: Options<GetAllMaintenanceBillsData, ThrowOnError>) => (options.client ?? client).get<GetAllMaintenanceBillsResponses, unknown, ThrowOnError>({ url: '/api/bill/{carId}/maintenance/all', ...options });
+
+/**
+ * Get All My Bills
+ *
+ * Gets all years of bills for specified car
+ */
+export const getAllMaintenanceBillYears = <ThrowOnError extends boolean = false>(options: Options<GetAllMaintenanceBillYearsData, ThrowOnError>) => (options.client ?? client).get<GetAllMaintenanceBillYearsResponses, unknown, ThrowOnError>({ url: '/api/bill/{carId}/maintenance/years', ...options });
+
+/**
+ * Get All My Bills Years
+ *
+ * Gets all years of bills for specified car
+ */
+export const getAllBillYears = <ThrowOnError extends boolean = false>(options: Options<GetAllBillYearsData, ThrowOnError>) => (options.client ?? client).get<GetAllBillYearsResponses, unknown, ThrowOnError>({ url: '/api/bill/{carId}/years', ...options });
 
 /**
  * Get My Cars
@@ -122,7 +150,7 @@ export const getMyCarOverview = <ThrowOnError extends boolean = false>(options: 
  * This is the description for the import of an csv of your billEntities.<br />
  * <br />
  * You need to add the csv and optionally the order in the csv (starts with 0).<br />
- * If you're not adding the order, the default is: day, unit, pricePerUnit, distance, estimate
+ * If you're not adding the order, the default is: date, unit, pricePerUnit, distance, estimate
  * separator between columns is ',' (comma)
  *
  */

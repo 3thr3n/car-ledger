@@ -7,7 +7,7 @@ import {
   useMediaQuery,
   useTheme,
 } from '@mui/material';
-import productLogo from '@/assets/car-ledger.png';
+import productLogo from '@/assets/car-ledger.svg';
 import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import UserNavigation from '@/components/base/UserNavigation';
@@ -44,7 +44,7 @@ export default function Navigation() {
       position="relative"
       sx={{
         background: (theme) =>
-          `linear-gradient(90deg, ${theme.palette.primary.light}22, transparent)`,
+          `linear-gradient(90deg, ${theme.palette.secondary.dark}, transparent)`,
       }}
     >
       <Container maxWidth="xl">

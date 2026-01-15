@@ -1,59 +1,59 @@
 package de.codeflowwizardry.carledger.data;
 
-import static de.codeflowwizardry.carledger.StatsCalculator.ONE_HUNDRED;
-
 import java.math.BigDecimal;
-import java.math.RoundingMode;
+import java.math.BigInteger;
 import java.time.LocalDate;
-import java.util.Objects;
 
-import de.codeflowwizardry.carledger.rest.records.BillInput;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.SequenceGenerator;
-import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
+import jakarta.persistence.*;
 
-@Entity(name = "Bill")
+@Entity(name = "bill")
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = {
-		"_day", "unit", "distance", "car_id"
+		"b_date", "b_car_id", "b_total"
 }))
-@SequenceGenerator(name = "sequence_bill", allocationSize = 1, initialValue = 5, sequenceName = "sequence_bill")
-public class BillEntity
+public class BillEntity extends AbstractBillEntity
 {
-	public static final BigDecimal GERMAN_UST = BigDecimal.valueOf(1.19);
-
 	@Id
-	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequence_bill")
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(insertable = false, updatable = false)
 	private Long id;
-	@Column(name = "_day", updatable = false)
-	private LocalDate day = LocalDate.now();
-	@Column(updatable = false)
-	private BigDecimal unit = BigDecimal.ZERO;
-	@Column(name = "price_per_unit")
-	private BigDecimal pricePerUnit = BigDecimal.ZERO;
-	private BigDecimal distance = BigDecimal.ZERO;
-	private BigDecimal estimate = BigDecimal.ZERO;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "b_type", nullable = false, length = 50)
+	private BillType type;
+
+	@Column(name = "b_date", updatable = false)
+	private LocalDate date = LocalDate.now();
+
+	@Column(name = "b_total", nullable = false)
+	private BigDecimal total = BigDecimal.ZERO;
+
+	@Column(name = "b_vat_rate", nullable = false)
+	private BigInteger vatRate = BigInteger.ZERO;
+
+	@Column(name = "b_net_amount", nullable = false)
+	private BigDecimal netAmount = BigDecimal.ZERO;
+
+	@Column(name = "b_ust_amount", nullable = false)
+	private BigDecimal ustAmount = BigDecimal.ZERO;
 
 	@ManyToOne(optional = false)
-	private CarEntity car;
+	@JoinColumn(name = "b_car_id", nullable = false)
+	protected CarEntity car;
+
+	@OneToOne(mappedBy = "bill", cascade = CascadeType.ALL)
+	private FuelBillEntity fuelBill;
+
+	@OneToOne(mappedBy = "bill", cascade = CascadeType.ALL)
+	private MaintenanceBillEntity maintenanceBill;
 
 	public BillEntity()
 	{
 	}
 
-	public BillEntity(BillInput billPojo)
+	@Override
+	public BillEntity getBill()
 	{
-		this.day = billPojo.day();
-		this.distance = Objects.requireNonNullElse(billPojo.distance(), BigDecimal.ZERO);
-		this.estimate = Objects.requireNonNullElse(billPojo.estimate(), BigDecimal.ZERO);
-		this.pricePerUnit = Objects.requireNonNullElse(billPojo.pricePerUnit(), BigDecimal.ZERO);
-		this.unit = Objects.requireNonNullElse(billPojo.unit(), BigDecimal.ZERO);
+		return this;
 	}
 
 	public Long getId()
@@ -61,59 +61,69 @@ public class BillEntity
 		return id;
 	}
 
-	public LocalDate getDay()
+	public void setId(Long id)
 	{
-		return day;
+		this.id = id;
 	}
 
-	public void setDay(LocalDate day)
+	public BillType getType()
 	{
-		this.day = day;
+		return type;
 	}
 
-	public BigDecimal getUnit()
+	public void setType(BillType type)
 	{
-		return unit;
+		this.type = type;
 	}
 
-	public void setUnit(BigDecimal unit)
+	public LocalDate getDate()
 	{
-		this.unit = unit;
+		return date;
 	}
 
-	public BigDecimal getPricePerUnit()
+	public void setDate(LocalDate date)
 	{
-		return pricePerUnit;
+		this.date = date;
 	}
 
-	public void setPricePerUnit(BigDecimal pricePerUnit)
+	public BigDecimal getTotal()
 	{
-		this.pricePerUnit = pricePerUnit;
+		return total;
 	}
 
-	public BigDecimal getDistance()
+	public void setTotal(BigDecimal total)
 	{
-		return distance;
+		this.total = total;
 	}
 
-	public boolean isDistanceSet()
+	public BigDecimal getNetAmount()
 	{
-		return !BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP).equals(distance);
+		return netAmount;
 	}
 
-	public void setDistance(BigDecimal distance)
+	public void setNetAmount(BigDecimal netAmount)
 	{
-		this.distance = distance;
+		this.netAmount = netAmount;
 	}
 
-	public BigDecimal getEstimate()
+	public BigDecimal getUstAmount()
 	{
-		return estimate;
+		return ustAmount;
 	}
 
-	public void setEstimate(BigDecimal estimate)
+	public void setUstAmount(BigDecimal ustAmount)
 	{
-		this.estimate = estimate;
+		this.ustAmount = ustAmount;
+	}
+
+	public BigInteger getVatRate()
+	{
+		return vatRate;
+	}
+
+	public void setVatRate(BigInteger vatRate)
+	{
+		this.vatRate = vatRate;
 	}
 
 	public CarEntity getCar()
@@ -131,21 +141,13 @@ public class BillEntity
 		return car.getId();
 	}
 
-	public BigDecimal getCalculatedPrice(BigDecimal mwst)
+	public FuelBillEntity getFuelBill()
 	{
-		return pricePerUnit
-				.divide(mwst, 4, RoundingMode.HALF_UP)
-				.multiply(unit)
-				.multiply(mwst)
-				.divide(ONE_HUNDRED, 2, RoundingMode.HALF_UP);
+		return fuelBill;
 	}
 
-	public BigDecimal getCalculateConsumption()
+	public MaintenanceBillEntity getMaintenanceBill()
 	{
-		if (unit.compareTo(BigDecimal.ZERO) <= 0 || distance.compareTo(BigDecimal.ZERO) <= 0)
-		{
-			return BigDecimal.ZERO;
-		}
-		return unit.divide(distance, 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100));
+		return maintenanceBill;
 	}
 }
