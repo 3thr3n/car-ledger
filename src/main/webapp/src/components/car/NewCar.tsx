@@ -47,8 +47,7 @@ export default function NewCar({ index }: { index: number }) {
               }}
             >
               <Typography align="center" m={2}>
-                Max cars reached, either delete one or ask the administrator to
-                allow one more!
+                {t('app.car.maxCars')}
               </Typography>
             </Box>
           </CarGridContent>
@@ -72,7 +71,7 @@ export default function NewCar({ index }: { index: number }) {
               }}
             >
               <Add sx={{ mr: 1 }} />{' '}
-              <Typography>{t('app.car.newCar')}</Typography>
+              <Typography>{t('app.car.newCar.button')}</Typography>
             </Box>
           </Tooltip>
         </CarGridContent>

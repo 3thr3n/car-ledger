@@ -18,9 +18,20 @@ app:
     loginButton: "Login"
     logoutButton: "Logout"
     welcome: "Welcome"
+
+  dashboard:
+    title: "Dashboard"
+    filter:
+      cars: "All cars"
+      from: "From"
+      to: "To"
+
   car:
     myCars: "My Cars"
     description: "View, add, and manage your vehicles"
+
+    maxCars: "Max cars reached, either delete one or ask the administrator to allow one more!"
+    info: "Car information"
 
     newCar:
       button: "New car"
@@ -32,10 +43,10 @@ app:
       title: "Edit car"
       description: "Update your car details"
 
-    newUpdateCar:
+    common:
       name: "Car name / Model"
       year: "Manufacture year"
-      odometer: "Odometer (KM)"
+      odometer: "Odometer"
       odometerDescription: "Odometer e.g. when bought"
 
     csvImport: "Import CSV"
@@ -56,6 +67,10 @@ app:
         upload: "Upload CSV"
         configureOrder: "Configure order/import"
         importData: "Import data"
+
+      filter:
+        all: "All"
+        year: "Year"
 
       table:
         title: "Fuel entries"

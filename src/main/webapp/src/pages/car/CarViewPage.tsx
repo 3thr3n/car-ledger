@@ -120,11 +120,14 @@ export default function CarViewPage({ navigate, id }: CarViewPageProperties) {
         <Grid size={{ xs: 12, md: 4 }}>
           <Card>
             <CardContent>
-              <CarLedgerSubPageHeader title="Car Information" isCardHeader />
+              <CarLedgerSubPageHeader title={t('app.car.info')} isCardHeader />
               <Divider sx={{ mb: 2 }} />
-              <SingleLineStat label="Year:" value={car.year} />
               <SingleLineStat
-                label="Odometer:"
+                label={t('app.car.common.year') + ':'}
+                value={car.year}
+              />
+              <SingleLineStat
+                label={t('app.car.common.odometer') + ':'}
                 value={car.odometer}
                 type="km"
               />
