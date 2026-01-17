@@ -1,4 +1,5 @@
 import { Box, Card, MenuItem, Select, Stack, Typography } from '@mui/material';
+import { useTranslation } from 'react-i18next';
 
 export interface YearSelectionProps {
   years: number[];
@@ -13,6 +14,8 @@ export default function YearSelection({
   setSelectedYear,
   isMobile,
 }: YearSelectionProps) {
+  const { t } = useTranslation();
+
   if (isMobile) {
     return (
       <Select
@@ -21,7 +24,7 @@ export default function YearSelection({
         onChange={(e) => setSelectedYear(Number(e.target.value))}
         sx={{ mb: 2 }}
       >
-        <MenuItem value={-1}>All</MenuItem>
+        <MenuItem value={-1}>{t('app.car.fuel.filter.all')}</MenuItem>
         {years.map((y) => (
           <MenuItem key={y} value={y}>
             {y}
@@ -34,7 +37,7 @@ export default function YearSelection({
   return (
     <Box sx={{ minWidth: 140 }}>
       <Typography variant="subtitle1" gutterBottom>
-        Years
+        {t('app.car.fuel.filter.year')}
       </Typography>
       <Stack spacing={1}>
         <Card
@@ -48,7 +51,9 @@ export default function YearSelection({
           }}
           onClick={() => setSelectedYear(-1)}
         >
-          <Typography variant="body2">All</Typography>
+          <Typography variant="body2">
+            {t('app.car.fuel.filter.all')}
+          </Typography>
         </Card>
         {years.map((y) => (
           <Card

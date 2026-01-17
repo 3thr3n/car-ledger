@@ -18,9 +18,20 @@ app:
     loginButton: "Einloggen"
     logoutButton: "Ausloggen"
     welcome: "Willkommen"
+
+  dashboard:
+    title: "Dashboard"
+    filter:
+      cars: "Alle Fahrzeuge"
+      from: "Von"
+      to: "Bis"
+
   car:
     myCars: "Meine Fahrzeuge"
     description: "Fahrzeuge anzeigen, hinzufügen und verwalten"
+
+    maxCars: "Fahrzeuglimit erreicht – lösche eines oder kontaktiere den Administrator."
+    info: "Fahrzeuginformation"
 
     newCar:
       button: "Neues Fahrzeug"
@@ -32,7 +43,7 @@ app:
       title: "Fahrzeug bearbeiten"
       description: "Aktualisiere deine Fahrzeugdaten"
 
-    newUpdateCar:
+    common:
       name: "Name oder Modell"
       year: "Baujahr"
       odometer: "Kilometerstand (KM)"
@@ -57,6 +68,10 @@ app:
         configureOrder: "Reihenfolge anpassen"
         importData: "Daten importieren"
 
+      filter:
+        all: "Alle"
+        year: "Jahr"
+
       table:
         title: "Tank-Rechnungen"
 
@@ -66,8 +81,8 @@ app:
         pricePerUnit: "Kosten/Einheit"
         total: "Kosten"
 
-        estimateConsumption: "Estimate"
-        avgConsumption: "Avg"
+        estimateConsumption: "Verbrauch (Bordcomputer)"
+        avgConsumption: "Verbrauch"
 
         seeMore: "Alle Einträge"
         loading: "Lade Einträge"

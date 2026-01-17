@@ -15,6 +15,7 @@ import { NavigateOptions } from '@tanstack/router-core';
 import { useSyncQueryParams } from '@/hooks/useSyncQueryParams';
 import CarLedgerPageHeader from '@/components/CarLedgerPageHeader';
 import dayjs from 'dayjs';
+import { useTranslation } from 'react-i18next';
 
 export interface DashboardPageProps {
   navigate: (nav: NavigateOptions) => void;
@@ -31,6 +32,8 @@ export default function DashboardPage({
   navigate,
   search,
 }: DashboardPageProps) {
+  const { t } = useTranslation();
+
   const [selectedCarId, setSelectedCarId] = useState<number>(
     isNaN(Number(search.selectedCar)) ? -1 : Number(search.selectedCar),
   );
@@ -61,7 +64,10 @@ export default function DashboardPage({
 
   return (
     <Container sx={{ py: 4 }}>
-      <CarLedgerPageHeader title="Dashboard" navigate={navigate} />
+      <CarLedgerPageHeader
+        title={t('app.dashboard.title')}
+        navigate={navigate}
+      />
 
       <DashboardFilterBar
         selectedCarId={selectedCarId}

@@ -55,7 +55,6 @@ export function LanguageSwitcher({ drawerMode }: LanguageSwitcherProps) {
       <Select
         labelId="language-select-label"
         value={i18n.language}
-        label="Lang"
         sx={{
           alignSelf: 'center',
         }}

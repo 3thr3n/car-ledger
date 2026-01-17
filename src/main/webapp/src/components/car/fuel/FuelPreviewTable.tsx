@@ -16,7 +16,7 @@ import { localClient } from '@/utils/QueryClient';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
-export default function CarBillPreviewTable({
+export default function FuelPreviewTable({
   id,
   onSeeMore,
   reload,

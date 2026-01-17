@@ -1,5 +1,5 @@
 import { createLazyFileRoute } from '@tanstack/react-router';
-import CarEditPage from '@/pages/car/CarEditPage';
+import CarUpdatePage from '@/pages/car/CarUpdatePage';
 
 export const Route = createLazyFileRoute('/car/$id/edit')({
   component: EditRouteComponent,
@@ -9,5 +9,5 @@ function EditRouteComponent() {
   const { id } = Route.useParams();
   const navigate = Route.useNavigate();
 
-  return <CarEditPage id={id} navigate={navigate} />;
+  return <CarUpdatePage id={id} navigate={navigate} />;
 }

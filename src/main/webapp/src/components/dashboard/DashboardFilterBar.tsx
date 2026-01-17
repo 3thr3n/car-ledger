@@ -31,7 +31,7 @@ export default function DashboardFilterBar({
         }
         sx={{ minWidth: 200 }}
       >
-        <MenuItem value="-1">All Cars</MenuItem>
+        <MenuItem value="-1">{t('app.dashboard.filter.cars')}</MenuItem>
         {cars?.map((c) => (
           <MenuItem key={c.id} value={c.id}>
             {c.name}
@@ -40,13 +40,13 @@ export default function DashboardFilterBar({
       </Select>
 
       <DatePicker
-        label="From"
+        label={t('app.dashboard.filter.from')}
         name="date"
         value={dateRange.from}
         onChange={(e) => onChangeDateRange({ ...dateRange, from: e })}
       />
       <DatePicker
-        label="To"
+        label={t('app.dashboard.filter.to')}
         name="date"
         value={dateRange.to}
         onChange={(e) => onChangeDateRange({ ...dateRange, to: e })}

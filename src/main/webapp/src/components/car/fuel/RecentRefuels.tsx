@@ -1,7 +1,7 @@
 import { NavigateOptions } from '@tanstack/router-core';
 import { Box, Button, Card, CardContent, Divider, Grid } from '@mui/material';
 import CarLedgerSubPageHeader from '@/components/CarLedgerSubPageHeader';
-import CarBillPreviewTable from '@/components/car/bill/CarBillPreviewTable';
+import FuelPreviewTable from '@/components/car/fuel/FuelPreviewTable';
 import { useTranslation } from 'react-i18next';
 
 export interface RecentRefuelsProps {
@@ -54,7 +54,7 @@ export default function RecentRefuels({
               isCardHeader
             />
             <Divider sx={{ mb: 2 }} />
-            <CarBillPreviewTable
+            <FuelPreviewTable
               id={id}
               onSeeMore={goToAll}
               reload={reloadToken}

@@ -11,6 +11,7 @@ import dayjs, { Dayjs } from 'dayjs';
 import { DatePicker } from '@mui/x-date-pickers';
 import CountrySelection from '@/components/car/bill/CountrySelection';
 import countryVat from 'country-vat';
+import { useTranslation } from 'react-i18next';
 
 const MAX_NUMBER_INPUT = 10000;
 
@@ -20,6 +21,7 @@ export interface AddFuelFormProps {
 }
 
 export default function AddFuelForm({ carId, navigate }: AddFuelFormProps) {
+  const { t } = useTranslation();
   // TODO: Get the initial state from the backend (User preference!)
   const [countryCode, setCountryCode] = useState('DE');
 
@@ -90,7 +92,7 @@ export default function AddFuelForm({ carId, navigate }: AddFuelFormProps) {
             sx={{
               margin: 1,
             }}
-            label="day"
+            label={t('app.car.fuel.table.date')}
             name="date"
             value={form.date}
             onChange={(e) => setForm({ ...form, date: e ?? dayjs() })}
@@ -98,7 +100,7 @@ export default function AddFuelForm({ carId, navigate }: AddFuelFormProps) {
           />
           <BillNumericInput
             maxInput={MAX_NUMBER_INPUT}
-            label="Unit"
+            label={t('app.car.fuel.table.unit')}
             name="unit"
             required
             suffix=" L"
@@ -108,7 +110,7 @@ export default function AddFuelForm({ carId, navigate }: AddFuelFormProps) {
           />
           <BillNumericInput
             maxInput={MAX_NUMBER_INPUT}
-            label="Price per unit"
+            label={t('app.car.fuel.table.pricePerUnit')}
             name="pricePerUnit"
             required
             suffix=" ct"
@@ -117,7 +119,7 @@ export default function AddFuelForm({ carId, navigate }: AddFuelFormProps) {
           />
           <BillNumericInput
             maxInput={MAX_NUMBER_INPUT}
-            label="Distance driven"
+            label={t('app.car.fuel.table.distance')}
             name="distance"
             suffix=" km"
             value={form.distance}
@@ -125,7 +127,7 @@ export default function AddFuelForm({ carId, navigate }: AddFuelFormProps) {
           />
           <BillNumericInput
             maxInput={MAX_NUMBER_INPUT}
-            label="Estimated consumption"
+            label={t('app.car.fuel.table.estimateConsumption')}
             name="estimate"
             suffix=" L"
             value={form.estimate}
@@ -137,7 +139,7 @@ export default function AddFuelForm({ carId, navigate }: AddFuelFormProps) {
               onClick={() => handleSave()}
               disabled={isPending}
             >
-              Save
+              {t('app.button.save')}
             </Button>
             <Button
               variant="outlined"
@@ -145,7 +147,7 @@ export default function AddFuelForm({ carId, navigate }: AddFuelFormProps) {
                 navigate({ to: `/car/$id`, params: { id: `${carId}` } })
               }
             >
-              Cancel
+              {t('app.button.cancel')}
             </Button>
           </Stack>
         </Stack>
