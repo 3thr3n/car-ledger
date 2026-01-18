@@ -22,12 +22,6 @@ export default function DashboardMetric({
         background: '#1a1a1a',
         border: '1px solid #2a2a2a',
         minHeight: 120,
-        transition: '0.2s ease',
-        ':hover': {
-          background: '#202020',
-          borderColor: color,
-          transform: 'translateY(-3px)',
-        },
       }}
     >
       <CardContent

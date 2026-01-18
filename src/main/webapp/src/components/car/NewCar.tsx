@@ -3,7 +3,7 @@ import { Box, Tooltip, Typography } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import useCarStore from '@/store/CarStore';
 import useUserStore from '@/store/UserStore';
-import { CarGrid, CarGridContent } from './CarGrid';
+import { CarGrid } from './CarGrid';
 import { useNavigate } from '@tanstack/react-router';
 import { CarLedgerAnimatedCard } from '@/components/CarLedgerAnimatedCard';
 import { useTranslation } from 'react-i18next';
@@ -36,21 +36,19 @@ export default function NewCar({ index }: { index: number }) {
     return (
       <CarLedgerAnimatedCard index={index} maxWidth={400}>
         <CarGrid>
-          <CarGridContent>
-            <Box
-              sx={{
-                display: 'flex',
-                height: '224px',
-                width: '100%',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Typography align="center" m={2}>
-                {t('app.car.maxCars')}
-              </Typography>
-            </Box>
-          </CarGridContent>
+          <Box
+            sx={{
+              display: 'flex',
+              height: '224px',
+              width: '100%',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Typography align="center" m={2}>
+              {t('app.car.maxCars')}
+            </Typography>
+          </Box>
         </CarGrid>
       </CarLedgerAnimatedCard>
     );
@@ -59,22 +57,20 @@ export default function NewCar({ index }: { index: number }) {
   return (
     <CarLedgerAnimatedCard index={index} maxWidth={400}>
       <CarGrid click={handleOpen}>
-        <CarGridContent>
-          <Tooltip title={tooltip} placement="top">
-            <Box
-              sx={{
-                display: 'flex',
-                height: '224px',
-                width: '100%',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Add sx={{ mr: 1 }} />{' '}
-              <Typography>{t('app.car.newCar.button')}</Typography>
-            </Box>
-          </Tooltip>
-        </CarGridContent>
+        <Tooltip title={tooltip} placement="top">
+          <Box
+            sx={{
+              display: 'flex',
+              height: '224px',
+              width: '100%',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Add sx={{ mr: 1 }} />{' '}
+            <Typography>{t('app.car.newCar.button')}</Typography>
+          </Box>
+        </Tooltip>
       </CarGrid>
     </CarLedgerAnimatedCard>
   );
