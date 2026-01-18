@@ -106,12 +106,12 @@ export interface FileRoutesByFullPath {
   '/dev/i18n': typeof DevI18nRoute
   '/car/new': typeof CarNewLazyRoute
   '/dev/404': typeof Dev404LazyRoute
-  '/dashboard': typeof DashboardIndexRoute
-  '/car': typeof CarIndexLazyRoute
+  '/dashboard/': typeof DashboardIndexRoute
+  '/car/': typeof CarIndexLazyRoute
   '/car/$id/edit': typeof CarIdEditLazyRoute
   '/car/$id/': typeof CarIdIndexLazyRoute
   '/car/$id/bill/add': typeof CarIdBillAddLazyRoute
-  '/car/$id/bill/fuel': typeof CarIdBillFuelIndexLazyRoute
+  '/car/$id/bill/fuel/': typeof CarIdBillFuelIndexLazyRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexLazyRoute
@@ -153,12 +153,12 @@ export interface FileRouteTypes {
     | '/dev/i18n'
     | '/car/new'
     | '/dev/404'
-    | '/dashboard'
-    | '/car'
+    | '/dashboard/'
+    | '/car/'
     | '/car/$id/edit'
     | '/car/$id/'
     | '/car/$id/bill/add'
-    | '/car/$id/bill/fuel'
+    | '/car/$id/bill/fuel/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -228,14 +228,14 @@ declare module '@tanstack/react-router' {
     '/car/': {
       id: '/car/'
       path: '/car'
-      fullPath: '/car'
+      fullPath: '/car/'
       preLoaderRoute: typeof CarIndexLazyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard/': {
       id: '/dashboard/'
       path: '/dashboard'
-      fullPath: '/dashboard'
+      fullPath: '/dashboard/'
       preLoaderRoute: typeof DashboardIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
@@ -291,7 +291,7 @@ declare module '@tanstack/react-router' {
     '/car/$id/bill/fuel/': {
       id: '/car/$id/bill/fuel/'
       path: '/bill/fuel'
-      fullPath: '/car/$id/bill/fuel'
+      fullPath: '/car/$id/bill/fuel/'
       preLoaderRoute: typeof CarIdBillFuelIndexLazyRouteImport
       parentRoute: typeof CarIdRouteRoute
     }
