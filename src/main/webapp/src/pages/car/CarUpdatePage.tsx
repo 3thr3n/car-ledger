@@ -102,8 +102,6 @@ export default function CarUpdatePage({ navigate, id }: CarNewPageProperties) {
   const handleValidate = () => {
     const newErrors: typeof errors = {};
 
-    console.log(`Name: '${name.trim()}' - Year: ${year} - KM: ${km}`);
-
     if (!name.trim()) {
       newErrors.name = 'Car name is required';
     }

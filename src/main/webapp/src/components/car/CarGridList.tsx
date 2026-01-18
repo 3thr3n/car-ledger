@@ -1,7 +1,7 @@
 import { Grid, Typography } from '@mui/material';
 import carPlaceholder from '@/assets/car_placeholder.svg';
 import React, { useEffect } from 'react';
-import { CarGrid, CarGridContent } from './CarGrid';
+import { CarGrid } from './CarGrid';
 import NewCar from './NewCar';
 import useCarStore from '@/store/CarStore';
 import { NavigateOptions } from '@tanstack/router-core';
@@ -39,28 +39,26 @@ export default function CarGridList({ navigate, data }: CarGridListProps) {
   }) {
     return (
       <CarGrid click={() => props.handleOpenCar(props.id)} index={props.index}>
-        <CarGridContent>
-          {/*<CarGridMenu*/}
-          {/*  id={props.id}*/}
-          {/*  sx={{*/}
-          {/*    position: 'relative',*/}
-          {/*  }}*/}
-          {/*/>*/}
-          <img
-            src={carPlaceholder}
-            alt="car"
-            width={200}
-            height={200}
-            style={{
-              maxHeight: '200px',
-              width: '100%',
-              objectFit: 'contain',
-              filter:
-                'blur(0.3em) invert(0.7) opacity(0.2) sepia(.88) hue-rotate(180deg)',
-            }}
-          />
-          <Typography>{props.description}</Typography>
-        </CarGridContent>
+        {/*<CarGridMenu*/}
+        {/*  id={props.id}*/}
+        {/*  sx={{*/}
+        {/*    position: 'relative',*/}
+        {/*  }}*/}
+        {/*/>*/}
+        <img
+          src={carPlaceholder}
+          alt="car"
+          width={200}
+          height={200}
+          style={{
+            maxHeight: '200px',
+            width: '100%',
+            objectFit: 'contain',
+            filter:
+              'blur(0.3em) invert(0.7) opacity(0.2) sepia(.88) hue-rotate(180deg)',
+          }}
+        />
+        <Typography>{props.description}</Typography>
       </CarGrid>
     );
   }
@@ -90,7 +88,7 @@ export default function CarGridList({ navigate, data }: CarGridListProps) {
         columns={{ xl: 16, md: 12, sm: 8, xs: 4 }}
         justifyContent="center"
         display="flex"
-        mt={6}
+        pt={4}
         sx={{
           width: '100%',
           overflow: 'auto',
