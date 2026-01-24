@@ -14,6 +14,7 @@ app:
     overview: "Übersicht"
     cars: "Autos"
     dashboard: "Dashboard"
+    more: "mehr"
   login:
     loginButton: "Einloggen"
     logoutButton: "Ausloggen"

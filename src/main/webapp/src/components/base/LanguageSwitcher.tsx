@@ -22,9 +22,12 @@ const languages = [
 export function LanguageSwitcher({ drawerMode }: LanguageSwitcherProps) {
   const { i18n, t } = useTranslation();
 
-  const onSelectChange = useCallback((event: SelectChangeEvent) => {
-    i18n.changeLanguage(event.target.value as string);
-  }, []);
+  const onSelectChange = useCallback(
+    (event: SelectChangeEvent) => {
+      i18n.changeLanguage(event.target.value as string);
+    },
+    [i18n],
+  );
 
   if (drawerMode) {
     return (
