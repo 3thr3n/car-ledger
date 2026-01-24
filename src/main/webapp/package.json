@@ -46,7 +46,7 @@
     "@modyfi/vite-plugin-yaml": "^1.1.1",
     "@tanstack/router-plugin": "^1.151.2",
     "@types/i18next-browser-languagedetector": "^3.0.0",
-    "@types/node": "^24",
+    "@types/node": "^25",
     "@types/papaparse": "^5.5.2",
     "@types/react": "^19",
     "@types/react-dom": "^19",
