@@ -1,4 +1,4 @@
-import { Card, CardContent, Divider, Skeleton } from '@mui/material';
+import { Box, Card, CardContent, Divider, Skeleton } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
 import { getMyCarOverviewOptions } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
@@ -6,13 +6,17 @@ import SingleLineStat from '@/components/base/SingleLineStat';
 import CarLedgerSubPageHeader from '@/components/CarLedgerSubPageHeader';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import CarLedgerButton from '@/components/CarLedgerButton';
+import { NavigateOptions } from '@tanstack/router-core';
 
 export const CarOverviewStats = ({
   carId,
   reload,
+  navigate,
 }: {
   carId: number;
   reload: number;
+  navigate: (opt: NavigateOptions) => void;
 }) => {
   const { t } = useTranslation();
   const { data, isLoading, refetch } = useQuery({
@@ -33,10 +37,21 @@ export const CarOverviewStats = ({
   return (
     <Card sx={{ mt: 3 }}>
       <CardContent>
-        <CarLedgerSubPageHeader
-          title={t('app.car.stats.fuel.title')}
-          isCardHeader
-        />
+        <Box display="flex" flexDirection="row">
+          <CarLedgerSubPageHeader
+            title={t('app.car.stats.fuel.title')}
+            isCardHeader
+          />
+          <Box flexGrow={1} />
+          <CarLedgerButton
+            variant="text"
+            onClick={() =>
+              navigate({ to: '/dashboard', search: { selectedCar: carId } })
+            }
+          >
+            {t('app.nav.more')} →
+          </CarLedgerButton>
+        </Box>
 
         <Divider sx={{ mb: 2 }} />
 

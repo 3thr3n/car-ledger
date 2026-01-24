@@ -133,7 +133,11 @@ export default function CarViewPage({ navigate, id }: CarViewPageProperties) {
               />
             </CardContent>
           </Card>
-          <CarOverviewStats carId={Number(id)} reload={csvImportedAt ?? 0} />
+          <CarOverviewStats
+            carId={Number(id)}
+            reload={csvImportedAt ?? 0}
+            navigate={navigate}
+          />
         </Grid>
 
         <RecentRefuels
