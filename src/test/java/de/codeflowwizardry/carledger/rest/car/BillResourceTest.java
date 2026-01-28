@@ -1,4 +1,4 @@
-package de.codeflowwizardry.carledger.rest;
+package de.codeflowwizardry.carledger.rest.car;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.contains;
@@ -18,7 +18,6 @@ import de.codeflowwizardry.carledger.data.factory.FuelBillFactory;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.BillRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
-import de.codeflowwizardry.carledger.rest.car.BillResource;
 import de.codeflowwizardry.carledger.rest.records.input.FuelBillInput;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
@@ -135,6 +134,42 @@ class BillResourceTest
 				.then()
 				.statusCode(200)
 				.body("", contains(2024, 2023, 2022));
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldDeleteOne()
+	{
+		// given
+		Long billId = billRepository.listAll().getFirst().getId();
+
+		// when
+		given()
+				.pathParam("carId", carEntity.getId())
+				.when()
+				.delete("{billId}", billId)
+				.then()
+				.statusCode(204);
+	}
+
+	@Test
+	@TestSecurity(user = "bob", roles = {
+			"user"
+	})
+	void shouldFailDeletingAsDifferentUser()
+	{
+		// given
+		Long billId = billRepository.listAll().getFirst().getId();
+
+		// when
+		given()
+				.pathParam("carId", carEntity.getId())
+				.when()
+				.delete("{billId}", billId)
+				.then()
+				.statusCode(400);
 	}
 
 	@AfterEach

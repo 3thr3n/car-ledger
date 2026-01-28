@@ -38,6 +38,15 @@ public class BillResource extends AbstractResource
 		return billRepository.getBillYears(carId, context.getName());
 	}
 
+	@DELETE
+	@Path("{billId}")
+	@Operation(operationId = "deleteBill", description = "Deletes the bill")
+	@APIResponse(responseCode = "202", description = "Bills found and years extracted.")
+	public void deleteBill(@PathParam("carId") long carId, @PathParam("billId") long billId)
+	{
+		billRepository.delete(carId, billId, context.getName());
+	}
+
 	@GET
 	@Path("all")
 	@Operation(operationId = "getAllBills", description = "Gets all bills for specified car, Pages starting at 1")
