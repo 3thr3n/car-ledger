@@ -1,4 +1,4 @@
-package de.codeflowwizardry.carledger.rest;
+package de.codeflowwizardry.carledger.rest.car;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.is;
@@ -6,7 +6,6 @@ import static org.hamcrest.Matchers.is;
 import org.junit.jupiter.api.Test;
 
 import de.codeflowwizardry.carledger.TestDataProfile;
-import de.codeflowwizardry.carledger.rest.car.BillResource;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;

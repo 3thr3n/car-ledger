@@ -159,7 +159,6 @@ public class FuelResourceTest
 				.then()
 				.statusCode(202)
 				.body("date", is("2024-08-22"));
-
 	}
 
 	@Test
@@ -187,42 +186,6 @@ public class FuelResourceTest
 				.contentType(ContentType.JSON)
 				.body(body)
 				.put()
-				.then()
-				.statusCode(400);
-	}
-
-	@Test
-	@TestSecurity(user = "peter", roles = {
-			"user"
-	})
-	void shouldDeleteOne()
-	{
-		// given
-		Long billId = billRepository.listAll().getFirst().getId();
-
-		// when
-		given()
-				.pathParam("carId", carEntity.getId())
-				.when()
-				.delete("{billId}", billId)
-				.then()
-				.statusCode(202);
-	}
-
-	@Test
-	@TestSecurity(user = "bob", roles = {
-			"user"
-	})
-	void shouldFailDeletingAsDifferentUser()
-	{
-		// given
-		Long billId = billRepository.listAll().getFirst().getId();
-
-		// when
-		given()
-				.pathParam("carId", carEntity.getId())
-				.when()
-				.delete("{billId}", billId)
 				.then()
 				.statusCode(400);
 	}

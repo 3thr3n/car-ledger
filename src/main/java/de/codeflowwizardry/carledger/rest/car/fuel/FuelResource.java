@@ -95,24 +95,4 @@ public class FuelResource extends AbstractResource
 					.build());
 		}
 	}
-
-	@DELETE
-	@Path("{billId}")
-	@Operation(operationId = "deleteBill")
-	@APIResponse(responseCode = "202", description = "Bill deleted.")
-	@APIResponse(responseCode = "400", description = "Bill not found on the specified car.")
-	@APIResponse(responseCode = "500", description = "Something went wrong while deleting. Please ask the server admin for help.")
-	public Response deleteBill(@PathParam("carId") long carId, @PathParam("billId") long billId)
-	{
-		Optional<FuelBillEntity> optBill = fuelBillRepository.getBillById(billId, carId, context.getName());
-		if (optBill.isEmpty())
-		{
-			throw new BadRequestException("Bill with id " + billId + " not found on car!");
-		}
-		FuelBillEntity billEntity = optBill.get();
-
-		fuelBillRepository.delete(billEntity);
-
-		return Response.accepted().build();
-	}
 }
