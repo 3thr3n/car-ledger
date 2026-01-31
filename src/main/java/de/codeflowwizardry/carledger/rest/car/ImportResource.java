@@ -1,6 +1,7 @@
 package de.codeflowwizardry.carledger.rest.car;
 
 import java.io.File;
+import java.math.BigInteger;
 import java.security.Principal;
 
 import org.apache.commons.lang3.ObjectUtils;
@@ -55,9 +56,15 @@ public class ImportResource extends AbstractResource
 			@PathParam("carId") long carId,
 			@RestForm("file") @PartType("text/csv") File csv,
 			@RestForm("order") @PartType(MediaType.APPLICATION_JSON) CsvOrder order,
+			@RestForm("vat") @PartType(MediaType.TEXT_PLAIN) BigInteger vat,
 			@QueryParam("skipHeader") boolean skipHeader)
 	{
 		ObjectUtils.requireNonEmpty(csv, "CSV ('file') needs to be set!");
+
+		if (vat == null)
+		{
+			return Response.status(400).entity("Vat rate cannot be null!").build();
+		}
 
 		if (order == null)
 		{
@@ -73,7 +80,7 @@ public class ImportResource extends AbstractResource
 
 		try
 		{
-			processor.processCsv(csv, order, carEntity, skipHeader);
+			processor.processCsv(csv, order, carEntity, skipHeader, vat);
 		}
 		catch (IllegalArgumentException e)
 		{

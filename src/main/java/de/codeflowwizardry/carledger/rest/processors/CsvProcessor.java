@@ -40,7 +40,7 @@ public class CsvProcessor
 		this.fuelBillFactory = fuelBillFactory;
 	}
 
-	public void processCsv(File csv, CsvOrder csvOrder, CarEntity carEntity, boolean hasHeader)
+	public void processCsv(File csv, CsvOrder csvOrder, CarEntity carEntity, boolean hasHeader, BigInteger vat)
 			throws WebApplicationException
 	{
 		int skipLines = 0;
@@ -52,7 +52,7 @@ public class CsvProcessor
 
 		try
 		{
-			processAndReadCsv(csv, csvOrder, carEntity, skipLines);
+			processAndReadCsv(csv, csvOrder, carEntity, skipLines, vat);
 		}
 		catch (IOException e)
 		{
@@ -61,7 +61,8 @@ public class CsvProcessor
 		}
 	}
 
-	private void processAndReadCsv(File csv, CsvOrder csvOrder, CarEntity carEntity, int skipLines) throws IOException
+	private void processAndReadCsv(File csv, CsvOrder csvOrder, CarEntity carEntity, int skipLines, BigInteger vat)
+			throws IOException
 	{
 		try (CSVReader csvReader = new CSVReaderBuilder(new FileReader(csv)).withSkipLines(skipLines).build())
 		{
@@ -71,7 +72,7 @@ public class CsvProcessor
 				FuelBillInput input = new FuelBillInput(
 						parseToLocalDate(line, csvOrder.date()),
 						BigDecimal.ZERO,
-						BigInteger.valueOf(19),
+						vat,
 						parseToBigDecimal(line, csvOrder.distance()),
 						parseToBigDecimal(line, csvOrder.unit()),
 						parseToBigDecimal(line, csvOrder.pricePerUnit()),

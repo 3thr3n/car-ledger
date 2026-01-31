@@ -41,7 +41,7 @@ public class BillResource extends AbstractResource
 	@DELETE
 	@Path("{billId}")
 	@Operation(operationId = "deleteBill", description = "Deletes the bill")
-	@APIResponse(responseCode = "202", description = "Bills found and years extracted.")
+	@APIResponse(responseCode = "204", description = "Bill deleted.")
 	public void deleteBill(@PathParam("carId") long carId, @PathParam("billId") long billId)
 	{
 		billRepository.delete(carId, billId, context.getName());
