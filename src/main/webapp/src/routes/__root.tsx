@@ -47,13 +47,13 @@ export const Route = createRootRoute({
             <Navigation />
             <CsvUploadDialog />
             <Box
+              id="RootBox"
               component="main"
               flexGrow={1}
               display="flex"
               flexDirection="column"
-              overflow="auto"
+              overflow="hidden"
               height="100%"
-              py={3}
             >
               <Outlet />
             </Box>

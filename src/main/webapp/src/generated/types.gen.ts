@@ -12,8 +12,10 @@ export type Account = {
 export type AverageStats = {
     pricePerUnit?: number;
     distance?: number;
-    calculated?: number;
-    calculatedPrice?: number;
+    fuelCostPerKm?: number;
+    fuelConsumption?: number;
+    maintenanceCost?: number;
+    costPerKm?: number;
 };
 
 export type Bill = {
@@ -78,6 +80,12 @@ export type CsvOrder = {
     estimate?: number;
 };
 
+export type DashboardStats = {
+    total?: TotalStats;
+    average?: AverageStats;
+    hiLo?: HiLoStats;
+};
+
 export type FuelBill = {
     id?: number;
     date?: LocalDate;
@@ -106,11 +114,12 @@ export type HiLo = {
 };
 
 export type HiLoStats = {
-    calculatedPrice?: HiLo;
-    calculated?: HiLo;
-    distance?: HiLo;
-    unit?: HiLo;
     pricePerUnit?: HiLo;
+    distance?: HiLo;
+    fuelCostPerKm?: HiLo;
+    consumption?: HiLo;
+    fuelCost?: HiLo;
+    maintenanceCost?: HiLo;
 };
 
 export type LocalDate = string;
@@ -127,10 +136,31 @@ export type MaintenanceBill = {
     odometer?: number;
 };
 
+export type MaintenanceBillInput = {
+    total?: number;
+    vatRate?: number;
+    date?: LocalDate;
+    odometer?: number;
+    laborCost?: number;
+    partsCost?: number;
+    description?: string;
+    workshop?: string;
+};
+
 export type TotalStats = {
     unit?: number;
-    distance?: number;
-    calculatedPrice?: number;
+    trackedDistance?: number;
+    fuelTotal?: number;
+    maintenanceTotal?: number;
+    total?: number;
+    fuelBills?: number;
+    maintenanceBills?: number;
+};
+
+export type DashboardStatsWritable = {
+    total?: TotalStats;
+    average?: AverageStats;
+    hiLo?: HiLoStatsWritable;
 };
 
 export type HiLoWritable = {
@@ -140,11 +170,12 @@ export type HiLoWritable = {
 };
 
 export type HiLoStatsWritable = {
-    calculatedPrice?: HiLoWritable;
-    calculated?: HiLoWritable;
-    distance?: HiLoWritable;
-    unit?: HiLoWritable;
     pricePerUnit?: HiLoWritable;
+    distance?: HiLoWritable;
+    fuelCostPerKm?: HiLoWritable;
+    consumption?: HiLoWritable;
+    fuelCost?: HiLoWritable;
+    maintenanceCost?: HiLoWritable;
 };
 
 export type CallbackData = {
@@ -292,32 +323,31 @@ export type GetAllFuelBillYearsResponses = {
 
 export type GetAllFuelBillYearsResponse = GetAllFuelBillYearsResponses[keyof GetAllFuelBillYearsResponses];
 
-export type DeleteBillData = {
-    body?: never;
+export type AddNewMaintenanceBillData = {
+    body: MaintenanceBillInput;
     path: {
-        billId: number;
         carId: number;
     };
     query?: never;
-    url: '/api/bill/{carId}/fuel/{billId}';
+    url: '/api/bill/{carId}/maintenance';
 };
 
-export type DeleteBillErrors = {
+export type AddNewMaintenanceBillErrors = {
     /**
-     * Bill not found on the specified car.
+     * Car is not for your user.
      */
     400: unknown;
     /**
-     * Something went wrong while deleting. Please ask the server admin for help.
+     * Something went wrong while saving. Please ask the server admin for help.
      */
     500: unknown;
 };
 
-export type DeleteBillResponses = {
+export type AddNewMaintenanceBillResponses = {
     /**
-     * Bill deleted.
+     * Bill created.
      */
-    202: unknown;
+    200: unknown;
 };
 
 export type GetAllMaintenanceBillsData = {
@@ -377,6 +407,25 @@ export type GetAllBillYearsResponses = {
 };
 
 export type GetAllBillYearsResponse = GetAllBillYearsResponses[keyof GetAllBillYearsResponses];
+
+export type DeleteBillData = {
+    body?: never;
+    path: {
+        carId: number;
+        billId: number;
+    };
+    query?: never;
+    url: '/api/bill/{carId}/{billId}';
+};
+
+export type DeleteBillResponses = {
+    /**
+     * Bill deleted.
+     */
+    204: void;
+};
+
+export type DeleteBillResponse = DeleteBillResponses[keyof DeleteBillResponses];
 
 export type GetMyCarsData = {
     body?: never;
@@ -490,6 +539,7 @@ export type ImportCsvData = {
     body: {
         file?: Blob | File;
         order?: CsvOrder;
+        vat?: number;
     };
     path: {
         carId: number;
@@ -520,7 +570,7 @@ export type ImportCsvResponses = {
     202: unknown;
 };
 
-export type GetStatsAverageData = {
+export type GetDashboardStatsData = {
     body?: never;
     path: {
         carId: number;
@@ -529,59 +579,17 @@ export type GetStatsAverageData = {
         from?: LocalDate;
         to?: LocalDate;
     };
-    url: '/api/stats/{carId}/average';
+    url: '/api/stats/{carId}';
 };
 
-export type GetStatsAverageResponses = {
+export type GetDashboardStatsResponses = {
     /**
      * OK
      */
-    200: AverageStats;
+    200: DashboardStats;
 };
 
-export type GetStatsAverageResponse = GetStatsAverageResponses[keyof GetStatsAverageResponses];
-
-export type GetStatsHiLoData = {
-    body?: never;
-    path: {
-        carId: number;
-    };
-    query?: {
-        from?: LocalDate;
-        to?: LocalDate;
-    };
-    url: '/api/stats/{carId}/hi_lo';
-};
-
-export type GetStatsHiLoResponses = {
-    /**
-     * OK
-     */
-    200: HiLoStats;
-};
-
-export type GetStatsHiLoResponse = GetStatsHiLoResponses[keyof GetStatsHiLoResponses];
-
-export type GetStatsTotalData = {
-    body?: never;
-    path: {
-        carId: number;
-    };
-    query?: {
-        from?: LocalDate;
-        to?: LocalDate;
-    };
-    url: '/api/stats/{carId}/total';
-};
-
-export type GetStatsTotalResponses = {
-    /**
-     * OK
-     */
-    200: TotalStats;
-};
-
-export type GetStatsTotalResponse = GetStatsTotalResponses[keyof GetStatsTotalResponses];
+export type GetDashboardStatsResponse = GetDashboardStatsResponses[keyof GetDashboardStatsResponses];
 
 export type GetMyselfData = {
     body?: never;

@@ -19,6 +19,7 @@ import { localClient } from '@/utils/QueryClient';
 import { toast } from 'react-toastify';
 import { BackendError } from '@/utils/BackendError';
 import { useTranslation } from 'react-i18next';
+import CarLedgerPage from '@/components/CarLedgerPage';
 
 export interface CarNewPageProperties {
   navigate: (path: NavigateOptions) => void;
@@ -146,65 +147,67 @@ export default function CarUpdatePage({ navigate, id }: CarNewPageProperties) {
   }
 
   return (
-    <Container maxWidth="sm" sx={{ py: 5 }}>
-      <Typography variant="h4" gutterBottom>
-        {id ? t('app.car.updateCar.title') : t('app.car.newCar.title')}
-      </Typography>
-      <Typography variant="body1" color="text.secondary" gutterBottom>
-        {id
-          ? t('app.car.updateCar.description')
-          : t('app.car.newCar.description')}
-      </Typography>
+    <CarLedgerPage id="CarUpdatePage">
+      <Container maxWidth="sm">
+        <Typography variant="h4" gutterBottom>
+          {id ? t('app.car.updateCar.title') : t('app.car.newCar.title')}
+        </Typography>
+        <Typography variant="body1" color="text.secondary" gutterBottom>
+          {id
+            ? t('app.car.updateCar.description')
+            : t('app.car.newCar.description')}
+        </Typography>
 
-      <Box component="form" sx={{ mt: 3 }}>
-        <Stack spacing={3}>
-          <TextField
-            placeholder={t('app.car.common.name')}
-            label={t('app.car.common.name')}
-            value={name}
-            onBlur={handleValidate}
-            onChange={(e) => setName(e.target.value)}
-            fullWidth
-            error={!!errors.name}
-            helperText={errors.name}
-          />
-          <NumericFormat
-            placeholder={t('app.car.common.year')}
-            label={t('app.car.common.year')}
-            value={year}
-            onBlur={handleValidate}
-            customInput={TextField}
-            onValueChange={(values) => {
-              setYear(values.floatValue);
-            }}
-            error={!!errors.year}
-            helperText={errors.year}
-          />
-          <NumericFormat
-            placeholder={t('app.car.common.odometer')}
-            label={t('app.car.common.odometer')}
-            value={km}
-            prefix="KM "
-            thousandSeparator
-            onBlur={handleValidate}
-            customInput={TextField}
-            onValueChange={(values) => {
-              setKm(values.floatValue);
-            }}
-            error={!!errors.km}
-            helperText={errors.km}
-          />
+        <Box component="form" sx={{ mt: 3 }}>
+          <Stack spacing={3}>
+            <TextField
+              placeholder={t('app.car.common.name')}
+              label={t('app.car.common.name')}
+              value={name}
+              onBlur={handleValidate}
+              onChange={(e) => setName(e.target.value)}
+              fullWidth
+              error={!!errors.name}
+              helperText={errors.name}
+            />
+            <NumericFormat
+              placeholder={t('app.car.common.year')}
+              label={t('app.car.common.year')}
+              value={year}
+              onBlur={handleValidate}
+              customInput={TextField}
+              onValueChange={(values) => {
+                setYear(values.floatValue);
+              }}
+              error={!!errors.year}
+              helperText={errors.year}
+            />
+            <NumericFormat
+              placeholder={t('app.car.common.odometer')}
+              label={t('app.car.common.odometer')}
+              value={km}
+              prefix="KM "
+              thousandSeparator
+              onBlur={handleValidate}
+              customInput={TextField}
+              onValueChange={(values) => {
+                setKm(values.floatValue);
+              }}
+              error={!!errors.km}
+              helperText={errors.km}
+            />
 
-          <Stack direction="row" spacing={2} justifyContent="flex-end">
-            <Button variant="outlined" onClick={handleCancel}>
-              {t('app.button.cancel')}
-            </Button>
-            <Button variant="contained" onClick={handleSave}>
-              {t('app.button.save')}
-            </Button>
+            <Stack direction="row" spacing={2} justifyContent="flex-end">
+              <Button variant="outlined" onClick={handleCancel}>
+                {t('app.button.cancel')}
+              </Button>
+              <Button variant="contained" onClick={handleSave}>
+                {t('app.button.save')}
+              </Button>
+            </Stack>
           </Stack>
-        </Stack>
-      </Box>
-    </Container>
+        </Box>
+      </Container>
+    </CarLedgerPage>
   );
 }

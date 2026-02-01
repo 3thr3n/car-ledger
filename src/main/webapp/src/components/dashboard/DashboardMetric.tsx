@@ -1,19 +1,37 @@
 import { Box, Card, CardContent, Typography } from '@mui/material';
 import { ReactNode } from 'react';
+import EuroIcon from '@mui/icons-material/Euro';
+import LocalGasStationIcon from '@mui/icons-material/LocalGasStation';
+import RouteIcon from '@mui/icons-material/Route';
+import { QuestionMark } from '@mui/icons-material';
 
 export default function DashboardMetric({
   label,
   value,
   unit,
-  icon,
-  color = '#4bc0c0',
+  type,
 }: {
   label: string;
   value: string | number;
   unit?: string;
-  icon: ReactNode;
-  color?: string;
+  type: 'distance' | 'fuel' | 'cost' | 'div';
 }) {
+  const asdf: { icon?: ReactNode; color?: string } = {};
+
+  if (type == 'distance') {
+    asdf.icon = <RouteIcon />;
+    asdf.color = '#4dd0e1';
+  } else if (type == 'fuel') {
+    asdf.icon = <LocalGasStationIcon />;
+    asdf.color = '#ba68c8';
+  } else if (type == 'cost') {
+    asdf.icon = <EuroIcon />;
+    asdf.color = '#ffb74d';
+  } else {
+    asdf.icon = <QuestionMark />;
+    asdf.color = '#f2f2f2';
+  }
+
   return (
     <Card
       sx={{
@@ -38,15 +56,15 @@ export default function DashboardMetric({
             width: 50,
             height: 50,
             borderRadius: 3,
-            background: color + '20',
-            color,
+            background: asdf.color + '20',
+            color: asdf.color,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             fontSize: 30,
           }}
         >
-          {icon}
+          {asdf.icon}
         </Box>
 
         <Box>

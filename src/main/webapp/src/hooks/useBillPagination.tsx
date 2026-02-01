@@ -36,5 +36,5 @@ export default function useBillPagination(
     console.log('sort:', sort);
   }, [sort]);
 
-  return { data, refetch, setPagination, setYear, setSort };
+  return { data, refetch, setPagination, setYear, setSort, pagination };
 }

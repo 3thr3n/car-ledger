@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { Box, Button, Container, Typography } from '@mui/material';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import CarLedgerPage from '@/components/CarLedgerPage';
 
 type ErrorPageProps = {
   error?: unknown;
@@ -40,40 +41,42 @@ export default function ErrorPage({ error, title }: ErrorPageProps) {
   }, [handleGoHome]);
 
   return (
-    <Container
-      maxWidth="sm"
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center',
-        textAlign: 'center',
-        gap: 3,
-      }}
-    >
-      <ErrorOutlineIcon color="error" sx={{ fontSize: 80 }} />
-
-      <Box>
-        <Typography variant="h3" fontWeight={700} gutterBottom>
-          {title ? title : 'Oops!'}
-        </Typography>
-        <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-          {message}
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Going to Homepage in <strong>{countdown}</strong> second
-          {countdown !== 1 ? 's' : ''}...
-        </Typography>
-      </Box>
-
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={handleGoHome}
-        sx={{ px: 4, py: 1.5, borderRadius: 3 }}
+    <CarLedgerPage id="ErrorPage">
+      <Container
+        maxWidth="sm"
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center',
+          textAlign: 'center',
+          gap: 3,
+        }}
       >
-        Go Back Home
-      </Button>
-    </Container>
+        <ErrorOutlineIcon color="error" sx={{ fontSize: 80 }} />
+
+        <Box>
+          <Typography variant="h3" fontWeight={700} gutterBottom>
+            {title ? title : 'Oops!'}
+          </Typography>
+          <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+            {message}
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Going to Homepage in <strong>{countdown}</strong> second
+            {countdown !== 1 ? 's' : ''}...
+          </Typography>
+        </Box>
+
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleGoHome}
+          sx={{ px: 4, py: 1.5, borderRadius: 3 }}
+        >
+          Go Back Home
+        </Button>
+      </Container>
+    </CarLedgerPage>
   );
 }

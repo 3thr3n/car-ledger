@@ -1,13 +1,15 @@
-import { Box, CircularProgress, Container } from '@mui/material';
+import {
+  Box,
+  CircularProgress,
+  Container,
+  useMediaQuery,
+  useTheme,
+} from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
 import React, { useState } from 'react';
-import {
-  getStatsAverageOptions,
-  getStatsTotalOptions,
-} from '@/generated/@tanstack/react-query.gen';
+import { getDashboardStatsOptions } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
 import DashboardFilterBar from '@/components/dashboard/DashboardFilterBar';
-import DashboardCards from '@/components/dashboard/DashboardCards';
 import DashboardDateRange, {
   convertDateRangeToQuery,
 } from '@/components/dashboard/DashboardDateRange';
@@ -16,6 +18,10 @@ import { useSyncQueryParams } from '@/hooks/useSyncQueryParams';
 import CarLedgerPageHeader from '@/components/CarLedgerPageHeader';
 import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
+import DashboardCardsAverage from '@/components/dashboard/DashboardCardsAverage';
+import DashboardCardsHiLo from '@/components/dashboard/DashboardCardsHiLo';
+import DashboardCardsTotal from '@/components/dashboard/DashboardCardsTotal';
+import CarLedgerPage from '@/components/CarLedgerPage';
 
 export interface DashboardPageProps {
   navigate: (nav: NavigateOptions) => void;
@@ -33,6 +39,9 @@ export default function DashboardPage({
   search,
 }: DashboardPageProps) {
   const { t } = useTranslation();
+  const theme = useTheme();
+  const isMd = useMediaQuery(theme.breakpoints.up('md'));
+  const isSm = useMediaQuery(theme.breakpoints.up('sm'));
 
   const [selectedCarId, setSelectedCarId] = useState<number>(
     isNaN(Number(search.selectedCar)) ? -1 : Number(search.selectedCar),
@@ -44,8 +53,8 @@ export default function DashboardPage({
 
   useSyncQueryParams(navigate, search, selectedCarId, dateRange);
 
-  const { data: total, isLoading: isTotalLoading } = useQuery({
-    ...getStatsTotalOptions({
+  const { data, isLoading } = useQuery({
+    ...getDashboardStatsOptions({
       client: localClient,
       path: { carId: selectedCarId },
       query: convertDateRangeToQuery(dateRange),
@@ -53,36 +62,34 @@ export default function DashboardPage({
     enabled: selectedCarId !== null,
   });
 
-  const { data: average, isLoading: isAverageLoading } = useQuery({
-    ...getStatsAverageOptions({
-      client: localClient,
-      path: { carId: selectedCarId },
-      query: convertDateRangeToQuery(dateRange),
-    }),
-    enabled: selectedCarId !== null,
-  });
+  const width = isMd
+    ? `calc(100% / 12 * 3.75)` // md → 3 columns
+    : isSm
+      ? `calc(100% / 12 * 5.70)` // sm → 6 columns
+      : '100%'; // xs → full width
 
   return (
-    <Container sx={{ py: 4 }}>
-      <CarLedgerPageHeader
-        title={t('app.dashboard.title')}
-        navigate={navigate}
-      />
+    <CarLedgerPage id="DashboardPage">
+      <Container>
+        <CarLedgerPageHeader title={t('app.dashboard.title')} />
 
-      <DashboardFilterBar
-        selectedCarId={selectedCarId}
-        onSelectCar={setSelectedCarId}
-        dateRange={dateRange}
-        onChangeDateRange={setDateRange}
-      />
+        <DashboardFilterBar
+          selectedCarId={selectedCarId}
+          onSelectCar={setSelectedCarId}
+          dateRange={dateRange}
+          onChangeDateRange={setDateRange}
+        />
 
-      {isAverageLoading || isTotalLoading ? (
-        <CircularProgress />
-      ) : (
-        <Box sx={{ mt: 3 }}>
-          <DashboardCards average={average} total={total} />
-        </Box>
-      )}
-    </Container>
+        {isLoading || !data ? (
+          <CircularProgress />
+        ) : (
+          <Box sx={{ mt: 3 }}>
+            <DashboardCardsTotal width={width} total={data.total!} />
+            <DashboardCardsAverage width={width} average={data.average!} />
+            <DashboardCardsHiLo width={width} hiLo={data.hiLo!} />
+          </Box>
+        )}
+      </Container>
+    </CarLedgerPage>
   );
 }

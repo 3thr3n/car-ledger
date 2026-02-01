@@ -25,18 +25,19 @@ export default function RecentRefuels({
       <>
         <Grid size={{ xs: 12, md: 8 }}>
           <Card>
-            <CardContent>
+            <CardContent
+              sx={{
+                display: 'flex',
+              }}
+            >
               <CarLedgerSubPageHeader
                 title={t('app.car.fuel.recentTitle')}
                 isCardHeader
-                isMobile
               />
-              <Divider sx={{ mb: 2 }} />
-              <Box display="flex" justifyContent="flex-end" mt={2}>
-                <Button size="small" onClick={goToAll}>
-                  {t('app.car.fuel.showMore')} →
-                </Button>
-              </Box>
+              <Box flexGrow={1} />
+              <Button size="small" onClick={goToAll}>
+                {t('app.car.fuel.showMore')} →
+              </Button>
             </CardContent>
           </Card>
         </Grid>
