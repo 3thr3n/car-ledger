@@ -5,10 +5,12 @@ import static org.hamcrest.Matchers.is;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -20,6 +22,7 @@ import de.codeflowwizardry.carledger.data.repository.BillRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import de.codeflowwizardry.carledger.rest.car.StatsResource;
 import de.codeflowwizardry.carledger.rest.records.input.FuelBillInput;
+import de.codeflowwizardry.carledger.rest.records.stats.*;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
@@ -113,21 +116,64 @@ class StatsResourceTest
 		fuelBillFactory.create(fuelBillInput, carEntity.getId(), carEntity.getUser().getUserId());
 	}
 
+	DashboardStats expected = new DashboardStats(
+			new TotalStats(
+					BigDecimal.valueOf(76.0).setScale(2, RoundingMode.HALF_UP),
+					BigDecimal.valueOf(1380.0).setScale(2, RoundingMode.HALF_UP),
+					BigDecimal.valueOf(149.08),
+					BigDecimal.valueOf(0).setScale(2, RoundingMode.HALF_UP),
+					BigDecimal.valueOf(149.08),
+					3,
+					0),
+			new AverageStats(
+					BigDecimal.valueOf(195.6),
+					BigDecimal.valueOf(460.00).setScale(2, RoundingMode.HALF_UP),
+					BigDecimal.valueOf(10.73),
+					BigDecimal.valueOf(5.48),
+					BigDecimal.valueOf(0).setScale(2, RoundingMode.HALF_UP),
+					BigDecimal.valueOf(0.11)),
+			new HiLoStats(
+					new HiLo(
+							BigDecimal.valueOf(189.9).setScale(1, RoundingMode.HALF_UP),
+							BigDecimal.valueOf(199.9).setScale(1, RoundingMode.HALF_UP),
+							0),
+					new HiLo(
+							BigDecimal.valueOf(400.00).setScale(2, RoundingMode.HALF_UP),
+							BigDecimal.valueOf(500.00).setScale(2, RoundingMode.HALF_UP),
+							0),
+					new HiLo(
+							BigDecimal.valueOf(9.50).setScale(2, RoundingMode.HALF_UP),
+							BigDecimal.valueOf(11.49).setScale(2, RoundingMode.HALF_UP),
+							0),
+					new HiLo(
+							BigDecimal.valueOf(5.00).setScale(2, RoundingMode.HALF_UP),
+							BigDecimal.valueOf(5.83).setScale(2, RoundingMode.HALF_UP),
+							0),
+					new HiLo(
+							BigDecimal.valueOf(37.98).setScale(2, RoundingMode.HALF_UP),
+							BigDecimal.valueOf(55.97).setScale(2, RoundingMode.HALF_UP),
+							0),
+					new HiLo(
+							BigDecimal.valueOf(0).setScale(2, RoundingMode.HALF_UP),
+							BigDecimal.valueOf(0).setScale(2, RoundingMode.HALF_UP),
+							0)));
+
 	@Test
 	@TestSecurity(user = "peter", roles = {
 			"user"
 	})
 	void shouldGetAllTotalStats()
 	{
-		given()
+		DashboardStats stats = given()
 				.pathParam("carId", carEntity.getId())
 				.when()
-				.get("/total")
+				.get()
 				.then()
 				.statusCode(200)
-				.body("distance", is("1380.00"))
-				.body("unit", is("76.00"))
-				.body("calculatedPrice", is("149.08"));
+				.extract()
+				.as(DashboardStats.class);
+
+		Assertions.assertEquals(expected, stats);
 	}
 
 	@Test
@@ -136,15 +182,16 @@ class StatsResourceTest
 	})
 	void shouldGetAllTotalStatsForEveryOfMyCars()
 	{
-		given()
+		DashboardStats stats = given()
 				.pathParam("carId", -1)
 				.when()
-				.get("/total")
+				.get()
 				.then()
 				.statusCode(200)
-				.body("distance", is("1380.00"))
-				.body("unit", is("76.00"))
-				.body("calculatedPrice", is("149.08"));
+				.extract()
+				.as(DashboardStats.class);
+
+		Assertions.assertEquals(expected, stats);
 	}
 
 	@Test
@@ -159,12 +206,12 @@ class StatsResourceTest
 				.pathParam("carId", carEntity.getId())
 				.queryParam("from", localDateString)
 				.when()
-				.get("/total")
+				.get()
 				.then()
 				.statusCode(200)
-				.body("distance", is("980.00"))
-				.body("unit", is("56.00"))
-				.body("calculatedPrice", is("111.10"));
+				.body("total.trackedDistance", is(980.00f))
+				.body("total.unit", is(56.00f))
+				.body("total.fuelTotal", is(111.10f));
 	}
 
 	@Test
@@ -181,53 +228,11 @@ class StatsResourceTest
 				.queryParam("from", fromLocalDate)
 				.queryParam("to", toLocalDate)
 				.when()
-				.get("/total")
+				.get()
 				.then()
 				.statusCode(200)
-				.body("distance", is("480.00"))
-				.body("unit", is("28.00"))
-				.body("calculatedPrice", is("55.13"));
-	}
-
-	@Test
-	@TestSecurity(user = "peter", roles = {
-			"user"
-	})
-	void shouldGetAllAverageStats()
-	{
-		given()
-				.pathParam("carId", carEntity.getId())
-				.when()
-				.get("/average")
-				.then()
-				.statusCode(200)
-				.body("pricePerUnit", is("195.6"))
-				.body("distance", is("460.00"))
-				.body("calculated", is("5.48"))
-				.body("calculatedPrice", is("49.69"));
-	}
-
-	@Test
-	@TestSecurity(user = "peter", roles = {
-			"user"
-	})
-	void shouldGetAllHiLoStats()
-	{
-		given()
-				.pathParam("carId", carEntity.getId())
-				.when()
-				.get("/hi_lo")
-				.then()
-				.statusCode(200)
-				.body("distance.max", is("500.00"))
-				.body("distance.min", is("400.00"))
-				.body("unit.max", is("28.00"))
-				.body("unit.min", is("20.00"))
-				.body("calculatedPrice.max", is("55.97"))
-				.body("calculatedPrice.min", is("37.98"))
-				.body("calculated.max", is("5.83"))
-				.body("calculated.min", is("5.00"))
-				.body("pricePerUnit.max", is("199.9"))
-				.body("pricePerUnit.min", is("189.9"));
+				.body("total.trackedDistance", is(480.00f))
+				.body("total.unit", is(28.00f))
+				.body("total.fuelTotal", is(55.13f));
 	}
 }

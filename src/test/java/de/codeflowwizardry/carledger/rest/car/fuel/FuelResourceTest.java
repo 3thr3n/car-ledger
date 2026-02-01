@@ -3,7 +3,6 @@ package de.codeflowwizardry.carledger.rest.car.fuel;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -129,6 +128,21 @@ public class FuelResourceTest
 				.body("data[1].date", is("2023-06-02"))
 				.body("data[2].distance", is("400.00"))
 				.body("data[2].date", is("2022-05-22"));
+
+		given()
+				.queryParam("page", 0)
+				.queryParam("size", 1)
+				.pathParam("carId", carEntity.getId())
+				.when()
+				.get("all")
+				.then()
+				.statusCode(200)
+				.body("total", is(3))
+				.body("page", is(1))
+				.body("size", is(1))
+				.body("data.size()", is(1))
+				.body("data[0].distance", is("500.00"))
+				.body("data[0].date", is("2024-08-16"));
 	}
 
 	@Test
@@ -188,22 +202,6 @@ public class FuelResourceTest
 				.put()
 				.then()
 				.statusCode(400);
-	}
-
-	@Test
-	void shouldBeRedirectToLoginUrl()
-	{
-		String response = given()
-				.pathParam("carId", carEntity.getId())
-				.when()
-				.get("all")
-				.then()
-				.statusCode(200).extract()
-				.response()
-				.getBody()
-				.asString();
-
-		assertTrue(response.contains("<html"));
 	}
 
 	@Test

@@ -75,9 +75,7 @@ public class FuelBillFactory extends AbstractBillFactory<FuelBillInput, FuelBill
 		fuelBill.setUnit(unit);
 
 		calculateAvgConsumption(fuelBill);
-
-		// Needs to be calculated
-		fuelBill.setCostPerKm(BigDecimal.ZERO);
+		calculateCostPerKm(fuelBill);
 
 		em.persist(fuelBill);
 
@@ -145,12 +143,32 @@ public class FuelBillFactory extends AbstractBillFactory<FuelBillInput, FuelBill
 		BigDecimal distance = entity.getDistance();
 		BigDecimal unit = entity.getUnit();
 
-		if (!valueWasSet(distance) || !valueWasSet(unit))
+		if (!entity.isDistanceSet())
 		{
 			return;
 		}
 
-		BigDecimal avgConsumption = unit.divide(distance, 6, RoundingMode.HALF_UP).multiply(ONE_HUNDRED);
+		BigDecimal avgConsumption = unit
+				.divide(distance, 6, RoundingMode.HALF_UP)
+				.multiply(ONE_HUNDRED)
+				.setScale(2, RoundingMode.HALF_UP);
 		entity.setAvgConsumption(avgConsumption);
+	}
+
+	static void calculateCostPerKm(FuelBillEntity entity)
+	{
+		BigDecimal distance = entity.getDistance();
+		BigDecimal total = entity.getBill().getTotal();
+
+		if (!entity.isDistanceSet())
+		{
+			return;
+		}
+
+		BigDecimal costPerKm = total
+				.divide(distance, 4, RoundingMode.HALF_UP)
+				.multiply(ONE_HUNDRED).setScale(2,
+						RoundingMode.HALF_UP);
+		entity.setCostPerKm(costPerKm);
 	}
 }

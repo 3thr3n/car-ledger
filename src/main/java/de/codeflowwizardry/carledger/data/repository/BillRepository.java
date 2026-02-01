@@ -1,11 +1,11 @@
 package de.codeflowwizardry.carledger.data.repository;
 
 import java.time.LocalDate;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import de.codeflowwizardry.carledger.data.BillEntity;
+import de.codeflowwizardry.carledger.data.BillType;
+import de.codeflowwizardry.carledger.exception.DbDeletionException;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.panache.common.Page;
 import io.quarkus.panache.common.Parameters;
@@ -15,7 +15,8 @@ import jakarta.transaction.Transactional;
 @ApplicationScoped
 public class BillRepository extends AbstractBillRepository<BillEntity>
 {
-	public List<Integer> getBillYears(long carId, String username)
+	@Override
+	public List<Integer> getBillYears(long carId, String username, BillType type)
 	{
 		return find("select date from bill where car.id = :carId and car.user.userId = :userId",
 				Parameters.with("carId", carId).and("userId", username))
@@ -28,16 +29,52 @@ public class BillRepository extends AbstractBillRepository<BillEntity>
 				.toList();
 	}
 
-	public PanacheQuery<BillEntity> findByCarAndYear(Long carId, Integer year, Page queryPage)
+	@Override
+	public PanacheQuery<BillEntity> getBills(long carId, String username, Page page, Optional<Integer> year)
 	{
-		if (year == null)
+		String query = "car.id = :carId and car.user.userId = :username order by date desc";
+		Map<String, Object> params = new HashMap<>();
+		params.put("carId", carId);
+		params.put("username", username);
+
+		if (year.isPresent())
 		{
-			return find("car.id = ?1 order by date desc", carId)
-					.page(queryPage);
+			query = "year(date) = :year and " + query;
+			params.put("year", year.get());
 		}
 
-		return find("car.id = ?1 and YEAR(date) = ?2 order by date desc", carId, year)
-				.page(queryPage);
+		return find(query, params)
+				.page(page);
+	}
+
+	public List<BillEntity> getBills(long carId, String username, Optional<LocalDate> from, Optional<LocalDate> to)
+	{
+		Map<String, Object> params = new HashMap<>();
+
+		String query = "car.user.userId = :userId";
+		params.put("userId", username);
+
+		if (carId >= 0)
+		{
+			query += " and car.id = :carId";
+			params.put("carId", carId);
+		}
+
+		if (from.isPresent() && to.isPresent())
+		{
+			query += " and date >= :from and date <= :to";
+			params.put("from", from.get());
+			params.put("to", to.get());
+
+		} else if (from.isPresent())
+		{
+			query += " and date >= :from";
+			params.put("from", from.get());
+		}
+
+		query += " order by date desc";
+
+		return find(query, params).list();
 	}
 
 	@Transactional
@@ -49,7 +86,7 @@ public class BillRepository extends AbstractBillRepository<BillEntity>
 
 		if (any.isEmpty())
 		{
-			throw new RuntimeException("Bill could not be deleted (not found)");
+			throw new DbDeletionException("Bill could not be deleted (not found)");
 		}
 
 		delete(any.get());

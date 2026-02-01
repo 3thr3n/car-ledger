@@ -4,11 +4,19 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
+import de.codeflowwizardry.carledger.data.AccountEntity;
+import de.codeflowwizardry.carledger.data.CarEntity;
+import de.codeflowwizardry.carledger.data.FuelBillEntity;
+import de.codeflowwizardry.carledger.data.repository.CarRepository;
+import de.codeflowwizardry.carledger.rest.processors.TestEntityManager;
 import de.codeflowwizardry.carledger.rest.records.input.FuelBillInput;
+import jakarta.persistence.EntityManager;
 
 class FuelBillFactoryTest
 {
@@ -66,6 +74,81 @@ class FuelBillFactoryTest
 
 		// then
 		assertEquals(BigDecimal.valueOf(3781, 2), calculatedUnit);
+	}
 
+	@Test
+	void shouldCalculateCostPerKm()
+	{
+		// given
+		EntityManager entityManager = new TestEntityManager();
+
+		AccountEntity accountEntity = Mockito.mock(AccountEntity.class);
+		CarEntity carEntity = Mockito.mock(CarEntity.class);
+		Mockito.when(carEntity.getId()).thenReturn(1L);
+		Mockito.when(carEntity.getUser()).thenReturn(accountEntity);
+		Mockito.when(accountEntity.getUserId()).thenReturn("bob");
+
+		CarRepository carRepository = new CarRepository() {
+			@Override
+			public CarEntity findById(Long id, String user)
+			{
+				return carEntity;
+			}
+		};
+
+		FuelBillFactory fuelBillFactory = new FuelBillFactory(entityManager, carRepository);
+
+		FuelBillInput missingUnit = new FuelBillInput(LocalDate.now(),
+				BigDecimal.valueOf(80),
+				BigInteger.valueOf(19),
+				BigDecimal.valueOf(400),
+				null,
+				BigDecimal.valueOf(181.9),
+				null);
+		// when
+		FuelBillEntity calculatedUnit = fuelBillFactory.create(missingUnit, carEntity.getId(),
+				accountEntity.getUserId());
+
+		// then
+		assertEquals(BigDecimal.valueOf(20).setScale(2, RoundingMode.HALF_UP), calculatedUnit.getCostPerKm());
+
+	}
+
+	@Test
+	void shouldNotCalculateConsumptionOrCostPerKm()
+	{
+		// given
+		EntityManager entityManager = new TestEntityManager();
+
+		AccountEntity accountEntity = Mockito.mock(AccountEntity.class);
+		CarEntity carEntity = Mockito.mock(CarEntity.class);
+		Mockito.when(carEntity.getId()).thenReturn(1L);
+		Mockito.when(carEntity.getUser()).thenReturn(accountEntity);
+		Mockito.when(accountEntity.getUserId()).thenReturn("bob");
+
+		CarRepository carRepository = new CarRepository() {
+			@Override
+			public CarEntity findById(Long id, String user)
+			{
+				return carEntity;
+			}
+		};
+
+		FuelBillFactory fuelBillFactory = new FuelBillFactory(entityManager, carRepository);
+
+		FuelBillInput noDistance = new FuelBillInput(LocalDate.now(),
+				BigDecimal.valueOf(80),
+				BigInteger.valueOf(19),
+				null,
+				null,
+				BigDecimal.valueOf(181.9),
+				null);
+		// when
+		FuelBillEntity calculatedUnit = fuelBillFactory.create(noDistance, carEntity.getId(),
+				accountEntity.getUserId());
+
+		// then
+		assertEquals(BigDecimal.valueOf(0), calculatedUnit.getCostPerKm());
+		assertEquals(BigDecimal.valueOf(0), calculatedUnit.getAvgConsumption());
 	}
 }

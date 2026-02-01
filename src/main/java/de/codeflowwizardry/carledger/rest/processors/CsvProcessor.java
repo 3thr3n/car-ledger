@@ -23,9 +23,9 @@ import de.codeflowwizardry.carledger.rest.records.CsvOrder;
 import de.codeflowwizardry.carledger.rest.records.input.FuelBillInput;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.InternalServerErrorException;
 import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Response;
 
 @ApplicationScoped
 public class CsvProcessor
@@ -96,7 +96,7 @@ public class CsvProcessor
 		catch (CsvValidationException e)
 		{
 			LOG.error("CSV cannot be parsed!", e);
-			throw new BadRequestException("CSV cannot be parsed!");
+			throw new WebApplicationException(Response.status(400).entity("CSV cannot be parsed!").build());
 		}
 	}
 

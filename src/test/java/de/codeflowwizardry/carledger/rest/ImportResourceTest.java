@@ -66,8 +66,12 @@ class ImportResourceTest
 	void shouldImportCsv()
 	{
 		given().contentType(ContentType.MULTIPART)
-				.multiPart("file", "import.csv", getFile("csv/import_1.csv"), "text/csv").when()
-				.post("/api/import/" + carEntity.getId()).then().statusCode(202);
+				.multiPart("file", "import.csv", getFile("csv/import_1.csv"), "text/csv")
+				.multiPart("vat", 19)
+				.when()
+				.post("/api/import/" + carEntity.getId())
+				.then()
+				.statusCode(202);
 
 		assertEquals(13, billRepository.count());
 	}
@@ -79,8 +83,12 @@ class ImportResourceTest
 	void shouldImportCsvInvalidDate()
 	{
 		given().contentType(ContentType.MULTIPART)
-				.multiPart("file", "import.csv", getFile("csv/import_3_invalid.csv"), "text/csv").when()
-				.post("/api/import/" + carEntity.getId()).then().statusCode(500);
+				.multiPart("file", "import.csv", getFile("csv/import_3_invalid.csv"), "text/csv")
+				.multiPart("vat", 19)
+				.when()
+				.post("/api/import/" + carEntity.getId())
+				.then()
+				.statusCode(500);
 
 		assertEquals(0, billRepository.count());
 	}
@@ -102,8 +110,13 @@ class ImportResourceTest
 				""";
 
 		given().contentType(ContentType.MULTIPART)
-				.multiPart("file", "import.csv", getFile("csv/import_2.csv"), "text/csv").multiPart("order", order)
-				.when().post("/api/import/" + carEntity.getId()).then().statusCode(202);
+				.multiPart("file", "import.csv", getFile("csv/import_2.csv"), "text/csv")
+				.multiPart("order", order)
+				.multiPart("vat", 19)
+				.when()
+				.post("/api/import/" + carEntity.getId())
+				.then()
+				.statusCode(202);
 
 		assertEquals(13, billRepository.count());
 	}
@@ -115,7 +128,9 @@ class ImportResourceTest
 	void shouldImportCsvSkipHeader()
 	{
 		given().contentType(ContentType.MULTIPART)
-				.multiPart("file", "import.csv", getFile("csv/import_4.csv"), "text/csv").when()
+				.multiPart("file", "import.csv", getFile("csv/import_4.csv"), "text/csv")
+				.multiPart("vat", 19)
+				.when()
 				.post("/api/import/" + carEntity.getId() + "?skipHeader=true").then().statusCode(202);
 
 		assertEquals(13, billRepository.count());
@@ -128,7 +143,9 @@ class ImportResourceTest
 	void bobShouldNotBeAbleToImportCsvOnPetersCar()
 	{
 		given().contentType(ContentType.MULTIPART)
-				.multiPart("file", "import.csv", getFile("csv/import_1.csv"), "text/csv").when()
+				.multiPart("file", "import.csv", getFile("csv/import_1.csv"), "text/csv")
+				.multiPart("vat", 19)
+				.when()
 				.post("/api/import/" + carEntity.getId()).then().statusCode(400);
 
 		assertEquals(0, billRepository.count());
@@ -141,11 +158,15 @@ class ImportResourceTest
 	void shouldImportCsvTwice()
 	{
 		given().contentType(ContentType.MULTIPART)
-				.multiPart("file", "import.csv", getFile("csv/import_1.csv"), "text/csv").when()
+				.multiPart("file", "import.csv", getFile("csv/import_1.csv"), "text/csv")
+				.multiPart("vat", 19)
+				.when()
 				.post("/api/import/" + carEntity.getId()).then().statusCode(202);
 
 		given().contentType(ContentType.MULTIPART)
-				.multiPart("file", "import.csv", getFile("csv/import_1.csv"), "text/csv").when()
+				.multiPart("file", "import.csv", getFile("csv/import_1.csv"), "text/csv")
+				.multiPart("vat", 19)
+				.when()
 				.post("/api/import/" + carEntity.getId()).then().statusCode(202);
 
 		assertEquals(13, billRepository.count());
@@ -158,8 +179,12 @@ class ImportResourceTest
 	void shouldFailImporting()
 	{
 		given().contentType(ContentType.MULTIPART)
-				.multiPart("file", "import.png", getFile("white_with_dot.png"), "image/png").when()
-				.post("/api/import/" + carEntity.getId()).then().statusCode(500);
+				.multiPart("file", "import.png", getFile("white_with_dot.png"), "image/png")
+				.multiPart("vat", 19)
+				.when()
+				.post("/api/import/" + carEntity.getId())
+				.then()
+				.statusCode(500);
 	}
 
 	@AfterEach

@@ -3,32 +3,51 @@ package de.codeflowwizardry.carledger.rest.records.stats;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
-
-public record AverageStats(BigDecimal pricePerUnit, BigDecimal distance, BigDecimal calculated,
-		BigDecimal calculatedPrice)
+/**
+ * Statistics for average of:
+ * <li>Price per unit
+ * <li>Distance per fill-up
+ * <li>Cost per km
+ * <li>Fuel consumption (L/100km)
+ * <li>Maintenance cost per bill
+ * <li>Cost per km (total, including maintenance)
+ */
+public record AverageStats(BigDecimal pricePerUnit, BigDecimal distance, BigDecimal fuelCostPerKm,
+		BigDecimal fuelConsumption, BigDecimal maintenanceCost, BigDecimal costPerKm)
 {
-	@JsonGetter("pricePerUnit")
-	public String getPricePerUnit()
+	@Override
+	public BigDecimal pricePerUnit()
 	{
-		return pricePerUnit.setScale(1, RoundingMode.HALF_UP).toString();
+		return pricePerUnit.setScale(1, RoundingMode.HALF_UP);
 	}
 
-	@JsonGetter("distance")
-	public String getDistance()
+	@Override
+	public BigDecimal distance()
 	{
-		return distance.setScale(2, RoundingMode.HALF_UP).toString();
+		return distance.setScale(2, RoundingMode.HALF_UP);
 	}
 
-	@JsonGetter("calculated")
-	public String getCalculated()
+	@Override
+	public BigDecimal fuelCostPerKm()
 	{
-		return calculated.setScale(2, RoundingMode.HALF_UP).toString();
+		return fuelCostPerKm.setScale(2, RoundingMode.HALF_UP);
 	}
 
-	@JsonGetter("calculatedPrice")
-	public String getCalculatedPrice()
+	@Override
+	public BigDecimal fuelConsumption()
 	{
-		return calculatedPrice.setScale(2, RoundingMode.HALF_UP).toString();
+		return fuelConsumption.setScale(2, RoundingMode.HALF_UP);
+	}
+
+	@Override
+	public BigDecimal maintenanceCost()
+	{
+		return maintenanceCost.setScale(2, RoundingMode.HALF_UP);
+	}
+
+	@Override
+	public BigDecimal costPerKm()
+	{
+		return costPerKm.setScale(2, RoundingMode.HALF_UP);
 	}
 }
