@@ -138,4 +138,32 @@ class MaintenanceResourceTest
 				.body("date", is("2024-08-22"));
 
 	}
+
+	@Test
+	@TestSecurity(user = "bob", roles = {
+			"user"
+	})
+	void shouldFailAddingBillAsDifferentUser()
+	{
+		// given
+		String body = """
+				{
+					"date": "2024-08-22",
+					"vatRate": 19,
+					"total": 200,
+					"odometer": 25999,
+					"workshop": "Hans Peters Workshop"
+				}
+				""";
+
+		// when
+		given()
+				.pathParam("carId", carId)
+				.accept(ContentType.JSON)
+				.contentType(ContentType.JSON)
+				.body(body)
+				.put()
+				.then()
+				.statusCode(400);
+	}
 }

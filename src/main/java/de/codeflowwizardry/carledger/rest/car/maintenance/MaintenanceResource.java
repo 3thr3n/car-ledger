@@ -2,7 +2,6 @@ package de.codeflowwizardry.carledger.rest.car.maintenance;
 
 import java.security.Principal;
 import java.util.List;
-import java.util.Optional;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
@@ -15,29 +14,26 @@ import de.codeflowwizardry.carledger.data.factory.MaintenanceBillFactory;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.MaintenanceBillRepository;
 import de.codeflowwizardry.carledger.exception.WrongUserException;
-import de.codeflowwizardry.carledger.rest.AbstractResource;
+import de.codeflowwizardry.carledger.rest.car.AbstractBillResource;
 import de.codeflowwizardry.carledger.rest.records.BillPaged;
 import de.codeflowwizardry.carledger.rest.records.MaintenanceBill;
 import de.codeflowwizardry.carledger.rest.records.input.MaintenanceBillInput;
-import io.quarkus.hibernate.orm.panache.PanacheQuery;
-import io.quarkus.panache.common.Page;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 @Path("bill/{carId}/maintenance")
-public class MaintenanceResource extends AbstractResource
+public class MaintenanceResource
+		extends AbstractBillResource<MaintenanceBillRepository, MaintenanceBillEntity, MaintenanceBill>
 {
 	private final static Logger LOG = LoggerFactory.getLogger(MaintenanceResource.class);
 
-	private final MaintenanceBillRepository maintenanceBillRepository;
 	private final MaintenanceBillFactory maintenanceBillFactory;
 
 	protected MaintenanceResource(Principal context, AccountRepository accountRepository,
 			MaintenanceBillRepository maintenanceBillRepository, MaintenanceBillFactory maintenanceBillFactory)
 	{
-		super(context, accountRepository);
-		this.maintenanceBillRepository = maintenanceBillRepository;
+		super(context, accountRepository, maintenanceBillRepository, BillType.MAINTENANCE);
 		this.maintenanceBillFactory = maintenanceBillFactory;
 	}
 
@@ -47,7 +43,7 @@ public class MaintenanceResource extends AbstractResource
 	@APIResponse(responseCode = "200", description = "Bills found and years extracted.")
 	public List<Integer> getAllMyBills(@PathParam("carId") long carId)
 	{
-		return maintenanceBillRepository.getBillYears(carId, context.getName(), BillType.MAINTENANCE);
+		return super.getAllMyBillsYears(carId);
 	}
 
 	@GET
@@ -59,16 +55,7 @@ public class MaintenanceResource extends AbstractResource
 			@QueryParam("size") @DefaultValue("10") int size,
 			@QueryParam("year") Integer year)
 	{
-		if (page < 1)
-		{
-			page = 1;
-		}
-		Page queryPage = new Page(page - 1, size);
-
-		PanacheQuery<MaintenanceBillEntity> billQuery = maintenanceBillRepository
-				.getBills(carId, context.getName(), queryPage,
-						Optional.ofNullable(year));
-		return new BillPaged<>(billQuery.count(), page, size, MaintenanceBill.convert(billQuery.list()));
+		return super.getAllMyBills(carId, page, size, year, MaintenanceBill::convert);
 	}
 
 	@PUT

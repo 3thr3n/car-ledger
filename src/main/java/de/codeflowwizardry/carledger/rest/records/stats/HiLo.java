@@ -3,21 +3,20 @@ package de.codeflowwizardry.carledger.rest.records.stats;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public record HiLo(BigDecimal min, BigDecimal max, int scale)
 {
-	@JsonGetter("min")
-	public String getMin()
+	@Override
+	public BigDecimal min()
 	{
-		return min.setScale(scale, RoundingMode.HALF_UP).toString();
+		return min.setScale(scale, RoundingMode.HALF_UP);
 	}
 
-	@JsonGetter("max")
-	public String getMax()
+	@Override
+	public BigDecimal max()
 	{
-		return max.setScale(scale, RoundingMode.HALF_UP).toString();
+		return max.setScale(scale, RoundingMode.HALF_UP);
 	}
 
 	@Override

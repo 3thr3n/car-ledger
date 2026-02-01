@@ -9,9 +9,7 @@ import org.eclipse.microprofile.openapi.annotations.Operation;
 import de.codeflowwizardry.carledger.StatsCalculator;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.rest.AbstractResource;
-import de.codeflowwizardry.carledger.rest.records.stats.AverageStats;
-import de.codeflowwizardry.carledger.rest.records.stats.HiLoStats;
-import de.codeflowwizardry.carledger.rest.records.stats.TotalStats;
+import de.codeflowwizardry.carledger.rest.records.stats.DashboardStats;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -29,30 +27,14 @@ public class StatsResource extends AbstractResource
 	}
 
 	@GET
-	@Path("total")
 	@Produces(MediaType.APPLICATION_JSON)
-	@Operation(operationId = "getStatsTotal", description = "Gets the accumulated stats for Unit/Distance/Cost")
-	public TotalStats getTotal(@BeanParam DefaultParams params)
+	@Operation(operationId = "getDashboardStats")
+	public DashboardStats getStats(@BeanParam DefaultParams params)
 	{
-		return statsCalculator.calculateTotal(params.carId, context.getName(), params.from, params.to);
-	}
-
-	@GET
-	@Path("average")
-	@Produces(MediaType.APPLICATION_JSON)
-	@Operation(operationId = "getStatsAverage", description = "Gets the average stats for Distance/Cost/PricePerUnit/Fuel Consumption")
-	public AverageStats getAverage(@BeanParam DefaultParams params)
-	{
-		return statsCalculator.calculateAverage(params.carId, context.getName(), params.from, params.to);
-	}
-
-	@GET
-	@Path("hi_lo")
-	@Produces(MediaType.APPLICATION_JSON)
-	@Operation(operationId = "getStatsHiLo", description = "Gets the highes and lowest stats for Unit/Distance/Cost/PricePerUnit/Fuel Consumption")
-	public HiLoStats getHiLo(@BeanParam DefaultParams params)
-	{
-		return statsCalculator.calculateHighLow(params.carId, context.getName(), params.from, params.to);
+		return new DashboardStats(
+				statsCalculator.calculateTotal(params.carId, context.getName(), params.from, params.to),
+				statsCalculator.calculateAverage(params.carId, context.getName(), params.from, params.to),
+				statsCalculator.calculateHighLow(params.carId, context.getName(), params.from, params.to));
 	}
 
 	public static class DefaultParams

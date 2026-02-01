@@ -56,7 +56,7 @@ public class ImportResource extends AbstractResource
 			@PathParam("carId") long carId,
 			@RestForm("file") @PartType("text/csv") File csv,
 			@RestForm("order") @PartType(MediaType.APPLICATION_JSON) CsvOrder order,
-			@RestForm("vat") @PartType(MediaType.TEXT_PLAIN) BigInteger vat,
+			@RestForm("vat") @PartType(MediaType.APPLICATION_JSON) BigInteger vat,
 			@QueryParam("skipHeader") boolean skipHeader)
 	{
 		ObjectUtils.requireNonEmpty(csv, "CSV ('file') needs to be set!");
