@@ -3,8 +3,8 @@
 import { type DefaultError, type InfiniteData, infiniteQueryOptions, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen';
-import { addNewBill, addNewMaintenanceBill, callback, createCar, deleteBill, getAllBills, getAllBillYears, getAllFuelBills, getAllFuelBillYears, getAllMaintenanceBills, getAllMaintenanceBillYears, getDashboardStats, getMyCar, getMyCarOverview, getMyCars, getMyself, importCsv, login, logout, logoutCallback, type Options, updateMyCar } from '../sdk.gen';
-import type { AddNewBillData, AddNewMaintenanceBillData, CallbackData, CreateCarData, DeleteBillData, DeleteBillResponse, GetAllBillsData, GetAllBillsResponse, GetAllBillYearsData, GetAllBillYearsResponse, GetAllFuelBillsData, GetAllFuelBillsResponse, GetAllFuelBillYearsData, GetAllFuelBillYearsResponse, GetAllMaintenanceBillsData, GetAllMaintenanceBillsResponse, GetAllMaintenanceBillYearsData, GetAllMaintenanceBillYearsResponse, GetDashboardStatsData, GetDashboardStatsResponse, GetMyCarData, GetMyCarOverviewData, GetMyCarOverviewResponse, GetMyCarResponse, GetMyCarsData, GetMyCarsResponse, GetMyselfData, GetMyselfResponse, ImportCsvData, LoginData, LogoutCallbackData, LogoutData, UpdateMyCarData } from '../types.gen';
+import { addNewFuelBill, addNewMaintenanceBill, callback, createCar, deleteBill, getAllBills, getAllBillYears, getAllFuelBills, getAllFuelBillYears, getAllMaintenanceBills, getAllMaintenanceBillYears, getDashboardStats, getMyCar, getMyCarOverview, getMyCars, getMyself, importCsv, login, logout, logoutCallback, type Options, updateMyCar } from '../sdk.gen';
+import type { AddNewFuelBillData, AddNewMaintenanceBillData, CallbackData, CreateCarData, DeleteBillData, DeleteBillResponse, GetAllBillsData, GetAllBillsResponse, GetAllBillYearsData, GetAllBillYearsResponse, GetAllFuelBillsData, GetAllFuelBillsResponse, GetAllFuelBillYearsData, GetAllFuelBillYearsResponse, GetAllMaintenanceBillsData, GetAllMaintenanceBillsResponse, GetAllMaintenanceBillYearsData, GetAllMaintenanceBillYearsResponse, GetDashboardStatsData, GetDashboardStatsResponse, GetMyCarData, GetMyCarOverviewData, GetMyCarOverviewResponse, GetMyCarResponse, GetMyCarsData, GetMyCarsResponse, GetMyselfData, GetMyselfResponse, ImportCsvData, LoginData, LogoutCallbackData, LogoutData, UpdateMyCarData } from '../types.gen';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -200,10 +200,10 @@ export const getAllBillsInfiniteOptions = (options: Options<GetAllBillsData>) =>
 /**
  * Add New Bill
  */
-export const addNewBillMutation = (options?: Partial<Options<AddNewBillData>>): UseMutationOptions<unknown, DefaultError, Options<AddNewBillData>> => {
-    const mutationOptions: UseMutationOptions<unknown, DefaultError, Options<AddNewBillData>> = {
+export const addNewFuelBillMutation = (options?: Partial<Options<AddNewFuelBillData>>): UseMutationOptions<unknown, DefaultError, Options<AddNewFuelBillData>> => {
+    const mutationOptions: UseMutationOptions<unknown, DefaultError, Options<AddNewFuelBillData>> = {
         mutationFn: async (fnOptions) => {
-            const { data } = await addNewBill({
+            const { data } = await addNewFuelBill({
                 ...options,
                 ...fnOptions,
                 throwOnError: true

@@ -1,7 +1,7 @@
 import { Button, Card, CardContent, Stack } from '@mui/material';
 import React, { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { addNewBillMutation } from '@/generated/@tanstack/react-query.gen';
+import { addNewFuelBillMutation } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
 import BillNumericInput from './BillNumericInput';
 import { toast } from 'react-toastify';
@@ -40,7 +40,7 @@ export default function AddFuelForm({ carId }: AddFuelFormProps) {
   });
 
   const { mutate, isPending } = useMutation({
-    ...addNewBillMutation({
+    ...addNewFuelBillMutation({
       client: localClient,
     }),
     onSuccess: () => {

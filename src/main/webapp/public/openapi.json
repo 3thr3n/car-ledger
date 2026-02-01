@@ -565,7 +565,7 @@
         }
       } ],
       "put" : {
-        "operationId" : "addNewBill",
+        "operationId" : "addNewFuelBill",
         "parameters" : [ {
           "name" : "carId",
           "in" : "path",

@@ -13,8 +13,6 @@ import CountrySelection from './CountrySelection';
 import { DatePicker } from '@mui/x-date-pickers';
 import BillNumericInput from './BillNumericInput';
 
-const MAX_NUMBER_INPUT = 10000;
-
 export interface AddMaintenanceFormProps {
   carId: number;
 }

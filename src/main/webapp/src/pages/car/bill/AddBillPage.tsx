@@ -11,8 +11,6 @@ import CarLedgerPage from '@/components/CarLedgerPage';
 import CarLedgerPageHeader from '@/components/CarLedgerPageHeader';
 import { BillType } from '@/generated';
 import AddMaintenanceForm from '@/components/car/bill/AddMaintenanceForm';
-// import MaintenanceBillForm from '@/components/bill/MaintenanceBillForm';
-// import CreditBillForm from '@/components/bill/CreditBillForm';
 
 export interface AddBillPageProps {
   id: number;
