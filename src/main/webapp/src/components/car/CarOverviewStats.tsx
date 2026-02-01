@@ -39,7 +39,7 @@ export const CarOverviewStats = ({
       <CardContent>
         <Box display="flex" flexDirection="row">
           <CarLedgerSubPageHeader
-            title={t('app.car.stats.fuel.title')}
+            title={t('app.car.stats.title')}
             isCardHeader
           />
           <Box flexGrow={1} />
@@ -74,6 +74,16 @@ export const CarOverviewStats = ({
             />
             <SingleLineStat
               label={t('app.car.stats.fuel.consumption') + ':'}
+              value={data?.avgConsumption?.toFixed(2)}
+              type="l/100km"
+            />
+            <SingleLineStat
+              label={t('app.car.stats.maintenance.amount') + ':'}
+              value={data?.avgConsumption?.toFixed(2)}
+              type="l/100km"
+            />
+            <SingleLineStat
+              label={t('app.car.stats.maintenance.cost') + ':'}
               value={data?.avgConsumption?.toFixed(2)}
               type="l/100km"
             />

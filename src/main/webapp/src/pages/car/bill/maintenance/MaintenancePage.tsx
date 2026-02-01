@@ -5,23 +5,23 @@ import YearSelection from '@/components/car/bill/YearSelection';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import {
   deleteBillMutation,
-  getAllFuelBillYearsOptions,
+  getAllMaintenanceBillYearsOptions,
 } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
-import useFuelBillPagination from '@/hooks/useFuelBillPagination';
-import FuelTable from '@/components/car/bill/fuel/FuelTable';
 import { toast } from 'react-toastify';
 import CarLedgerPageHeader from '@/components/CarLedgerPageHeader';
 import { useTranslation } from 'react-i18next';
 import { useScrollNearBottom } from '@/hooks/useScrollNearBottom';
 import CarLedgerPage from '@/components/CarLedgerPage';
+import MaintenanceTable from '@/components/car/bill/maintenance/MaintenanceTable';
+import useMaintenanceBillPagination from '@/hooks/useMaintenanceBillPagination';
 
-interface FuelPageProps {
+interface MaintenancePageProps {
   id?: string;
   carId: number;
 }
 
-export default function FuelPage({ id, carId }: FuelPageProps) {
+export default function MaintenancePage({ id, carId }: MaintenancePageProps) {
   const { t } = useTranslation();
   const isMobile = useMediaQuery('(max-width:900px)');
 
@@ -34,7 +34,7 @@ export default function FuelPage({ id, carId }: FuelPageProps) {
     isLoading: isYearLoading,
     refetch: yearRefetch,
   } = useQuery({
-    ...getAllFuelBillYearsOptions({
+    ...getAllMaintenanceBillYearsOptions({
       client: localClient,
       path: {
         carId,
@@ -45,11 +45,11 @@ export default function FuelPage({ id, carId }: FuelPageProps) {
   const {
     setYear,
     pagination,
-    data: billData,
+    data: maintenanceBill,
     setPagination,
     setSort,
     refetch: billRefetch,
-  } = useFuelBillPagination(carId);
+  } = useMaintenanceBillPagination(carId);
 
   const { mutate } = useMutation({
     ...deleteBillMutation({
@@ -74,7 +74,7 @@ export default function FuelPage({ id, carId }: FuelPageProps) {
   }
 
   const years: number[] = yearData ?? [];
-  const bills: FuelBill[] = billData?.data ?? [];
+  const bills: FuelBill[] = maintenanceBill?.data ?? [];
 
   const currentYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = useState<number>(
@@ -99,11 +99,11 @@ export default function FuelPage({ id, carId }: FuelPageProps) {
     return <CircularProgress />;
   }
 
-  const totalBills = billData?.total ?? 0;
+  const totalBills = maintenanceBill?.total ?? 0;
 
   const getHeader = (isMobile: boolean) => (
     <CarLedgerPageHeader
-      title={t('app.car.fuel.table.title')}
+      title={t('app.car.maintenance.table.title')}
       isMobile={isMobile}
     />
   );
@@ -111,7 +111,7 @@ export default function FuelPage({ id, carId }: FuelPageProps) {
   // 📱 Mobile view: cards
   if (isMobile) {
     return (
-      <CarLedgerPage id="FuelPage" ref={gridRef}>
+      <CarLedgerPage id="MaintenancePage" ref={gridRef}>
         <Box sx={{ p: 2 }} id={id}>
           {getHeader(isMobile)}
 
@@ -122,7 +122,7 @@ export default function FuelPage({ id, carId }: FuelPageProps) {
             isMobile
           />
 
-          <FuelTable
+          <MaintenanceTable
             onDelete={onDelete}
             setPagination={setPagination}
             setSortModel={setSort}
@@ -138,7 +138,7 @@ export default function FuelPage({ id, carId }: FuelPageProps) {
   // 💻 Desktop view: sidebar selector + table
 
   return (
-    <CarLedgerPage id="FuelPage">
+    <CarLedgerPage id="MaintenancePage">
       <Box sx={{ p: 2 }} id={id}>
         {getHeader(isMobile)}
         <Box sx={{ display: 'flex', gap: 3 }}>
@@ -150,7 +150,7 @@ export default function FuelPage({ id, carId }: FuelPageProps) {
           />
 
           {/* DataGrid */}
-          <FuelTable
+          <MaintenanceTable
             onDelete={onDelete}
             bills={bills}
             setPagination={setPagination}

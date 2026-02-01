@@ -49,42 +49,54 @@ app:
       year: "Baujahr"
       odometer: "Kilometerstand (KM)"
       odometerDescription: "Kilometerstand von z.B. beim Kauf"
+      date: "Datum"
+      total: "Kosten"
+
+      showMore: "Alle anzeigen"
+      seeMore: "Alle Einträge"
+      loading: "Lade Einträge"
+      loadingFailed: "Laden der Einträge fehlgeschlagen!"
 
     csvImport: "CSV importieren"
     add: "Rechnung hinzufügen"
 
     stats:
+      title: "Statistik"
       fuel:
-        title: "Tank Statistik"
         refuels: "Tankfüllungen"
-        cost: "Kosten"
+        cost: "Tankkosten"
         consumption: "Verbrauch"
+      maintenance:
+        amount: "Wartungen"
+        cost: "Wartungskosten"
+
+    filter:
+      all: "Alle"
+      year: "Jahr"
 
     fuel:
       recentTitle: "Letzten Tank-Rechnungen"
-      showMore: "Alle anzeigen"
 
       stepper:
         upload: "CSV hochladen"
         configureOrder: "Reihenfolge anpassen"
         importData: "Daten importieren"
 
-      filter:
-        all: "Alle"
-        year: "Jahr"
-
       table:
         title: "Tank-Rechnungen"
 
-        date: "Datum"
         distance: "Strecke"
         unit: "Einheit"
         pricePerUnit: "Kosten/Einheit"
-        total: "Kosten"
 
         estimateConsumption: "Verbrauch (Bordcomputer)"
         avgConsumption: "Verbrauch"
 
-        seeMore: "Alle Einträge"
-        loading: "Lade Einträge"
-        loadingFailed: "Laden der Einträge fehlgeschlagen!"
+    maintenance:
+      recentTitle: "Letzten Wartungen"
+
+      table:
+        title: "Maintenance entries"
+
+        workshop: "Werkstatt"
+        description: "Beschreibung"

@@ -1,5 +1,4 @@
 import { Button, Card, CardContent, Stack } from '@mui/material';
-import { NavigateOptions } from '@tanstack/router-core';
 import React, { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { addNewBillMutation } from '@/generated/@tanstack/react-query.gen';
@@ -12,16 +11,17 @@ import { DatePicker } from '@mui/x-date-pickers';
 import CountrySelection from '@/components/car/bill/CountrySelection';
 import countryVat from 'country-vat';
 import { useTranslation } from 'react-i18next';
+import { useRouter } from '@tanstack/react-router';
 
 const MAX_NUMBER_INPUT = 10000;
 
 export interface AddFuelFormProps {
   carId: number;
-  navigate: (path: NavigateOptions) => void;
 }
 
-export default function AddFuelForm({ carId, navigate }: AddFuelFormProps) {
+export default function AddFuelForm({ carId }: AddFuelFormProps) {
   const { t } = useTranslation();
+  const router = useRouter();
   // TODO: Get the initial state from the backend (User preference!)
   const [countryCode, setCountryCode] = useState('DE');
 
@@ -92,7 +92,7 @@ export default function AddFuelForm({ carId, navigate }: AddFuelFormProps) {
             sx={{
               margin: 1,
             }}
-            label={t('app.car.fuel.table.date')}
+            label={t('app.car.common.date')}
             name="date"
             value={form.date}
             onChange={(e) => setForm({ ...form, date: e ?? dayjs() })}
@@ -141,12 +141,7 @@ export default function AddFuelForm({ carId, navigate }: AddFuelFormProps) {
             >
               {t('app.button.save')}
             </Button>
-            <Button
-              variant="outlined"
-              onClick={() =>
-                navigate({ to: `/car/$id`, params: { id: `${carId}` } })
-              }
-            >
+            <Button variant="outlined" onClick={() => router.history.back()}>
               {t('app.button.cancel')}
             </Button>
           </Stack>

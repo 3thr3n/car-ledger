@@ -69,7 +69,7 @@ export default function DashboardCardsAverage({
               value={
                 average.costPerKm ? Number(average.costPerKm).toFixed(2) : '-'
               }
-              unit="€"
+              unit="ct"
               type="cost"
             />
           </CarLedgerAnimatedCard>

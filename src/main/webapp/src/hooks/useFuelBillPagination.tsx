@@ -4,7 +4,7 @@ import { localClient } from '@/utils/QueryClient';
 import { GridPaginationModel, GridSortModel } from '@mui/x-data-grid';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 
-export default function useBillPagination(
+export default function useFuelBillPagination(
   carId: number,
   page?: GridPaginationModel,
 ) {

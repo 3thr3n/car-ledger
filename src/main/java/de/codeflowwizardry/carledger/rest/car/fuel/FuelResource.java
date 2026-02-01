@@ -62,7 +62,7 @@ public class FuelResource extends AbstractBillResource<FuelBillRepository, FuelB
 	@PUT
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	@Operation(operationId = "addNewBill")
+	@Operation(operationId = "addNewFuelBill")
 	@APIResponse(responseCode = "200", description = "Bill created.")
 	@APIResponse(responseCode = "400", description = "Car is not for your user.")
 	@APIResponse(responseCode = "500", description = "Something went wrong while saving. Please ask the server admin for help.")

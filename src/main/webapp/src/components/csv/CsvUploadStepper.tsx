@@ -160,7 +160,7 @@ export default function CsvUploadStepper(props: CsvUploadStepperProps) {
         <StepContent>
           <OptionBox
             headers={headers}
-            title={t('app.car.fuel.table.date')}
+            title={t('app.car.common.date')}
             onOptionChanged={(value) => updateCsvOrder({ date: value })}
           />
           <OptionBox
