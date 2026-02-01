@@ -17,7 +17,12 @@ export default function CountrySelection({
   const { i18n } = useTranslation();
 
   return (
-    <Select value={value} onChange={(e) => onChange(e.target.value)}>
+    <Select
+      id="CountrySelection"
+      fullWidth={true}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+    >
       {Object.entries(supportedVatCountries).map(([code, rate]) => (
         <MenuItem key={code} value={code}>
           <Box

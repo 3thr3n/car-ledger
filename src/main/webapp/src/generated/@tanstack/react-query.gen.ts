@@ -3,8 +3,8 @@
 import { type DefaultError, type InfiniteData, infiniteQueryOptions, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen';
-import { addNewBill, callback, createCar, deleteBill, getAllBills, getAllBillYears, getAllFuelBills, getAllFuelBillYears, getAllMaintenanceBills, getAllMaintenanceBillYears, getMyCar, getMyCarOverview, getMyCars, getMyself, getStatsAverage, getStatsHiLo, getStatsTotal, importCsv, login, logout, logoutCallback, type Options, updateMyCar } from '../sdk.gen';
-import type { AddNewBillData, CallbackData, CreateCarData, DeleteBillData, GetAllBillsData, GetAllBillsResponse, GetAllBillYearsData, GetAllBillYearsResponse, GetAllFuelBillsData, GetAllFuelBillsResponse, GetAllFuelBillYearsData, GetAllFuelBillYearsResponse, GetAllMaintenanceBillsData, GetAllMaintenanceBillsResponse, GetAllMaintenanceBillYearsData, GetAllMaintenanceBillYearsResponse, GetMyCarData, GetMyCarOverviewData, GetMyCarOverviewResponse, GetMyCarResponse, GetMyCarsData, GetMyCarsResponse, GetMyselfData, GetMyselfResponse, GetStatsAverageData, GetStatsAverageResponse, GetStatsHiLoData, GetStatsHiLoResponse, GetStatsTotalData, GetStatsTotalResponse, ImportCsvData, LoginData, LogoutCallbackData, LogoutData, UpdateMyCarData } from '../types.gen';
+import { addNewBill, addNewMaintenanceBill, callback, createCar, deleteBill, getAllBills, getAllBillYears, getAllFuelBills, getAllFuelBillYears, getAllMaintenanceBills, getAllMaintenanceBillYears, getDashboardStats, getMyCar, getMyCarOverview, getMyCars, getMyself, importCsv, login, logout, logoutCallback, type Options, updateMyCar } from '../sdk.gen';
+import type { AddNewBillData, AddNewMaintenanceBillData, CallbackData, CreateCarData, DeleteBillData, DeleteBillResponse, GetAllBillsData, GetAllBillsResponse, GetAllBillYearsData, GetAllBillYearsResponse, GetAllFuelBillsData, GetAllFuelBillsResponse, GetAllFuelBillYearsData, GetAllFuelBillYearsResponse, GetAllMaintenanceBillsData, GetAllMaintenanceBillsResponse, GetAllMaintenanceBillYearsData, GetAllMaintenanceBillYearsResponse, GetDashboardStatsData, GetDashboardStatsResponse, GetMyCarData, GetMyCarOverviewData, GetMyCarOverviewResponse, GetMyCarResponse, GetMyCarsData, GetMyCarsResponse, GetMyselfData, GetMyselfResponse, ImportCsvData, LoginData, LogoutCallbackData, LogoutData, UpdateMyCarData } from '../types.gen';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -284,12 +284,12 @@ export const getAllFuelBillYearsOptions = (options: Options<GetAllFuelBillYearsD
 });
 
 /**
- * Delete Bill
+ * Add New Bill
  */
-export const deleteBillMutation = (options?: Partial<Options<DeleteBillData>>): UseMutationOptions<unknown, DefaultError, Options<DeleteBillData>> => {
-    const mutationOptions: UseMutationOptions<unknown, DefaultError, Options<DeleteBillData>> = {
+export const addNewMaintenanceBillMutation = (options?: Partial<Options<AddNewMaintenanceBillData>>): UseMutationOptions<unknown, DefaultError, Options<AddNewMaintenanceBillData>> => {
+    const mutationOptions: UseMutationOptions<unknown, DefaultError, Options<AddNewMaintenanceBillData>> = {
         mutationFn: async (fnOptions) => {
-            const { data } = await deleteBill({
+            const { data } = await addNewMaintenanceBill({
                 ...options,
                 ...fnOptions,
                 throwOnError: true
@@ -388,6 +388,25 @@ export const getAllBillYearsOptions = (options: Options<GetAllBillYearsData>) =>
     },
     queryKey: getAllBillYearsQueryKey(options)
 });
+
+/**
+ * Delete Bill
+ *
+ * Deletes the bill
+ */
+export const deleteBillMutation = (options?: Partial<Options<DeleteBillData>>): UseMutationOptions<DeleteBillResponse, DefaultError, Options<DeleteBillData>> => {
+    const mutationOptions: UseMutationOptions<DeleteBillResponse, DefaultError, Options<DeleteBillData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await deleteBill({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 export const getMyCarsQueryKey = (options?: Options<GetMyCarsData>) => createQueryKey('getMyCars', options);
 
@@ -501,16 +520,14 @@ export const importCsvMutation = (options?: Partial<Options<ImportCsvData>>): Us
     return mutationOptions;
 };
 
-export const getStatsAverageQueryKey = (options: Options<GetStatsAverageData>) => createQueryKey('getStatsAverage', options);
+export const getDashboardStatsQueryKey = (options: Options<GetDashboardStatsData>) => createQueryKey('getDashboardStats', options);
 
 /**
- * Get Average
- *
- * Gets the average stats for Distance/Cost/PricePerUnit/Fuel Consumption
+ * Get Stats
  */
-export const getStatsAverageOptions = (options: Options<GetStatsAverageData>) => queryOptions<GetStatsAverageResponse, DefaultError, GetStatsAverageResponse, ReturnType<typeof getStatsAverageQueryKey>>({
+export const getDashboardStatsOptions = (options: Options<GetDashboardStatsData>) => queryOptions<GetDashboardStatsResponse, DefaultError, GetDashboardStatsResponse, ReturnType<typeof getDashboardStatsQueryKey>>({
     queryFn: async ({ queryKey, signal }) => {
-        const { data } = await getStatsAverage({
+        const { data } = await getDashboardStats({
             ...options,
             ...queryKey[0],
             signal,
@@ -518,47 +535,7 @@ export const getStatsAverageOptions = (options: Options<GetStatsAverageData>) =>
         });
         return data;
     },
-    queryKey: getStatsAverageQueryKey(options)
-});
-
-export const getStatsHiLoQueryKey = (options: Options<GetStatsHiLoData>) => createQueryKey('getStatsHiLo', options);
-
-/**
- * Get Hi Lo
- *
- * Gets the highes and lowest stats for Unit/Distance/Cost/PricePerUnit/Fuel Consumption
- */
-export const getStatsHiLoOptions = (options: Options<GetStatsHiLoData>) => queryOptions<GetStatsHiLoResponse, DefaultError, GetStatsHiLoResponse, ReturnType<typeof getStatsHiLoQueryKey>>({
-    queryFn: async ({ queryKey, signal }) => {
-        const { data } = await getStatsHiLo({
-            ...options,
-            ...queryKey[0],
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: getStatsHiLoQueryKey(options)
-});
-
-export const getStatsTotalQueryKey = (options: Options<GetStatsTotalData>) => createQueryKey('getStatsTotal', options);
-
-/**
- * Get Total
- *
- * Gets the accumulated stats for Unit/Distance/Cost
- */
-export const getStatsTotalOptions = (options: Options<GetStatsTotalData>) => queryOptions<GetStatsTotalResponse, DefaultError, GetStatsTotalResponse, ReturnType<typeof getStatsTotalQueryKey>>({
-    queryFn: async ({ queryKey, signal }) => {
-        const { data } = await getStatsTotal({
-            ...options,
-            ...queryKey[0],
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: getStatsTotalQueryKey(options)
+    queryKey: getDashboardStatsQueryKey(options)
 });
 
 export const getMyselfQueryKey = (options?: Options<GetMyselfData>) => createQueryKey('getMyself', options);

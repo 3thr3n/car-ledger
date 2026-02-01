@@ -10,6 +10,7 @@ import ErrorPage from '@/pages/ErrorPage';
 import { BackendError } from '@/utils/BackendError';
 import CarLedgerPageHeader from '@/components/CarLedgerPageHeader';
 import { useTranslation } from 'react-i18next';
+import CarLedgerPage from '@/components/CarLedgerPage';
 
 export interface CarListPageProperties {
   navigate: (path: NavigateOptions) => void;
@@ -45,12 +46,14 @@ export default function CarListPage({ navigate }: CarListPageProperties) {
   }
 
   return (
-    <Container>
-      <CarLedgerPageHeader title={t('app.car.myCars')} navigate={navigate} />
-      <Typography variant="body1" color="text.secondary" gutterBottom>
-        {t('app.car.description')}
-      </Typography>
-      {renderComponents()}
-    </Container>
+    <CarLedgerPage id="CarListPage">
+      <Container>
+        <CarLedgerPageHeader title={t('app.car.myCars')} />
+        <Typography variant="body1" color="text.secondary" gutterBottom>
+          {t('app.car.description')}
+        </Typography>
+        {renderComponents()}
+      </Container>
+    </CarLedgerPage>
   );
 }

@@ -19,6 +19,8 @@ import useCsvStore from '@/store/CsvStore';
 import { toast } from 'react-toastify';
 import { BackendError } from '@/utils/BackendError';
 import { useTranslation } from 'react-i18next';
+import CountrySelection from '@/components/car/bill/CountrySelection';
+import countryVat from 'country-vat';
 
 export interface CsvUploadStepperProps {
   close: () => void;
@@ -61,7 +63,9 @@ export default function CsvUploadStepper(props: CsvUploadStepperProps) {
   });
   const [csvFile, setCsvFile] = useState<File | undefined>(undefined);
 
-  const [loading, setLoading] = useState(0);
+  // TODO: Get the initial state from the backend (User preference!)
+  const [countryCode, setCountryCode] = useState('DE');
+
   const [loadingColor, setLoadingColor] = useState<
     'primary' | 'error' | 'success'
   >('primary');
@@ -73,7 +77,6 @@ export default function CsvUploadStepper(props: CsvUploadStepperProps) {
     onSuccess: () => {
       toast.info('Import successful');
       setLoadingColor('success');
-      setLoading(100);
       markImported();
       setTimeout(closeDialog, 200);
     },
@@ -97,8 +100,12 @@ export default function CsvUploadStepper(props: CsvUploadStepperProps) {
     setActiveStep(1);
   };
 
-  const nextStep = () => {
+  const vatSelected = () => {
     setActiveStep(2);
+  };
+
+  const nextStep = () => {
+    setActiveStep(3);
     if (!carId) {
       toast.error(
         'For some reason the id of car was not set, no import possible!',
@@ -110,6 +117,7 @@ export default function CsvUploadStepper(props: CsvUploadStepperProps) {
       body: {
         order: csvOrder,
         file: csvFile,
+        vat: countryVat(countryCode)! * 100,
       },
       path: {
         carId: carId,
@@ -131,6 +139,19 @@ export default function CsvUploadStepper(props: CsvUploadStepperProps) {
         <StepContent>
           <Box display={'flex'} justifyContent={'center'}>
             <CsvUploadButton onParseComplete={onParseComplete} />
+          </Box>
+        </StepContent>
+      </Step>
+      <Step>
+        <StepLabel>VAT selection</StepLabel>
+        <StepContent id="VatSelectionContent">
+          <CountrySelection value={countryCode} onChange={setCountryCode} />
+
+          <Box display={'flex'} mt={1}>
+            <Box flexGrow={1} />
+            <Button onClick={vatSelected} variant={'outlined'}>
+              {t('app.button.continue')}
+            </Button>
           </Box>
         </StepContent>
       </Step>
@@ -178,11 +199,7 @@ export default function CsvUploadStepper(props: CsvUploadStepperProps) {
       <Step>
         <StepLabel>{t('app.car.fuel.stepper.importData')}</StepLabel>
         <StepContent>
-          <LinearProgress
-            color={loadingColor}
-            variant={'determinate'}
-            value={loading}
-          />
+          <LinearProgress color={loadingColor} variant={'query'} />
           <Box display={'flex'} mt={2}>
             <Box flexGrow={1} />
             <Button onClick={closeDialog} variant={'outlined'}>
