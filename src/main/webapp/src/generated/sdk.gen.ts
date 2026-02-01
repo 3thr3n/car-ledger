@@ -2,7 +2,7 @@
 
 import { type Client, formDataBodySerializer, type Options as Options2, type TDataShape } from './client';
 import { client } from './client.gen';
-import type { AddNewBillData, AddNewBillErrors, AddNewBillResponses, AddNewMaintenanceBillData, AddNewMaintenanceBillErrors, AddNewMaintenanceBillResponses, CallbackData, CallbackResponses, CreateCarData, CreateCarErrors, CreateCarResponses, DeleteBillData, DeleteBillResponses, GetAllBillsData, GetAllBillsResponses, GetAllBillYearsData, GetAllBillYearsResponses, GetAllFuelBillsData, GetAllFuelBillsResponses, GetAllFuelBillYearsData, GetAllFuelBillYearsResponses, GetAllMaintenanceBillsData, GetAllMaintenanceBillsResponses, GetAllMaintenanceBillYearsData, GetAllMaintenanceBillYearsResponses, GetDashboardStatsData, GetDashboardStatsResponses, GetMyCarData, GetMyCarOverviewData, GetMyCarOverviewResponses, GetMyCarResponses, GetMyCarsData, GetMyCarsResponses, GetMyselfData, GetMyselfResponses, ImportCsvData, ImportCsvErrors, ImportCsvResponses, LoginData, LoginResponses, LogoutCallbackData, LogoutCallbackResponses, LogoutData, LogoutResponses, UpdateMyCarData, UpdateMyCarErrors, UpdateMyCarResponses } from './types.gen';
+import type { AddNewFuelBillData, AddNewFuelBillErrors, AddNewFuelBillResponses, AddNewMaintenanceBillData, AddNewMaintenanceBillErrors, AddNewMaintenanceBillResponses, CallbackData, CallbackResponses, CreateCarData, CreateCarErrors, CreateCarResponses, DeleteBillData, DeleteBillResponses, GetAllBillsData, GetAllBillsResponses, GetAllBillYearsData, GetAllBillYearsResponses, GetAllFuelBillsData, GetAllFuelBillsResponses, GetAllFuelBillYearsData, GetAllFuelBillYearsResponses, GetAllMaintenanceBillsData, GetAllMaintenanceBillsResponses, GetAllMaintenanceBillYearsData, GetAllMaintenanceBillYearsResponses, GetDashboardStatsData, GetDashboardStatsResponses, GetMyCarData, GetMyCarOverviewData, GetMyCarOverviewResponses, GetMyCarResponses, GetMyCarsData, GetMyCarsResponses, GetMyselfData, GetMyselfResponses, ImportCsvData, ImportCsvErrors, ImportCsvResponses, LoginData, LoginResponses, LogoutCallbackData, LogoutCallbackResponses, LogoutData, LogoutResponses, UpdateMyCarData, UpdateMyCarErrors, UpdateMyCarResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -56,7 +56,7 @@ export const getAllBills = <ThrowOnError extends boolean = false>(options: Optio
 /**
  * Add New Bill
  */
-export const addNewBill = <ThrowOnError extends boolean = false>(options: Options<AddNewBillData, ThrowOnError>) => (options.client ?? client).put<AddNewBillResponses, AddNewBillErrors, ThrowOnError>({
+export const addNewFuelBill = <ThrowOnError extends boolean = false>(options: Options<AddNewFuelBillData, ThrowOnError>) => (options.client ?? client).put<AddNewFuelBillResponses, AddNewFuelBillErrors, ThrowOnError>({
     url: '/api/bill/{carId}/fuel',
     ...options,
     headers: {

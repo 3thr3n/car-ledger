@@ -256,7 +256,7 @@ export type GetAllBillsResponses = {
 
 export type GetAllBillsResponse = GetAllBillsResponses[keyof GetAllBillsResponses];
 
-export type AddNewBillData = {
+export type AddNewFuelBillData = {
     body: FuelBillInput;
     path: {
         carId: number;
@@ -265,7 +265,7 @@ export type AddNewBillData = {
     url: '/api/bill/{carId}/fuel';
 };
 
-export type AddNewBillErrors = {
+export type AddNewFuelBillErrors = {
     /**
      * Car is not for your user.
      */
@@ -276,7 +276,7 @@ export type AddNewBillErrors = {
     500: unknown;
 };
 
-export type AddNewBillResponses = {
+export type AddNewFuelBillResponses = {
     /**
      * Bill created.
      */
