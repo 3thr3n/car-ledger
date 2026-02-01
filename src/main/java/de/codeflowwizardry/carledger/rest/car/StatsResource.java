@@ -31,10 +31,7 @@ public class StatsResource extends AbstractResource
 	@Operation(operationId = "getDashboardStats")
 	public DashboardStats getStats(@BeanParam DefaultParams params)
 	{
-		return new DashboardStats(
-				statsCalculator.calculateTotal(params.carId, context.getName(), params.from, params.to),
-				statsCalculator.calculateAverage(params.carId, context.getName(), params.from, params.to),
-				statsCalculator.calculateHighLow(params.carId, context.getName(), params.from, params.to));
+		return statsCalculator.calculateStats(params.carId, context.getName(), params.from, params.to);
 	}
 
 	public static class DefaultParams

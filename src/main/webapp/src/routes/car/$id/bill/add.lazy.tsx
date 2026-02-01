@@ -7,6 +7,5 @@ export const Route = createLazyFileRoute('/car/$id/bill/add')({
 
 function RouteComponent() {
   const { id } = Route.useParams();
-  const navigate = Route.useNavigate();
-  return <AddBillPage id={Number(id)} navigate={navigate} />;
+  return <AddBillPage id={Number(id)} />;
 }

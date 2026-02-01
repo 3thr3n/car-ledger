@@ -3,7 +3,7 @@ import { NumericFormat } from 'react-number-format';
 import { OnValueChange } from 'react-number-format/types/types';
 
 export interface BillNumericInputProps {
-  maxInput: number;
+  maxInput?: number;
   label: string;
   name: string;
   required?: boolean;
@@ -26,9 +26,10 @@ export default function BillNumericInput(props: BillNumericInputProps) {
       customInput={TextField}
       decimalScale={props.decimalScale ?? 1}
       fixedDecimalScale
+      onFocus={(x) => x.target.select()}
       isAllowed={(values) => {
         const { floatValue } = values;
-        return (floatValue ?? 0) < props.maxInput;
+        return (floatValue ?? 0) < (props.maxInput ?? Number.MAX_VALUE);
       }}
       value={props.value}
       onValueChange={props.onChange}

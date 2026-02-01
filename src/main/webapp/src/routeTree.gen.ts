@@ -24,6 +24,9 @@ const CarNewLazyRouteImport = createFileRoute('/car/new')()
 const CarIdIndexLazyRouteImport = createFileRoute('/car/$id/')()
 const CarIdEditLazyRouteImport = createFileRoute('/car/$id/edit')()
 const CarIdBillAddLazyRouteImport = createFileRoute('/car/$id/bill/add')()
+const CarIdBillMaintenanceIndexLazyRouteImport = createFileRoute(
+  '/car/$id/bill/maintenance/',
+)()
 const CarIdBillFuelIndexLazyRouteImport = createFileRoute(
   '/car/$id/bill/fuel/',
 )()
@@ -90,6 +93,14 @@ const CarIdBillAddLazyRoute = CarIdBillAddLazyRouteImport.update({
 } as any).lazy(() =>
   import('./routes/car/$id/bill/add.lazy').then((d) => d.Route),
 )
+const CarIdBillMaintenanceIndexLazyRoute =
+  CarIdBillMaintenanceIndexLazyRouteImport.update({
+    id: '/bill/maintenance/',
+    path: '/bill/maintenance/',
+    getParentRoute: () => CarIdRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/car/$id/bill/maintenance/index.lazy').then((d) => d.Route),
+  )
 const CarIdBillFuelIndexLazyRoute = CarIdBillFuelIndexLazyRouteImport.update({
   id: '/bill/fuel/',
   path: '/bill/fuel/',
@@ -112,6 +123,7 @@ export interface FileRoutesByFullPath {
   '/car/$id/': typeof CarIdIndexLazyRoute
   '/car/$id/bill/add': typeof CarIdBillAddLazyRoute
   '/car/$id/bill/fuel/': typeof CarIdBillFuelIndexLazyRoute
+  '/car/$id/bill/maintenance/': typeof CarIdBillMaintenanceIndexLazyRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexLazyRoute
@@ -126,6 +138,7 @@ export interface FileRoutesByTo {
   '/car/$id': typeof CarIdIndexLazyRoute
   '/car/$id/bill/add': typeof CarIdBillAddLazyRoute
   '/car/$id/bill/fuel': typeof CarIdBillFuelIndexLazyRoute
+  '/car/$id/bill/maintenance': typeof CarIdBillMaintenanceIndexLazyRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -142,6 +155,7 @@ export interface FileRoutesById {
   '/car/$id/': typeof CarIdIndexLazyRoute
   '/car/$id/bill/add': typeof CarIdBillAddLazyRoute
   '/car/$id/bill/fuel/': typeof CarIdBillFuelIndexLazyRoute
+  '/car/$id/bill/maintenance/': typeof CarIdBillMaintenanceIndexLazyRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -159,6 +173,7 @@ export interface FileRouteTypes {
     | '/car/$id/'
     | '/car/$id/bill/add'
     | '/car/$id/bill/fuel/'
+    | '/car/$id/bill/maintenance/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -173,6 +188,7 @@ export interface FileRouteTypes {
     | '/car/$id'
     | '/car/$id/bill/add'
     | '/car/$id/bill/fuel'
+    | '/car/$id/bill/maintenance'
   id:
     | '__root__'
     | '/'
@@ -188,6 +204,7 @@ export interface FileRouteTypes {
     | '/car/$id/'
     | '/car/$id/bill/add'
     | '/car/$id/bill/fuel/'
+    | '/car/$id/bill/maintenance/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -288,6 +305,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CarIdBillAddLazyRouteImport
       parentRoute: typeof CarIdRouteRoute
     }
+    '/car/$id/bill/maintenance/': {
+      id: '/car/$id/bill/maintenance/'
+      path: '/bill/maintenance'
+      fullPath: '/car/$id/bill/maintenance/'
+      preLoaderRoute: typeof CarIdBillMaintenanceIndexLazyRouteImport
+      parentRoute: typeof CarIdRouteRoute
+    }
     '/car/$id/bill/fuel/': {
       id: '/car/$id/bill/fuel/'
       path: '/bill/fuel'
@@ -303,6 +327,7 @@ interface CarIdRouteRouteChildren {
   CarIdIndexLazyRoute: typeof CarIdIndexLazyRoute
   CarIdBillAddLazyRoute: typeof CarIdBillAddLazyRoute
   CarIdBillFuelIndexLazyRoute: typeof CarIdBillFuelIndexLazyRoute
+  CarIdBillMaintenanceIndexLazyRoute: typeof CarIdBillMaintenanceIndexLazyRoute
 }
 
 const CarIdRouteRouteChildren: CarIdRouteRouteChildren = {
@@ -310,6 +335,7 @@ const CarIdRouteRouteChildren: CarIdRouteRouteChildren = {
   CarIdIndexLazyRoute: CarIdIndexLazyRoute,
   CarIdBillAddLazyRoute: CarIdBillAddLazyRoute,
   CarIdBillFuelIndexLazyRoute: CarIdBillFuelIndexLazyRoute,
+  CarIdBillMaintenanceIndexLazyRoute: CarIdBillMaintenanceIndexLazyRoute,
 }
 
 const CarIdRouteRouteWithChildren = CarIdRouteRoute._addFileChildren(

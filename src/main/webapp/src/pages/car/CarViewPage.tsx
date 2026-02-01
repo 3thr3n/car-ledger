@@ -10,6 +10,7 @@ import {
   Stack,
   Typography,
   useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
 import { getMyCarOptions } from '@/generated/@tanstack/react-query.gen';
@@ -21,10 +22,11 @@ import { CarOverviewStats } from '@/components/car/CarOverviewStats';
 import SingleLineStat from '@/components/base/SingleLineStat';
 import CarLedgerPageHeader from '@/components/CarLedgerPageHeader';
 import { useTranslation } from 'react-i18next';
-import RecentRefuels from '@/components/car/fuel/RecentRefuels';
+import RecentRefuels from '@/components/car/bill/fuel/RecentRefuels';
 import CarLedgerButton from '@/components/CarLedgerButton';
 import { Edit } from '@mui/icons-material';
 import CarLedgerPage from '@/components/CarLedgerPage';
+import RecentMaintenance from '@/components/car/bill/maintenance/RecentMaintenance';
 
 export interface CarViewPageProperties {
   id: string;
@@ -34,8 +36,11 @@ export interface CarViewPageProperties {
 export default function CarViewPage({ navigate, id }: CarViewPageProperties) {
   const { t } = useTranslation();
   const isMobile = useMediaQuery('(max-width:600px)');
+  const theme = useTheme();
   const openImportDialog = useCsvStore((state) => state.openDialog);
   const csvImportedAt = useCsvStore((state) => state.csvImportedAt);
+
+  const isSm = useMediaQuery(theme.breakpoints.down('md'));
 
   const {
     data: car,
@@ -145,6 +150,15 @@ export default function CarViewPage({ navigate, id }: CarViewPageProperties) {
           </Grid>
 
           <RecentRefuels
+            isMobile={isMobile}
+            id={id}
+            navigate={navigate}
+            reloadToken={csvImportedAt ?? 0}
+          />
+
+          <Grid hidden={isSm} size={{ xs: 0, md: 4 }} />
+
+          <RecentMaintenance
             isMobile={isMobile}
             id={id}
             navigate={navigate}

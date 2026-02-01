@@ -5,35 +5,33 @@ import {
   Container,
   MenuItem,
   TextField,
-  Typography,
 } from '@mui/material';
-import { NavigateOptions } from '@tanstack/router-core';
 import AddFuelForm from '@/components/car/bill/AddFuelForm';
 import CarLedgerPage from '@/components/CarLedgerPage';
+import CarLedgerPageHeader from '@/components/CarLedgerPageHeader';
+import { BillType } from '@/generated';
+import AddMaintenanceForm from '@/components/car/bill/AddMaintenanceForm';
 // import MaintenanceBillForm from '@/components/bill/MaintenanceBillForm';
 // import CreditBillForm from '@/components/bill/CreditBillForm';
 
 export interface AddBillPageProps {
   id: number;
-  navigate: (path: NavigateOptions) => void;
 }
 
-const BILL_TYPES = [
-  { value: 'fuel', label: 'Fuel Bill' },
-  { value: 'maintenance', label: 'Maintenance Bill' },
-  { value: 'credit', label: 'Credit Payment' },
+const BILL_TYPES: { value: BillType; label: string }[] = [
+  { value: 'FUEL', label: 'Fuel Bill' },
+  { value: 'MAINTENANCE', label: 'Maintenance Bill' },
 ];
 
-type BillType = 'fuel' | 'maintenance' | 'credit';
-export default function AddBillPage({ id, navigate }: AddBillPageProps) {
-  const [type, setType] = useState<BillType>('fuel');
+export default function AddBillPage({ id }: AddBillPageProps) {
+  const [type, setType] = useState<BillType>('FUEL');
 
   return (
     <CarLedgerPage id="AddBillPage">
       <Container>
-        <Typography variant="h4" fontWeight={700} gutterBottom>
-          Add New {BILL_TYPES.find((t) => t.value === type)?.label}
-        </Typography>
+        <CarLedgerPageHeader
+          title={`Add New ${BILL_TYPES.find((t) => t.value === type)?.label}`}
+        />
 
         <Card sx={{ mb: 3 }}>
           <CardContent>
@@ -54,10 +52,8 @@ export default function AddBillPage({ id, navigate }: AddBillPageProps) {
         </Card>
 
         {/* Conditional form render */}
-        {type === 'fuel' && <AddFuelForm carId={id} navigate={navigate} />}
-        {/*{type === 'maintenance' && (*/}
-        {/*  <MaintenanceBillForm carId={id} navigate={navigate} />*/}
-        {/*)}*/}
+        {type === 'FUEL' && <AddFuelForm carId={id} />}
+        {type === 'MAINTENANCE' && <AddMaintenanceForm carId={id} />}
         {/*{type === 'credit' && <CreditBillForm carId={id} navigate={navigate} />}*/}
       </Container>
     </CarLedgerPage>

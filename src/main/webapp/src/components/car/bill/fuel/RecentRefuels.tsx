@@ -1,7 +1,7 @@
 import { NavigateOptions } from '@tanstack/router-core';
 import { Box, Button, Card, CardContent, Divider, Grid } from '@mui/material';
 import CarLedgerSubPageHeader from '@/components/CarLedgerSubPageHeader';
-import FuelPreviewTable from '@/components/car/fuel/FuelPreviewTable';
+import FuelPreviewTable from '@/components/car/bill/fuel/FuelPreviewTable';
 import { useTranslation } from 'react-i18next';
 
 export interface RecentRefuelsProps {
@@ -36,7 +36,7 @@ export default function RecentRefuels({
               />
               <Box flexGrow={1} />
               <Button size="small" onClick={goToAll}>
-                {t('app.car.fuel.showMore')} →
+                {t('app.car.common.showMore')} →
               </Button>
             </CardContent>
           </Card>
@@ -46,7 +46,7 @@ export default function RecentRefuels({
   }
   return (
     <>
-      {/* Fuel bills */}
+      {/* fuel bills */}
       <Grid size={{ xs: 12, md: 8 }}>
         <Card>
           <CardContent>

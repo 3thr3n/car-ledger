@@ -52,7 +52,7 @@ export default function DashboardCardsTotal({
             <DashboardMetric
               label="Unit"
               value={total.unit ? Number(total.unit).toFixed(2) : '-'}
-              unit="l"
+              unit="L"
               type="fuel"
             />
           </CarLedgerAnimatedCard>

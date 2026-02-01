@@ -50,41 +50,54 @@ app:
       odometer: "Odometer"
       odometerDescription: "Odometer e.g. when bought"
 
+      date: "Date"
+      total: "Total"
+
+      showMore: "See all entries"
+      seeMore: "See all entries"
+      loading: "Loading fuel entries"
+      loadingFailed: "Loading fuel entries failed!"
+
     csvImport: "Import CSV"
     add: "Add Bill"
 
     stats:
+      title: "Statistics"
       fuel:
-        title: "Fuel statistics"
         refuels: "Refuels"
-        cost: "Costs"
+        cost: "Fuel costs"
         consumption: "Consumption"
+      maintenance:
+        amount: "Maintenances?"
+        cost: "Maintenance costs"
+
+    filter:
+      all: "All"
+      year: "Year"
 
     fuel:
       recentTitle: "Recent fuel entries"
-      showMore: "See all entries"
 
       stepper:
         upload: "Upload CSV"
         configureOrder: "Configure order/import"
         importData: "Import data"
 
-      filter:
-        all: "All"
-        year: "Year"
-
       table:
         title: "Fuel entries"
 
-        date: "Date"
         distance: "Distance"
         unit: "Unit"
         pricePerUnit: "Price/Unit"
-        total: "Total"
 
         estimateConsumption: "Estimate"
         avgConsumption: "Avg"
-        
-        seeMore: "See all entries"
-        loading: "Loading fuel entries"
-        loadingFailed: "Loading fuel entries failed!"
+
+    maintenance:
+      recentTitle: "Recent maintenance entries"
+
+      table:
+        title: "Maintenance entries"
+
+        workshop: "Workshop"
+        description: "Description"

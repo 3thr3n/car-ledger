@@ -24,7 +24,7 @@ export default function YearSelection({
         onChange={(e) => setSelectedYear(Number(e.target.value))}
         sx={{ mb: 2 }}
       >
-        <MenuItem value={-1}>{t('app.car.fuel.filter.all')}</MenuItem>
+        <MenuItem value={-1}>{t('app.car.filter.all')}</MenuItem>
         {years.map((y) => (
           <MenuItem key={y} value={y}>
             {y}
@@ -37,7 +37,7 @@ export default function YearSelection({
   return (
     <Box sx={{ minWidth: 140 }}>
       <Typography variant="subtitle1" gutterBottom>
-        {t('app.car.fuel.filter.year')}
+        {t('app.car.filter.year')}
       </Typography>
       <Stack spacing={1}>
         <Card
@@ -51,9 +51,7 @@ export default function YearSelection({
           }}
           onClick={() => setSelectedYear(-1)}
         >
-          <Typography variant="body2">
-            {t('app.car.fuel.filter.all')}
-          </Typography>
+          <Typography variant="body2">{t('app.car.filter.all')}</Typography>
         </Card>
         {years.map((y) => (
           <Card

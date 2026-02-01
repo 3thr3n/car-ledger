@@ -57,7 +57,7 @@ export default function FuelTable({
   }
 
   const columns: GridColDef[] = [
-    { field: 'date', headerName: t('app.car.fuel.table.date'), flex: 1 },
+    { field: 'date', headerName: t('app.car.common.date'), flex: 1 },
     {
       field: 'distance',
       headerName: `${t('app.car.fuel.table.distance')} (km)`,

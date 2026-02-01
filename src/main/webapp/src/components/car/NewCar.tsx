@@ -30,8 +30,6 @@ export default function NewCar({ index }: { index: number }) {
     }
   }, [maxCars, currentCarSize]);
 
-  const tooltip =
-    'Add new Car, you can still add ' + (maxCars - currentCarSize) + ' cars';
   if (disabled) {
     return (
       <CarLedgerAnimatedCard index={index} maxWidth={400}>
@@ -53,6 +51,9 @@ export default function NewCar({ index }: { index: number }) {
       </CarLedgerAnimatedCard>
     );
   }
+
+  const tooltip =
+    'Add new Car, you can still add ' + (maxCars - currentCarSize) + ' cars';
 
   return (
     <CarLedgerAnimatedCard index={index} maxWidth={400}>
