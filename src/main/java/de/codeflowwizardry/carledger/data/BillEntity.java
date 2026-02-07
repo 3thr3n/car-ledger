@@ -46,6 +46,9 @@ public class BillEntity extends AbstractBillEntity
 	@OneToOne(mappedBy = "bill", cascade = CascadeType.ALL)
 	private MaintenanceBillEntity maintenanceBill;
 
+	@OneToOne(mappedBy = "bill", cascade = CascadeType.ALL)
+	private MiscellaneousBillEntity miscellaneousBill;
+
 	public BillEntity()
 	{
 	}
@@ -149,5 +152,10 @@ public class BillEntity extends AbstractBillEntity
 	public MaintenanceBillEntity getMaintenanceBill()
 	{
 		return maintenanceBill;
+	}
+
+	public MiscellaneousBillEntity getMiscellaneousBill()
+	{
+		return miscellaneousBill;
 	}
 }

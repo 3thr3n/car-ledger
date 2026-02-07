@@ -4,20 +4,22 @@ import java.security.Principal;
 import java.util.Calendar;
 import java.util.List;
 
-import de.codeflowwizardry.carledger.rest.records.CarOverview;
-import jakarta.transaction.Transactional;
-import jakarta.ws.rs.*;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
 import de.codeflowwizardry.carledger.data.AccountEntity;
 import de.codeflowwizardry.carledger.data.CarEntity;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
-import de.codeflowwizardry.carledger.rest.records.CarInput;
 import de.codeflowwizardry.carledger.rest.records.Car;
+import de.codeflowwizardry.carledger.rest.records.CarInput;
+import de.codeflowwizardry.carledger.rest.records.CarOverview;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
@@ -97,7 +99,7 @@ public class CarResource extends AbstractResource
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "createCar")
-	@APIResponse(responseCode = "202", description = "Car created.")
+	@APIResponse(responseCode = "202", description = "Car created.", content = @Content(schema = @Schema(implementation = Car.class)))
 	@APIResponse(responseCode = "400", description = "Maximal amount of cars created or input was invalid.")
 	@APIResponse(responseCode = "500", description = "Something went wrong while saving. Please ask the server admin for help.")
 	public Response createCar(CarInput carpojo)
@@ -128,7 +130,7 @@ public class CarResource extends AbstractResource
 
 		carRepository.persist(carEntity);
 
-		return Response.accepted().build();
+		return Response.accepted(Car.convert(carEntity)).build();
 	}
 
 	private boolean isInputInvalid(CarInput carInput)

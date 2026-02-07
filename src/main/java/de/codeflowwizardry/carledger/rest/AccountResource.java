@@ -56,7 +56,7 @@ public class AccountResource extends AbstractResource
 			LOG.debug("user does not exist! creating {}...", name);
 			accountEntity = new AccountEntity();
 			accountEntity.setUserId(name);
-			accountEntity.setMaxCars(1);
+			accountEntity.setMaxCars(3);
 			accountRepository.persist(accountEntity);
 			LOG.debug("user created!");
 		}

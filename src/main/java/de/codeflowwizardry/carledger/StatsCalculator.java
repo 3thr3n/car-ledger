@@ -12,10 +12,7 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import de.codeflowwizardry.carledger.data.AbstractBillEntity;
-import de.codeflowwizardry.carledger.data.BillEntity;
-import de.codeflowwizardry.carledger.data.FuelBillEntity;
-import de.codeflowwizardry.carledger.data.MaintenanceBillEntity;
+import de.codeflowwizardry.carledger.data.*;
 import de.codeflowwizardry.carledger.data.repository.BillRepository;
 import de.codeflowwizardry.carledger.rest.records.stats.*;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -48,9 +45,14 @@ public class StatsCalculator
 				.filter(Objects::nonNull)
 				.toList();
 
+		List<MiscellaneousBillEntity> miscellaneousBillList = billEntities.stream()
+				.map(BillEntity::getMiscellaneousBill)
+				.filter(Objects::nonNull)
+				.toList();
+
 		return new DashboardStats(
-				calculateTotal(fuelBillList, maintenanceBillList),
-				calculateAverage(fuelBillList, maintenanceBillList),
+				calculateTotal(fuelBillList, maintenanceBillList, miscellaneousBillList),
+				calculateAverage(fuelBillList, maintenanceBillList, miscellaneousBillList),
 				calculateHighLow(fuelBillList, maintenanceBillList));
 	}
 
@@ -65,17 +67,24 @@ public class StatsCalculator
 	 * <li>Number of maintenance bills
 	 */
 	private TotalStats calculateTotal(List<FuelBillEntity> fuelBillList,
-			List<MaintenanceBillEntity> maintenanceBillList)
+			List<MaintenanceBillEntity> maintenanceBillList, List<MiscellaneousBillEntity> miscellaneousBillList)
 	{
 		BigDecimal unit = calculateTotalUnit(fuelBillList);
 		BigDecimal trackedDistance = calculateTotalDistance(fuelBillList);
-		BigDecimal fuelTotal = calculateTotalFuel(fuelBillList);
-		BigDecimal maintenanceTotal = calculateTotalMaintenance(maintenanceBillList);
-		BigDecimal total = fuelTotal.add(maintenanceTotal);
+		BigDecimal fuelTotal = calculateTotal(fuelBillList);
+		BigDecimal maintenanceTotal = calculateTotal(maintenanceBillList);
+		BigDecimal miscellaneousTotal = calculateTotal(miscellaneousBillList);
 		Integer fuelBills = fuelBillList.size();
 		Integer maintenanceBills = maintenanceBillList.size();
+		Integer miscellaneousBills = miscellaneousBillList.size();
 
-		return new TotalStats(unit, trackedDistance, fuelTotal, maintenanceTotal, total, fuelBills, maintenanceBills);
+		BigDecimal total = ZERO
+				.add(fuelTotal)
+				.add(maintenanceTotal)
+				.add(miscellaneousTotal);
+
+		return new TotalStats(unit, trackedDistance, fuelTotal, maintenanceTotal, miscellaneousTotal, total, fuelBills,
+				maintenanceBills, miscellaneousBills);
 	}
 
 	private static BigDecimal calculateTotalUnit(List<FuelBillEntity> entities)
@@ -90,13 +99,7 @@ public class StatsCalculator
 		return handleReduceTotalResult(totalUnit);
 	}
 
-	private static BigDecimal calculateTotalFuel(List<FuelBillEntity> entities)
-	{
-		Stream<BigDecimal> totalCost = entities.stream().map(x -> x.getBill().getTotal());
-		return handleReduceTotalResult(totalCost);
-	}
-
-	private static BigDecimal calculateTotalMaintenance(List<MaintenanceBillEntity> entities)
+	private static BigDecimal calculateTotal(List<? extends AbstractBillEntity> entities)
 	{
 		Stream<BigDecimal> totalCost = entities.stream().map(x -> x.getBill().getTotal());
 		return handleReduceTotalResult(totalCost);
@@ -117,7 +120,7 @@ public class StatsCalculator
 	 * <li>Cost per km (total, including maintenance)
 	 */
 	private AverageStats calculateAverage(List<FuelBillEntity> fuelBillList,
-			List<MaintenanceBillEntity> maintenanceBillList)
+			List<MaintenanceBillEntity> maintenanceBillList, List<MiscellaneousBillEntity> miscellaneousBillList)
 	{
 		// Price per unit
 		BigDecimal pricePerUnit = calculateAveragePricePerUnit(fuelBillList);
@@ -130,7 +133,7 @@ public class StatsCalculator
 		// Maintenance cost per bill
 		BigDecimal averageMaintenancePrice = calculateAverageMaintenance(maintenanceBillList);
 		// Cost per km (total, including maintenance)
-		BigDecimal costPerKm = calculateAverageCostPerKm(fuelBillList, maintenanceBillList);
+		BigDecimal costPerKm = calculateAverageCostPerKm(fuelBillList, maintenanceBillList, miscellaneousBillList);
 
 		return new AverageStats(pricePerUnit, distance, fuelCostPerKm, consumption, averageMaintenancePrice, costPerKm);
 	}
@@ -161,16 +164,17 @@ public class StatsCalculator
 	}
 
 	private static BigDecimal calculateAverageCostPerKm(List<FuelBillEntity> fuelBillEntities,
-			List<MaintenanceBillEntity> maintenanceBillList)
+			List<MaintenanceBillEntity> maintenanceBillList, List<MiscellaneousBillEntity> miscellaneousBillList)
 	{
-		BigDecimal maintenance = calculateTotalMaintenance(maintenanceBillList);
-		BigDecimal fuel = calculateTotalFuel(fuelBillEntities);
+		BigDecimal maintenance = calculateTotal(maintenanceBillList);
+		BigDecimal fuel = calculateTotal(fuelBillEntities);
+		BigDecimal miscellaneous = calculateTotal(miscellaneousBillList);
 
 		BigDecimal distance = calculateTotalDistance(fuelBillEntities);
 
-		BigDecimal total = maintenance.add(fuel);
+		BigDecimal total = ZERO.add(maintenance).add(fuel).add(miscellaneous);
 
-		if (!Utils.valueWasSet(total))
+		if (!Utils.valueWasSet(total) || !Utils.valueWasSet(distance))
 		{
 			return BigDecimal.ZERO;
 		}
