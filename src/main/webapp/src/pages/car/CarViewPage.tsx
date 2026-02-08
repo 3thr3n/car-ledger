@@ -10,7 +10,6 @@ import {
   Stack,
   Typography,
   useMediaQuery,
-  useTheme,
 } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
 import { getMyCarOptions } from '@/generated/@tanstack/react-query.gen';
@@ -27,6 +26,7 @@ import CarLedgerButton from '@/components/CarLedgerButton';
 import { Edit } from '@mui/icons-material';
 import CarLedgerPage from '@/components/CarLedgerPage';
 import RecentMaintenance from '@/components/car/bill/maintenance/RecentMaintenance';
+import RecentMiscellaneous from '@/components/car/bill/miscellaneous/RecentMiscellaneous';
 
 export interface CarViewPageProperties {
   id: string;
@@ -36,11 +36,8 @@ export interface CarViewPageProperties {
 export default function CarViewPage({ navigate, id }: CarViewPageProperties) {
   const { t } = useTranslation();
   const isMobile = useMediaQuery('(max-width:600px)');
-  const theme = useTheme();
   const openImportDialog = useCsvStore((state) => state.openDialog);
   const csvImportedAt = useCsvStore((state) => state.csvImportedAt);
-
-  const isSm = useMediaQuery(theme.breakpoints.down('md'));
 
   const {
     data: car,
@@ -148,22 +145,26 @@ export default function CarViewPage({ navigate, id }: CarViewPageProperties) {
               navigate={navigate}
             />
           </Grid>
-
-          <RecentRefuels
-            isMobile={isMobile}
-            id={id}
-            navigate={navigate}
-            reloadToken={csvImportedAt ?? 0}
-          />
-
-          <Grid hidden={isSm} size={{ xs: 0, md: 4 }} />
-
-          <RecentMaintenance
-            isMobile={isMobile}
-            id={id}
-            navigate={navigate}
-            reloadToken={csvImportedAt ?? 0}
-          />
+          <Grid container size={{ xs: 12, md: 8 }}>
+            <RecentRefuels
+              isMobile={isMobile}
+              id={id}
+              navigate={navigate}
+              reloadToken={csvImportedAt ?? 0}
+            />
+            <RecentMaintenance
+              isMobile={isMobile}
+              id={id}
+              navigate={navigate}
+              reloadToken={csvImportedAt ?? 0}
+            />
+            <RecentMiscellaneous
+              isMobile={isMobile}
+              id={id}
+              navigate={navigate}
+              reloadToken={csvImportedAt ?? 0}
+            />
+          </Grid>
         </Grid>
       </Container>
     </CarLedgerPage>

@@ -24,6 +24,9 @@ const CarNewLazyRouteImport = createFileRoute('/car/new')()
 const CarIdIndexLazyRouteImport = createFileRoute('/car/$id/')()
 const CarIdEditLazyRouteImport = createFileRoute('/car/$id/edit')()
 const CarIdBillAddLazyRouteImport = createFileRoute('/car/$id/bill/add')()
+const CarIdBillMiscellaneousIndexLazyRouteImport = createFileRoute(
+  '/car/$id/bill/miscellaneous/',
+)()
 const CarIdBillMaintenanceIndexLazyRouteImport = createFileRoute(
   '/car/$id/bill/maintenance/',
 )()
@@ -93,6 +96,16 @@ const CarIdBillAddLazyRoute = CarIdBillAddLazyRouteImport.update({
 } as any).lazy(() =>
   import('./routes/car/$id/bill/add.lazy').then((d) => d.Route),
 )
+const CarIdBillMiscellaneousIndexLazyRoute =
+  CarIdBillMiscellaneousIndexLazyRouteImport.update({
+    id: '/bill/miscellaneous/',
+    path: '/bill/miscellaneous/',
+    getParentRoute: () => CarIdRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/car/$id/bill/miscellaneous/index.lazy').then(
+      (d) => d.Route,
+    ),
+  )
 const CarIdBillMaintenanceIndexLazyRoute =
   CarIdBillMaintenanceIndexLazyRouteImport.update({
     id: '/bill/maintenance/',
@@ -124,6 +137,7 @@ export interface FileRoutesByFullPath {
   '/car/$id/bill/add': typeof CarIdBillAddLazyRoute
   '/car/$id/bill/fuel/': typeof CarIdBillFuelIndexLazyRoute
   '/car/$id/bill/maintenance/': typeof CarIdBillMaintenanceIndexLazyRoute
+  '/car/$id/bill/miscellaneous/': typeof CarIdBillMiscellaneousIndexLazyRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexLazyRoute
@@ -139,6 +153,7 @@ export interface FileRoutesByTo {
   '/car/$id/bill/add': typeof CarIdBillAddLazyRoute
   '/car/$id/bill/fuel': typeof CarIdBillFuelIndexLazyRoute
   '/car/$id/bill/maintenance': typeof CarIdBillMaintenanceIndexLazyRoute
+  '/car/$id/bill/miscellaneous': typeof CarIdBillMiscellaneousIndexLazyRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -156,6 +171,7 @@ export interface FileRoutesById {
   '/car/$id/bill/add': typeof CarIdBillAddLazyRoute
   '/car/$id/bill/fuel/': typeof CarIdBillFuelIndexLazyRoute
   '/car/$id/bill/maintenance/': typeof CarIdBillMaintenanceIndexLazyRoute
+  '/car/$id/bill/miscellaneous/': typeof CarIdBillMiscellaneousIndexLazyRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -174,6 +190,7 @@ export interface FileRouteTypes {
     | '/car/$id/bill/add'
     | '/car/$id/bill/fuel/'
     | '/car/$id/bill/maintenance/'
+    | '/car/$id/bill/miscellaneous/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -189,6 +206,7 @@ export interface FileRouteTypes {
     | '/car/$id/bill/add'
     | '/car/$id/bill/fuel'
     | '/car/$id/bill/maintenance'
+    | '/car/$id/bill/miscellaneous'
   id:
     | '__root__'
     | '/'
@@ -205,6 +223,7 @@ export interface FileRouteTypes {
     | '/car/$id/bill/add'
     | '/car/$id/bill/fuel/'
     | '/car/$id/bill/maintenance/'
+    | '/car/$id/bill/miscellaneous/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -305,6 +324,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CarIdBillAddLazyRouteImport
       parentRoute: typeof CarIdRouteRoute
     }
+    '/car/$id/bill/miscellaneous/': {
+      id: '/car/$id/bill/miscellaneous/'
+      path: '/bill/miscellaneous'
+      fullPath: '/car/$id/bill/miscellaneous/'
+      preLoaderRoute: typeof CarIdBillMiscellaneousIndexLazyRouteImport
+      parentRoute: typeof CarIdRouteRoute
+    }
     '/car/$id/bill/maintenance/': {
       id: '/car/$id/bill/maintenance/'
       path: '/bill/maintenance'
@@ -328,6 +354,7 @@ interface CarIdRouteRouteChildren {
   CarIdBillAddLazyRoute: typeof CarIdBillAddLazyRoute
   CarIdBillFuelIndexLazyRoute: typeof CarIdBillFuelIndexLazyRoute
   CarIdBillMaintenanceIndexLazyRoute: typeof CarIdBillMaintenanceIndexLazyRoute
+  CarIdBillMiscellaneousIndexLazyRoute: typeof CarIdBillMiscellaneousIndexLazyRoute
 }
 
 const CarIdRouteRouteChildren: CarIdRouteRouteChildren = {
@@ -336,6 +363,7 @@ const CarIdRouteRouteChildren: CarIdRouteRouteChildren = {
   CarIdBillAddLazyRoute: CarIdBillAddLazyRoute,
   CarIdBillFuelIndexLazyRoute: CarIdBillFuelIndexLazyRoute,
   CarIdBillMaintenanceIndexLazyRoute: CarIdBillMaintenanceIndexLazyRoute,
+  CarIdBillMiscellaneousIndexLazyRoute: CarIdBillMiscellaneousIndexLazyRoute,
 }
 
 const CarIdRouteRouteWithChildren = CarIdRouteRoute._addFileChildren(

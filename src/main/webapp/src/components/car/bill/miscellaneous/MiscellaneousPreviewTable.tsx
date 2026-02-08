@@ -11,12 +11,12 @@ import {
   Typography,
 } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
-import { getAllFuelBillsOptions } from '@/generated/@tanstack/react-query.gen';
+import { getAllMiscellaneousBillsOptions } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
-export default function FuelPreviewTable({
+export default function MiscellaneousPreviewTable({
   id,
   onSeeMore,
   reload,
@@ -33,7 +33,7 @@ export default function FuelPreviewTable({
     isError: isBillsError,
     refetch: billRefetch,
   } = useQuery({
-    ...getAllFuelBillsOptions({
+    ...getAllMiscellaneousBillsOptions({
       client: localClient,
       path: {
         carId: Number(id),
@@ -80,13 +80,7 @@ export default function FuelPreviewTable({
             <TableRow>
               <TableCell>{t('app.car.common.date')}</TableCell>
               <TableCell align="right">
-                {t('app.car.fuel.table.distance')}
-              </TableCell>
-              <TableCell align="right">
-                {t('app.car.fuel.table.unit')}
-              </TableCell>
-              <TableCell align="right">
-                {t('app.car.fuel.table.pricePerUnit')}
+                {t('app.car.common.description')}
               </TableCell>
               <TableCell align="right">{t('app.car.common.total')}</TableCell>
             </TableRow>
@@ -95,14 +89,10 @@ export default function FuelPreviewTable({
             {latestBills.map((bill, i) => (
               <TableRow key={bill.id} className={i % 2 === 0 ? 'even' : 'odd'}>
                 <TableCell>{bill.date}</TableCell>
+                <TableCell align="right">{bill.description}</TableCell>
                 <TableCell align="right">
-                  {Number(bill.distance).toFixed(1)}
+                  {Number(bill.total).toFixed(2)} €
                 </TableCell>
-                <TableCell align="right">{bill.unit}</TableCell>
-                <TableCell align="right">
-                  {Number(bill.pricePerUnit).toFixed(1)} ct
-                </TableCell>
-                <TableCell align="right">{bill.total} €</TableCell>
               </TableRow>
             ))}
           </TableBody>

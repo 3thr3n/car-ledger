@@ -60,15 +60,6 @@ export default function DashboardCardsTotal({
         <Grid columns={{ xs: 12, sm: 6, md: 3 }} sx={{ width }}>
           <CarLedgerAnimatedCard index={3}>
             <DashboardMetric
-              label="Fuel bills"
-              value={total.fuelBills ? Number(total.fuelBills).toFixed(0) : '-'}
-              type="div"
-            />
-          </CarLedgerAnimatedCard>
-        </Grid>
-        <Grid columns={{ xs: 12, sm: 6, md: 3 }} sx={{ width }}>
-          <CarLedgerAnimatedCard index={3}>
-            <DashboardMetric
               label="Fuel cost"
               value={total.fuelTotal ? Number(total.fuelTotal).toFixed(2) : '-'}
               unit="€"
@@ -79,23 +70,24 @@ export default function DashboardCardsTotal({
         <Grid columns={{ xs: 12, sm: 6, md: 3 }} sx={{ width }}>
           <CarLedgerAnimatedCard index={3}>
             <DashboardMetric
-              label="Maintenance bills"
+              label="Maintenance cost"
               value={
-                total.maintenanceBills
-                  ? Number(total.maintenanceBills).toFixed(0)
+                total.maintenanceTotal
+                  ? Number(total.maintenanceTotal).toFixed(2)
                   : '-'
               }
-              type="div"
+              unit="€"
+              type="cost"
             />
           </CarLedgerAnimatedCard>
         </Grid>
         <Grid columns={{ xs: 12, sm: 6, md: 3 }} sx={{ width }}>
           <CarLedgerAnimatedCard index={3}>
             <DashboardMetric
-              label="Maintenance cost"
+              label="Miscellaneous cost"
               value={
-                total.maintenanceTotal
-                  ? Number(total.maintenanceTotal).toFixed(2)
+                total.miscellaneousTotal
+                  ? Number(total.miscellaneousTotal).toFixed(2)
                   : '-'
               }
               unit="€"

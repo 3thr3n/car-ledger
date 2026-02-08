@@ -69,8 +69,11 @@ export default function CarUpdatePage({ navigate, id }: CarNewPageProperties) {
     onSuccess: () => {
       toast.info('Car saved!');
     },
-    onSettled: () => {
-      navigate({ to: '..' });
+    onSettled: (data) => {
+      navigate({
+        to: data?.id ? '/car/$id' : '..',
+        params: { id: `${data?.id}` },
+      });
     },
     onError: (error: BackendError) => {
       if (error.status === 400) {

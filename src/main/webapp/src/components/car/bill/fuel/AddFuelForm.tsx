@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { addNewFuelBillMutation } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
-import BillNumericInput from './BillNumericInput';
+import BillNumericInput from '../BillNumericInput';
 import { toast } from 'react-toastify';
 import { BackendError } from '@/utils/BackendError';
 import dayjs, { Dayjs } from 'dayjs';
