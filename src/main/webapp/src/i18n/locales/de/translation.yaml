@@ -51,6 +51,7 @@ app:
       odometerDescription: "Kilometerstand von z.B. beim Kauf"
       date: "Datum"
       total: "Kosten"
+      description: "Beschreibung"
 
       showMore: "Alle anzeigen"
       seeMore: "Alle Einträge"
@@ -62,13 +63,14 @@ app:
 
     stats:
       title: "Statistik"
+      cost: "Kosten"
       fuel:
-        refuels: "Tankfüllungen"
-        cost: "Tankkosten"
+        amount: "Tankfüllungen"
         consumption: "Verbrauch"
       maintenance:
         amount: "Wartungen"
-        cost: "Wartungskosten"
+      miscellaneous:
+        amount: "Anderes"
 
     filter:
       all: "Alle"
@@ -96,7 +98,11 @@ app:
       recentTitle: "Letzten Wartungen"
 
       table:
-        title: "Maintenance entries"
+        title: "Wartungen"
 
         workshop: "Werkstatt"
-        description: "Beschreibung"
+
+    miscellaneous:
+      recentTitle: "Letzten allgemeinen Rechnungen"
+      table:
+        title: "Diverse Rechnungen"

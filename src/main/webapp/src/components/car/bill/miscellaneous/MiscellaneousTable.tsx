@@ -5,27 +5,27 @@ import {
   GridPaginationModel,
   GridSortModel,
 } from '@mui/x-data-grid';
-import { MaintenanceBill } from '@/generated';
+import { MiscellaneousBill } from '@/generated';
 import { useTranslation } from 'react-i18next';
 import CarLedgerDeleteIcon from '@/components/CarLedgerDeleteIcon';
 
-export interface MaintenanceTableProps {
+export interface MiscellaneousTableProps {
   onDelete: (id: number) => void;
   setPagination: (pagination: GridPaginationModel) => void;
   setSortModel: (sort: GridSortModel) => void;
   isMobile?: boolean;
   totalBills: number;
-  bills: MaintenanceBill[];
+  bills: MiscellaneousBill[];
 }
 
-export default function MaintenanceTable({
+export default function MiscellaneousTable({
   onDelete,
   setPagination,
   setSortModel,
   isMobile,
   totalBills,
   bills,
-}: MaintenanceTableProps) {
+}: MiscellaneousTableProps) {
   const { t } = useTranslation();
 
   if (isMobile) {
@@ -36,10 +36,7 @@ export default function MaintenanceTable({
             <CardContent>
               <Typography variant="subtitle1">{bill.date}</Typography>
               <Typography variant="body2">
-                {t('app.car.maintenance.table.workshop')}: {bill.workshop}
-              </Typography>
-              <Typography variant="body2">
-                {t('app.car.maintenance.table.odometer')}: {bill.odometer} km
+                {t('app.car.common.description')}: {bill.description} km
               </Typography>
               <Typography variant="body2">
                 {t('app.car.fuel.table.total')}:{' '}
@@ -55,22 +52,16 @@ export default function MaintenanceTable({
   const columns: GridColDef[] = [
     { field: 'date', headerName: t('app.car.common.date'), minWidth: 130 },
     {
-      field: 'workshop',
-      headerName: `${t('app.car.maintenance.table.workshop')}`,
+      field: 'description',
+      headerName: `${t('app.car.common.description')}`,
       flex: 1,
-    },
-    {
-      field: 'odometer',
-      headerName: `${t('app.car.common.odometer')} (km)`,
-      minWidth: 130,
-      align: 'right',
     },
     {
       field: 'total',
       headerName: `${t('app.car.common.total')} (€)`,
       minWidth: 130,
-      valueFormatter: (value) => Number(value).toFixed(2),
       align: 'right',
+      valueFormatter: (value) => Number(value).toFixed(2),
     },
     {
       field: 'actions',
@@ -81,7 +72,6 @@ export default function MaintenanceTable({
       renderCell: (params) => (
         <CarLedgerDeleteIcon onDelete={() => onDelete(params.row.id)} />
       ),
-      align: 'right',
     },
   ];
 

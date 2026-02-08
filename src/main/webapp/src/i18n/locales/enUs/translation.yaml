@@ -49,6 +49,7 @@ app:
       year: "Manufacture year"
       odometer: "Odometer"
       odometerDescription: "Odometer e.g. when bought"
+      description: "Description"
 
       date: "Date"
       total: "Total"
@@ -63,13 +64,14 @@ app:
 
     stats:
       title: "Statistics"
+      cost: "Cost"
       fuel:
-        refuels: "Refuels"
-        cost: "Fuel costs"
+        amount: "Refuels"
         consumption: "Consumption"
       maintenance:
-        amount: "Maintenances?"
-        cost: "Maintenance costs"
+        amount: "Maintenance events"
+      miscellaneous:
+        amount: "Miscellaneous events"
 
     filter:
       all: "All"
@@ -100,4 +102,8 @@ app:
         title: "Maintenance entries"
 
         workshop: "Workshop"
-        description: "Description"
+
+    miscellaneous:
+      recentTitle: "Recent miscellaneous entries"
+      table:
+        title: "Miscellaneous entries"

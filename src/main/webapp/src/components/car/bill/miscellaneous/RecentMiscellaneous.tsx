@@ -1,24 +1,25 @@
 import { NavigateOptions } from '@tanstack/router-core';
 import { Box, Button, Card, CardContent, Divider, Grid } from '@mui/material';
 import CarLedgerSubPageHeader from '@/components/CarLedgerSubPageHeader';
-import FuelPreviewTable from '@/components/car/bill/fuel/FuelPreviewTable';
 import { useTranslation } from 'react-i18next';
+import MiscellaneousPreviewTable from '@/components/car/bill/miscellaneous/MiscellaneousPreviewTable';
 
-export interface RecentRefuelsProps {
+export interface RecentMaintenanceProps {
   isMobile: boolean;
   id: string;
   navigate: (opt: NavigateOptions) => void;
   reloadToken: number;
 }
 
-export default function RecentRefuels({
+export default function RecentMiscellaneous({
   isMobile,
   id,
   navigate,
   reloadToken,
-}: RecentRefuelsProps) {
+}: RecentMaintenanceProps) {
   const { t } = useTranslation();
-  const goToAll = () => navigate({ to: '/car/$id/bill/fuel', params: { id } });
+  const goToAll = () =>
+    navigate({ to: '/car/$id/bill/miscellaneous', params: { id } });
 
   if (isMobile) {
     return (
@@ -30,7 +31,7 @@ export default function RecentRefuels({
             }}
           >
             <CarLedgerSubPageHeader
-              title={t('app.car.fuel.recentTitle')}
+              title={t('app.car.miscellaneous.recentTitle')}
               isCardHeader
             />
             <Box flexGrow={1} />
@@ -47,11 +48,15 @@ export default function RecentRefuels({
       <Card>
         <CardContent>
           <CarLedgerSubPageHeader
-            title={t('app.car.fuel.recentTitle')}
+            title={t('app.car.miscellaneous.recentTitle')}
             isCardHeader
           />
           <Divider sx={{ mb: 2 }} />
-          <FuelPreviewTable id={id} onSeeMore={goToAll} reload={reloadToken} />
+          <MiscellaneousPreviewTable
+            id={id}
+            onSeeMore={goToAll}
+            reload={reloadToken}
+          />
         </CardContent>
       </Card>
     </Grid>

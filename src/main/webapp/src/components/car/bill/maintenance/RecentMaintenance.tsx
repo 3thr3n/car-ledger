@@ -23,47 +23,42 @@ export default function RecentMaintenance({
 
   if (isMobile) {
     return (
-      <>
-        <Grid size={{ xs: 12, md: 8 }}>
-          <Card>
-            <CardContent
-              sx={{
-                display: 'flex',
-              }}
-            >
-              <CarLedgerSubPageHeader
-                title={t('app.car.maintenance.recentTitle')}
-                isCardHeader
-              />
-              <Box flexGrow={1} />
-              <Button size="small" onClick={goToAll}>
-                {t('app.car.common.showMore')} →
-              </Button>
-            </CardContent>
-          </Card>
-        </Grid>
-      </>
-    );
-  }
-  return (
-    <>
-      {/* Maintenance bills */}
-      <Grid size={{ xs: 12, md: 8 }}>
+      <Grid size={12}>
         <Card>
-          <CardContent>
+          <CardContent
+            sx={{
+              display: 'flex',
+            }}
+          >
             <CarLedgerSubPageHeader
               title={t('app.car.maintenance.recentTitle')}
               isCardHeader
             />
-            <Divider sx={{ mb: 2 }} />
-            <MaintenancePreviewTable
-              id={id}
-              onSeeMore={goToAll}
-              reload={reloadToken}
-            />
+            <Box flexGrow={1} />
+            <Button size="small" onClick={goToAll}>
+              {t('app.car.common.showMore')} →
+            </Button>
           </CardContent>
         </Card>
       </Grid>
-    </>
+    );
+  }
+  return (
+    <Grid size={12}>
+      <Card>
+        <CardContent>
+          <CarLedgerSubPageHeader
+            title={t('app.car.maintenance.recentTitle')}
+            isCardHeader
+          />
+          <Divider sx={{ mb: 2 }} />
+          <MaintenancePreviewTable
+            id={id}
+            onSeeMore={goToAll}
+            reload={reloadToken}
+          />
+        </CardContent>
+      </Card>
+    </Grid>
   );
 }

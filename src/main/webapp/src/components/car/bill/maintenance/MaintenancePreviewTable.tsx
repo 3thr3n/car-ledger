@@ -94,7 +94,9 @@ export default function MaintenancePreviewTable({
                 <TableCell>{bill.date}</TableCell>
                 <TableCell align="right">{bill.workshop}</TableCell>
                 <TableCell align="right">{bill.odometer} km</TableCell>
-                <TableCell align="right">{bill.total} €</TableCell>
+                <TableCell align="right">
+                  {Number(bill.total).toFixed(2)} €
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>

@@ -137,9 +137,32 @@
           }
         }
       },
+      "BillPagedMiscellaneousBill" : {
+        "type" : "object",
+        "properties" : {
+          "total" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "page" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "data" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/MiscellaneousBill"
+            }
+          }
+        }
+      },
       "BillType" : {
         "type" : "string",
-        "enum" : [ "FUEL", "MAINTENANCE" ]
+        "enum" : [ "FUEL", "MAINTENANCE", "MISCELLANEOUS" ]
       },
       "Car" : {
         "type" : "object",
@@ -185,6 +208,12 @@
         "type" : "object",
         "properties" : {
           "totalRefuels" : {
+            "type" : "integer"
+          },
+          "totalMaintenanceEvents" : {
+            "type" : "integer"
+          },
+          "totalMiscellaneousEvents" : {
             "type" : "integer"
           },
           "totalCost" : {
@@ -401,6 +430,45 @@
           }
         }
       },
+      "MiscellaneousBill" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "date" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          },
+          "year" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "total" : {
+            "type" : "number"
+          }
+        }
+      },
+      "MiscellaneousBillInput" : {
+        "type" : "object",
+        "properties" : {
+          "total" : {
+            "type" : "number"
+          },
+          "vatRate" : {
+            "type" : "integer"
+          },
+          "date" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          },
+          "description" : {
+            "type" : "string"
+          }
+        }
+      },
       "TotalStats" : {
         "type" : "object",
         "properties" : {
@@ -416,6 +484,9 @@
           "maintenanceTotal" : {
             "type" : "number"
           },
+          "miscellaneousTotal" : {
+            "type" : "number"
+          },
           "total" : {
             "type" : "number"
           },
@@ -424,6 +495,10 @@
             "format" : "int32"
           },
           "maintenanceBills" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "miscellaneousBills" : {
             "type" : "integer",
             "format" : "int32"
           }
@@ -852,6 +927,155 @@
         "tags" : [ "Maintenance Resource" ]
       }
     },
+    "/api/bill/{carId}/miscellaneous" : {
+      "parameters" : [ {
+        "name" : "carId",
+        "in" : "path",
+        "required" : true,
+        "schema" : {
+          "type" : "integer",
+          "format" : "int64"
+        }
+      } ],
+      "put" : {
+        "operationId" : "addNewMiscellaneousBill",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/MiscellaneousBillInput"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Bill created."
+          },
+          "400" : {
+            "description" : "Car is not for your user."
+          },
+          "500" : {
+            "description" : "Something went wrong while saving. Please ask the server admin for help."
+          }
+        },
+        "summary" : "Add New Bill",
+        "tags" : [ "Miscellaneous Resource" ]
+      }
+    },
+    "/api/bill/{carId}/miscellaneous/all" : {
+      "parameters" : [ {
+        "name" : "carId",
+        "in" : "path",
+        "required" : true,
+        "schema" : {
+          "type" : "integer",
+          "format" : "int64"
+        }
+      } ],
+      "get" : {
+        "description" : "Gets all bills for specified car, Pages starting at 1",
+        "operationId" : "getAllMiscellaneousBills",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "page",
+          "in" : "query",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 1
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 10
+          }
+        }, {
+          "name" : "year",
+          "in" : "query",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Bills found.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/BillPagedMiscellaneousBill"
+                }
+              }
+            }
+          }
+        },
+        "summary" : "Get All My Bills",
+        "tags" : [ "Miscellaneous Resource" ]
+      }
+    },
+    "/api/bill/{carId}/miscellaneous/years" : {
+      "parameters" : [ {
+        "name" : "carId",
+        "in" : "path",
+        "required" : true,
+        "schema" : {
+          "type" : "integer",
+          "format" : "int64"
+        }
+      } ],
+      "get" : {
+        "description" : "Gets all years of bills for specified car",
+        "operationId" : "getAllMiscellaneousBillYears",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Bills found and years extracted.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "type" : "integer",
+                    "format" : "int32"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary" : "Get All My Bills",
+        "tags" : [ "Miscellaneous Resource" ]
+      }
+    },
     "/api/bill/{carId}/years" : {
       "parameters" : [ {
         "name" : "carId",
@@ -968,7 +1192,14 @@
         },
         "responses" : {
           "202" : {
-            "description" : "Car created."
+            "description" : "Car created.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Car"
+                }
+              }
+            }
           },
           "400" : {
             "description" : "Maximal amount of cars created or input was invalid."

@@ -42,7 +42,7 @@ export default function FuelTable({
                 {t('app.car.fuel.table.unit')}: {bill.unit} L
               </Typography>
               <Typography variant="body2">
-                {t('app.car.fuel.table.total')}:{' '}
+                {t('app.car.common.total')}:{' '}
                 {Number(bill.total ?? 0).toFixed(2)} €
               </Typography>
               <Typography variant="body2">
@@ -61,38 +61,48 @@ export default function FuelTable({
     {
       field: 'distance',
       headerName: `${t('app.car.fuel.table.distance')} (km)`,
-      flex: 1,
+      minWidth: 130,
+      align: 'right',
+      valueFormatter: (value) => Number(value).toFixed(1),
     },
     {
       field: 'unit',
       headerName: `${t('app.car.fuel.table.unit')} (L)`,
-      flex: 1,
+      minWidth: 130,
+      align: 'right',
     },
     {
       field: 'pricePerUnit',
       headerName: `${t('app.car.fuel.table.pricePerUnit')} (ct)`,
-      flex: 1,
+      minWidth: 130,
+      align: 'right',
+      valueFormatter: (value) => Number(value).toFixed(1),
     },
     {
       field: 'estimateConsumption',
       headerName: `${t('app.car.fuel.table.estimateConsumption')} (l/100km)`,
-      flex: 1,
+      minWidth: 130,
+      align: 'right',
+      valueFormatter: (value) => Number(value).toFixed(1),
     },
     {
       field: 'avgConsumption',
       headerName: `${t('app.car.fuel.table.avgConsumption')} (l/100km)`,
-      flex: 1,
+      minWidth: 130,
+      align: 'right',
     },
     {
       field: 'total',
-      headerName: `${t('app.car.fuel.table.total')} (€)`,
-      flex: 1,
+      headerName: `${t('app.car.common.total')} (€)`,
+      minWidth: 130,
+      align: 'right',
     },
     {
       field: 'actions',
       headerName: '',
       sortable: false,
-      flex: 0.4,
+      minWidth: 60,
+      maxWidth: 60,
       renderCell: (params) => (
         <CarLedgerDeleteIcon onDelete={() => onDelete(params.row.id)} />
       ),

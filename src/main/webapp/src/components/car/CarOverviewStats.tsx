@@ -64,11 +64,7 @@ export const CarOverviewStats = ({
         ) : (
           <>
             <SingleLineStat
-              label={t('app.car.stats.fuel.refuels') + ':'}
-              value={data?.totalRefuels}
-            />
-            <SingleLineStat
-              label={t('app.car.stats.fuel.cost') + ':'}
+              label={t('app.car.stats.cost') + ':'}
               value={data?.totalCost?.toFixed(2)}
               type="€"
             />
@@ -78,14 +74,16 @@ export const CarOverviewStats = ({
               type="l/100km"
             />
             <SingleLineStat
-              label={t('app.car.stats.maintenance.amount') + ':'}
-              value={data?.avgConsumption?.toFixed(2)}
-              type="l/100km"
+              label={t('app.car.stats.fuel.amount') + ':'}
+              value={data?.totalRefuels}
             />
             <SingleLineStat
-              label={t('app.car.stats.maintenance.cost') + ':'}
-              value={data?.avgConsumption?.toFixed(2)}
-              type="l/100km"
+              label={t('app.car.stats.maintenance.amount') + ':'}
+              value={data?.totalMaintenanceEvents}
+            />
+            <SingleLineStat
+              label={t('app.car.stats.miscellaneous.amount') + ':'}
+              value={data?.totalMiscellaneousEvents}
             />
           </>
         )}

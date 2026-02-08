@@ -50,7 +50,18 @@ export type BillPagedMaintenanceBill = {
     data?: Array<MaintenanceBill>;
 };
 
-export type BillType = 'FUEL' | 'MAINTENANCE';
+export type BillPagedMiscellaneousBill = {
+    total?: number;
+    page?: number;
+    size?: number;
+    data?: Array<MiscellaneousBill>;
+};
+
+export enum BillType {
+    FUEL = 'FUEL',
+    MAINTENANCE = 'MAINTENANCE',
+    MISCELLANEOUS = 'MISCELLANEOUS'
+}
 
 export type Car = {
     id?: number;
@@ -68,6 +79,8 @@ export type CarInput = {
 
 export type CarOverview = {
     totalRefuels?: number;
+    totalMaintenanceEvents?: number;
+    totalMiscellaneousEvents?: number;
     totalCost?: number;
     avgConsumption?: number;
 };
@@ -147,14 +160,31 @@ export type MaintenanceBillInput = {
     workshop?: string;
 };
 
+export type MiscellaneousBill = {
+    id?: number;
+    date?: LocalDate;
+    year?: number;
+    description?: string;
+    total?: number;
+};
+
+export type MiscellaneousBillInput = {
+    total?: number;
+    vatRate?: number;
+    date?: LocalDate;
+    description?: string;
+};
+
 export type TotalStats = {
     unit?: number;
     trackedDistance?: number;
     fuelTotal?: number;
     maintenanceTotal?: number;
+    miscellaneousTotal?: number;
     total?: number;
     fuelBills?: number;
     maintenanceBills?: number;
+    miscellaneousBills?: number;
 };
 
 export type DashboardStatsWritable = {
@@ -390,6 +420,73 @@ export type GetAllMaintenanceBillYearsResponses = {
 
 export type GetAllMaintenanceBillYearsResponse = GetAllMaintenanceBillYearsResponses[keyof GetAllMaintenanceBillYearsResponses];
 
+export type AddNewMiscellaneousBillData = {
+    body: MiscellaneousBillInput;
+    path: {
+        carId: number;
+    };
+    query?: never;
+    url: '/api/bill/{carId}/miscellaneous';
+};
+
+export type AddNewMiscellaneousBillErrors = {
+    /**
+     * Car is not for your user.
+     */
+    400: unknown;
+    /**
+     * Something went wrong while saving. Please ask the server admin for help.
+     */
+    500: unknown;
+};
+
+export type AddNewMiscellaneousBillResponses = {
+    /**
+     * Bill created.
+     */
+    200: unknown;
+};
+
+export type GetAllMiscellaneousBillsData = {
+    body?: never;
+    path: {
+        carId: number;
+    };
+    query?: {
+        page?: number;
+        size?: number;
+        year?: number;
+    };
+    url: '/api/bill/{carId}/miscellaneous/all';
+};
+
+export type GetAllMiscellaneousBillsResponses = {
+    /**
+     * Bills found.
+     */
+    200: BillPagedMiscellaneousBill;
+};
+
+export type GetAllMiscellaneousBillsResponse = GetAllMiscellaneousBillsResponses[keyof GetAllMiscellaneousBillsResponses];
+
+export type GetAllMiscellaneousBillYearsData = {
+    body?: never;
+    path: {
+        carId: number;
+    };
+    query?: never;
+    url: '/api/bill/{carId}/miscellaneous/years';
+};
+
+export type GetAllMiscellaneousBillYearsResponses = {
+    /**
+     * Bills found and years extracted.
+     */
+    200: Array<number>;
+};
+
+export type GetAllMiscellaneousBillYearsResponse = GetAllMiscellaneousBillYearsResponses[keyof GetAllMiscellaneousBillYearsResponses];
+
 export type GetAllBillYearsData = {
     body?: never;
     path: {
@@ -465,8 +562,10 @@ export type CreateCarResponses = {
     /**
      * Car created.
      */
-    202: unknown;
+    202: Car;
 };
+
+export type CreateCarResponse = CreateCarResponses[keyof CreateCarResponses];
 
 export type GetMyCarData = {
     body?: never;

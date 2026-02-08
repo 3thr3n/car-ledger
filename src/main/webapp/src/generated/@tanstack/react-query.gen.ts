@@ -3,8 +3,8 @@
 import { type DefaultError, type InfiniteData, infiniteQueryOptions, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen';
-import { addNewFuelBill, addNewMaintenanceBill, callback, createCar, deleteBill, getAllBills, getAllBillYears, getAllFuelBills, getAllFuelBillYears, getAllMaintenanceBills, getAllMaintenanceBillYears, getDashboardStats, getMyCar, getMyCarOverview, getMyCars, getMyself, importCsv, login, logout, logoutCallback, type Options, updateMyCar } from '../sdk.gen';
-import type { AddNewFuelBillData, AddNewMaintenanceBillData, CallbackData, CreateCarData, DeleteBillData, DeleteBillResponse, GetAllBillsData, GetAllBillsResponse, GetAllBillYearsData, GetAllBillYearsResponse, GetAllFuelBillsData, GetAllFuelBillsResponse, GetAllFuelBillYearsData, GetAllFuelBillYearsResponse, GetAllMaintenanceBillsData, GetAllMaintenanceBillsResponse, GetAllMaintenanceBillYearsData, GetAllMaintenanceBillYearsResponse, GetDashboardStatsData, GetDashboardStatsResponse, GetMyCarData, GetMyCarOverviewData, GetMyCarOverviewResponse, GetMyCarResponse, GetMyCarsData, GetMyCarsResponse, GetMyselfData, GetMyselfResponse, ImportCsvData, LoginData, LogoutCallbackData, LogoutData, UpdateMyCarData } from '../types.gen';
+import { addNewFuelBill, addNewMaintenanceBill, addNewMiscellaneousBill, callback, createCar, deleteBill, getAllBills, getAllBillYears, getAllFuelBills, getAllFuelBillYears, getAllMaintenanceBills, getAllMaintenanceBillYears, getAllMiscellaneousBills, getAllMiscellaneousBillYears, getDashboardStats, getMyCar, getMyCarOverview, getMyCars, getMyself, importCsv, login, logout, logoutCallback, type Options, updateMyCar } from '../sdk.gen';
+import type { AddNewFuelBillData, AddNewMaintenanceBillData, AddNewMiscellaneousBillData, CallbackData, CreateCarData, CreateCarResponse, DeleteBillData, DeleteBillResponse, GetAllBillsData, GetAllBillsResponse, GetAllBillYearsData, GetAllBillYearsResponse, GetAllFuelBillsData, GetAllFuelBillsResponse, GetAllFuelBillYearsData, GetAllFuelBillYearsResponse, GetAllMaintenanceBillsData, GetAllMaintenanceBillsResponse, GetAllMaintenanceBillYearsData, GetAllMaintenanceBillYearsResponse, GetAllMiscellaneousBillsData, GetAllMiscellaneousBillsResponse, GetAllMiscellaneousBillYearsData, GetAllMiscellaneousBillYearsResponse, GetDashboardStatsData, GetDashboardStatsResponse, GetMyCarData, GetMyCarOverviewData, GetMyCarOverviewResponse, GetMyCarResponse, GetMyCarsData, GetMyCarsResponse, GetMyselfData, GetMyselfResponse, ImportCsvData, LoginData, LogoutCallbackData, LogoutData, UpdateMyCarData } from '../types.gen';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -369,6 +369,92 @@ export const getAllMaintenanceBillYearsOptions = (options: Options<GetAllMainten
     queryKey: getAllMaintenanceBillYearsQueryKey(options)
 });
 
+/**
+ * Add New Bill
+ */
+export const addNewMiscellaneousBillMutation = (options?: Partial<Options<AddNewMiscellaneousBillData>>): UseMutationOptions<unknown, DefaultError, Options<AddNewMiscellaneousBillData>> => {
+    const mutationOptions: UseMutationOptions<unknown, DefaultError, Options<AddNewMiscellaneousBillData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await addNewMiscellaneousBill({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const getAllMiscellaneousBillsQueryKey = (options: Options<GetAllMiscellaneousBillsData>) => createQueryKey('getAllMiscellaneousBills', options);
+
+/**
+ * Get All My Bills
+ *
+ * Gets all bills for specified car, Pages starting at 1
+ */
+export const getAllMiscellaneousBillsOptions = (options: Options<GetAllMiscellaneousBillsData>) => queryOptions<GetAllMiscellaneousBillsResponse, DefaultError, GetAllMiscellaneousBillsResponse, ReturnType<typeof getAllMiscellaneousBillsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getAllMiscellaneousBills({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getAllMiscellaneousBillsQueryKey(options)
+});
+
+export const getAllMiscellaneousBillsInfiniteQueryKey = (options: Options<GetAllMiscellaneousBillsData>): QueryKey<Options<GetAllMiscellaneousBillsData>> => createQueryKey('getAllMiscellaneousBills', options, true);
+
+/**
+ * Get All My Bills
+ *
+ * Gets all bills for specified car, Pages starting at 1
+ */
+export const getAllMiscellaneousBillsInfiniteOptions = (options: Options<GetAllMiscellaneousBillsData>) => infiniteQueryOptions<GetAllMiscellaneousBillsResponse, DefaultError, InfiniteData<GetAllMiscellaneousBillsResponse>, QueryKey<Options<GetAllMiscellaneousBillsData>>, number | Pick<QueryKey<Options<GetAllMiscellaneousBillsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+// @ts-ignore
+{
+    queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<QueryKey<Options<GetAllMiscellaneousBillsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+            query: {
+                page: pageParam
+            }
+        };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await getAllMiscellaneousBills({
+            ...options,
+            ...params,
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getAllMiscellaneousBillsInfiniteQueryKey(options)
+});
+
+export const getAllMiscellaneousBillYearsQueryKey = (options: Options<GetAllMiscellaneousBillYearsData>) => createQueryKey('getAllMiscellaneousBillYears', options);
+
+/**
+ * Get All My Bills
+ *
+ * Gets all years of bills for specified car
+ */
+export const getAllMiscellaneousBillYearsOptions = (options: Options<GetAllMiscellaneousBillYearsData>) => queryOptions<GetAllMiscellaneousBillYearsResponse, DefaultError, GetAllMiscellaneousBillYearsResponse, ReturnType<typeof getAllMiscellaneousBillYearsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getAllMiscellaneousBillYears({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getAllMiscellaneousBillYearsQueryKey(options)
+});
+
 export const getAllBillYearsQueryKey = (options: Options<GetAllBillYearsData>) => createQueryKey('getAllBillYears', options);
 
 /**
@@ -429,8 +515,8 @@ export const getMyCarsOptions = (options?: Options<GetMyCarsData>) => queryOptio
 /**
  * Create Car
  */
-export const createCarMutation = (options?: Partial<Options<CreateCarData>>): UseMutationOptions<unknown, DefaultError, Options<CreateCarData>> => {
-    const mutationOptions: UseMutationOptions<unknown, DefaultError, Options<CreateCarData>> = {
+export const createCarMutation = (options?: Partial<Options<CreateCarData>>): UseMutationOptions<CreateCarResponse, DefaultError, Options<CreateCarData>> => {
+    const mutationOptions: UseMutationOptions<CreateCarResponse, DefaultError, Options<CreateCarData>> = {
         mutationFn: async (fnOptions) => {
             const { data } = await createCar({
                 ...options,

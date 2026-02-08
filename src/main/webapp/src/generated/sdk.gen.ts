@@ -2,7 +2,7 @@
 
 import { type Client, formDataBodySerializer, type Options as Options2, type TDataShape } from './client';
 import { client } from './client.gen';
-import type { AddNewFuelBillData, AddNewFuelBillErrors, AddNewFuelBillResponses, AddNewMaintenanceBillData, AddNewMaintenanceBillErrors, AddNewMaintenanceBillResponses, CallbackData, CallbackResponses, CreateCarData, CreateCarErrors, CreateCarResponses, DeleteBillData, DeleteBillResponses, GetAllBillsData, GetAllBillsResponses, GetAllBillYearsData, GetAllBillYearsResponses, GetAllFuelBillsData, GetAllFuelBillsResponses, GetAllFuelBillYearsData, GetAllFuelBillYearsResponses, GetAllMaintenanceBillsData, GetAllMaintenanceBillsResponses, GetAllMaintenanceBillYearsData, GetAllMaintenanceBillYearsResponses, GetDashboardStatsData, GetDashboardStatsResponses, GetMyCarData, GetMyCarOverviewData, GetMyCarOverviewResponses, GetMyCarResponses, GetMyCarsData, GetMyCarsResponses, GetMyselfData, GetMyselfResponses, ImportCsvData, ImportCsvErrors, ImportCsvResponses, LoginData, LoginResponses, LogoutCallbackData, LogoutCallbackResponses, LogoutData, LogoutResponses, UpdateMyCarData, UpdateMyCarErrors, UpdateMyCarResponses } from './types.gen';
+import type { AddNewFuelBillData, AddNewFuelBillErrors, AddNewFuelBillResponses, AddNewMaintenanceBillData, AddNewMaintenanceBillErrors, AddNewMaintenanceBillResponses, AddNewMiscellaneousBillData, AddNewMiscellaneousBillErrors, AddNewMiscellaneousBillResponses, CallbackData, CallbackResponses, CreateCarData, CreateCarErrors, CreateCarResponses, DeleteBillData, DeleteBillResponses, GetAllBillsData, GetAllBillsResponses, GetAllBillYearsData, GetAllBillYearsResponses, GetAllFuelBillsData, GetAllFuelBillsResponses, GetAllFuelBillYearsData, GetAllFuelBillYearsResponses, GetAllMaintenanceBillsData, GetAllMaintenanceBillsResponses, GetAllMaintenanceBillYearsData, GetAllMaintenanceBillYearsResponses, GetAllMiscellaneousBillsData, GetAllMiscellaneousBillsResponses, GetAllMiscellaneousBillYearsData, GetAllMiscellaneousBillYearsResponses, GetDashboardStatsData, GetDashboardStatsResponses, GetMyCarData, GetMyCarOverviewData, GetMyCarOverviewResponses, GetMyCarResponses, GetMyCarsData, GetMyCarsResponses, GetMyselfData, GetMyselfResponses, ImportCsvData, ImportCsvErrors, ImportCsvResponses, LoginData, LoginResponses, LogoutCallbackData, LogoutCallbackResponses, LogoutData, LogoutResponses, UpdateMyCarData, UpdateMyCarErrors, UpdateMyCarResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -104,6 +104,32 @@ export const getAllMaintenanceBills = <ThrowOnError extends boolean = false>(opt
  * Gets all years of bills for specified car
  */
 export const getAllMaintenanceBillYears = <ThrowOnError extends boolean = false>(options: Options<GetAllMaintenanceBillYearsData, ThrowOnError>) => (options.client ?? client).get<GetAllMaintenanceBillYearsResponses, unknown, ThrowOnError>({ url: '/api/bill/{carId}/maintenance/years', ...options });
+
+/**
+ * Add New Bill
+ */
+export const addNewMiscellaneousBill = <ThrowOnError extends boolean = false>(options: Options<AddNewMiscellaneousBillData, ThrowOnError>) => (options.client ?? client).put<AddNewMiscellaneousBillResponses, AddNewMiscellaneousBillErrors, ThrowOnError>({
+    url: '/api/bill/{carId}/miscellaneous',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Get All My Bills
+ *
+ * Gets all bills for specified car, Pages starting at 1
+ */
+export const getAllMiscellaneousBills = <ThrowOnError extends boolean = false>(options: Options<GetAllMiscellaneousBillsData, ThrowOnError>) => (options.client ?? client).get<GetAllMiscellaneousBillsResponses, unknown, ThrowOnError>({ url: '/api/bill/{carId}/miscellaneous/all', ...options });
+
+/**
+ * Get All My Bills
+ *
+ * Gets all years of bills for specified car
+ */
+export const getAllMiscellaneousBillYears = <ThrowOnError extends boolean = false>(options: Options<GetAllMiscellaneousBillYearsData, ThrowOnError>) => (options.client ?? client).get<GetAllMiscellaneousBillYearsResponses, unknown, ThrowOnError>({ url: '/api/bill/{carId}/miscellaneous/years', ...options });
 
 /**
  * Get All My Bills Years
