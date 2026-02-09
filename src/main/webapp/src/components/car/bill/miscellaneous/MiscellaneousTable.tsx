@@ -39,7 +39,7 @@ export default function MiscellaneousTable({
                 {t('app.car.common.description')}: {bill.description} km
               </Typography>
               <Typography variant="body2">
-                {t('app.car.fuel.table.total')}:{' '}
+                {t('app.car.common.total')}:{' '}
                 {Number(bill.total ?? 0).toFixed(2)} €
               </Typography>
             </CardContent>

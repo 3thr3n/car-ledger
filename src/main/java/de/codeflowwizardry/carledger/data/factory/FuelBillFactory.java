@@ -70,7 +70,7 @@ public class FuelBillFactory extends AbstractBillFactory<FuelBillInput, FuelBill
 
 		FuelBillEntity fuelBill = new FuelBillEntity(bill);
 		fuelBill.setDistance(input.getDistance());
-		fuelBill.setEstimate(input.getEstimate());
+		fuelBill.setEstimate(input.getEstimateConsumption());
 		fuelBill.setPricePerUnit(input.getPricePerUnit());
 		fuelBill.setUnit(unit);
 
@@ -143,7 +143,7 @@ public class FuelBillFactory extends AbstractBillFactory<FuelBillInput, FuelBill
 		BigDecimal distance = entity.getDistance();
 		BigDecimal unit = entity.getUnit();
 
-		if (!entity.isDistanceSet())
+		if (entity.isDistanceMissing())
 		{
 			return;
 		}
@@ -160,7 +160,7 @@ public class FuelBillFactory extends AbstractBillFactory<FuelBillInput, FuelBill
 		BigDecimal distance = entity.getDistance();
 		BigDecimal total = entity.getBill().getTotal();
 
-		if (!entity.isDistanceSet())
+		if (entity.isDistanceMissing())
 		{
 			return;
 		}

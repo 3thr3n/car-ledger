@@ -64,7 +64,7 @@ export default function AddFuelForm({ carId }: AddFuelFormProps) {
         distance: form.distance,
         unit: form.unit,
         pricePerUnit: form.pricePerUnit,
-        estimate: form.estimate,
+        estimateConsumption: form.estimate,
         vatRate: countryVat(countryCode)! * 100,
       },
     });
@@ -100,7 +100,7 @@ export default function AddFuelForm({ carId }: AddFuelFormProps) {
           />
           <BillNumericInput
             maxInput={MAX_NUMBER_INPUT}
-            label={t('app.car.fuel.table.unit')}
+            label={t('app.car.common.unit')}
             name="unit"
             required
             suffix=" L"
@@ -110,7 +110,7 @@ export default function AddFuelForm({ carId }: AddFuelFormProps) {
           />
           <BillNumericInput
             maxInput={MAX_NUMBER_INPUT}
-            label={t('app.car.fuel.table.pricePerUnit')}
+            label={t('app.car.common.pricePerUnit')}
             name="pricePerUnit"
             required
             suffix=" ct"
@@ -119,7 +119,7 @@ export default function AddFuelForm({ carId }: AddFuelFormProps) {
           />
           <BillNumericInput
             maxInput={MAX_NUMBER_INPUT}
-            label={t('app.car.fuel.table.distance')}
+            label={t('app.car.common.distance')}
             name="distance"
             suffix=" km"
             value={form.distance}
@@ -127,7 +127,7 @@ export default function AddFuelForm({ carId }: AddFuelFormProps) {
           />
           <BillNumericInput
             maxInput={MAX_NUMBER_INPUT}
-            label={t('app.car.fuel.table.estimateConsumption')}
+            label={t('app.car.common.estimateConsumption')}
             name="estimate"
             suffix=" L"
             value={form.estimate}

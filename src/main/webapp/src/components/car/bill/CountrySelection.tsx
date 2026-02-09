@@ -1,5 +1,5 @@
 import { formatVatPercent, supportedVatCountries } from '@/utils/VatCountries';
-import { Box, MenuItem, Select } from '@mui/material';
+import { Box, MenuItem, Select, SxProps, Theme } from '@mui/material';
 import countries from 'i18n-iso-countries';
 import en from 'i18n-iso-countries/langs/en.json';
 import ReactCountryFlag from 'react-country-flag';
@@ -10,9 +10,11 @@ countries.registerLocale(en);
 export default function CountrySelection({
   value,
   onChange,
+  sx,
 }: {
   value: string;
   onChange: (v: string) => void;
+  sx?: SxProps<Theme>;
 }) {
   const { i18n } = useTranslation();
 
@@ -22,6 +24,7 @@ export default function CountrySelection({
       fullWidth={true}
       value={value}
       onChange={(e) => onChange(e.target.value)}
+      sx={sx}
     >
       {Object.entries(supportedVatCountries).map(([code, rate]) => (
         <MenuItem key={code} value={code}>

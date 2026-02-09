@@ -111,8 +111,8 @@ export default function AddMaintenanceForm({ carId }: AddMaintenanceFormProps) {
             onChange={(e) => setForm({ ...form, total: e.floatValue })}
           />
           <TextField
-            placeholder={t('app.car.maintenance.table.workshop')}
-            label={t('app.car.maintenance.table.workshop')}
+            placeholder={t('app.car.common.workshop')}
+            label={t('app.car.common.workshop')}
             value={form.workshop}
             // onBlur={handleValidate}
             onChange={(e) => setForm({ ...form, workshop: e.target.value })}

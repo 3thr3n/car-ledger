@@ -2,7 +2,7 @@
 
 import { type Client, formDataBodySerializer, type Options as Options2, type TDataShape } from './client';
 import { client } from './client.gen';
-import type { AddNewFuelBillData, AddNewFuelBillErrors, AddNewFuelBillResponses, AddNewMaintenanceBillData, AddNewMaintenanceBillErrors, AddNewMaintenanceBillResponses, AddNewMiscellaneousBillData, AddNewMiscellaneousBillErrors, AddNewMiscellaneousBillResponses, CallbackData, CallbackResponses, CreateCarData, CreateCarErrors, CreateCarResponses, DeleteBillData, DeleteBillResponses, GetAllBillsData, GetAllBillsResponses, GetAllBillYearsData, GetAllBillYearsResponses, GetAllFuelBillsData, GetAllFuelBillsResponses, GetAllFuelBillYearsData, GetAllFuelBillYearsResponses, GetAllMaintenanceBillsData, GetAllMaintenanceBillsResponses, GetAllMaintenanceBillYearsData, GetAllMaintenanceBillYearsResponses, GetAllMiscellaneousBillsData, GetAllMiscellaneousBillsResponses, GetAllMiscellaneousBillYearsData, GetAllMiscellaneousBillYearsResponses, GetDashboardStatsData, GetDashboardStatsResponses, GetMyCarData, GetMyCarOverviewData, GetMyCarOverviewResponses, GetMyCarResponses, GetMyCarsData, GetMyCarsResponses, GetMyselfData, GetMyselfResponses, ImportCsvData, ImportCsvErrors, ImportCsvResponses, LoginData, LoginResponses, LogoutCallbackData, LogoutCallbackResponses, LogoutData, LogoutResponses, UpdateMyCarData, UpdateMyCarErrors, UpdateMyCarResponses } from './types.gen';
+import type { AddNewFuelBillData, AddNewFuelBillErrors, AddNewFuelBillResponses, AddNewMaintenanceBillData, AddNewMaintenanceBillErrors, AddNewMaintenanceBillResponses, AddNewMiscellaneousBillData, AddNewMiscellaneousBillErrors, AddNewMiscellaneousBillResponses, CallbackData, CallbackResponses, CreateCarData, CreateCarErrors, CreateCarResponses, DeleteBillData, DeleteBillResponses, GetAllBillsData, GetAllBillsResponses, GetAllBillYearsData, GetAllBillYearsResponses, GetAllFuelBillsData, GetAllFuelBillsResponses, GetAllFuelBillYearsData, GetAllFuelBillYearsResponses, GetAllMaintenanceBillsData, GetAllMaintenanceBillsResponses, GetAllMaintenanceBillYearsData, GetAllMaintenanceBillYearsResponses, GetAllMiscellaneousBillsData, GetAllMiscellaneousBillsResponses, GetAllMiscellaneousBillYearsData, GetAllMiscellaneousBillYearsResponses, GetCsvFieldsData, GetCsvFieldsResponses, GetDashboardStatsData, GetDashboardStatsResponses, GetMyCarData, GetMyCarOverviewData, GetMyCarOverviewResponses, GetMyCarResponses, GetMyCarsData, GetMyCarsResponses, GetMyselfData, GetMyselfResponses, ImportCsvData, ImportCsvErrors, ImportCsvResponses, LoginData, LoginResponses, LogoutCallbackData, LogoutCallbackResponses, LogoutData, LogoutResponses, UpdateMyCarData, UpdateMyCarErrors, UpdateMyCarResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -185,12 +185,11 @@ export const updateMyCar = <ThrowOnError extends boolean = false>(options: Optio
 export const getMyCarOverview = <ThrowOnError extends boolean = false>(options: Options<GetMyCarOverviewData, ThrowOnError>) => (options.client ?? client).get<GetMyCarOverviewResponses, unknown, ThrowOnError>({ url: '/api/car/my/{id}/overview', ...options });
 
 /**
- * Import Csv
+ * Import Fuel Csv
  *
- * This is the description for the import of an csv of your billEntities.<br />
+ * This is the description for the import of an csv of your fuel entities.<br />
  * <br />
- * You need to add the csv and optionally the order in the csv (starts with 0).<br />
- * If you're not adding the order, the default is: date, unit, pricePerUnit, distance, estimate
+ * You need to add the csv and the order in the csv (starts with 0).<br />
  * separator between columns is ',' (comma)
  *
  */
@@ -203,6 +202,11 @@ export const importCsv = <ThrowOnError extends boolean = false>(options: Options
         ...options.headers
     }
 });
+
+/**
+ * Get Field Definitions
+ */
+export const getCsvFields = <ThrowOnError extends boolean = false>(options?: Options<GetCsvFieldsData, ThrowOnError>) => (options?.client ?? client).get<GetCsvFieldsResponses, unknown, ThrowOnError>({ url: '/api/import/{carId}/fields', ...options });
 
 /**
  * Get Stats

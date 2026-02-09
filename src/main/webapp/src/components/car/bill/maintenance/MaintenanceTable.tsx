@@ -36,13 +36,13 @@ export default function MaintenanceTable({
             <CardContent>
               <Typography variant="subtitle1">{bill.date}</Typography>
               <Typography variant="body2">
-                {t('app.car.maintenance.table.workshop')}: {bill.workshop}
+                {t('app.car.common.workshop')}: {bill.workshop}
               </Typography>
               <Typography variant="body2">
-                {t('app.car.maintenance.table.odometer')}: {bill.odometer} km
+                {t('app.car.common.odometer')}: {bill.odometer} km
               </Typography>
               <Typography variant="body2">
-                {t('app.car.fuel.table.total')}:{' '}
+                {t('app.car.common.total')}:{' '}
                 {Number(bill.total ?? 0).toFixed(2)} €
               </Typography>
             </CardContent>
@@ -56,7 +56,7 @@ export default function MaintenanceTable({
     { field: 'date', headerName: t('app.car.common.date'), minWidth: 130 },
     {
       field: 'workshop',
-      headerName: `${t('app.car.maintenance.table.workshop')}`,
+      headerName: `${t('app.car.common.workshop')}`,
       flex: 1,
     },
     {

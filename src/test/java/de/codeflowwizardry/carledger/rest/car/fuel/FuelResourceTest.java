@@ -158,7 +158,7 @@ public class FuelResourceTest
 					"distance": 450,
 					"unit": 30,
 					"pricePerUnit": 188.9,
-					"estimate": 8.9,
+					"estimateConsumption": 8.9,
 					"vatRate": 19
 				}
 				""";
@@ -188,7 +188,7 @@ public class FuelResourceTest
 					"distance": 450,
 					"unit": 30,
 					"pricePerUnit": 188.9,
-					"estimate": 8.9,
+					"estimateConsumption": 8.9,
 					"vatRate": 19
 				}
 				""";

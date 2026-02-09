@@ -224,28 +224,22 @@
           }
         }
       },
-      "CsvOrder" : {
+      "CsvFields" : {
         "type" : "object",
         "properties" : {
-          "date" : {
-            "type" : "integer",
-            "format" : "int32"
+          "all" : {
+            "type" : "array",
+            "uniqueItems" : true,
+            "items" : {
+              "type" : "string"
+            }
           },
-          "unit" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
-          "pricePerUnit" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
-          "distance" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
-          "estimate" : {
-            "type" : "integer",
-            "format" : "int32"
+          "required" : {
+            "type" : "array",
+            "uniqueItems" : true,
+            "items" : {
+              "type" : "string"
+            }
           }
         }
       },
@@ -318,7 +312,7 @@
           "pricePerUnit" : {
             "type" : "number"
           },
-          "estimate" : {
+          "estimateConsumption" : {
             "type" : "number"
           }
         }
@@ -1308,7 +1302,7 @@
     },
     "/api/import/{carId}" : {
       "post" : {
-        "description" : "This is the description for the import of an csv of your billEntities.<br />\n<br />\nYou need to add the csv and optionally the order in the csv (starts with 0).<br />\nIf you're not adding the order, the default is: date, unit, pricePerUnit, distance, estimate\nseparator between columns is ',' (comma)\n",
+        "description" : "This is the description for the import of an csv of your fuel entities.<br />\n<br />\nYou need to add the csv and the order in the csv (starts with 0).<br />\nseparator between columns is ',' (comma)\n",
         "operationId" : "importCsv",
         "parameters" : [ {
           "name" : "carId",
@@ -1335,8 +1329,11 @@
                     "type" : "string",
                     "format" : "binary"
                   },
+                  "billType" : {
+                    "$ref" : "#/components/schemas/BillType"
+                  },
                   "order" : {
-                    "$ref" : "#/components/schemas/CsvOrder"
+                    "type" : "string"
                   },
                   "vat" : {
                     "type" : "integer"
@@ -1351,7 +1348,7 @@
                   "contentType" : "application/json"
                 },
                 "order" : {
-                  "contentType" : "application/json"
+                  "contentType" : "text/plain"
                 }
               }
             }
@@ -1363,13 +1360,39 @@
             "description" : "CSV was imported."
           },
           "400" : {
-            "description" : "- Order is invalid\n- Car not found"
+            "description" : "- Type not defined\n- Car not found"
           },
           "500" : {
             "description" : "- CSV was not set\n- Something went wrong while importing. Please ask the server admin for help."
           }
         },
-        "summary" : "Import Csv",
+        "summary" : "Import Fuel Csv",
+        "tags" : [ "Import Resource" ]
+      }
+    },
+    "/api/import/{carId}/fields" : {
+      "get" : {
+        "operationId" : "getCsvFields",
+        "parameters" : [ {
+          "name" : "importType",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/BillType"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CsvFields"
+                }
+              }
+            }
+          }
+        },
+        "summary" : "Get Field Definitions",
         "tags" : [ "Import Resource" ]
       }
     },
