@@ -3,8 +3,8 @@
 import { type DefaultError, type InfiniteData, infiniteQueryOptions, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen';
-import { addNewFuelBill, addNewMaintenanceBill, addNewMiscellaneousBill, callback, createCar, deleteBill, getAllBills, getAllBillYears, getAllFuelBills, getAllFuelBillYears, getAllMaintenanceBills, getAllMaintenanceBillYears, getAllMiscellaneousBills, getAllMiscellaneousBillYears, getDashboardStats, getMyCar, getMyCarOverview, getMyCars, getMyself, importCsv, login, logout, logoutCallback, type Options, updateMyCar } from '../sdk.gen';
-import type { AddNewFuelBillData, AddNewMaintenanceBillData, AddNewMiscellaneousBillData, CallbackData, CreateCarData, CreateCarResponse, DeleteBillData, DeleteBillResponse, GetAllBillsData, GetAllBillsResponse, GetAllBillYearsData, GetAllBillYearsResponse, GetAllFuelBillsData, GetAllFuelBillsResponse, GetAllFuelBillYearsData, GetAllFuelBillYearsResponse, GetAllMaintenanceBillsData, GetAllMaintenanceBillsResponse, GetAllMaintenanceBillYearsData, GetAllMaintenanceBillYearsResponse, GetAllMiscellaneousBillsData, GetAllMiscellaneousBillsResponse, GetAllMiscellaneousBillYearsData, GetAllMiscellaneousBillYearsResponse, GetDashboardStatsData, GetDashboardStatsResponse, GetMyCarData, GetMyCarOverviewData, GetMyCarOverviewResponse, GetMyCarResponse, GetMyCarsData, GetMyCarsResponse, GetMyselfData, GetMyselfResponse, ImportCsvData, LoginData, LogoutCallbackData, LogoutData, UpdateMyCarData } from '../types.gen';
+import { addNewFuelBill, addNewMaintenanceBill, addNewMiscellaneousBill, callback, createCar, deleteBill, getAllBills, getAllBillYears, getAllFuelBills, getAllFuelBillYears, getAllMaintenanceBills, getAllMaintenanceBillYears, getAllMiscellaneousBills, getAllMiscellaneousBillYears, getCsvFields, getDashboardStats, getMyCar, getMyCarOverview, getMyCars, getMyself, importCsv, login, logout, logoutCallback, type Options, updateMyCar } from '../sdk.gen';
+import type { AddNewFuelBillData, AddNewMaintenanceBillData, AddNewMiscellaneousBillData, CallbackData, CreateCarData, CreateCarResponse, DeleteBillData, DeleteBillResponse, GetAllBillsData, GetAllBillsResponse, GetAllBillYearsData, GetAllBillYearsResponse, GetAllFuelBillsData, GetAllFuelBillsResponse, GetAllFuelBillYearsData, GetAllFuelBillYearsResponse, GetAllMaintenanceBillsData, GetAllMaintenanceBillsResponse, GetAllMaintenanceBillYearsData, GetAllMaintenanceBillYearsResponse, GetAllMiscellaneousBillsData, GetAllMiscellaneousBillsResponse, GetAllMiscellaneousBillYearsData, GetAllMiscellaneousBillYearsResponse, GetCsvFieldsData, GetCsvFieldsResponse, GetDashboardStatsData, GetDashboardStatsResponse, GetMyCarData, GetMyCarOverviewData, GetMyCarOverviewResponse, GetMyCarResponse, GetMyCarsData, GetMyCarsResponse, GetMyselfData, GetMyselfResponse, ImportCsvData, LoginData, LogoutCallbackData, LogoutData, UpdateMyCarData } from '../types.gen';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -583,12 +583,11 @@ export const getMyCarOverviewOptions = (options: Options<GetMyCarOverviewData>) 
 });
 
 /**
- * Import Csv
+ * Import Fuel Csv
  *
- * This is the description for the import of an csv of your billEntities.<br />
+ * This is the description for the import of an csv of your fuel entities.<br />
  * <br />
- * You need to add the csv and optionally the order in the csv (starts with 0).<br />
- * If you're not adding the order, the default is: date, unit, pricePerUnit, distance, estimate
+ * You need to add the csv and the order in the csv (starts with 0).<br />
  * separator between columns is ',' (comma)
  *
  */
@@ -605,6 +604,24 @@ export const importCsvMutation = (options?: Partial<Options<ImportCsvData>>): Us
     };
     return mutationOptions;
 };
+
+export const getCsvFieldsQueryKey = (options?: Options<GetCsvFieldsData>) => createQueryKey('getCsvFields', options);
+
+/**
+ * Get Field Definitions
+ */
+export const getCsvFieldsOptions = (options?: Options<GetCsvFieldsData>) => queryOptions<GetCsvFieldsResponse, DefaultError, GetCsvFieldsResponse, ReturnType<typeof getCsvFieldsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getCsvFields({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getCsvFieldsQueryKey(options)
+});
 
 export const getDashboardStatsQueryKey = (options: Options<GetDashboardStatsData>) => createQueryKey('getDashboardStats', options);
 

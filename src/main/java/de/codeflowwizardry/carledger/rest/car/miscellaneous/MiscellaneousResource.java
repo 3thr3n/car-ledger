@@ -33,7 +33,7 @@ public class MiscellaneousResource
 	protected MiscellaneousResource(Principal context, AccountRepository accountRepository,
 			MiscellaneousBillRepository miscellaneousBillRepository, MiscellaneousBillFactory miscellaneousBillFactory)
 	{
-		super(context, accountRepository, miscellaneousBillRepository, BillType.MAINTENANCE);
+		super(context, accountRepository, miscellaneousBillRepository, BillType.MISCELLANEOUS);
 		this.miscellaneousBillFactory = miscellaneousBillFactory;
 	}
 

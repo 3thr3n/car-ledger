@@ -64,6 +64,12 @@ public record TotalStats(BigDecimal unit, BigDecimal trackedDistance, BigDecimal
 	}
 
 	@Override
+	public BigDecimal miscellaneousTotal()
+	{
+		return miscellaneousTotal.setScale(2, RoundingMode.HALF_UP);
+	}
+
+	@Override
 	public BigDecimal total()
 	{
 		return total.setScale(2, RoundingMode.HALF_UP);
@@ -79,5 +85,11 @@ public record TotalStats(BigDecimal unit, BigDecimal trackedDistance, BigDecimal
 	public Integer maintenanceBills()
 	{
 		return maintenanceBills;
+	}
+
+	@Override
+	public Integer miscellaneousBills()
+	{
+		return miscellaneousBills;
 	}
 }

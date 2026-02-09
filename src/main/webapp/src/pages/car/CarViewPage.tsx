@@ -36,7 +36,6 @@ export interface CarViewPageProperties {
 export default function CarViewPage({ navigate, id }: CarViewPageProperties) {
   const { t } = useTranslation();
   const isMobile = useMediaQuery('(max-width:600px)');
-  const openImportDialog = useCsvStore((state) => state.openDialog);
   const csvImportedAt = useCsvStore((state) => state.csvImportedAt);
 
   const {
@@ -111,7 +110,9 @@ export default function CarViewPage({ navigate, id }: CarViewPageProperties) {
             <CarLedgerButton
               variant="outlined"
               color="secondary"
-              onClick={() => openImportDialog(Number(id))}
+              onClick={() =>
+                navigate({ to: '/car/$id/bill/import', params: { id } })
+              }
             >
               {t('app.car.csvImport')}
             </CarLedgerButton>

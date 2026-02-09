@@ -73,6 +73,7 @@ export default function CarUpdatePage({ navigate, id }: CarNewPageProperties) {
       navigate({
         to: data?.id ? '/car/$id' : '..',
         params: { id: `${data?.id}` },
+        replace: true,
       });
     },
     onError: (error: BackendError) => {

@@ -91,9 +91,9 @@ public class FuelBillEntity extends AbstractBillEntity
 		return distance;
 	}
 
-	public boolean isDistanceSet()
+	public boolean isDistanceMissing()
 	{
-		return valueWasSet(distance);
+		return !valueWasSet(distance);
 	}
 
 	public void setDistance(BigDecimal distance)

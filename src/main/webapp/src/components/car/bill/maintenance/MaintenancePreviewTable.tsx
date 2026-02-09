@@ -80,7 +80,7 @@ export default function MaintenancePreviewTable({
             <TableRow>
               <TableCell>{t('app.car.common.date')}</TableCell>
               <TableCell align="right">
-                {t('app.car.maintenance.table.workshop')}
+                {t('app.car.common.workshop')}
               </TableCell>
               <TableCell align="right">
                 {t('app.car.common.odometer')}

@@ -9,6 +9,7 @@ app:
     cancel: "Abbrechen"
     back: "Zurück"
     save: "Speichern"
+    upload: "Hochladen"
   nav:
     title: "Menü"
     overview: "Übersicht"
@@ -47,12 +48,23 @@ app:
     common:
       name: "Name oder Modell"
       year: "Baujahr"
-      odometer: "Kilometerstand (KM)"
-      odometerDescription: "Kilometerstand von z.B. beim Kauf"
       date: "Datum"
       total: "Kosten"
+      vatRate: "Mwst"
       description: "Beschreibung"
-
+      #
+      distance: "Strecke"
+      unit: "Einheit"
+      pricePerUnit: "Kosten/Einheit"
+      estimateConsumption: "Verbrauch (Bordcomputer)"
+      avgConsumption: "Verbrauch"
+      #
+      workshop: "Werkstatt"
+      laborCost: "Stunden kosten"
+      partsCost: "Teilekosten"
+      odometer: "Kilometerstand (KM)"
+      odometerDescription: "Kilometerstand von z.B. beim Kauf"
+      #
       showMore: "Alle anzeigen"
       seeMore: "Alle Einträge"
       loading: "Lade Einträge"
@@ -76,6 +88,7 @@ app:
       all: "Alle"
       year: "Jahr"
 
+
     fuel:
       recentTitle: "Letzten Tank-Rechnungen"
 
@@ -87,20 +100,11 @@ app:
       table:
         title: "Tank-Rechnungen"
 
-        distance: "Strecke"
-        unit: "Einheit"
-        pricePerUnit: "Kosten/Einheit"
-
-        estimateConsumption: "Verbrauch (Bordcomputer)"
-        avgConsumption: "Verbrauch"
-
     maintenance:
       recentTitle: "Letzten Wartungen"
 
       table:
         title: "Wartungen"
-
-        workshop: "Werkstatt"
 
     miscellaneous:
       recentTitle: "Letzten allgemeinen Rechnungen"

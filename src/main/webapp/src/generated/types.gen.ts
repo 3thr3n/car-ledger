@@ -85,12 +85,9 @@ export type CarOverview = {
     avgConsumption?: number;
 };
 
-export type CsvOrder = {
-    date?: number;
-    unit?: number;
-    pricePerUnit?: number;
-    distance?: number;
-    estimate?: number;
+export type CsvFields = {
+    all?: Array<string>;
+    required?: Array<string>;
 };
 
 export type DashboardStats = {
@@ -118,7 +115,7 @@ export type FuelBillInput = {
     distance?: number;
     unit?: number;
     pricePerUnit?: number;
-    estimate?: number;
+    estimateConsumption?: number;
 };
 
 export type HiLo = {
@@ -637,7 +634,8 @@ export type GetMyCarOverviewResponse = GetMyCarOverviewResponses[keyof GetMyCarO
 export type ImportCsvData = {
     body: {
         file?: Blob | File;
-        order?: CsvOrder;
+        billType?: BillType;
+        order?: string;
         vat?: number;
     };
     path: {
@@ -651,7 +649,7 @@ export type ImportCsvData = {
 
 export type ImportCsvErrors = {
     /**
-     * - Order is invalid
+     * - Type not defined
      * - Car not found
      */
     400: unknown;
@@ -668,6 +666,24 @@ export type ImportCsvResponses = {
      */
     202: unknown;
 };
+
+export type GetCsvFieldsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        importType?: BillType;
+    };
+    url: '/api/import/{carId}/fields';
+};
+
+export type GetCsvFieldsResponses = {
+    /**
+     * OK
+     */
+    200: CsvFields;
+};
+
+export type GetCsvFieldsResponse = GetCsvFieldsResponses[keyof GetCsvFieldsResponses];
 
 export type GetDashboardStatsData = {
     body?: never;

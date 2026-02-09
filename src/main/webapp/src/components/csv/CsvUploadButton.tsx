@@ -1,4 +1,4 @@
-import { Button, styled } from '@mui/material';
+import { Button, styled, SxProps, Theme } from '@mui/material';
 import { CloudUpload } from '@mui/icons-material';
 
 import Papa, { ParseResult } from 'papaparse';
@@ -17,6 +17,7 @@ const VisuallyHiddenInput = styled('input')({
 
 export interface CsvUploadProps {
   onParseComplete: (data: string[], file: File) => void;
+  sx?: SxProps<Theme>;
 }
 
 export function CsvUploadButton(props: CsvUploadProps) {
@@ -46,8 +47,9 @@ export function CsvUploadButton(props: CsvUploadProps) {
       variant="outlined"
       tabIndex={-1}
       startIcon={<CloudUpload />}
+      sx={props.sx}
     >
-      Upload CSV
+      Select CSV
       <VisuallyHiddenInput
         type="file"
         accept={'.csv'}

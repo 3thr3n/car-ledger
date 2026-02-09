@@ -9,6 +9,7 @@ app:
     cancel: "Cancel"
     back: "Back"
     save: "Save"
+    upload: "Upload"
   nav:
     title: "Menu"
     overview: "Overview"
@@ -47,12 +48,23 @@ app:
     common:
       name: "Car name / Model"
       year: "Manufacture year"
-      odometer: "Odometer"
-      odometerDescription: "Odometer e.g. when bought"
-      description: "Description"
-
       date: "Date"
       total: "Total"
+      vatRate: "VAT rate"
+      description: "Description"
+      #
+      distance: "Distance"
+      unit: "Unit"
+      pricePerUnit: "Price/Unit"
+      estimateConsumption: "Estimate"
+      avgConsumption: "Avg"
+      #
+      workshop: "Workshop"
+      laborCost: "Labor cost"
+      partsCost: "Parts cost"
+      odometer: "Odometer"
+      odometerDescription: "Odometer e.g. when bought"
+      #
 
       showMore: "See all entries"
       seeMore: "See all entries"
@@ -88,20 +100,11 @@ app:
       table:
         title: "Fuel entries"
 
-        distance: "Distance"
-        unit: "Unit"
-        pricePerUnit: "Price/Unit"
-
-        estimateConsumption: "Estimate"
-        avgConsumption: "Avg"
-
     maintenance:
       recentTitle: "Recent maintenance entries"
 
       table:
         title: "Maintenance entries"
-
-        workshop: "Workshop"
 
     miscellaneous:
       recentTitle: "Recent miscellaneous entries"

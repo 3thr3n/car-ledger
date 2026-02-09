@@ -9,16 +9,16 @@ public class FuelBillInput extends AbstractBillInput
 	private final BigDecimal distance;
 	private final BigDecimal unit;
 	private final BigDecimal pricePerUnit;
-	private final BigDecimal estimate;
+	private final BigDecimal estimateConsumption;
 
 	public FuelBillInput(LocalDate date, BigDecimal total, BigInteger vatRate, BigDecimal distance, BigDecimal unit,
-			BigDecimal pricePerUnit, BigDecimal estimate)
+			BigDecimal pricePerUnit, BigDecimal estimateConsumption)
 	{
 		super(total, vatRate, date);
 		this.distance = distance;
 		this.unit = unit;
 		this.pricePerUnit = pricePerUnit;
-		this.estimate = estimate;
+		this.estimateConsumption = estimateConsumption;
 	}
 
 	public BigDecimal getDistance()
@@ -36,9 +36,9 @@ public class FuelBillInput extends AbstractBillInput
 		return pricePerUnit;
 	}
 
-	public BigDecimal getEstimate()
+	public BigDecimal getEstimateConsumption()
 	{
-		return estimate;
+		return estimateConsumption;
 	}
 
 	@Override
@@ -49,7 +49,7 @@ public class FuelBillInput extends AbstractBillInput
 				", distance=" + getDistance() +
 				", unit=" + getUnit() +
 				", pricePerUnit=" + getPricePerUnit() +
-				", estimate=" + getEstimate() +
+				", estimateConsumption=" + getEstimateConsumption() +
 				", vatRate=" + getVatRate() +
 				", total=" + getTotal() +
 				'}';

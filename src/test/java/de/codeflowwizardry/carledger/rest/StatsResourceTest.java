@@ -122,8 +122,10 @@ class StatsResourceTest
 					BigDecimal.valueOf(1380.0).setScale(2, RoundingMode.HALF_UP),
 					BigDecimal.valueOf(149.08),
 					BigDecimal.valueOf(0).setScale(2, RoundingMode.HALF_UP),
+					BigDecimal.valueOf(0).setScale(2, RoundingMode.HALF_UP),
 					BigDecimal.valueOf(149.08),
 					3,
+					0,
 					0),
 			new AverageStats(
 					BigDecimal.valueOf(195.6),
@@ -131,7 +133,7 @@ class StatsResourceTest
 					BigDecimal.valueOf(10.73),
 					BigDecimal.valueOf(5.48),
 					BigDecimal.valueOf(0).setScale(2, RoundingMode.HALF_UP),
-					BigDecimal.valueOf(0.11)),
+					BigDecimal.valueOf(10.80).setScale(2, RoundingMode.HALF_UP)),
 			new HiLoStats(
 					new HiLo(
 							BigDecimal.valueOf(189.9).setScale(1, RoundingMode.HALF_UP),

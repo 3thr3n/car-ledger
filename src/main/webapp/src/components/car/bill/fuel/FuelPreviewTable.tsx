@@ -80,13 +80,11 @@ export default function FuelPreviewTable({
             <TableRow>
               <TableCell>{t('app.car.common.date')}</TableCell>
               <TableCell align="right">
-                {t('app.car.fuel.table.distance')}
+                {t('app.car.common.distance')}
               </TableCell>
+              <TableCell align="right">{t('app.car.common.unit')}</TableCell>
               <TableCell align="right">
-                {t('app.car.fuel.table.unit')}
-              </TableCell>
-              <TableCell align="right">
-                {t('app.car.fuel.table.pricePerUnit')}
+                {t('app.car.common.pricePerUnit')}
               </TableCell>
               <TableCell align="right">{t('app.car.common.total')}</TableCell>
             </TableRow>

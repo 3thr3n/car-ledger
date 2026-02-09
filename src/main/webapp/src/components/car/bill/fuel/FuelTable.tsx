@@ -36,17 +36,17 @@ export default function FuelTable({
             <CardContent>
               <Typography variant="subtitle1">{bill.date}</Typography>
               <Typography variant="body2">
-                {t('app.car.fuel.table.distance')}: {bill.distance} km
+                {t('app.car.common.distance')}: {bill.distance} km
               </Typography>
               <Typography variant="body2">
-                {t('app.car.fuel.table.unit')}: {bill.unit} L
+                {t('app.car.common.unit')}: {bill.unit} L
               </Typography>
               <Typography variant="body2">
                 {t('app.car.common.total')}:{' '}
                 {Number(bill.total ?? 0).toFixed(2)} €
               </Typography>
               <Typography variant="body2">
-                {t('app.car.fuel.table.avgConsumption')}:{' '}
+                {t('app.car.common.avgConsumption')}:{' '}
                 {Number(bill.avgConsumption ?? 0).toFixed(2)} l/100km
               </Typography>
             </CardContent>
@@ -60,34 +60,34 @@ export default function FuelTable({
     { field: 'date', headerName: t('app.car.common.date'), flex: 1 },
     {
       field: 'distance',
-      headerName: `${t('app.car.fuel.table.distance')} (km)`,
+      headerName: `${t('app.car.common.distance')} (km)`,
       minWidth: 130,
       align: 'right',
       valueFormatter: (value) => Number(value).toFixed(1),
     },
     {
       field: 'unit',
-      headerName: `${t('app.car.fuel.table.unit')} (L)`,
+      headerName: `${t('app.car.common.unit')} (L)`,
       minWidth: 130,
       align: 'right',
     },
     {
       field: 'pricePerUnit',
-      headerName: `${t('app.car.fuel.table.pricePerUnit')} (ct)`,
+      headerName: `${t('app.car.common.pricePerUnit')} (ct)`,
       minWidth: 130,
       align: 'right',
       valueFormatter: (value) => Number(value).toFixed(1),
     },
     {
       field: 'estimateConsumption',
-      headerName: `${t('app.car.fuel.table.estimateConsumption')} (l/100km)`,
+      headerName: `${t('app.car.common.estimateConsumption')} (l/100km)`,
       minWidth: 130,
       align: 'right',
       valueFormatter: (value) => Number(value).toFixed(1),
     },
     {
       field: 'avgConsumption',
-      headerName: `${t('app.car.fuel.table.avgConsumption')} (l/100km)`,
+      headerName: `${t('app.car.common.avgConsumption')} (l/100km)`,
       minWidth: 130,
       align: 'right',
     },
