@@ -44,7 +44,7 @@
     "@eslint/js": "^9.39.2",
     "@hey-api/openapi-ts": "^0.90.10",
     "@modyfi/vite-plugin-yaml": "^1.1.1",
-    "@tanstack/router-plugin": "^1.157.4",
+    "@tanstack/router-plugin": "^1.159.6",
     "@types/i18next-browser-languagedetector": "^3.0.0",
     "@types/node": "^25",
     "@types/papaparse": "^5.5.2",
