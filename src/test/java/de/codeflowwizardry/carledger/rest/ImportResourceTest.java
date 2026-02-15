@@ -404,8 +404,6 @@ class ImportResourceTest
 	@Transactional
 	void cleanup()
 	{
-		billRepository.deleteAll();
-		carRepository.deleteAll();
 		accountRepository.deleteAll();
 	}
 

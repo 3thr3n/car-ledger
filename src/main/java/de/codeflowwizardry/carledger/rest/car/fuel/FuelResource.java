@@ -4,6 +4,8 @@ import java.security.Principal;
 import java.util.List;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,7 +64,8 @@ public class FuelResource extends AbstractBillResource<FuelBillRepository, FuelB
 	@Produces(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "addNewFuelBill")
 	@APIResponse(responseCode = "200", description = "Bill created.")
-	@APIResponse(responseCode = "400", description = "Car is not for your user.")
+	@APIResponse(responseCode = "409", description = "Car is not for your user.")
+	@APIResponse(responseCode = "400", description = "Validation failed, please check the response", content = @Content(schema = @Schema(implementation = List.class)))
 	@APIResponse(responseCode = "500", description = "Something went wrong while saving. Please ask the server admin for help.")
 	public Response addNewBill(@PathParam("carId") long carId, FuelBillInput fuelBillPojo)
 	{
@@ -74,7 +77,7 @@ public class FuelResource extends AbstractBillResource<FuelBillRepository, FuelB
 		catch (WrongUserException e)
 		{
 			LOG.warn("Car cannot be found under your user {}!", context.getName(), e);
-			throw new BadRequestException(Response.status(Response.Status.BAD_REQUEST)
+			throw new WebApplicationException(Response.status(Response.Status.CONFLICT)
 					.entity("Car cannot be found under your user!")
 					.build());
 		}

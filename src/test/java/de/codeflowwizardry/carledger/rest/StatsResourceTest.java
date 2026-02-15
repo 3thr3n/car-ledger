@@ -18,7 +18,6 @@ import de.codeflowwizardry.carledger.data.AccountEntity;
 import de.codeflowwizardry.carledger.data.CarEntity;
 import de.codeflowwizardry.carledger.data.factory.FuelBillFactory;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
-import de.codeflowwizardry.carledger.data.repository.BillRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import de.codeflowwizardry.carledger.rest.car.fuel.FuelBillInput;
 import de.codeflowwizardry.carledger.rest.car.stats.*;
@@ -41,9 +40,6 @@ class StatsResourceTest
 	@Inject
 	CarRepository carRepository;
 
-	@Inject
-	BillRepository billRepository;
-
 	CarEntity carEntity;
 
 	@BeforeEach
@@ -58,8 +54,6 @@ class StatsResourceTest
 	@Transactional
 	void cleanup()
 	{
-		billRepository.deleteAll();
-		carRepository.deleteAll();
 		accountRepository.deleteAll();
 	}
 

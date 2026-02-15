@@ -1,11 +1,12 @@
 package de.codeflowwizardry.carledger.data.factory;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertLinesMatch;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.LocalDate;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
@@ -16,34 +17,32 @@ class MaintenanceBillFactoryTest
 	@Test
 	void shouldValidate()
 	{
-		// given
-		MaintenanceBillFactory factory = new MaintenanceBillFactory(null, null, null);
-
 		// when
 		MaintenanceBillInput minimalValidation = new MaintenanceBillInput(BigDecimal.TEN, BigInteger.ZERO,
 				LocalDate.now(), null, null, null, null, null);
-		assertDoesNotThrow(() -> factory.validate(minimalValidation));
+		List<String> validate = minimalValidation.validate();
+		assertEquals(0, validate.size());
 	}
 
 	@Test
 	void shouldFailValidating()
 	{
-		// given
-		MaintenanceBillFactory factory = new MaintenanceBillFactory(null, null, null);
-
 		// when date not set
-		MaintenanceBillInput noDate = new MaintenanceBillInput(BigDecimal.TEN, BigInteger.ZERO, null,
+		MaintenanceBillInput missingDate = new MaintenanceBillInput(BigDecimal.TEN, BigInteger.ZERO, null,
 				null, null, null, null, null);
-		assertThrows(IllegalArgumentException.class, () -> factory.validate(noDate));
+		List<String> dateValidate = missingDate.validate();
+		assertLinesMatch(List.of("Date must be set!"), dateValidate);
 
 		// when vat not set
-		MaintenanceBillInput noVat = new MaintenanceBillInput(BigDecimal.TEN, null, LocalDate.now(),
+		MaintenanceBillInput missingVat = new MaintenanceBillInput(BigDecimal.TEN, null, LocalDate.now(),
 				null, null, null, null, null);
-		assertThrows(IllegalArgumentException.class, () -> factory.validate(noVat));
+		List<String> vatValidate = missingVat.validate();
+		assertLinesMatch(List.of("Vat rate must be set!"), vatValidate);
 
 		// when total not set
-		MaintenanceBillInput noTotal = new MaintenanceBillInput(null, BigInteger.TEN, LocalDate.now(),
+		MaintenanceBillInput missingTotal = new MaintenanceBillInput(null, BigInteger.TEN, LocalDate.now(),
 				null, null, null, null, null);
-		assertThrows(IllegalArgumentException.class, () -> factory.validate(noTotal));
+		List<String> totalValidate = missingTotal.validate();
+		assertLinesMatch(List.of("Total must be set!"), totalValidate);
 	}
 }

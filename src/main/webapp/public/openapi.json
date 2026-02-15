@@ -68,6 +68,14 @@
           }
         }
       },
+      "BillCategory" : {
+        "type" : "string",
+        "enum" : [ "FINANCE", "INSURANCE", "OTHER" ]
+      },
+      "BillInterval" : {
+        "type" : "string",
+        "enum" : [ "ONCE", "MONTHLY", "QUARTERLY", "SEMI_ANNUALLY", "ANNUALLY" ]
+      },
       "BillPagedBill" : {
         "type" : "object",
         "properties" : {
@@ -463,6 +471,59 @@
           }
         }
       },
+      "RecurringBill" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "nextDueDate" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          },
+          "category" : {
+            "$ref" : "#/components/schemas/BillCategory"
+          },
+          "startDate" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          },
+          "endDate" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          },
+          "amount" : {
+            "type" : "number"
+          },
+          "total" : {
+            "type" : "number"
+          }
+        }
+      },
+      "RecurringBillInput" : {
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "billInterval" : {
+            "$ref" : "#/components/schemas/BillInterval"
+          },
+          "category" : {
+            "$ref" : "#/components/schemas/BillCategory"
+          },
+          "startDate" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          },
+          "endDate" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          },
+          "amount" : {
+            "type" : "number"
+          }
+        }
+      },
       "TotalStats" : {
         "type" : "object",
         "properties" : {
@@ -658,8 +719,19 @@
           "200" : {
             "description" : "Bill created."
           },
-          "400" : {
+          "409" : {
             "description" : "Car is not for your user."
+          },
+          "400" : {
+            "description" : "Validation failed, please check the response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
           },
           "500" : {
             "description" : "Something went wrong while saving. Please ask the server admin for help."
@@ -807,8 +879,19 @@
           "200" : {
             "description" : "Bill created."
           },
-          "400" : {
+          "409" : {
             "description" : "Car is not for your user."
+          },
+          "400" : {
+            "description" : "Validation failed, please check the response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
           },
           "500" : {
             "description" : "Something went wrong while saving. Please ask the server admin for help."
@@ -953,11 +1036,22 @@
           "required" : true
         },
         "responses" : {
-          "200" : {
+          "202" : {
             "description" : "Bill created."
           },
-          "400" : {
+          "409" : {
             "description" : "Car is not for your user."
+          },
+          "400" : {
+            "description" : "Validation failed, please check the response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
           },
           "500" : {
             "description" : "Something went wrong while saving. Please ask the server admin for help."
@@ -1068,6 +1162,116 @@
         },
         "summary" : "Get All My Bills",
         "tags" : [ "Miscellaneous Resource" ]
+      }
+    },
+    "/api/bill/{carId}/recurring" : {
+      "get" : {
+        "description" : "Gets all recurring bills for specified car",
+        "operationId" : "getAllRecurringBills",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/RecurringBill"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary" : "Get All Recurring Bills",
+        "tags" : [ "Recurring Resource" ]
+      },
+      "put" : {
+        "operationId" : "addNewRecurringBill",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/RecurringBillInput"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "202" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RecurringBill"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed, please check the response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
+          }
+        },
+        "summary" : "Add New Recurring Bill",
+        "tags" : [ "Recurring Resource" ]
+      }
+    },
+    "/api/bill/{carId}/recurring/{billId}" : {
+      "delete" : {
+        "operationId" : "deleteRecurringBill",
+        "parameters" : [ {
+          "name" : "billId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "202" : {
+            "description" : "Successful deleted"
+          },
+          "400" : {
+            "description" : "Not able to delete"
+          }
+        },
+        "summary" : "Delete Recurring Bill",
+        "tags" : [ "Recurring Resource" ]
       }
     },
     "/api/bill/{carId}/years" : {
@@ -1185,15 +1389,8 @@
           "required" : true
         },
         "responses" : {
-          "202" : {
-            "description" : "Car created.",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/Car"
-                }
-              }
-            }
+          "201" : {
+            "description" : "Car created."
           },
           "400" : {
             "description" : "Maximal amount of cars created or input was invalid."

@@ -16,7 +16,6 @@ import de.codeflowwizardry.carledger.data.AccountEntity;
 import de.codeflowwizardry.carledger.data.CarEntity;
 import de.codeflowwizardry.carledger.data.factory.MiscellaneousBillFactory;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
-import de.codeflowwizardry.carledger.data.repository.BillRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
@@ -34,9 +33,6 @@ class MiscellaneousResourceTest
 
 	@Inject
 	CarRepository carRepository;
-
-	@Inject
-	BillRepository billRepository;
 
 	@Inject
 	MiscellaneousBillFactory factory;
@@ -68,8 +64,6 @@ class MiscellaneousResourceTest
 	@Transactional
 	void cleanup()
 	{
-		billRepository.deleteAll();
-		carRepository.deleteAll();
 		accountRepository.deleteAll();
 	}
 
@@ -162,6 +156,6 @@ class MiscellaneousResourceTest
 				.body(body)
 				.put()
 				.then()
-				.statusCode(400);
+				.statusCode(409);
 	}
 }

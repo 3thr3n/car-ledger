@@ -16,7 +16,6 @@ import de.codeflowwizardry.carledger.data.AccountEntity;
 import de.codeflowwizardry.carledger.data.CarEntity;
 import de.codeflowwizardry.carledger.data.factory.FuelBillFactory;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
-import de.codeflowwizardry.carledger.data.repository.BillRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
@@ -29,9 +28,6 @@ import jakarta.transaction.Transactional;
 @TestHTTPEndpoint(FuelResource.class)
 public class FuelResourceTest
 {
-	@Inject
-	BillRepository billRepository;
-
 	@Inject
 	AccountRepository accountRepository;
 
@@ -200,7 +196,7 @@ public class FuelResourceTest
 				.body(body)
 				.put()
 				.then()
-				.statusCode(400);
+				.statusCode(409);
 	}
 
 	@Test
@@ -223,8 +219,6 @@ public class FuelResourceTest
 	@Transactional
 	void cleanup()
 	{
-		billRepository.deleteAll();
-		carRepository.deleteAll();
 		accountRepository.deleteAll();
 	}
 }

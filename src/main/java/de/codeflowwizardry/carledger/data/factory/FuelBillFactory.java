@@ -1,11 +1,11 @@
 package de.codeflowwizardry.carledger.data.factory;
 
 import static de.codeflowwizardry.carledger.StatsCalculator.ONE_HUNDRED;
-import static de.codeflowwizardry.carledger.Utils.atLeastTwoNotNull;
 import static de.codeflowwizardry.carledger.Utils.valueWasSet;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.List;
 
 import org.hibernate.exception.ConstraintViolationException;
 import org.slf4j.Logger;
@@ -22,6 +22,8 @@ import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceException;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.core.Response;
 
 @ApplicationScoped
 public class FuelBillFactory extends AbstractBillFactory<FuelBillInput, FuelBillEntity>
@@ -38,7 +40,11 @@ public class FuelBillFactory extends AbstractBillFactory<FuelBillInput, FuelBill
 	@Transactional
 	public FuelBillEntity create(FuelBillInput input, long carId, String user)
 	{
-		validate(input);
+		List<String> validate = input.validate();
+		if (!validate.isEmpty())
+		{
+			throw new BadRequestException(Response.status(400).entity(validate).build());
+		}
 
 		BigDecimal vatFactor = new BigDecimal(input.getVatRate());
 		vatFactor = BigDecimal.ONE.add(vatFactor.divide(ONE_HUNDRED, 2, RoundingMode.HALF_UP));
@@ -91,30 +97,6 @@ public class FuelBillFactory extends AbstractBillFactory<FuelBillInput, FuelBill
 			unit = input.getTotal().divide(priceInEur, 2, RoundingMode.HALF_UP);
 		}
 		return unit;
-	}
-
-	@Override
-	void validate(FuelBillInput input)
-	{
-		if (input.getDate() == null)
-		{
-			LOG.warn("Date cannot be empty!");
-			throw new IllegalArgumentException("Date cannot be null!");
-		}
-
-		if (input.getVatRate() == null)
-		{
-			LOG.warn("Vat rate was not set!");
-			throw new IllegalArgumentException("Vat rate cannot be null!");
-		}
-
-		if (!atLeastTwoNotNull(input.getUnit(), input.getPricePerUnit(), input.getTotal()))
-		{
-			LOG.warn("At least two of the following was empty! Total: {} - Price per unit: {} - Unit: {}",
-					input.getUnit(),
-					input.getPricePerUnit(), input.getTotal());
-			throw new IllegalArgumentException("At least two of 'unit', 'total' or 'pricePerUnit' must be set!");
-		}
 	}
 
 	static void calculateTotal(BillEntity entity, BigDecimal unit, FuelBillInput input)

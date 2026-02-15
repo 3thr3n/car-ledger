@@ -1,11 +1,13 @@
 package de.codeflowwizardry.carledger.data.factory;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertLinesMatch;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -23,30 +25,33 @@ class FuelBillFactoryTest
 	@Test
 	void shouldFailValidating()
 	{
-		// given
-		FuelBillFactory factory = new FuelBillFactory(null, null);
-
 		// when date not set
-		FuelBillInput missingDate = new FuelBillInput(null, null, null, null, null, null, null);
-		assertThrows(IllegalArgumentException.class, () -> factory.validate(missingDate),
-				"Date cannot be null!");
+		FuelBillInput missingDate = new FuelBillInput(null, null, BigInteger.TEN, null, BigDecimal.TEN,
+				BigDecimal.valueOf(199.9),
+				null);
+		List<String> dateValidate = missingDate.validate();
+		assertLinesMatch(List.of("Date must be set!"), dateValidate);
 
-		FuelBillInput missingVat = new FuelBillInput(LocalDate.now(), null, null, null, null, null, null);
-		assertThrows(IllegalArgumentException.class, () -> factory.validate(missingVat),
-				"Vat rate cannot be null!");
+		FuelBillInput missingVat = new FuelBillInput(LocalDate.now(), null, null, null, BigDecimal.TEN,
+				BigDecimal.valueOf(199.9),
+				null);
+		List<String> vatValidate = missingVat.validate();
+		assertLinesMatch(List.of("Vat rate must be set!"), vatValidate);
 
 		FuelBillInput missingKeyValues = new FuelBillInput(LocalDate.now(), null, BigInteger.TEN, null, null,
 				BigDecimal.valueOf(199.9), null);
-		assertThrows(IllegalArgumentException.class, () -> factory.validate(missingKeyValues),
-				"At least two of 'unit', 'total' or 'pricePerUnit' must be set!");
+		List<String> keyValidate = missingKeyValues.validate();
+		assertLinesMatch(List.of("At least two of 'unit', 'total' or 'pricePerUnit' must be set!"), keyValidate);
+
+		FuelBillInput missingEverything = new FuelBillInput(null, null, null, null, null, null, null);
+		List<String> everythingValidate = missingEverything.validate();
+		assertLinesMatch(List.of("Date must be set!", "Vat rate must be set!",
+				"At least two of 'unit', 'total' or 'pricePerUnit' must be set!"), everythingValidate);
 	}
 
 	@Test
 	void shouldValidate()
 	{
-		// given
-		FuelBillFactory factory = new FuelBillFactory(null, null);
-
 		// when date not set
 		FuelBillInput minimalValidation = new FuelBillInput(LocalDate.now(),
 				BigDecimal.TEN,
@@ -55,7 +60,8 @@ class FuelBillFactoryTest
 				null,
 				BigDecimal.valueOf(199.9),
 				null);
-		assertDoesNotThrow(() -> factory.validate(minimalValidation));
+		List<String> validate = minimalValidation.validate();
+		assertEquals(0, validate.size());
 	}
 
 	@Test
