@@ -29,6 +29,20 @@ export type Bill = {
     type?: BillType;
 };
 
+export enum BillCategory {
+    FINANCE = 'FINANCE',
+    INSURANCE = 'INSURANCE',
+    OTHER = 'OTHER'
+}
+
+export enum BillInterval {
+    ONCE = 'ONCE',
+    MONTHLY = 'MONTHLY',
+    QUARTERLY = 'QUARTERLY',
+    SEMI_ANNUALLY = 'SEMI_ANNUALLY',
+    ANNUALLY = 'ANNUALLY'
+}
+
 export type BillPagedBill = {
     total?: number;
     page?: number;
@@ -172,6 +186,26 @@ export type MiscellaneousBillInput = {
     description?: string;
 };
 
+export type RecurringBill = {
+    id?: number;
+    nextDueDate?: LocalDate;
+    category?: BillCategory;
+    startDate?: LocalDate;
+    endDate?: LocalDate;
+    amount?: number;
+    total?: number;
+};
+
+export type RecurringBillInput = {
+    name?: string;
+    description?: string;
+    billInterval?: BillInterval;
+    category?: BillCategory;
+    startDate?: LocalDate;
+    endDate?: LocalDate;
+    amount?: number;
+};
+
 export type TotalStats = {
     unit?: number;
     trackedDistance?: number;
@@ -294,14 +328,20 @@ export type AddNewFuelBillData = {
 
 export type AddNewFuelBillErrors = {
     /**
+     * Validation failed, please check the response
+     */
+    400: Array<unknown>;
+    /**
      * Car is not for your user.
      */
-    400: unknown;
+    409: unknown;
     /**
      * Something went wrong while saving. Please ask the server admin for help.
      */
     500: unknown;
 };
+
+export type AddNewFuelBillError = AddNewFuelBillErrors[keyof AddNewFuelBillErrors];
 
 export type AddNewFuelBillResponses = {
     /**
@@ -361,14 +401,20 @@ export type AddNewMaintenanceBillData = {
 
 export type AddNewMaintenanceBillErrors = {
     /**
+     * Validation failed, please check the response
+     */
+    400: Array<unknown>;
+    /**
      * Car is not for your user.
      */
-    400: unknown;
+    409: unknown;
     /**
      * Something went wrong while saving. Please ask the server admin for help.
      */
     500: unknown;
 };
+
+export type AddNewMaintenanceBillError = AddNewMaintenanceBillErrors[keyof AddNewMaintenanceBillErrors];
 
 export type AddNewMaintenanceBillResponses = {
     /**
@@ -428,20 +474,26 @@ export type AddNewMiscellaneousBillData = {
 
 export type AddNewMiscellaneousBillErrors = {
     /**
+     * Validation failed, please check the response
+     */
+    400: Array<unknown>;
+    /**
      * Car is not for your user.
      */
-    400: unknown;
+    409: unknown;
     /**
      * Something went wrong while saving. Please ask the server admin for help.
      */
     500: unknown;
 };
 
+export type AddNewMiscellaneousBillError = AddNewMiscellaneousBillErrors[keyof AddNewMiscellaneousBillErrors];
+
 export type AddNewMiscellaneousBillResponses = {
     /**
      * Bill created.
      */
-    200: unknown;
+    202: unknown;
 };
 
 export type GetAllMiscellaneousBillsData = {
@@ -483,6 +535,72 @@ export type GetAllMiscellaneousBillYearsResponses = {
 };
 
 export type GetAllMiscellaneousBillYearsResponse = GetAllMiscellaneousBillYearsResponses[keyof GetAllMiscellaneousBillYearsResponses];
+
+export type GetAllRecurringBillsData = {
+    body?: never;
+    path: {
+        carId: number;
+    };
+    query?: never;
+    url: '/api/bill/{carId}/recurring';
+};
+
+export type GetAllRecurringBillsResponses = {
+    /**
+     * OK
+     */
+    200: Array<RecurringBill>;
+};
+
+export type GetAllRecurringBillsResponse = GetAllRecurringBillsResponses[keyof GetAllRecurringBillsResponses];
+
+export type AddNewRecurringBillData = {
+    body: RecurringBillInput;
+    path: {
+        carId: number;
+    };
+    query?: never;
+    url: '/api/bill/{carId}/recurring';
+};
+
+export type AddNewRecurringBillErrors = {
+    /**
+     * Validation failed, please check the response
+     */
+    400: Array<unknown>;
+};
+
+export type AddNewRecurringBillError = AddNewRecurringBillErrors[keyof AddNewRecurringBillErrors];
+
+export type AddNewRecurringBillResponses = {
+    202: RecurringBill;
+};
+
+export type AddNewRecurringBillResponse = AddNewRecurringBillResponses[keyof AddNewRecurringBillResponses];
+
+export type DeleteRecurringBillData = {
+    body?: never;
+    path: {
+        billId: number;
+        carId: number;
+    };
+    query?: never;
+    url: '/api/bill/{carId}/recurring/{billId}';
+};
+
+export type DeleteRecurringBillErrors = {
+    /**
+     * Not able to delete
+     */
+    400: unknown;
+};
+
+export type DeleteRecurringBillResponses = {
+    /**
+     * Successful deleted
+     */
+    202: unknown;
+};
 
 export type GetAllBillYearsData = {
     body?: never;
@@ -559,10 +677,8 @@ export type CreateCarResponses = {
     /**
      * Car created.
      */
-    202: Car;
+    201: unknown;
 };
-
-export type CreateCarResponse = CreateCarResponses[keyof CreateCarResponses];
 
 export type GetMyCarData = {
     body?: never;

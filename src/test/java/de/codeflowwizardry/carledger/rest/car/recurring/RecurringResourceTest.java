@@ -11,7 +11,6 @@ import de.codeflowwizardry.carledger.data.AccountEntity;
 import de.codeflowwizardry.carledger.data.CarEntity;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
-import de.codeflowwizardry.carledger.data.repository.RecurringBillRepository;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
@@ -28,9 +27,6 @@ class RecurringResourceTest
 
 	@Inject
 	CarRepository carRepository;
-
-	@Inject
-	RecurringBillRepository recurringBillRepository;
 
 	Long carId;
 
@@ -55,8 +51,6 @@ class RecurringResourceTest
 	@Transactional
 	void cleanup()
 	{
-		recurringBillRepository.deleteAll();
-		carRepository.deleteAll();
 		accountRepository.deleteAll();
 	}
 
@@ -79,7 +73,7 @@ class RecurringResourceTest
 	@TestSecurity(user = "peter", roles = {
 			"user"
 	})
-	void shouldAddNewRecurringBill()
+	void shouldAddNewMonthlyRecurringBill()
 	{
 		String body = """
 				{
@@ -102,5 +96,146 @@ class RecurringResourceTest
 				.then()
 				.statusCode(202)
 				.body("total", is(6000.0F));
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldAddNewQuarterlyRecurringBill()
+	{
+		String body = """
+				{
+				     "name": "Finance payments",
+					 "billInterval": "QUARTERLY",
+					 "category": "FINANCE",
+					 "startDate": "2025-01-01",
+					 "endDate": "2025-12-31",
+					 "amount": 500.00
+				 }
+				""";
+
+		given()
+				.pathParam("carId", carId)
+				.body(body)
+				.accept(ContentType.JSON)
+				.contentType(ContentType.JSON)
+				.when()
+				.put()
+				.then()
+				.statusCode(202)
+				.body("total", is(2000.0F));
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldAddNewYearlyRecurringBill()
+	{
+		String body = """
+				{
+				     "name": "Finance payments",
+					 "billInterval": "ANNUALLY",
+					 "category": "FINANCE",
+					 "startDate": "2025-01-01",
+					 "endDate": "2025-12-31",
+					 "amount": 500.00
+				 }
+				""";
+
+		given()
+				.pathParam("carId", carId)
+				.body(body)
+				.accept(ContentType.JSON)
+				.contentType(ContentType.JSON)
+				.when()
+				.put()
+				.then()
+				.statusCode(202)
+				.body("total", is(500.0F));
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldNotCreateNewBill()
+	{
+		String body = """
+				{
+				     "name": "Finance payments",
+					 "billInterval": "ANNUALLY",
+					 "category": "FINANCE",
+					 "startDate": "2025-01-01",
+					 "endDate": "2025-12-31",
+					 "amount": 500.00
+				 }
+				""";
+
+		given()
+				.pathParam("carId", 99)
+				.body(body)
+				.accept(ContentType.JSON)
+				.contentType(ContentType.JSON)
+				.when()
+				.put()
+				.then()
+				.statusCode(409);
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldAddAndDeleteRecurringBill()
+	{
+		String body = """
+				{
+				     "name": "Finance payments",
+					 "billInterval": "MONTHLY",
+					 "category": "FINANCE",
+					 "startDate": "2025-01-01",
+					 "endDate": "2025-12-31",
+					 "amount": 500.00
+				 }
+				""";
+
+		Object id = given()
+				.pathParam("carId", carId)
+				.body(body)
+				.accept(ContentType.JSON)
+				.contentType(ContentType.JSON)
+				.when()
+				.put()
+				.then()
+				.statusCode(202)
+				.extract()
+				.jsonPath().get("id");
+
+		given()
+				.pathParam("carId", carId)
+				.pathParam("billId", id)
+				.contentType(ContentType.JSON)
+				.when()
+				.delete("{billId}")
+				.then()
+				.statusCode(202);
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldNotDeleteRecurringBill()
+	{
+		given()
+				.pathParam("carId", carId)
+				.pathParam("billId", 99)
+				.contentType(ContentType.JSON)
+				.when()
+				.delete("{billId}")
+				.then()
+				.statusCode(400);
 	}
 }

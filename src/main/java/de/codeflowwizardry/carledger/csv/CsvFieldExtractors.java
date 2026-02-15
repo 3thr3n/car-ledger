@@ -99,21 +99,4 @@ public class CsvFieldExtractors
 					String.format("Could not parse integer '%s' for field '%s'", value, fieldName));
 		}
 	}
-
-	public static Boolean getBoolean(String[] line, CsvColumnMapping mapping, String fieldName)
-	{
-		String value = getString(line, mapping, fieldName);
-		if (value == null)
-		{
-			return null;
-		}
-
-		return switch (value.toLowerCase())
-		{
-			case "true", "yes", "1", "y" -> true;
-			case "false", "no", "0", "n" -> false;
-			default -> throw new IllegalArgumentException(
-					String.format("Could not parse boolean '%s' for field '%s'", value, fieldName));
-		};
-	}
 }

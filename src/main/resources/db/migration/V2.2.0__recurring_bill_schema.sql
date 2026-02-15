@@ -3,7 +3,7 @@ CREATE TABLE recurring_bill
     id              BIGSERIAL PRIMARY KEY,
     r_name          TEXT           NOT NULL,
     r_description   TEXT,
-    r_car_id        BIGINT         NOT NULL REFERENCES Car (id),
+    r_car_id        BIGINT         NOT NULL REFERENCES Car (id) ON DELETE CASCADE,
     r_amount        NUMERIC(38, 2) NOT NULL,
     r_category      VARCHAR(50)    NOT NULL,
     r_interval      VARCHAR(50)    NOT NULL,

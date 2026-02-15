@@ -70,11 +70,6 @@ public class CarEntity
 		return billEntities;
 	}
 
-	public void addBill(BillEntity billEntity)
-	{
-		billEntities.add(billEntity);
-	}
-
 	public List<RecurringBillEntity> getRecurringBillEntities()
 	{
 		return recurringBillEntities;

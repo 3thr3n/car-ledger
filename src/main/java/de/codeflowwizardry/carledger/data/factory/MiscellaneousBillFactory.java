@@ -1,9 +1,6 @@
 package de.codeflowwizardry.carledger.data.factory;
 
-import static de.codeflowwizardry.carledger.Utils.valueWasSet;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.List;
 
 import de.codeflowwizardry.carledger.data.BillEntity;
 import de.codeflowwizardry.carledger.data.BillType;
@@ -15,11 +12,12 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.core.Response;
 
 @ApplicationScoped
 public class MiscellaneousBillFactory extends AbstractBillFactory<MiscellaneousBillInput, MiscellaneousBillEntity>
 {
-	private final static Logger LOG = LoggerFactory.getLogger(MiscellaneousBillFactory.class);
 	private final MiscellaneousBillRepository miscellaneousBillRepository;
 
 	@Inject
@@ -31,32 +29,14 @@ public class MiscellaneousBillFactory extends AbstractBillFactory<MiscellaneousB
 	}
 
 	@Override
-	void validate(MiscellaneousBillInput input)
-	{
-		if (input.getDate() == null)
-		{
-			LOG.warn("Date cannot be empty!");
-			throw new IllegalArgumentException("Date cannot be null!");
-		}
-
-		if (input.getVatRate() == null)
-		{
-			LOG.warn("Vat rate was not set!");
-			throw new IllegalArgumentException("Vat rate cannot be null!");
-		}
-
-		if (!valueWasSet(input.getTotal()))
-		{
-			LOG.warn("Total was not set!");
-			throw new IllegalArgumentException("Total cannot be null or zero!");
-		}
-	}
-
-	@Override
 	@Transactional
 	public MiscellaneousBillEntity create(MiscellaneousBillInput input, long carId, String user)
 	{
-		validate(input);
+		List<String> validate = input.validate();
+		if (!validate.isEmpty())
+		{
+			throw new BadRequestException(Response.status(400).entity(validate).build());
+		}
 
 		BillEntity bill = createEntity(carId, user, input);
 
