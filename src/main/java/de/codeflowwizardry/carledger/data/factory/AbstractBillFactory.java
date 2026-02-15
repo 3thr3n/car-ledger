@@ -52,7 +52,7 @@ public abstract class AbstractBillFactory<I extends AbstractBillInput, O extends
 
 		if (car == null)
 		{
-			throw new WrongUserException("Car cannot be found under your user!");
+			throw new WrongUserException();
 		}
 
 		BillEntity bill = new BillEntity();

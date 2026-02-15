@@ -16,8 +16,6 @@ import de.codeflowwizardry.carledger.data.repository.MiscellaneousBillRepository
 import de.codeflowwizardry.carledger.exception.WrongUserException;
 import de.codeflowwizardry.carledger.rest.car.AbstractBillResource;
 import de.codeflowwizardry.carledger.rest.records.BillPaged;
-import de.codeflowwizardry.carledger.rest.records.MiscellaneousBill;
-import de.codeflowwizardry.carledger.rest.records.input.MiscellaneousBillInput;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -62,7 +60,7 @@ public class MiscellaneousResource
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "addNewMiscellaneousBill")
-	@APIResponse(responseCode = "200", description = "Bill created.")
+	@APIResponse(responseCode = "202", description = "Bill created.")
 	@APIResponse(responseCode = "400", description = "Car is not for your user.")
 	@APIResponse(responseCode = "500", description = "Something went wrong while saving. Please ask the server admin for help.")
 	public Response addNewBill(@PathParam("carId") long carId, MiscellaneousBillInput miscellaneousBillInput)

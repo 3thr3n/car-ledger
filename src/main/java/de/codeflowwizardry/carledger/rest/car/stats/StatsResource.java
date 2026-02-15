@@ -1,4 +1,4 @@
-package de.codeflowwizardry.carledger.rest.car;
+package de.codeflowwizardry.carledger.rest.car.stats;
 
 import java.security.Principal;
 import java.time.LocalDate;
@@ -9,7 +9,6 @@ import org.eclipse.microprofile.openapi.annotations.Operation;
 import de.codeflowwizardry.carledger.StatsCalculator;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.rest.AbstractResource;
-import de.codeflowwizardry.carledger.rest.records.stats.DashboardStats;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;

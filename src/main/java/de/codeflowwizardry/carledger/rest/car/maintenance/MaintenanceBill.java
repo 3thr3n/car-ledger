@@ -1,4 +1,4 @@
-package de.codeflowwizardry.carledger.rest.records;
+package de.codeflowwizardry.carledger.rest.car.maintenance;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import de.codeflowwizardry.carledger.data.MaintenanceBillEntity;
+import de.codeflowwizardry.carledger.rest.records.AbstractBill;
 
 public final class MaintenanceBill extends AbstractBill<MaintenanceBillEntity>
 {

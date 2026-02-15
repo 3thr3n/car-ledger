@@ -1,13 +1,12 @@
 package de.codeflowwizardry.carledger.rest;
 
+import java.net.URI;
 import java.security.Principal;
 import java.util.Calendar;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.microprofile.openapi.annotations.Operation;
-import org.eclipse.microprofile.openapi.annotations.media.Content;
-import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
 import de.codeflowwizardry.carledger.data.AccountEntity;
@@ -99,7 +98,7 @@ public class CarResource extends AbstractResource
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "createCar")
-	@APIResponse(responseCode = "202", description = "Car created.", content = @Content(schema = @Schema(implementation = Car.class)))
+	@APIResponse(responseCode = "201", description = "Car created.")
 	@APIResponse(responseCode = "400", description = "Maximal amount of cars created or input was invalid.")
 	@APIResponse(responseCode = "500", description = "Something went wrong while saving. Please ask the server admin for help.")
 	public Response createCar(CarInput carpojo)
@@ -130,7 +129,7 @@ public class CarResource extends AbstractResource
 
 		carRepository.persist(carEntity);
 
-		return Response.accepted(Car.convert(carEntity)).build();
+		return Response.created(URI.create("car/my/" + carEntity.getId())).build();
 	}
 
 	private boolean isInputInvalid(CarInput carInput)

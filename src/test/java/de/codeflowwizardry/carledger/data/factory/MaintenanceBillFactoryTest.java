@@ -9,7 +9,7 @@ import java.time.LocalDate;
 
 import org.junit.jupiter.api.Test;
 
-import de.codeflowwizardry.carledger.rest.records.input.MaintenanceBillInput;
+import de.codeflowwizardry.carledger.rest.car.maintenance.MaintenanceBillInput;
 
 class MaintenanceBillFactoryTest
 {

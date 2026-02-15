@@ -2,8 +2,8 @@ package de.codeflowwizardry.carledger.exception;
 
 public class WrongUserException extends CarLedgerException
 {
-	public WrongUserException(String message)
+	public WrongUserException()
 	{
-		super(message);
+		super("Car cannot be found under your user!");
 	}
 }

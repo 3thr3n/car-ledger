@@ -7,7 +7,7 @@ import de.codeflowwizardry.carledger.csv.CsvColumnMapping;
 import de.codeflowwizardry.carledger.csv.CsvFieldExtractors;
 import de.codeflowwizardry.carledger.csv.CsvImporter;
 import de.codeflowwizardry.carledger.data.factory.MaintenanceBillFactory;
-import de.codeflowwizardry.carledger.rest.records.input.MaintenanceBillInput;
+import de.codeflowwizardry.carledger.rest.car.maintenance.MaintenanceBillInput;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 

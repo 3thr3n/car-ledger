@@ -1,10 +1,11 @@
-package de.codeflowwizardry.carledger.rest.records;
+package de.codeflowwizardry.carledger.rest.car.miscellaneous;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
 import de.codeflowwizardry.carledger.data.MiscellaneousBillEntity;
+import de.codeflowwizardry.carledger.rest.records.AbstractBill;
 
 public final class MiscellaneousBill extends AbstractBill<MiscellaneousBillEntity>
 {

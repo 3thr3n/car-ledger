@@ -24,6 +24,9 @@ public class CarEntity
 	@OneToMany(mappedBy = "car")
 	private final List<BillEntity> billEntities = new ArrayList<>();
 
+	@OneToMany(mappedBy = "car")
+	private final List<RecurringBillEntity> recurringBillEntities = new ArrayList<>();
+
 	@ManyToOne
 	private AccountEntity user;
 
@@ -70,6 +73,11 @@ public class CarEntity
 	public void addBill(BillEntity billEntity)
 	{
 		billEntities.add(billEntity);
+	}
+
+	public List<RecurringBillEntity> getRecurringBillEntities()
+	{
+		return recurringBillEntities;
 	}
 
 	public AccountEntity getUser()

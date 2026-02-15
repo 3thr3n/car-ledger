@@ -1,4 +1,4 @@
-package de.codeflowwizardry.carledger.rest.records.stats;
+package de.codeflowwizardry.carledger.rest.car.stats;
 
 import static java.math.BigDecimal.ZERO;
 
