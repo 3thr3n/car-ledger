@@ -7,7 +7,7 @@ import de.codeflowwizardry.carledger.csv.CsvColumnMapping;
 import de.codeflowwizardry.carledger.csv.CsvFieldExtractors;
 import de.codeflowwizardry.carledger.csv.CsvImporter;
 import de.codeflowwizardry.carledger.data.factory.FuelBillFactory;
-import de.codeflowwizardry.carledger.rest.records.input.FuelBillInput;
+import de.codeflowwizardry.carledger.rest.car.fuel.FuelBillInput;
 import jakarta.enterprise.context.RequestScoped;
 
 @RequestScoped

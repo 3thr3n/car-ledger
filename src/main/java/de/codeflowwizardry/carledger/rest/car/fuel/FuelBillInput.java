@@ -1,8 +1,10 @@
-package de.codeflowwizardry.carledger.rest.records.input;
+package de.codeflowwizardry.carledger.rest.car.fuel;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.LocalDate;
+
+import de.codeflowwizardry.carledger.rest.records.input.AbstractBillInput;
 
 public class FuelBillInput extends AbstractBillInput
 {

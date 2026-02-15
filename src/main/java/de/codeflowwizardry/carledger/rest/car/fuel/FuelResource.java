@@ -16,8 +16,6 @@ import de.codeflowwizardry.carledger.data.repository.FuelBillRepository;
 import de.codeflowwizardry.carledger.exception.WrongUserException;
 import de.codeflowwizardry.carledger.rest.car.AbstractBillResource;
 import de.codeflowwizardry.carledger.rest.records.BillPaged;
-import de.codeflowwizardry.carledger.rest.records.FuelBill;
-import de.codeflowwizardry.carledger.rest.records.input.FuelBillInput;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;

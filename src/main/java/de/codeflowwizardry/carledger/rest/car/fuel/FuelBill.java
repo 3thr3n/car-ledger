@@ -1,4 +1,4 @@
-package de.codeflowwizardry.carledger.rest.records;
+package de.codeflowwizardry.carledger.rest.car.fuel;
 
 import static java.util.Objects.requireNonNullElse;
 
@@ -8,6 +8,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import de.codeflowwizardry.carledger.data.FuelBillEntity;
+import de.codeflowwizardry.carledger.rest.records.AbstractBill;
 
 public final class FuelBill extends AbstractBill<FuelBillEntity>
 {

@@ -16,8 +16,6 @@ import de.codeflowwizardry.carledger.data.repository.MaintenanceBillRepository;
 import de.codeflowwizardry.carledger.exception.WrongUserException;
 import de.codeflowwizardry.carledger.rest.car.AbstractBillResource;
 import de.codeflowwizardry.carledger.rest.records.BillPaged;
-import de.codeflowwizardry.carledger.rest.records.MaintenanceBill;
-import de.codeflowwizardry.carledger.rest.records.input.MaintenanceBillInput;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;

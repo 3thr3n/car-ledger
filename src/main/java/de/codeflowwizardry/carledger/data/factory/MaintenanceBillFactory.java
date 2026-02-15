@@ -10,7 +10,7 @@ import de.codeflowwizardry.carledger.data.BillType;
 import de.codeflowwizardry.carledger.data.MaintenanceBillEntity;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import de.codeflowwizardry.carledger.data.repository.MaintenanceBillRepository;
-import de.codeflowwizardry.carledger.rest.records.input.MaintenanceBillInput;
+import de.codeflowwizardry.carledger.rest.car.maintenance.MaintenanceBillInput;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;

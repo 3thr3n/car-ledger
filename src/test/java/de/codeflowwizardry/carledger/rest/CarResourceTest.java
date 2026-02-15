@@ -19,7 +19,7 @@ import de.codeflowwizardry.carledger.data.factory.FuelBillFactory;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.BillRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
-import de.codeflowwizardry.carledger.rest.records.input.FuelBillInput;
+import de.codeflowwizardry.carledger.rest.car.fuel.FuelBillInput;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
@@ -156,7 +156,7 @@ class CarResourceTest
 				.contentType(ContentType.JSON)
 				.put()
 				.then()
-				.statusCode(202);
+				.statusCode(201);
 	}
 
 	@Test
@@ -173,7 +173,7 @@ class CarResourceTest
 				.contentType(ContentType.JSON)
 				.put()
 				.then()
-				.statusCode(202);
+				.statusCode(201);
 
 		body = "{\"name\": \"Hansi 2\", \"year\": \"2010\"}";
 

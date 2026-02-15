@@ -14,8 +14,8 @@ import de.codeflowwizardry.carledger.data.AccountEntity;
 import de.codeflowwizardry.carledger.data.CarEntity;
 import de.codeflowwizardry.carledger.data.FuelBillEntity;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
+import de.codeflowwizardry.carledger.rest.car.fuel.FuelBillInput;
 import de.codeflowwizardry.carledger.rest.processors.TestEntityManager;
-import de.codeflowwizardry.carledger.rest.records.input.FuelBillInput;
 import jakarta.persistence.EntityManager;
 
 class FuelBillFactoryTest

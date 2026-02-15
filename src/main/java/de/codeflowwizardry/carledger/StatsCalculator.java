@@ -14,7 +14,7 @@ import java.util.stream.Stream;
 
 import de.codeflowwizardry.carledger.data.*;
 import de.codeflowwizardry.carledger.data.repository.BillRepository;
-import de.codeflowwizardry.carledger.rest.records.stats.*;
+import de.codeflowwizardry.carledger.rest.car.stats.*;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
