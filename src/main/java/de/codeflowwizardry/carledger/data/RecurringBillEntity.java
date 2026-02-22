@@ -64,7 +64,7 @@ public class RecurringBillEntity
 
 	public LocalDate advance()
 	{
-		if (interval == ONCE)
+		if (isOnce())
 		{
 			endDate = nextDueDate;
 			return endDate;
@@ -79,6 +79,11 @@ public class RecurringBillEntity
 		};
 
 		return nextDueDate;
+	}
+
+	public boolean isOnce()
+	{
+		return interval == ONCE;
 	}
 
 	public Long getId()
