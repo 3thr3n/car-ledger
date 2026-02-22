@@ -1,19 +1,16 @@
 import { Box, CircularProgress, useMediaQuery } from '@mui/material';
 import React, { createRef, useEffect, useState } from 'react';
 import YearSelection from '@/components/car/bill/YearSelection';
-import { useMutation, useQuery } from '@tanstack/react-query';
-import {
-  deleteBillMutation,
-  getAllFuelBillYearsOptions,
-} from '@/generated/@tanstack/react-query.gen';
+import { useQuery } from '@tanstack/react-query';
+import { getAllFuelBillYearsOptions } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
 import useFuelBillPagination from '@/hooks/useFuelBillPagination';
 import FuelTable from '@/components/car/bill/fuel/FuelTable';
-import { toast } from 'react-toastify';
 import CarLedgerPageHeader from '@/components/CarLedgerPageHeader';
 import { useTranslation } from 'react-i18next';
 import { useScrollNearBottom } from '@/hooks/useScrollNearBottom';
 import CarLedgerPage from '@/components/CarLedgerPage';
+import useDeleteBillMutation from '@/hooks/useDeleteBillMutation';
 
 interface FuelPageProps {
   id?: string;
@@ -50,27 +47,7 @@ export default function FuelPage({ id, carId }: FuelPageProps) {
     refetch: billRefetch,
   } = useFuelBillPagination(carId);
 
-  const { mutate } = useMutation({
-    ...deleteBillMutation({
-      client: localClient,
-    }),
-    onSuccess: () => {
-      toast.info('Bill deleted!');
-    },
-    onSettled: async () => {
-      await yearRefetch();
-      await billRefetch();
-    },
-  });
-
-  function onDelete(billId: number) {
-    mutate({
-      path: {
-        carId,
-        billId,
-      },
-    });
-  }
+  const { onDelete } = useDeleteBillMutation(carId, yearRefetch, billRefetch);
 
   const years: number[] = yearData ?? [];
   const bills = billData?.data ?? [];
@@ -87,7 +64,7 @@ export default function FuelPage({ id, carId }: FuelPageProps) {
         pageSize: pagination.pageSize,
       });
     }
-  }, [isNearBottom, setPagination]);
+  });
 
   async function updateYear(year: number) {
     setSelectedYear(year);

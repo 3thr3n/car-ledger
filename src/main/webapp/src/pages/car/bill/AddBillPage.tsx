@@ -13,30 +13,26 @@ import { BillType } from '@/generated';
 import AddMaintenanceForm from '@/components/car/bill/maintenance/AddMaintenanceForm';
 import AddMiscellaneousForm from '@/components/car/bill/miscellaneous/AddMiscellaneousForm';
 import AddRecurringForm from '@/components/car/bill/recurring/AddRecurringForm';
+import { useTranslation } from 'react-i18next';
 
 export interface AddBillPageProps {
   id: number;
   type?: BillType;
 }
 
-const BILL_TYPES: { value: BillType; label: string }[] = [
-  { value: BillType.FUEL, label: 'Fuel Bill' },
-  { value: BillType.MAINTENANCE, label: 'Maintenance Bill' },
-  { value: BillType.MISCELLANEOUS, label: 'Miscellaneous Bill' },
-  { value: BillType.RECURRING, label: 'Recurring Bill' },
-];
-
 export default function AddBillPage({
   id,
   type: selectedType,
 }: AddBillPageProps) {
+  const { t } = useTranslation();
+
   const [type, setType] = useState<BillType>(selectedType ?? BillType.FUEL);
 
   return (
     <CarLedgerPage id="AddBillPage">
       <Container>
         <CarLedgerPageHeader
-          title={`Add New ${BILL_TYPES.find((t) => t.value === type)?.label}`}
+          title={`${t('app.car.add.title')} ${t('app.car.types.' + type)}`}
         />
 
         {!selectedType && (
@@ -44,14 +40,13 @@ export default function AddBillPage({
             <CardContent>
               <TextField
                 select
-                label="Bill Type"
                 value={type}
                 onChange={(e) => setType(e.target.value as BillType)}
                 sx={{ minWidth: 200 }}
               >
-                {BILL_TYPES.map((option) => (
-                  <MenuItem key={option.value} value={option.value}>
-                    {option.label}
+                {Object.values(BillType).map((option) => (
+                  <MenuItem key={option} value={option}>
+                    {t(`app.car.types.${option}`)}
                   </MenuItem>
                 ))}
               </TextField>

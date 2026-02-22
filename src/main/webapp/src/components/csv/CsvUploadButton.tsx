@@ -31,7 +31,7 @@ export function CsvUploadButton(props: CsvUploadProps) {
       header: true,
       preview: 1,
       skipEmptyLines: true,
-      complete(results: ParseResult<any>, file: File) {
+      complete(results: ParseResult<unknown>, file: File) {
         if (!results.meta.fields) {
           toast.warn('Could not find header column.');
           return;

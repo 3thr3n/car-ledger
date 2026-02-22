@@ -77,8 +77,16 @@ app:
       loading: "Loading fuel entries"
       loadingFailed: "Loading fuel entries failed!"
 
+    types:
+      RECURRING: "Recurring"
+      MAINTENANCE: "Maintenance"
+      FUEL: "Fuel"
+      MISCELLANEOUS: "Miscellaneous"
+
     csvImport: "Import CSV"
-    add: "Add Bill"
+    add:
+      button: "Add Bill"
+      title: "Add:"
 
     stats:
       title: "Statistics"

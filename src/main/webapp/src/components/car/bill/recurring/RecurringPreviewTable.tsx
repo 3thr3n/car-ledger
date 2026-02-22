@@ -94,7 +94,9 @@ export default function RecurringPreviewTable({
                 <TableCell>{bill.name}</TableCell>
                 <TableCell align="right">{bill.nextDueDate}</TableCell>
                 <TableCell align="right">{bill.endDate}</TableCell>
-                <TableCell align="right">{bill.amount}</TableCell>
+                <TableCell align="right">
+                  {Number(bill.amount).toFixed(2)} €
+                </TableCell>
                 <TableCell align="right">
                   {Number(bill.total).toFixed(2)} €
                 </TableCell>

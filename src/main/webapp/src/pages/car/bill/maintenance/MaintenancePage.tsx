@@ -1,19 +1,16 @@
 import { Box, CircularProgress, useMediaQuery } from '@mui/material';
 import React, { createRef, useEffect, useState } from 'react';
 import YearSelection from '@/components/car/bill/YearSelection';
-import { useMutation, useQuery } from '@tanstack/react-query';
-import {
-  deleteBillMutation,
-  getAllMaintenanceBillYearsOptions,
-} from '@/generated/@tanstack/react-query.gen';
+import { useQuery } from '@tanstack/react-query';
+import { getAllMaintenanceBillYearsOptions } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
-import { toast } from 'react-toastify';
 import CarLedgerPageHeader from '@/components/CarLedgerPageHeader';
 import { useTranslation } from 'react-i18next';
 import { useScrollNearBottom } from '@/hooks/useScrollNearBottom';
 import CarLedgerPage from '@/components/CarLedgerPage';
 import MaintenanceTable from '@/components/car/bill/maintenance/MaintenanceTable';
 import useMaintenanceBillPagination from '@/hooks/useMaintenanceBillPagination';
+import useDeleteBillMutation from '@/hooks/useDeleteBillMutation';
 
 interface MaintenancePageProps {
   id?: string;
@@ -50,27 +47,7 @@ export default function MaintenancePage({ id, carId }: MaintenancePageProps) {
     refetch: billRefetch,
   } = useMaintenanceBillPagination(carId);
 
-  const { mutate } = useMutation({
-    ...deleteBillMutation({
-      client: localClient,
-    }),
-    onSuccess: () => {
-      toast.info('Bill deleted!');
-    },
-    onSettled: async () => {
-      await yearRefetch();
-      await billRefetch();
-    },
-  });
-
-  function onDelete(billId: number) {
-    mutate({
-      path: {
-        carId,
-        billId,
-      },
-    });
-  }
+  const { onDelete } = useDeleteBillMutation(carId, yearRefetch, billRefetch);
 
   const years: number[] = yearData ?? [];
   const bills = maintenanceBill?.data ?? [];
@@ -87,7 +64,7 @@ export default function MaintenancePage({ id, carId }: MaintenancePageProps) {
         pageSize: pagination.pageSize,
       });
     }
-  }, [isNearBottom, setPagination]);
+  });
 
   async function updateYear(year: number) {
     setSelectedYear(year);

@@ -77,7 +77,7 @@ export default function CarUpdatePage({ navigate, id }: CarNewPageProperties) {
       toast.info('Car saved!');
       if (location) {
         const id = location?.split('/').pop();
-        navigate({ to: '/car/$id', params: { id } });
+        navigate({ to: '/car/$id', params: { id }, replace: true });
       }
     },
     onError: (error: BackendError) => {
@@ -96,7 +96,7 @@ export default function CarUpdatePage({ navigate, id }: CarNewPageProperties) {
     }),
     onSuccess: () => {
       toast.info('Car updated!');
-      navigate({ to: '..', params: { id: id! } });
+      navigate({ to: '..', params: { id: id! }, replace: true });
     },
     onError: (error: BackendError) => {
       if (error.status === 400) {

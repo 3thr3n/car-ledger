@@ -9,7 +9,7 @@ import {
   IconButton,
   Stack,
   Typography,
-  useMediaQuery
+  useMediaQuery,
 } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
 import { getMyCarOptions } from '@/generated/@tanstack/react-query.gen';
@@ -106,7 +106,7 @@ export default function CarViewPage({ navigate, id }: CarViewPageProperties) {
                 navigate({ to: '/car/$id/bill/add', params: { id } })
               }
             >
-              {t('app.car.add')}
+              {t('app.car.add.button')}
             </CarLedgerButton>
             <CarLedgerButton
               variant="outlined"
