@@ -61,7 +61,7 @@ export default function RecurringPage({ id, carId }: RecurringPageProps) {
         pageSize: pagination.pageSize,
       });
     }
-  }, [isNearBottom, setPagination]);
+  });
 
   const totalBills = pagedBills?.total ?? 0;
 

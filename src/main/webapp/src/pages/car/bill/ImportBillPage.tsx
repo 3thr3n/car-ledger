@@ -8,7 +8,7 @@ import {
   Step,
   StepContent,
   StepLabel,
-  Stepper
+  Stepper,
 } from '@mui/material';
 import CarLedgerPageHeader from '@/components/CarLedgerPageHeader';
 import { useState } from 'react';
@@ -16,7 +16,10 @@ import { CsvUploadButton } from '@/components/csv/CsvUploadButton';
 import { useTranslation } from 'react-i18next';
 import { BillType } from '@/generated';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { getCsvFieldsOptions, importCsvMutation } from '@/generated/@tanstack/react-query.gen';
+import {
+  getCsvFieldsOptions,
+  importCsvMutation,
+} from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
 import CarLedgerButton from '@/components/CarLedgerButton';
 import { CsvOptionBox } from '@/components/csv/CsvOptionBox';
@@ -100,8 +103,13 @@ export function ImportBillPage(props: ImportBillPageProps) {
 
   const nextStep = () => {
     if (activeStep == 0) {
-      fetchFields();
-      setActiveStep(1);
+      fetchFields().then((x) => {
+        if (x.error) {
+          toast.error('Could not fetch fields');
+          return;
+        }
+        setActiveStep(1);
+      });
     } else if (activeStep == 1 || activeStep == 2) {
       setActiveStep(activeStep + 1);
     } else if (activeStep == 3) {
@@ -144,7 +152,7 @@ export function ImportBillPage(props: ImportBillPageProps) {
                 >
                   {Object.values(BillType).map((x) => (
                     <MenuItem key={x} value={x}>
-                      {x}
+                      {t(`app.car.types.${x}`)}
                     </MenuItem>
                   ))}
                 </Select>

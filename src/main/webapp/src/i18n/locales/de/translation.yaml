@@ -66,18 +66,26 @@ app:
       odometer: "Kilometerstand (KM)"
       odometerDescription: "Kilometerstand von z.B. beim Kauf"
       #
-      amount: ""
-      nextDueDate: ""
-      endDate: ""
-      startDate: ""
+      amount: "Einzelkosten"
+      nextDueDate: "Nächste Abrechung"
+      endDate: "Enddatum"
+      startDate: "Startdatum"
       #
       showMore: "Alle anzeigen"
       seeMore: "Alle Einträge"
       loading: "Lade Einträge"
       loadingFailed: "Laden der Einträge fehlgeschlagen!"
 
+    types:
+      RECURRING: "Wiederholende Kosten"
+      MAINTENANCE: "Wartungen"
+      FUEL: "Tankkosten"
+      MISCELLANEOUS: "Sonstige Kosten"
+
     csvImport: "CSV importieren"
-    add: "Rechnung hinzufügen"
+    add:
+      button: "Rechnung hinzufügen"
+      title: "Hinzufügen:"
 
     stats:
       title: "Statistik"

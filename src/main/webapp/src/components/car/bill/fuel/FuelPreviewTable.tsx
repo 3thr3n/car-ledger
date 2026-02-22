@@ -94,9 +94,9 @@ export default function FuelPreviewTable({
               <TableRow key={bill.id} className={i % 2 === 0 ? 'even' : 'odd'}>
                 <TableCell>{bill.date}</TableCell>
                 <TableCell align="right">
-                  {Number(bill.distance).toFixed(1)}
+                  {Number(bill.distance).toFixed(1)} km
                 </TableCell>
-                <TableCell align="right">{bill.unit}</TableCell>
+                <TableCell align="right">{bill.unit} L</TableCell>
                 <TableCell align="right">
                   {Number(bill.pricePerUnit).toFixed(1)} ct
                 </TableCell>
