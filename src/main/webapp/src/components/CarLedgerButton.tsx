@@ -10,6 +10,8 @@ export interface CarLedgerButtonProps {
   href?: string;
   fullWidth?: boolean;
   size?: 'small' | 'medium';
+  marginY?: 1 | 2;
+  marginX?: 1 | 2;
 }
 
 export default function CarLedgerButton(props: CarLedgerButtonProps) {
@@ -22,6 +24,7 @@ export default function CarLedgerButton(props: CarLedgerButtonProps) {
     variant: props.variant ?? 'outlined',
     color: props.color ?? 'primary',
     size: props.size,
+    sx: { marginX: props.marginX, marginY: props.marginY },
   };
 
   if (props.variant === 'text') {

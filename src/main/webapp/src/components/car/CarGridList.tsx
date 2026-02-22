@@ -63,29 +63,12 @@ export default function CarGridList({ navigate, data }: CarGridListProps) {
     );
   }
 
-  function renderComponent() {
-    return (
-      <React.Fragment>
-        {data?.map((car, i) => (
-          <CarLedgerAnimatedCard index={i} key={car.id} maxWidth={400}>
-            <GridItem
-              id={car.id ?? -1}
-              index={i}
-              description={car.name ?? ''}
-              handleOpenCar={handleOpenCar}
-            />
-          </CarLedgerAnimatedCard>
-        ))}
-      </React.Fragment>
-    );
-  }
-
   return (
     <React.Fragment>
       <Grid
         container
         spacing={2}
-        columns={{ xl: 16, md: 12, sm: 8, xs: 4 }}
+        columns={{ md: 12, sm: 8, xs: 4 }}
         justifyContent="center"
         display="flex"
         pt={4}
@@ -94,7 +77,18 @@ export default function CarGridList({ navigate, data }: CarGridListProps) {
           overflow: 'auto',
         }}
       >
-        {renderComponent()}
+        {data?.map((car, i) => (
+          <Grid size={4}>
+            <CarLedgerAnimatedCard index={i} key={car.id}>
+              <GridItem
+                id={car.id ?? -1}
+                index={i}
+                description={car.name ?? ''}
+                handleOpenCar={handleOpenCar}
+              />
+            </CarLedgerAnimatedCard>
+          </Grid>
+        ))}
         <NewCar index={data.length ?? 0} />
       </Grid>
     </React.Fragment>

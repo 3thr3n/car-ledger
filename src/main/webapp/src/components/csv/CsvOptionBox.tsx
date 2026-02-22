@@ -1,5 +1,5 @@
 import { Box, Typography } from '@mui/material';
-import CsvUploadOptions from '@/components/csv/CsvUploadOptions';
+import CsvHeaderOptions from '@/components/csv/CsvHeaderOptions';
 
 export function CsvOptionBox(props: {
   headers: string[];
@@ -13,7 +13,7 @@ export function CsvOptionBox(props: {
       <Typography variant="body1" minWidth={120} maxWidth={250}>
         {props.title} {props.mandatory && '*'}
       </Typography>
-      <CsvUploadOptions
+      <CsvHeaderOptions
         headers={props.headers}
         defaultColumn={props.defaultColumn}
         onOptionChanged={props.onOptionChanged}

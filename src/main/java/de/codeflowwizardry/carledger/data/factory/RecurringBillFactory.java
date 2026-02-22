@@ -1,5 +1,6 @@
 package de.codeflowwizardry.carledger.data.factory;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +36,7 @@ public class RecurringBillFactory
 	}
 
 	@Transactional
-	public RecurringBillEntity create(long carId, String name, RecurringBillInput input)
+	public RecurringBillEntity create(long carId, RecurringBillInput input, String name)
 	{
 		List<String> validate = input.validate();
 		if (!validate.isEmpty())
@@ -62,6 +63,14 @@ public class RecurringBillFactory
 
 		List<RecurringBillPaymentEntity> payments = generateHistory(recurringBillEntity);
 
+		BigDecimal total = payments
+				.stream()
+				.map(RecurringBillPaymentEntity::getAmount)
+				.reduce(BigDecimal::add)
+				.orElse(BigDecimal.ZERO);
+
+		recurringBillEntity.setTotal(total);
+
 		recurringBillRepository.persist(recurringBillEntity);
 		recurringBillPaymentRepository.persist(payments);
 
@@ -74,9 +83,10 @@ public class RecurringBillFactory
 	{
 		List<RecurringBillPaymentEntity> payments = new ArrayList<>();
 		LocalDate cursor = bill.getStartDate();
-		LocalDate today = bill.getEndDate() != null ? bill.getEndDate() : LocalDate.now();
+		LocalDate today = LocalDate.now();
+		LocalDate todayOrEnd = bill.getEndDate() != null ? bill.getEndDate() : today;
 
-		while (cursor.isBefore(today))
+		while (cursor.isBefore(todayOrEnd) && cursor.isBefore(today))
 		{
 			RecurringBillPaymentEntity p = new RecurringBillPaymentEntity(bill);
 			p.setDueDate(cursor);

@@ -1,13 +1,13 @@
 import { MenuItem, Select, SelectChangeEvent } from '@mui/material';
 import { useState } from 'react';
 
-export interface CsvUploadOptionsProps {
+export interface CsvHeaderOptionsProps {
   headers: string[];
   defaultColumn?: number;
   onOptionChanged: (value: number | undefined) => void;
 }
 
-export default function CsvUploadOptions(props: CsvUploadOptionsProps) {
+export default function CsvHeaderOptions(props: CsvHeaderOptionsProps) {
   const [header, setHeader] = useState(props.defaultColumn ?? 0);
 
   const handleChange = (event: SelectChangeEvent<number>) => {

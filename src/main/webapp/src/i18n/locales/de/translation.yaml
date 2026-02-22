@@ -46,7 +46,8 @@ app:
       description: "Aktualisiere deine Fahrzeugdaten"
 
     common:
-      name: "Name oder Modell"
+      model: "Name oder Modell"
+      name: "Name"
       year: "Baujahr"
       date: "Datum"
       total: "Kosten"
@@ -64,6 +65,11 @@ app:
       partsCost: "Teilekosten"
       odometer: "Kilometerstand (KM)"
       odometerDescription: "Kilometerstand von z.B. beim Kauf"
+      #
+      amount: ""
+      nextDueDate: ""
+      endDate: ""
+      startDate: ""
       #
       showMore: "Alle anzeigen"
       seeMore: "Alle Einträge"
@@ -88,21 +94,18 @@ app:
       all: "Alle"
       year: "Jahr"
 
+    import:
+      upload: "CSV hochladen"
+      configureOrder: "Reihenfolge anpassen"
+      importData: "Daten importieren"
 
     fuel:
       recentTitle: "Letzten Tank-Rechnungen"
-
-      stepper:
-        upload: "CSV hochladen"
-        configureOrder: "Reihenfolge anpassen"
-        importData: "Daten importieren"
-
       table:
         title: "Tank-Rechnungen"
 
     maintenance:
       recentTitle: "Letzten Wartungen"
-
       table:
         title: "Wartungen"
 
@@ -110,3 +113,8 @@ app:
       recentTitle: "Letzten allgemeinen Rechnungen"
       table:
         title: "Diverse Rechnungen"
+
+    recurring:
+      recentTitle: "Aktuell laufend"
+      table:
+        title: "Laufende kosten"

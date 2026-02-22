@@ -11,7 +11,6 @@ import {
 import { NumericFormat } from 'react-number-format';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import {
-  createCarMutation,
   getMyCarOptions,
   updateMyCarMutation,
 } from '@/generated/@tanstack/react-query.gen';
@@ -20,6 +19,7 @@ import { toast } from 'react-toastify';
 import { BackendError } from '@/utils/BackendError';
 import { useTranslation } from 'react-i18next';
 import CarLedgerPage from '@/components/CarLedgerPage';
+import { createCar, CreateCarData, Options } from '@/generated';
 
 export interface CarNewPageProperties {
   navigate: (path: NavigateOptions) => void;
@@ -63,18 +63,22 @@ export default function CarUpdatePage({ navigate, id }: CarNewPageProperties) {
   }, [car, currentYear, setKm, setName, setYear]);
 
   const { mutate: mutateNewCar } = useMutation({
-    ...createCarMutation({
-      client: localClient,
-    }),
-    onSuccess: () => {
-      toast.info('Car saved!');
-    },
-    onSettled: (data) => {
-      navigate({
-        to: data?.id ? '/car/$id' : '..',
-        params: { id: `${data?.id}` },
-        replace: true,
+    mutationFn: async (fnOptions: Options<CreateCarData>) => {
+      const { response } = await createCar({
+        client: localClient,
+        redirect: 'follow',
+        ...fnOptions,
+        throwOnError: true,
       });
+      return response;
+    },
+    onSuccess: (response) => {
+      const location = response.headers.get('Location');
+      toast.info('Car saved!');
+      if (location) {
+        const id = location?.split('/').pop();
+        navigate({ to: '/car/$id', params: { id } });
+      }
     },
     onError: (error: BackendError) => {
       if (error.status === 400) {
@@ -165,8 +169,8 @@ export default function CarUpdatePage({ navigate, id }: CarNewPageProperties) {
         <Box component="form" sx={{ mt: 3 }}>
           <Stack spacing={3}>
             <TextField
-              placeholder={t('app.car.common.name')}
-              label={t('app.car.common.name')}
+              placeholder={t('app.car.common.model')}
+              label={t('app.car.common.model')}
               value={name}
               onBlur={handleValidate}
               onChange={(e) => setName(e.target.value)}

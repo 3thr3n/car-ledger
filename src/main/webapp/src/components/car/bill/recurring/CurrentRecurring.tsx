@@ -2,24 +2,24 @@ import { NavigateOptions } from '@tanstack/router-core';
 import { Box, Button, Card, CardContent, Divider, Grid } from '@mui/material';
 import CarLedgerSubPageHeader from '@/components/CarLedgerSubPageHeader';
 import { useTranslation } from 'react-i18next';
-import MiscellaneousPreviewTable from '@/components/car/bill/miscellaneous/MiscellaneousPreviewTable';
+import RecurringPreviewTable from '@/components/car/bill/recurring/RecurringPreviewTable';
 
-export interface RecentMiscellaneousProps {
+export interface RecentRecurringProps {
   isMobile: boolean;
   id: string;
   navigate: (opt: NavigateOptions) => void;
   reloadToken: number;
 }
 
-export default function RecentMiscellaneous({
+export default function RecentRecurring({
   isMobile,
   id,
   navigate,
   reloadToken,
-}: RecentMiscellaneousProps) {
+}: RecentRecurringProps) {
   const { t } = useTranslation();
   const goToAll = () =>
-    navigate({ to: '/car/$id/bill/miscellaneous', params: { id } });
+    navigate({ to: '/car/$id/bill/recurring', params: { id } });
 
   if (isMobile) {
     return (
@@ -31,7 +31,7 @@ export default function RecentMiscellaneous({
             }}
           >
             <CarLedgerSubPageHeader
-              title={t('app.car.miscellaneous.recentTitle')}
+              title={t('app.car.recurring.recentTitle')}
               isCardHeader
             />
             <Box flexGrow={1} />
@@ -48,11 +48,11 @@ export default function RecentMiscellaneous({
       <Card>
         <CardContent>
           <CarLedgerSubPageHeader
-            title={t('app.car.miscellaneous.recentTitle')}
+            title={t('app.car.recurring.recentTitle')}
             isCardHeader
           />
           <Divider sx={{ mb: 2 }} />
-          <MiscellaneousPreviewTable
+          <RecurringPreviewTable
             id={id}
             onSeeMore={goToAll}
             reload={reloadToken}

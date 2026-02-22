@@ -47,6 +47,9 @@ public class RecurringBillEntity
 	@JoinColumn(name = "r_car_id", nullable = false)
 	private CarEntity car;
 
+	@Column(name = "r_total", nullable = false)
+	private BigDecimal total;
+
 	@OneToMany(mappedBy = "bill")
 	private final List<RecurringBillPaymentEntity> recurringBillPaymentEntities = new ArrayList<>();
 
@@ -161,6 +164,16 @@ public class RecurringBillEntity
 	public void setEndDate(LocalDate endDate)
 	{
 		this.endDate = endDate;
+	}
+
+	public BigDecimal getTotal()
+	{
+		return total;
+	}
+
+	public void setTotal(BigDecimal total)
+	{
+		this.total = total;
 	}
 
 	public CarEntity getCar()

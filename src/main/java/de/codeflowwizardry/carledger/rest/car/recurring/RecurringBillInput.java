@@ -48,6 +48,11 @@ public record RecurringBillInput(String name,
 			errors.add("Amount must be set!");
 		}
 
+		if (startDate != null && endDate != null && startDate.isAfter(endDate))
+		{
+			errors.add("Start date cannot be after end date!");
+		}
+
 		return errors;
 	}
 }

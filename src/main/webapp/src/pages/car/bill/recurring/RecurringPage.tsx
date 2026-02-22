@@ -1,26 +1,22 @@
-import { Box, CircularProgress, useMediaQuery } from '@mui/material';
-import React, { createRef, useEffect, useState } from 'react';
-import YearSelection from '@/components/car/bill/YearSelection';
-import { useMutation, useQuery } from '@tanstack/react-query';
-import {
-  deleteBillMutation,
-  getAllFuelBillYearsOptions,
-} from '@/generated/@tanstack/react-query.gen';
+import { Box, useMediaQuery } from '@mui/material';
+import React, { createRef, useEffect } from 'react';
+import { useMutation } from '@tanstack/react-query';
+import { deleteRecurringBillMutation } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
-import useFuelBillPagination from '@/hooks/useFuelBillPagination';
-import FuelTable from '@/components/car/bill/fuel/FuelTable';
 import { toast } from 'react-toastify';
 import CarLedgerPageHeader from '@/components/CarLedgerPageHeader';
 import { useTranslation } from 'react-i18next';
 import { useScrollNearBottom } from '@/hooks/useScrollNearBottom';
 import CarLedgerPage from '@/components/CarLedgerPage';
+import RecurringTable from '@/components/car/bill/recurring/RecurringTable';
+import useRecurringBillPagination from '@/hooks/useRecurringBillPagination';
 
-interface FuelPageProps {
+interface RecurringPageProps {
   id?: string;
   carId: number;
 }
 
-export default function FuelPage({ id, carId }: FuelPageProps) {
+export default function RecurringPage({ id, carId }: RecurringPageProps) {
   const { t } = useTranslation();
   const isMobile = useMediaQuery('(max-width:900px)');
 
@@ -28,37 +24,21 @@ export default function FuelPage({ id, carId }: FuelPageProps) {
   const isNearBottom = useScrollNearBottom(gridRef);
 
   const {
-    data: yearData,
-    isError: isYearError,
-    isLoading: isYearLoading,
-    refetch: yearRefetch,
-  } = useQuery({
-    ...getAllFuelBillYearsOptions({
-      client: localClient,
-      path: {
-        carId,
-      },
-    }),
-  });
-
-  const {
-    setYear,
     pagination,
-    data: billData,
+    data: pagedBills,
     setPagination,
     setSort,
     refetch: billRefetch,
-  } = useFuelBillPagination(carId);
+  } = useRecurringBillPagination(carId);
 
   const { mutate } = useMutation({
-    ...deleteBillMutation({
+    ...deleteRecurringBillMutation({
       client: localClient,
     }),
     onSuccess: () => {
       toast.info('Bill deleted!');
     },
     onSettled: async () => {
-      await yearRefetch();
       await billRefetch();
     },
   });
@@ -72,13 +52,7 @@ export default function FuelPage({ id, carId }: FuelPageProps) {
     });
   }
 
-  const years: number[] = yearData ?? [];
-  const bills = billData?.data ?? [];
-
-  const currentYear = new Date().getFullYear();
-  const [selectedYear, setSelectedYear] = useState<number>(
-    years.includes(currentYear) ? currentYear : -1,
-  );
+  const bills = pagedBills?.data ?? [];
 
   useEffect(() => {
     if (isNearBottom) {
@@ -89,20 +63,11 @@ export default function FuelPage({ id, carId }: FuelPageProps) {
     }
   }, [isNearBottom, setPagination]);
 
-  async function updateYear(year: number) {
-    setSelectedYear(year);
-    setYear(year);
-  }
-
-  if (isYearLoading || isYearError) {
-    return <CircularProgress />;
-  }
-
-  const totalBills = billData?.total ?? 0;
+  const totalBills = pagedBills?.total ?? 0;
 
   const getHeader = (isMobile: boolean) => (
     <CarLedgerPageHeader
-      title={t('app.car.fuel.table.title')}
+      title={t('app.car.recurring.table.title')}
       isMobile={isMobile}
     />
   );
@@ -110,18 +75,11 @@ export default function FuelPage({ id, carId }: FuelPageProps) {
   // 📱 Mobile view: cards
   if (isMobile) {
     return (
-      <CarLedgerPage id="FuelPage" ref={gridRef}>
+      <CarLedgerPage id="RecurringPage" ref={gridRef}>
         <Box sx={{ p: 2 }} id={id}>
           {getHeader(isMobile)}
 
-          <YearSelection
-            years={years}
-            selectedYear={selectedYear}
-            setSelectedYear={updateYear}
-            isMobile
-          />
-
-          <FuelTable
+          <RecurringTable
             onDelete={onDelete}
             setPagination={setPagination}
             setSortModel={setSort}
@@ -137,19 +95,12 @@ export default function FuelPage({ id, carId }: FuelPageProps) {
   // 💻 Desktop view: sidebar selector + table
 
   return (
-    <CarLedgerPage id="FuelPage">
+    <CarLedgerPage id="RecurringPage">
       <Box sx={{ p: 2 }} id={id}>
         {getHeader(isMobile)}
         <Box sx={{ display: 'flex', gap: 3 }}>
-          {/* Year Selector */}
-          <YearSelection
-            years={years}
-            selectedYear={selectedYear}
-            setSelectedYear={updateYear}
-          />
-
           {/* DataGrid */}
-          <FuelTable
+          <RecurringTable
             onDelete={onDelete}
             bills={bills}
             setPagination={setPagination}

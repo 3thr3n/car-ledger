@@ -46,7 +46,8 @@ app:
       description: "Update your car details"
 
     common:
-      name: "Car name / Model"
+      model: "Car name / Model"
+      name: "Name"
       year: "Manufacture year"
       date: "Date"
       total: "Total"
@@ -65,7 +66,12 @@ app:
       odometer: "Odometer"
       odometerDescription: "Odometer e.g. when bought"
       #
-
+      amount: "Amount"
+      nextDueDate: "Next due date"
+      endDate: "End date"
+      startDate: "Start date"
+      category: "Category"
+      #
       showMore: "See all entries"
       seeMore: "See all entries"
       loading: "Loading fuel entries"
@@ -85,18 +91,17 @@ app:
       miscellaneous:
         amount: "Miscellaneous events"
 
+    import:
+      upload: "Upload CSV"
+      mapping: "Mapping of columns"
+      importData: "Import data"
+
     filter:
       all: "All"
       year: "Year"
 
     fuel:
       recentTitle: "Recent fuel entries"
-
-      stepper:
-        upload: "Upload CSV"
-        configureOrder: "Configure order/import"
-        importData: "Import data"
-
       table:
         title: "Fuel entries"
 
@@ -110,3 +115,8 @@ app:
       recentTitle: "Recent miscellaneous entries"
       table:
         title: "Miscellaneous entries"
+
+    recurring:
+      recentTitle: "Current running entries"
+      table:
+        title: "Recurring entries"

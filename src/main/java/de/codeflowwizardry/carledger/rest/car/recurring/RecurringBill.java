@@ -7,20 +7,37 @@ import java.util.List;
 import de.codeflowwizardry.carledger.data.BillCategory;
 import de.codeflowwizardry.carledger.data.RecurringBillEntity;
 
-public record RecurringBill(Long id, LocalDate nextDueDate, BillCategory category, LocalDate startDate,
+public record RecurringBill(
+		Long id,
+		String name,
+		String description,
+		LocalDate nextDueDate,
+		BillCategory category,
+		LocalDate startDate,
 		LocalDate endDate,
-		BigDecimal amount, BigDecimal total)
+		BigDecimal amount,
+		BigDecimal total,
+		boolean finished)
 {
 	public static RecurringBill convert(RecurringBillEntity entity)
 	{
+		boolean finished = false;
+		if (entity.getEndDate() != null && entity.getNextDueDate() != null)
+		{
+			finished = entity.getEndDate().isBefore(entity.getNextDueDate());
+		}
+
 		return new RecurringBill(
 				entity.getId(),
+				entity.getName(),
+				entity.getDescription(),
 				entity.getNextDueDate(),
 				entity.getCategory(),
 				entity.getStartDate(),
 				entity.getEndDate(),
 				entity.getAmount(),
-				entity.getAmount().multiply(BigDecimal.valueOf(entity.getRecurringBillPaymentEntities().size())));
+				entity.getTotal(),
+				finished);
 	}
 
 	public static List<RecurringBill> convert(List<RecurringBillEntity> entities)
