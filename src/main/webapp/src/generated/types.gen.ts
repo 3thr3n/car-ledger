@@ -71,10 +71,18 @@ export type BillPagedMiscellaneousBill = {
     data?: Array<MiscellaneousBill>;
 };
 
+export type BillPagedRecurringBill = {
+    total?: number;
+    page?: number;
+    size?: number;
+    data?: Array<RecurringBill>;
+};
+
 export enum BillType {
     FUEL = 'FUEL',
     MAINTENANCE = 'MAINTENANCE',
-    MISCELLANEOUS = 'MISCELLANEOUS'
+    MISCELLANEOUS = 'MISCELLANEOUS',
+    RECURRING = 'RECURRING'
 }
 
 export type Car = {
@@ -188,12 +196,15 @@ export type MiscellaneousBillInput = {
 
 export type RecurringBill = {
     id?: number;
+    name?: string;
+    description?: string;
     nextDueDate?: LocalDate;
     category?: BillCategory;
     startDate?: LocalDate;
     endDate?: LocalDate;
     amount?: number;
     total?: number;
+    finished?: boolean;
 };
 
 export type RecurringBillInput = {
@@ -541,7 +552,11 @@ export type GetAllRecurringBillsData = {
     path: {
         carId: number;
     };
-    query?: never;
+    query?: {
+        onlyRunning?: boolean;
+        page?: number;
+        size?: number;
+    };
     url: '/api/bill/{carId}/recurring';
 };
 
@@ -549,7 +564,7 @@ export type GetAllRecurringBillsResponses = {
     /**
      * OK
      */
-    200: Array<RecurringBill>;
+    200: BillPagedRecurringBill;
 };
 
 export type GetAllRecurringBillsResponse = GetAllRecurringBillsResponses[keyof GetAllRecurringBillsResponses];

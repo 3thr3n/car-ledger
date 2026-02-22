@@ -475,6 +475,35 @@ export const getAllRecurringBillsOptions = (options: Options<GetAllRecurringBill
     queryKey: getAllRecurringBillsQueryKey(options)
 });
 
+export const getAllRecurringBillsInfiniteQueryKey = (options: Options<GetAllRecurringBillsData>): QueryKey<Options<GetAllRecurringBillsData>> => createQueryKey('getAllRecurringBills', options, true);
+
+/**
+ * Get All Recurring Bills
+ *
+ * Gets all recurring bills for specified car
+ */
+export const getAllRecurringBillsInfiniteOptions = (options: Options<GetAllRecurringBillsData>) => infiniteQueryOptions<GetAllRecurringBillsResponse, DefaultError, InfiniteData<GetAllRecurringBillsResponse>, QueryKey<Options<GetAllRecurringBillsData>>, number | Pick<QueryKey<Options<GetAllRecurringBillsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+// @ts-ignore
+{
+    queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<QueryKey<Options<GetAllRecurringBillsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+            query: {
+                page: pageParam
+            }
+        };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await getAllRecurringBills({
+            ...options,
+            ...params,
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getAllRecurringBillsInfiniteQueryKey(options)
+});
+
 /**
  * Add New Recurring Bill
  */

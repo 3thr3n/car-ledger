@@ -3,6 +3,9 @@ package de.codeflowwizardry.carledger.rest.car.recurring;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.is;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -66,7 +69,7 @@ class RecurringResourceTest
 				.get()
 				.then()
 				.statusCode(200)
-				.body("size()", is(0));
+				.body("data.size()", is(0));
 	}
 
 	@Test
@@ -237,5 +240,114 @@ class RecurringResourceTest
 				.delete("{billId}")
 				.then()
 				.statusCode(400);
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldShowOnlyRunningRecurringBills()
+	{
+		String body = """
+				{
+				     "name": "Finance payments",
+					 "billInterval": "MONTHLY",
+					 "category": "FINANCE",
+					 "startDate": "2025-01-01",
+					 "endDate": "2025-12-31",
+					 "amount": 500.00
+				 }
+				""";
+
+		given()
+				.pathParam("carId", carId)
+				.body(body)
+				.accept(ContentType.JSON)
+				.contentType(ContentType.JSON)
+				.when()
+				.put()
+				.then()
+				.statusCode(202);
+
+		given()
+				.pathParam("carId", carId)
+				.queryParam("onlyRunning", true)
+				.accept(ContentType.JSON)
+				.when()
+				.get()
+				.then()
+				.statusCode(200)
+				.body("data.size()", is(0))
+				.body("total", is(0));
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldShowOnlyRunningRecurringBills2()
+	{
+		String body = """
+				{
+				     "name": "Finance payments",
+					 "billInterval": "MONTHLY",
+					 "category": "FINANCE",
+					 "startDate": "2025-01-01",
+					 "endDate": "2026-12-31",
+					 "amount": 500.00
+				 }
+				""";
+
+		given()
+				.pathParam("carId", carId)
+				.body(body)
+				.accept(ContentType.JSON)
+				.contentType(ContentType.JSON)
+				.when()
+				.put()
+				.then()
+				.statusCode(202);
+
+		given()
+				.pathParam("carId", carId)
+				.queryParam("onlyRunning", true)
+				.accept(ContentType.JSON)
+				.when()
+				.get()
+				.then()
+				.statusCode(200)
+				.body("data.size()", is(1))
+				.body("total", is(1));
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldCalculateNextDueDateCorrectly()
+	{
+		String body = """
+				{
+				     "name": "Finance payments",
+					 "billInterval": "MONTHLY",
+					 "category": "FINANCE",
+					 "startDate": "2026-01-01",
+					 "endDate": "2999-12-31",
+					 "amount": 500.00
+				 }
+				""";
+
+		LocalDate nextMonth = LocalDate.now().plusMonths(1).withDayOfMonth(1);
+
+		given()
+				.pathParam("carId", carId)
+				.body(body)
+				.accept(ContentType.JSON)
+				.contentType(ContentType.JSON)
+				.when()
+				.put()
+				.then()
+				.statusCode(202)
+				.body("nextDueDate", is(nextMonth.format(DateTimeFormatter.ISO_DATE)));
 	}
 }

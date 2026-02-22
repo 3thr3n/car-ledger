@@ -15,6 +15,7 @@ export default function CarLedgerPage(props: CarLedgerPageProps) {
     children: props.children,
     id: props.id,
     ref: props.ref,
+    width: '100%',
   };
 
   return <Box {...myProps} />;

@@ -12,6 +12,7 @@ import CarLedgerPageHeader from '@/components/CarLedgerPageHeader';
 import { BillType } from '@/generated';
 import AddMaintenanceForm from '@/components/car/bill/maintenance/AddMaintenanceForm';
 import AddMiscellaneousForm from '@/components/car/bill/miscellaneous/AddMiscellaneousForm';
+import AddRecurringForm from '@/components/car/bill/recurring/AddRecurringForm';
 
 export interface AddBillPageProps {
   id: number;
@@ -22,6 +23,7 @@ const BILL_TYPES: { value: BillType; label: string }[] = [
   { value: BillType.FUEL, label: 'Fuel Bill' },
   { value: BillType.MAINTENANCE, label: 'Maintenance Bill' },
   { value: BillType.MISCELLANEOUS, label: 'Miscellaneous Bill' },
+  { value: BillType.RECURRING, label: 'Recurring Bill' },
 ];
 
 export default function AddBillPage({
@@ -61,6 +63,7 @@ export default function AddBillPage({
         {type === 'FUEL' && <AddFuelForm carId={id} />}
         {type === 'MAINTENANCE' && <AddMaintenanceForm carId={id} />}
         {type === 'MISCELLANEOUS' && <AddMiscellaneousForm carId={id} />}
+        {type === 'RECURRING' && <AddRecurringForm carId={id} />}
       </Container>
     </CarLedgerPage>
   );

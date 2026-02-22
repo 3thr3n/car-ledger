@@ -9,7 +9,7 @@ import {
   IconButton,
   Stack,
   Typography,
-  useMediaQuery,
+  useMediaQuery
 } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
 import { getMyCarOptions } from '@/generated/@tanstack/react-query.gen';
@@ -27,6 +27,7 @@ import { Edit } from '@mui/icons-material';
 import CarLedgerPage from '@/components/CarLedgerPage';
 import RecentMaintenance from '@/components/car/bill/maintenance/RecentMaintenance';
 import RecentMiscellaneous from '@/components/car/bill/miscellaneous/RecentMiscellaneous';
+import RecentRecurring from '@/components/car/bill/recurring/CurrentRecurring';
 
 export interface CarViewPageProperties {
   id: string;
@@ -160,6 +161,12 @@ export default function CarViewPage({ navigate, id }: CarViewPageProperties) {
               reloadToken={csvImportedAt ?? 0}
             />
             <RecentMiscellaneous
+              isMobile={isMobile}
+              id={id}
+              navigate={navigate}
+              reloadToken={csvImportedAt ?? 0}
+            />
+            <RecentRecurring
               isMobile={isMobile}
               id={id}
               navigate={navigate}

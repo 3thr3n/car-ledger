@@ -44,7 +44,7 @@ export function CsvUploadButton(props: CsvUploadProps) {
   return (
     <Button
       component="label"
-      variant="outlined"
+      variant="contained"
       tabIndex={-1}
       startIcon={<CloudUpload />}
       sx={props.sx}

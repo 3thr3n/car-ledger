@@ -40,6 +40,7 @@ public class ScheduledPayments
 					if (createPayment(b))
 					{
 						b.advance();
+						b.setTotal(b.getTotal().add(b.getAmount()));
 						recurringBillRepository.persist(b);
 					}
 				});

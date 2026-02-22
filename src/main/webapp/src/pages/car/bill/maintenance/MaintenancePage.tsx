@@ -1,6 +1,5 @@
 import { Box, CircularProgress, useMediaQuery } from '@mui/material';
 import React, { createRef, useEffect, useState } from 'react';
-import { FuelBill } from '@/generated';
 import YearSelection from '@/components/car/bill/YearSelection';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import {
@@ -74,7 +73,7 @@ export default function MaintenancePage({ id, carId }: MaintenancePageProps) {
   }
 
   const years: number[] = yearData ?? [];
-  const bills: FuelBill[] = maintenanceBill?.data ?? [];
+  const bills = maintenanceBill?.data ?? [];
 
   const currentYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = useState<number>(

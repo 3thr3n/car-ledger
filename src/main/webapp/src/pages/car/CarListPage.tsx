@@ -35,16 +35,6 @@ export default function CarListPage({ navigate }: CarListPageProperties) {
     );
   }
 
-  function renderComponents() {
-    if (isLoading) {
-      return <LoadingCarGrid />;
-    }
-    if (data) {
-      return <CarGridList navigate={navigate} data={data} />;
-    }
-    return <></>;
-  }
-
   return (
     <CarLedgerPage id="CarListPage">
       <Container>
@@ -52,7 +42,8 @@ export default function CarListPage({ navigate }: CarListPageProperties) {
         <Typography variant="body1" color="text.secondary" gutterBottom>
           {t('app.car.description')}
         </Typography>
-        {renderComponents()}
+        {isLoading && <LoadingCarGrid />}
+        {data && <CarGridList navigate={navigate} data={data} />}
       </Container>
     </CarLedgerPage>
   );

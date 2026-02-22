@@ -16,6 +16,9 @@ import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.RecurringBillRepository;
 import de.codeflowwizardry.carledger.exception.WrongUserException;
 import de.codeflowwizardry.carledger.rest.AbstractResource;
+import de.codeflowwizardry.carledger.rest.records.BillPaged;
+import io.quarkus.hibernate.orm.panache.PanacheQuery;
+import io.quarkus.panache.common.Page;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -41,9 +44,21 @@ public class RecurringResource extends AbstractResource
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "getAllRecurringBills", description = "Gets all recurring bills for specified car")
-	public List<RecurringBill> getAllRecurringBills(@PathParam("carId") long carId)
+	public BillPaged<RecurringBill> getAllRecurringBills(@PathParam("carId") long carId,
+			@QueryParam("page") @DefaultValue("1") int page,
+			@QueryParam("size") @DefaultValue("10") int size,
+			@QueryParam("onlyRunning") boolean running)
 	{
-		return RecurringBill.convert(recurringBillRepository.getAll(carId, context.getName()));
+		if (page < 1)
+		{
+			page = 1;
+		}
+		Page queryPage = new Page(page - 1, size);
+
+		PanacheQuery<RecurringBillEntity> all = recurringBillRepository.getAll(carId, context.getName(), queryPage,
+				running);
+
+		return new BillPaged<>(all.count(), page, size, RecurringBill.convert(all.list()));
 	}
 
 	@PUT
@@ -56,7 +71,7 @@ public class RecurringResource extends AbstractResource
 	{
 		try
 		{
-			RecurringBillEntity recurringBillEntity = recurringBillFactory.create(carId, context.getName(), input);
+			RecurringBillEntity recurringBillEntity = recurringBillFactory.create(carId, input, context.getName());
 			return Response.accepted(RecurringBill.convert(recurringBillEntity)).build();
 		}
 		catch (WrongUserException e)
@@ -75,7 +90,7 @@ public class RecurringResource extends AbstractResource
 	@APIResponse(responseCode = "400", description = "Not able to delete")
 	public Response deleteRecurringBill(@PathParam("carId") long carId, @PathParam("billId") long billId)
 	{
-		boolean b = recurringBillRepository.deleteById(carId, context.getName(), billId);
+		boolean b = recurringBillRepository.deleteById(carId, billId, context.getName());
 		if (b)
 		{
 			return Response.accepted().build();

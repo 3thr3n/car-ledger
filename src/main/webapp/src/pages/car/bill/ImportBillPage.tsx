@@ -8,7 +8,7 @@ import {
   Step,
   StepContent,
   StepLabel,
-  Stepper,
+  Stepper
 } from '@mui/material';
 import CarLedgerPageHeader from '@/components/CarLedgerPageHeader';
 import { useState } from 'react';
@@ -16,10 +16,7 @@ import { CsvUploadButton } from '@/components/csv/CsvUploadButton';
 import { useTranslation } from 'react-i18next';
 import { BillType } from '@/generated';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import {
-  getCsvFieldsOptions,
-  importCsvMutation,
-} from '@/generated/@tanstack/react-query.gen';
+import { getCsvFieldsOptions, importCsvMutation } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
 import CarLedgerButton from '@/components/CarLedgerButton';
 import { CsvOptionBox } from '@/components/csv/CsvOptionBox';
@@ -83,6 +80,16 @@ export function ImportBillPage(props: ImportBillPageProps) {
   const onParseComplete = (data: string[], file: File) => {
     setHeaders(data);
     setCsvFile(file);
+
+    data.forEach((x, di) => {
+      fields?.all?.forEach((y) => {
+        if (x.toLowerCase().includes(y.toLowerCase())) {
+          order.set(y, di);
+          return;
+        }
+      });
+    });
+
     nextStep();
   };
 
@@ -142,7 +149,11 @@ export function ImportBillPage(props: ImportBillPageProps) {
                   ))}
                 </Select>
                 <Box display={'flex'}>
-                  <CarLedgerButton onClick={nextStep}>
+                  <CarLedgerButton
+                    variant={'contained'}
+                    onClick={nextStep}
+                    marginX={1}
+                  >
                     {t('app.button.continue')}
                   </CarLedgerButton>
                 </Box>
@@ -165,10 +176,14 @@ export function ImportBillPage(props: ImportBillPageProps) {
                   }}
                 />
                 <Box display={'flex'}>
-                  <CarLedgerButton onClick={backStep}>
+                  <CarLedgerButton onClick={backStep} marginX={1}>
                     {t('app.button.back')}
                   </CarLedgerButton>
-                  <CarLedgerButton onClick={vatSelected}>
+                  <CarLedgerButton
+                    variant={'contained'}
+                    onClick={vatSelected}
+                    marginX={1}
+                  >
                     {t('app.button.continue')}
                   </CarLedgerButton>
                 </Box>
@@ -176,7 +191,7 @@ export function ImportBillPage(props: ImportBillPageProps) {
             </StepContent>
           </Step>
           <Step>
-            <StepLabel>{t('app.car.fuel.stepper.upload')}</StepLabel>
+            <StepLabel>{t('app.car.import.upload')}</StepLabel>
             <StepContent>
               <Box
                 display={'flex'}
@@ -194,7 +209,7 @@ export function ImportBillPage(props: ImportBillPageProps) {
             </StepContent>
           </Step>
           <Step>
-            <StepLabel>Mapping of keys to columns</StepLabel>
+            <StepLabel>{t('app.car.import.mapping')}</StepLabel>
             <StepContent>
               <Box
                 display={'flex'}
@@ -205,6 +220,7 @@ export function ImportBillPage(props: ImportBillPageProps) {
                   <CsvOptionBox
                     key={x}
                     headers={headers}
+                    defaultColumn={order.has(x) ? order.get(x)! + 1 : 0}
                     mandatory={fields?.required?.includes(x)}
                     title={t(`app.car.common.${x}`)}
                     onOptionChanged={(value) => {
@@ -217,10 +233,14 @@ export function ImportBillPage(props: ImportBillPageProps) {
                   />
                 ))}
                 <Box display={'flex'}>
-                  <CarLedgerButton onClick={backStep}>
+                  <CarLedgerButton onClick={backStep} marginX={1}>
                     {t('app.button.back')}
                   </CarLedgerButton>
-                  <CarLedgerButton onClick={nextStep}>
+                  <CarLedgerButton
+                    variant={'contained'}
+                    onClick={nextStep}
+                    marginX={1}
+                  >
                     {t('app.button.upload')}
                   </CarLedgerButton>
                 </Box>

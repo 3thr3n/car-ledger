@@ -168,9 +168,32 @@
           }
         }
       },
+      "BillPagedRecurringBill" : {
+        "type" : "object",
+        "properties" : {
+          "total" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "page" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "data" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/RecurringBill"
+            }
+          }
+        }
+      },
       "BillType" : {
         "type" : "string",
-        "enum" : [ "FUEL", "MAINTENANCE", "MISCELLANEOUS" ]
+        "enum" : [ "FUEL", "MAINTENANCE", "MISCELLANEOUS", "RECURRING" ]
       },
       "Car" : {
         "type" : "object",
@@ -478,6 +501,12 @@
             "type" : "integer",
             "format" : "int64"
           },
+          "name" : {
+            "type" : "string"
+          },
+          "description" : {
+            "type" : "string"
+          },
           "nextDueDate" : {
             "$ref" : "#/components/schemas/LocalDate"
           },
@@ -495,6 +524,9 @@
           },
           "total" : {
             "type" : "number"
+          },
+          "finished" : {
+            "type" : "boolean"
           }
         }
       },
@@ -1176,6 +1208,28 @@
             "type" : "integer",
             "format" : "int64"
           }
+        }, {
+          "name" : "onlyRunning",
+          "in" : "query",
+          "schema" : {
+            "type" : "boolean"
+          }
+        }, {
+          "name" : "page",
+          "in" : "query",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 1
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 10
+          }
         } ],
         "responses" : {
           "200" : {
@@ -1183,10 +1237,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "type" : "array",
-                  "items" : {
-                    "$ref" : "#/components/schemas/RecurringBill"
-                  }
+                  "$ref" : "#/components/schemas/BillPagedRecurringBill"
                 }
               }
             }

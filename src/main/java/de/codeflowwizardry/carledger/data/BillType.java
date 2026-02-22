@@ -1,5 +1,5 @@
 package de.codeflowwizardry.carledger.data;
 
 public enum BillType {
-	FUEL, MAINTENANCE, MISCELLANEOUS
+	FUEL, MAINTENANCE, MISCELLANEOUS, RECURRING
 }
