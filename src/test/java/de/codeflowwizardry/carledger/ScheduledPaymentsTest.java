@@ -65,6 +65,7 @@ class ScheduledPaymentsTest
 		recurringBillEntity.setStartDate(LocalDate.now());
 		recurringBillEntity.setNextDueDate(LocalDate.now());
 		recurringBillEntity.setName("Test");
+		recurringBillEntity.setTotal(BigDecimal.ZERO);
 
 		recurringBillRepository.persist(recurringBillEntity);
 
@@ -89,6 +90,7 @@ class ScheduledPaymentsTest
 		recurringBillEntity.setInterval(BillInterval.ONCE);
 		recurringBillEntity.setStartDate(LocalDate.now());
 		recurringBillEntity.setName("Test");
+		recurringBillEntity.setTotal(BigDecimal.ZERO);
 
 		recurringBillRepository.persist(recurringBillEntity);
 
