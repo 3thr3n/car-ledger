@@ -105,6 +105,34 @@ class RecurringResourceTest
 	@TestSecurity(user = "peter", roles = {
 			"user"
 	})
+	void shouldAddNewRecurringBillOnce()
+	{
+		String body = """
+				{
+				     "name": "Finance payments",
+					 "billInterval": "ONCE",
+					 "category": "FINANCE",
+					 "startDate": "2026-01-01",
+					 "amount": 1000.00
+				 }
+				""";
+
+		given()
+				.pathParam("carId", carId)
+				.body(body)
+				.accept(ContentType.JSON)
+				.contentType(ContentType.JSON)
+				.when()
+				.put()
+				.then()
+				.statusCode(202)
+				.body("total", is(1000.0F));
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
 	void shouldAddNewQuarterlyRecurringBill()
 	{
 		String body = """
