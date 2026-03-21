@@ -25,7 +25,7 @@ export default function Copyright() {
   return (
     <Box
       sx={{
-        pb: 1,
+        py: 1,
       }}
     >
       {isSm ? (
@@ -38,15 +38,6 @@ export default function Copyright() {
             }}
           >
             {getCopyright(t)}
-          </Typography>
-          <Typography
-            variant="body2"
-            align="center"
-            sx={{
-              color: 'text.secondary',
-            }}
-          >
-            {t('app.slogan')}
           </Typography>
         </>
       ) : (

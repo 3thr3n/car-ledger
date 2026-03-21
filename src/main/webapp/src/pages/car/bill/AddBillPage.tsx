@@ -5,58 +5,61 @@ import {
   Container,
   MenuItem,
   TextField,
-  Typography,
 } from '@mui/material';
-import { NavigateOptions } from '@tanstack/router-core';
-import AddFuelForm from '@/components/car/bill/AddFuelForm';
-// import MaintenanceBillForm from '@/components/bill/MaintenanceBillForm';
-// import CreditBillForm from '@/components/bill/CreditBillForm';
+import AddFuelForm from '@/components/car/bill/fuel/AddFuelForm';
+import CarLedgerPage from '@/components/CarLedgerPage';
+import CarLedgerPageHeader from '@/components/CarLedgerPageHeader';
+import { BillType } from '@/generated';
+import AddMaintenanceForm from '@/components/car/bill/maintenance/AddMaintenanceForm';
+import AddMiscellaneousForm from '@/components/car/bill/miscellaneous/AddMiscellaneousForm';
+import AddRecurringForm from '@/components/car/bill/recurring/AddRecurringForm';
+import { useTranslation } from 'react-i18next';
 
 export interface AddBillPageProps {
   id: number;
-  navigate: (path: NavigateOptions) => void;
+  type?: BillType;
 }
 
-const BILL_TYPES = [
-  { value: 'fuel', label: 'Fuel Bill' },
-  { value: 'maintenance', label: 'Maintenance Bill' },
-  { value: 'credit', label: 'Credit Payment' },
-];
+export default function AddBillPage({
+  id,
+  type: selectedType,
+}: AddBillPageProps) {
+  const { t } = useTranslation();
 
-type BillType = 'fuel' | 'maintenance' | 'credit';
-export default function AddBillPage({ id, navigate }: AddBillPageProps) {
-  const [type, setType] = useState<BillType>('fuel');
+  const [type, setType] = useState<BillType>(selectedType ?? BillType.FUEL);
 
   return (
-    <Container sx={{ py: 4 }}>
-      <Typography variant="h4" fontWeight={700} gutterBottom>
-        Add New {BILL_TYPES.find((t) => t.value === type)?.label}
-      </Typography>
+    <CarLedgerPage id="AddBillPage">
+      <Container>
+        <CarLedgerPageHeader
+          title={`${t('app.car.add.title')} ${t('app.car.types.' + type)}`}
+        />
 
-      <Card sx={{ mb: 3 }}>
-        <CardContent>
-          <TextField
-            select
-            label="Bill Type"
-            value={type}
-            onChange={(e) => setType(e.target.value as BillType)}
-            sx={{ minWidth: 200 }}
-          >
-            {BILL_TYPES.map((option) => (
-              <MenuItem key={option.value} value={option.value}>
-                {option.label}
-              </MenuItem>
-            ))}
-          </TextField>
-        </CardContent>
-      </Card>
+        {!selectedType && (
+          <Card sx={{ mb: 3 }}>
+            <CardContent>
+              <TextField
+                select
+                value={type}
+                onChange={(e) => setType(e.target.value as BillType)}
+                sx={{ minWidth: 200 }}
+              >
+                {Object.values(BillType).map((option) => (
+                  <MenuItem key={option} value={option}>
+                    {t(`app.car.types.${option}`)}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </CardContent>
+          </Card>
+        )}
 
-      {/* Conditional form render */}
-      {type === 'fuel' && <AddFuelForm carId={id} navigate={navigate} />}
-      {/*{type === 'maintenance' && (*/}
-      {/*  <MaintenanceBillForm carId={id} navigate={navigate} />*/}
-      {/*)}*/}
-      {/*{type === 'credit' && <CreditBillForm carId={id} navigate={navigate} />}*/}
-    </Container>
+        {/* Conditional form render */}
+        {type === 'FUEL' && <AddFuelForm carId={id} />}
+        {type === 'MAINTENANCE' && <AddMaintenanceForm carId={id} />}
+        {type === 'MISCELLANEOUS' && <AddMiscellaneousForm carId={id} />}
+        {type === 'RECURRING' && <AddRecurringForm carId={id} />}
+      </Container>
+    </CarLedgerPage>
   );
 }

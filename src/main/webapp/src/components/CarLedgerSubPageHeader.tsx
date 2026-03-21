@@ -2,18 +2,14 @@ import { Typography, TypographyVariant } from '@mui/material';
 
 export default function CarLedgerSubPageHeader({
   title,
-  isMobile,
   isCardHeader,
 }: {
   title: string;
-  isMobile?: boolean;
   isCardHeader?: boolean;
 }) {
   let variant: TypographyVariant = 'h4';
 
-  if (isMobile && isCardHeader) {
-    variant = 'subtitle1';
-  } else if (isMobile || isCardHeader) {
+  if (isCardHeader) {
     variant = 'h6';
   }
 

@@ -4,5 +4,11 @@ export default defineConfig({
   client: '@hey-api/client-fetch',
   input: './public/openapi.json',
   output: 'src/generated',
-  plugins: ['@tanstack/react-query'],
+  plugins: [
+    '@tanstack/react-query',
+    {
+      enums: 'typescript',
+      name: '@hey-api/typescript',
+    },
+  ],
 });

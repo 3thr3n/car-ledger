@@ -9,6 +9,7 @@ import LocalCarWashIcon from '@mui/icons-material/LocalCarWash';
 import EvStationIcon from '@mui/icons-material/EvStation';
 import EngineeringIcon from '@mui/icons-material/Engineering';
 import { useNavigate } from '@tanstack/react-router';
+import CarLedgerPage from '@/components/CarLedgerPage';
 
 const messages = [
   {
@@ -72,40 +73,42 @@ export default function NotFoundPage() {
   );
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '100%',
-        backgroundColor: (theme) => theme.palette.background.default,
-        px: 2,
-      }}
-    >
-      <Paper
-        elevation={3}
+    <CarLedgerPage id="NotFoundPage">
+      <Box
         sx={{
-          p: 4,
-          textAlign: 'center',
-          maxWidth: 400,
-          borderRadius: 4,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: '100%',
+          backgroundColor: (theme) => theme.palette.background.default,
+          px: 2,
         }}
       >
-        <Box sx={{ mb: 2 }}>{message.icon}</Box>
-        <Typography variant="h5" fontWeight="bold" gutterBottom>
-          {message.title}
-        </Typography>
-        <Typography variant="body1" sx={{ mb: 3 }}>
-          {message.description}
-        </Typography>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => navigate({ to: '/' })}
+        <Paper
+          elevation={3}
+          sx={{
+            p: 4,
+            textAlign: 'center',
+            maxWidth: 400,
+            borderRadius: 4,
+          }}
         >
-          {message.button}
-        </Button>
-      </Paper>
-    </Box>
+          <Box sx={{ mb: 2 }}>{message.icon}</Box>
+          <Typography variant="h5" fontWeight="bold" gutterBottom>
+            {message.title}
+          </Typography>
+          <Typography variant="body1" sx={{ mb: 3 }}>
+            {message.description}
+          </Typography>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => navigate({ to: '/' })}
+          >
+            {message.button}
+          </Button>
+        </Paper>
+      </Box>
+    </CarLedgerPage>
   );
 }

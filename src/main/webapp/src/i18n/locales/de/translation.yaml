@@ -9,11 +9,13 @@ app:
     cancel: "Abbrechen"
     back: "Zurück"
     save: "Speichern"
+    upload: "Hochladen"
   nav:
     title: "Menü"
     overview: "Übersicht"
     cars: "Autos"
     dashboard: "Dashboard"
+    more: "mehr"
   login:
     loginButton: "Einloggen"
     logoutButton: "Ausloggen"
@@ -44,46 +46,83 @@ app:
       description: "Aktualisiere deine Fahrzeugdaten"
 
     common:
-      name: "Name oder Modell"
+      model: "Name oder Modell"
+      name: "Name"
       year: "Baujahr"
+      date: "Datum"
+      total: "Kosten"
+      vatRate: "Mwst"
+      description: "Beschreibung"
+      #
+      distance: "Strecke"
+      unit: "Einheit"
+      pricePerUnit: "Kosten/Einheit"
+      estimateConsumption: "Verbrauch (Bordcomputer)"
+      avgConsumption: "Verbrauch"
+      #
+      workshop: "Werkstatt"
+      laborCost: "Stunden kosten"
+      partsCost: "Teilekosten"
       odometer: "Kilometerstand (KM)"
       odometerDescription: "Kilometerstand von z.B. beim Kauf"
+      #
+      amount: "Einzelkosten"
+      nextDueDate: "Nächste Abrechung"
+      endDate: "Enddatum"
+      startDate: "Startdatum"
+      #
+      showMore: "Alle anzeigen"
+      seeMore: "Alle Einträge"
+      loading: "Lade Einträge"
+      loadingFailed: "Laden der Einträge fehlgeschlagen!"
+
+    types:
+      RECURRING: "Wiederholende Kosten"
+      MAINTENANCE: "Wartungen"
+      FUEL: "Tankkosten"
+      MISCELLANEOUS: "Sonstige Kosten"
 
     csvImport: "CSV importieren"
-    add: "Rechnung hinzufügen"
+    add:
+      button: "Rechnung hinzufügen"
+      title: "Hinzufügen:"
 
     stats:
+      title: "Statistik"
+      cost: "Kosten"
       fuel:
-        title: "Tank Statistik"
-        refuels: "Tankfüllungen"
-        cost: "Kosten"
+        amount: "Tankfüllungen"
         consumption: "Verbrauch"
+      maintenance:
+        amount: "Wartungen"
+      miscellaneous:
+        amount: "Anderes"
+
+    filter:
+      all: "Alle"
+      year: "Jahr"
+
+    import:
+      upload: "CSV hochladen"
+      configureOrder: "Reihenfolge anpassen"
+      importData: "Daten importieren"
 
     fuel:
       recentTitle: "Letzten Tank-Rechnungen"
-      showMore: "Alle anzeigen"
-
-      stepper:
-        upload: "CSV hochladen"
-        configureOrder: "Reihenfolge anpassen"
-        importData: "Daten importieren"
-
-      filter:
-        all: "Alle"
-        year: "Jahr"
-
       table:
         title: "Tank-Rechnungen"
 
-        date: "Datum"
-        distance: "Strecke"
-        unit: "Einheit"
-        pricePerUnit: "Kosten/Einheit"
-        total: "Kosten"
+    maintenance:
+      recentTitle: "Letzten Wartungen"
+      table:
+        title: "Wartungen"
 
-        estimateConsumption: "Verbrauch (Bordcomputer)"
-        avgConsumption: "Verbrauch"
+    miscellaneous:
+      recentTitle: "Letzten allgemeinen Rechnungen"
+      table:
+        title: "Diverse Rechnungen"
 
-        seeMore: "Alle Einträge"
-        loading: "Lade Einträge"
-        loadingFailed: "Laden der Einträge fehlgeschlagen!"
+    recurring:
+      recentTitle: "Aktuell laufend"
+      table:
+        title: "Laufende kosten"

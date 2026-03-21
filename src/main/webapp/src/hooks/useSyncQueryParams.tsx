@@ -41,7 +41,7 @@ export function useSyncQueryParams(
 
     // Only update if something actually changed
     if (newParams !== search) {
-      navigate({ search: newParams });
+      navigate({ search: newParams, replace: true });
     }
   }, [selectedCarId, dateRange, search, navigate]);
 }

@@ -12,10 +12,16 @@ import de.codeflowwizardry.carledger.data.BillType;
 import de.codeflowwizardry.carledger.data.CarEntity;
 import de.codeflowwizardry.carledger.data.FuelBillEntity;
 
-public record CarOverview(BigInteger totalRefuels, BigDecimal totalCost, BigDecimal avgConsumption)
+public record CarOverview(BigInteger totalRefuels, BigInteger totalMaintenanceEvents,
+		BigInteger totalMiscellaneousEvents, BigDecimal totalCost, BigDecimal avgConsumption)
 {
 	public static CarOverview convert(CarEntity carEntity)
 	{
+		if (carEntity == null)
+		{
+			return null;
+		}
+
 		List<BillEntity> billEntities = carEntity.getBills();
 
 		BigDecimal totalCost = billEntities.stream().map(BillEntity::getTotal).reduce(BigDecimal.ZERO,
@@ -41,6 +47,13 @@ public record CarOverview(BigInteger totalRefuels, BigDecimal totalCost, BigDeci
 		BigInteger totalRefuels = BigInteger
 				.valueOf(billEntities.stream().filter(x -> x.getType().equals(BillType.FUEL)).count());
 
-		return new CarOverview(totalRefuels, totalCost, avgConsumption);
+		BigInteger totalMaintenanceEvents = BigInteger
+				.valueOf(billEntities.stream().filter(x -> x.getType().equals(BillType.MAINTENANCE)).count());
+
+		BigInteger totalMiscellaneousEvents = BigInteger
+				.valueOf(billEntities.stream().filter(x -> x.getType().equals(BillType.MISCELLANEOUS)).count());
+
+		return new CarOverview(totalRefuels, totalMaintenanceEvents, totalMiscellaneousEvents, totalCost,
+				avgConsumption);
 	}
 }

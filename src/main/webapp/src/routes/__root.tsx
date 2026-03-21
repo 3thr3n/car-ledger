@@ -16,7 +16,6 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import 'dayjs/locale/de';
 
 import 'react-toastify/dist/ReactToastify.css';
-import CsvUploadDialog from '@/components/csv/CsvUploadDialog';
 import ErrorPage from '@/pages/ErrorPage';
 import NotFoundPage from '@/pages/NotFoundPage';
 
@@ -30,7 +29,7 @@ export const Route = createRootRoute({
         // redirect to original page
         throw redirect({ to: redirectUrl });
       }
-      throw redirect({ to: '/dashboard' });
+      throw redirect({ to: '/dashboard', replace: true });
     } else {
       const redirectUrl = localStorage.getItem('postLoginRedirect');
       if (redirectUrl) {
@@ -45,15 +44,14 @@ export const Route = createRootRoute({
           <CssBaseline />
           <QueryClientProvider client={queryClient}>
             <Navigation />
-            <CsvUploadDialog />
             <Box
+              id="RootBox"
               component="main"
               flexGrow={1}
               display="flex"
               flexDirection="column"
-              overflow="auto"
+              overflow="hidden"
               height="100%"
-              py={3}
             >
               <Outlet />
             </Box>

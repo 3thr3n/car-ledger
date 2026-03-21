@@ -16,12 +16,11 @@ import de.codeflowwizardry.carledger.data.AccountEntity;
 import de.codeflowwizardry.carledger.data.CarEntity;
 import de.codeflowwizardry.carledger.data.factory.MaintenanceBillFactory;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
-import de.codeflowwizardry.carledger.data.repository.BillRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
-import de.codeflowwizardry.carledger.rest.records.input.MaintenanceBillInput;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
+import io.restassured.http.ContentType;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
@@ -34,9 +33,6 @@ class MaintenanceResourceTest
 
 	@Inject
 	CarRepository carRepository;
-
-	@Inject
-	BillRepository billRepository;
 
 	@Inject
 	MaintenanceBillFactory factory;
@@ -68,8 +64,6 @@ class MaintenanceResourceTest
 	@Transactional
 	void cleanup()
 	{
-		billRepository.deleteAll();
-		carRepository.deleteAll();
 		accountRepository.deleteAll();
 	}
 
@@ -106,5 +100,63 @@ class MaintenanceResourceTest
 				.statusCode(200)
 				.body("size()", is(1))
 				.body("", contains(LocalDate.now().getYear()));
+	}
+
+	@Test
+	@TestSecurity(user = "alice", roles = {
+			"user"
+	})
+	void shouldAddBill()
+	{
+		// given
+		String body = """
+				{
+					"date": "2024-08-22",
+					"vatRate": 19,
+					"total": 200,
+					"odometer": 25999,
+					"workshop": "Hans Peters Workshop"
+				}
+				""";
+
+		// when
+		given()
+				.pathParam("carId", carId)
+				.accept(ContentType.JSON)
+				.contentType(ContentType.JSON)
+				.body(body)
+				.put()
+				.then()
+				.statusCode(202)
+				.body("date", is("2024-08-22"));
+
+	}
+
+	@Test
+	@TestSecurity(user = "bob", roles = {
+			"user"
+	})
+	void shouldFailAddingBillAsDifferentUser()
+	{
+		// given
+		String body = """
+				{
+					"date": "2024-08-22",
+					"vatRate": 19,
+					"total": 200,
+					"odometer": 25999,
+					"workshop": "Hans Peters Workshop"
+				}
+				""";
+
+		// when
+		given()
+				.pathParam("carId", carId)
+				.accept(ContentType.JSON)
+				.contentType(ContentType.JSON)
+				.body(body)
+				.put()
+				.then()
+				.statusCode(409);
 	}
 }

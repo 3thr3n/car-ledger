@@ -1,4 +1,4 @@
-import { Button, styled } from '@mui/material';
+import { Button, styled, SxProps, Theme } from '@mui/material';
 import { CloudUpload } from '@mui/icons-material';
 
 import Papa, { ParseResult } from 'papaparse';
@@ -17,6 +17,7 @@ const VisuallyHiddenInput = styled('input')({
 
 export interface CsvUploadProps {
   onParseComplete: (data: string[], file: File) => void;
+  sx?: SxProps<Theme>;
 }
 
 export function CsvUploadButton(props: CsvUploadProps) {
@@ -30,7 +31,7 @@ export function CsvUploadButton(props: CsvUploadProps) {
       header: true,
       preview: 1,
       skipEmptyLines: true,
-      complete(results: ParseResult<any>, file: File) {
+      complete(results: ParseResult<unknown>, file: File) {
         if (!results.meta.fields) {
           toast.warn('Could not find header column.');
           return;
@@ -43,11 +44,12 @@ export function CsvUploadButton(props: CsvUploadProps) {
   return (
     <Button
       component="label"
-      variant="outlined"
+      variant="contained"
       tabIndex={-1}
       startIcon={<CloudUpload />}
+      sx={props.sx}
     >
-      Upload CSV
+      Select CSV
       <VisuallyHiddenInput
         type="file"
         accept={'.csv'}

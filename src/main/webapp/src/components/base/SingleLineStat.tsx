@@ -10,7 +10,7 @@ export default function SingleLineStat({
   type?: string;
 }) {
   return (
-    <Typography variant="body1" display="flex">
+    <Typography variant="body1" component="div" display="flex">
       <strong>{label}</strong> <Box flexGrow={1} />
       {value ?? '—'}
       {type ? ' ' + type : ''}

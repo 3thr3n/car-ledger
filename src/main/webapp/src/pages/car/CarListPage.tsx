@@ -10,6 +10,7 @@ import ErrorPage from '@/pages/ErrorPage';
 import { BackendError } from '@/utils/BackendError';
 import CarLedgerPageHeader from '@/components/CarLedgerPageHeader';
 import { useTranslation } from 'react-i18next';
+import CarLedgerPage from '@/components/CarLedgerPage';
 
 export interface CarListPageProperties {
   navigate: (path: NavigateOptions) => void;
@@ -34,23 +35,16 @@ export default function CarListPage({ navigate }: CarListPageProperties) {
     );
   }
 
-  function renderComponents() {
-    if (isLoading) {
-      return <LoadingCarGrid />;
-    }
-    if (data) {
-      return <CarGridList navigate={navigate} data={data} />;
-    }
-    return <></>;
-  }
-
   return (
-    <Container>
-      <CarLedgerPageHeader title={t('app.car.myCars')} navigate={navigate} />
-      <Typography variant="body1" color="text.secondary" gutterBottom>
-        {t('app.car.description')}
-      </Typography>
-      {renderComponents()}
-    </Container>
+    <CarLedgerPage id="CarListPage">
+      <Container>
+        <CarLedgerPageHeader title={t('app.car.myCars')} />
+        <Typography variant="body1" color="text.secondary" gutterBottom>
+          {t('app.car.description')}
+        </Typography>
+        {isLoading && <LoadingCarGrid />}
+        {data && <CarGridList navigate={navigate} data={data} />}
+      </Container>
+    </CarLedgerPage>
   );
 }

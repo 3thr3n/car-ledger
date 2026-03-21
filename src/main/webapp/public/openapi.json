@@ -23,10 +23,16 @@
           "distance" : {
             "type" : "number"
           },
-          "calculated" : {
+          "fuelCostPerKm" : {
             "type" : "number"
           },
-          "calculatedPrice" : {
+          "fuelConsumption" : {
+            "type" : "number"
+          },
+          "maintenanceCost" : {
+            "type" : "number"
+          },
+          "costPerKm" : {
             "type" : "number"
           }
         }
@@ -61,6 +67,14 @@
             "$ref" : "#/components/schemas/BillType"
           }
         }
+      },
+      "BillCategory" : {
+        "type" : "string",
+        "enum" : [ "FINANCE", "INSURANCE", "OTHER" ]
+      },
+      "BillInterval" : {
+        "type" : "string",
+        "enum" : [ "ONCE", "MONTHLY", "QUARTERLY", "SEMI_ANNUALLY", "ANNUALLY" ]
       },
       "BillPagedBill" : {
         "type" : "object",
@@ -131,9 +145,55 @@
           }
         }
       },
+      "BillPagedMiscellaneousBill" : {
+        "type" : "object",
+        "properties" : {
+          "total" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "page" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "data" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/MiscellaneousBill"
+            }
+          }
+        }
+      },
+      "BillPagedRecurringBill" : {
+        "type" : "object",
+        "properties" : {
+          "total" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "page" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "data" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/RecurringBill"
+            }
+          }
+        }
+      },
       "BillType" : {
         "type" : "string",
-        "enum" : [ "FUEL", "MAINTENANCE" ]
+        "enum" : [ "FUEL", "MAINTENANCE", "MISCELLANEOUS", "RECURRING" ]
       },
       "Car" : {
         "type" : "object",
@@ -181,6 +241,12 @@
           "totalRefuels" : {
             "type" : "integer"
           },
+          "totalMaintenanceEvents" : {
+            "type" : "integer"
+          },
+          "totalMiscellaneousEvents" : {
+            "type" : "integer"
+          },
           "totalCost" : {
             "type" : "number"
           },
@@ -189,28 +255,36 @@
           }
         }
       },
-      "CsvOrder" : {
+      "CsvFields" : {
         "type" : "object",
         "properties" : {
-          "date" : {
-            "type" : "integer",
-            "format" : "int32"
+          "all" : {
+            "type" : "array",
+            "uniqueItems" : true,
+            "items" : {
+              "type" : "string"
+            }
           },
-          "unit" : {
-            "type" : "integer",
-            "format" : "int32"
+          "required" : {
+            "type" : "array",
+            "uniqueItems" : true,
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }
+      },
+      "DashboardStats" : {
+        "type" : "object",
+        "properties" : {
+          "total" : {
+            "$ref" : "#/components/schemas/TotalStats"
           },
-          "pricePerUnit" : {
-            "type" : "integer",
-            "format" : "int32"
+          "average" : {
+            "$ref" : "#/components/schemas/AverageStats"
           },
-          "distance" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
-          "estimate" : {
-            "type" : "integer",
-            "format" : "int32"
+          "hiLo" : {
+            "$ref" : "#/components/schemas/HiLoStats"
           }
         }
       },
@@ -269,7 +343,7 @@
           "pricePerUnit" : {
             "type" : "number"
           },
-          "estimate" : {
+          "estimateConsumption" : {
             "type" : "number"
           }
         }
@@ -293,19 +367,22 @@
       "HiLoStats" : {
         "type" : "object",
         "properties" : {
-          "calculatedPrice" : {
-            "$ref" : "#/components/schemas/HiLo"
-          },
-          "calculated" : {
+          "pricePerUnit" : {
             "$ref" : "#/components/schemas/HiLo"
           },
           "distance" : {
             "$ref" : "#/components/schemas/HiLo"
           },
-          "unit" : {
+          "fuelCostPerKm" : {
             "$ref" : "#/components/schemas/HiLo"
           },
-          "pricePerUnit" : {
+          "consumption" : {
+            "$ref" : "#/components/schemas/HiLo"
+          },
+          "fuelCost" : {
+            "$ref" : "#/components/schemas/HiLo"
+          },
+          "maintenanceCost" : {
             "$ref" : "#/components/schemas/HiLo"
           }
         }
@@ -349,17 +426,168 @@
           }
         }
       },
+      "MaintenanceBillInput" : {
+        "type" : "object",
+        "properties" : {
+          "total" : {
+            "type" : "number"
+          },
+          "vatRate" : {
+            "type" : "integer"
+          },
+          "date" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          },
+          "odometer" : {
+            "type" : "integer"
+          },
+          "laborCost" : {
+            "type" : "number"
+          },
+          "partsCost" : {
+            "type" : "number"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "workshop" : {
+            "type" : "string"
+          }
+        }
+      },
+      "MiscellaneousBill" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "date" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          },
+          "year" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "total" : {
+            "type" : "number"
+          }
+        }
+      },
+      "MiscellaneousBillInput" : {
+        "type" : "object",
+        "properties" : {
+          "total" : {
+            "type" : "number"
+          },
+          "vatRate" : {
+            "type" : "integer"
+          },
+          "date" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          },
+          "description" : {
+            "type" : "string"
+          }
+        }
+      },
+      "RecurringBill" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "nextDueDate" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          },
+          "category" : {
+            "$ref" : "#/components/schemas/BillCategory"
+          },
+          "startDate" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          },
+          "endDate" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          },
+          "amount" : {
+            "type" : "number"
+          },
+          "total" : {
+            "type" : "number"
+          },
+          "finished" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "RecurringBillInput" : {
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "billInterval" : {
+            "$ref" : "#/components/schemas/BillInterval"
+          },
+          "category" : {
+            "$ref" : "#/components/schemas/BillCategory"
+          },
+          "startDate" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          },
+          "endDate" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          },
+          "amount" : {
+            "type" : "number"
+          }
+        }
+      },
       "TotalStats" : {
         "type" : "object",
         "properties" : {
           "unit" : {
             "type" : "number"
           },
-          "distance" : {
+          "trackedDistance" : {
             "type" : "number"
           },
-          "calculatedPrice" : {
+          "fuelTotal" : {
             "type" : "number"
+          },
+          "maintenanceTotal" : {
+            "type" : "number"
+          },
+          "miscellaneousTotal" : {
+            "type" : "number"
+          },
+          "total" : {
+            "type" : "number"
+          },
+          "fuelBills" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "maintenanceBills" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "miscellaneousBills" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         }
       }
@@ -428,6 +656,15 @@
       }
     },
     "/api/bill/{carId}/all" : {
+      "parameters" : [ {
+        "name" : "carId",
+        "in" : "path",
+        "required" : true,
+        "schema" : {
+          "type" : "integer",
+          "format" : "int64"
+        }
+      } ],
       "get" : {
         "description" : "Gets all bills for specified car, Pages starting at 1",
         "operationId" : "getAllBills",
@@ -480,8 +717,17 @@
       }
     },
     "/api/bill/{carId}/fuel" : {
+      "parameters" : [ {
+        "name" : "carId",
+        "in" : "path",
+        "required" : true,
+        "schema" : {
+          "type" : "integer",
+          "format" : "int64"
+        }
+      } ],
       "put" : {
-        "operationId" : "addNewBill",
+        "operationId" : "addNewFuelBill",
         "parameters" : [ {
           "name" : "carId",
           "in" : "path",
@@ -505,8 +751,19 @@
           "200" : {
             "description" : "Bill created."
           },
-          "400" : {
+          "409" : {
             "description" : "Car is not for your user."
+          },
+          "400" : {
+            "description" : "Validation failed, please check the response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
           },
           "500" : {
             "description" : "Something went wrong while saving. Please ask the server admin for help."
@@ -517,6 +774,15 @@
       }
     },
     "/api/bill/{carId}/fuel/all" : {
+      "parameters" : [ {
+        "name" : "carId",
+        "in" : "path",
+        "required" : true,
+        "schema" : {
+          "type" : "integer",
+          "format" : "int64"
+        }
+      } ],
       "get" : {
         "description" : "Gets all bills for specified car, Pages starting at 1",
         "operationId" : "getAllFuelBills",
@@ -569,6 +835,15 @@
       }
     },
     "/api/bill/{carId}/fuel/years" : {
+      "parameters" : [ {
+        "name" : "carId",
+        "in" : "path",
+        "required" : true,
+        "schema" : {
+          "type" : "integer",
+          "format" : "int64"
+        }
+      } ],
       "get" : {
         "description" : "Gets all years of bills for specified car",
         "operationId" : "getAllFuelBillYears",
@@ -601,18 +876,19 @@
         "tags" : [ "Fuel Resource" ]
       }
     },
-    "/api/bill/{carId}/fuel/{billId}" : {
-      "delete" : {
-        "operationId" : "deleteBill",
+    "/api/bill/{carId}/maintenance" : {
+      "parameters" : [ {
+        "name" : "carId",
+        "in" : "path",
+        "required" : true,
+        "schema" : {
+          "type" : "integer",
+          "format" : "int64"
+        }
+      } ],
+      "put" : {
+        "operationId" : "addNewMaintenanceBill",
         "parameters" : [ {
-          "name" : "billId",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "type" : "integer",
-            "format" : "int64"
-          }
-        }, {
           "name" : "carId",
           "in" : "path",
           "required" : true,
@@ -621,22 +897,52 @@
             "format" : "int64"
           }
         } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/MaintenanceBillInput"
+              }
+            }
+          },
+          "required" : true
+        },
         "responses" : {
-          "202" : {
-            "description" : "Bill deleted."
+          "200" : {
+            "description" : "Bill created."
+          },
+          "409" : {
+            "description" : "Car is not for your user."
           },
           "400" : {
-            "description" : "Bill not found on the specified car."
+            "description" : "Validation failed, please check the response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
           },
           "500" : {
-            "description" : "Something went wrong while deleting. Please ask the server admin for help."
+            "description" : "Something went wrong while saving. Please ask the server admin for help."
           }
         },
-        "summary" : "Delete Bill",
-        "tags" : [ "Fuel Resource" ]
+        "summary" : "Add New Bill",
+        "tags" : [ "Maintenance Resource" ]
       }
     },
     "/api/bill/{carId}/maintenance/all" : {
+      "parameters" : [ {
+        "name" : "carId",
+        "in" : "path",
+        "required" : true,
+        "schema" : {
+          "type" : "integer",
+          "format" : "int64"
+        }
+      } ],
       "get" : {
         "description" : "Gets all bills for specified car, Pages starting at 1",
         "operationId" : "getAllMaintenanceBills",
@@ -689,6 +995,15 @@
       }
     },
     "/api/bill/{carId}/maintenance/years" : {
+      "parameters" : [ {
+        "name" : "carId",
+        "in" : "path",
+        "required" : true,
+        "schema" : {
+          "type" : "integer",
+          "format" : "int64"
+        }
+      } ],
       "get" : {
         "description" : "Gets all years of bills for specified car",
         "operationId" : "getAllMaintenanceBillYears",
@@ -721,7 +1036,305 @@
         "tags" : [ "Maintenance Resource" ]
       }
     },
+    "/api/bill/{carId}/miscellaneous" : {
+      "parameters" : [ {
+        "name" : "carId",
+        "in" : "path",
+        "required" : true,
+        "schema" : {
+          "type" : "integer",
+          "format" : "int64"
+        }
+      } ],
+      "put" : {
+        "operationId" : "addNewMiscellaneousBill",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/MiscellaneousBillInput"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "202" : {
+            "description" : "Bill created."
+          },
+          "409" : {
+            "description" : "Car is not for your user."
+          },
+          "400" : {
+            "description" : "Validation failed, please check the response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Something went wrong while saving. Please ask the server admin for help."
+          }
+        },
+        "summary" : "Add New Bill",
+        "tags" : [ "Miscellaneous Resource" ]
+      }
+    },
+    "/api/bill/{carId}/miscellaneous/all" : {
+      "parameters" : [ {
+        "name" : "carId",
+        "in" : "path",
+        "required" : true,
+        "schema" : {
+          "type" : "integer",
+          "format" : "int64"
+        }
+      } ],
+      "get" : {
+        "description" : "Gets all bills for specified car, Pages starting at 1",
+        "operationId" : "getAllMiscellaneousBills",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "page",
+          "in" : "query",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 1
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 10
+          }
+        }, {
+          "name" : "year",
+          "in" : "query",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Bills found.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/BillPagedMiscellaneousBill"
+                }
+              }
+            }
+          }
+        },
+        "summary" : "Get All My Bills",
+        "tags" : [ "Miscellaneous Resource" ]
+      }
+    },
+    "/api/bill/{carId}/miscellaneous/years" : {
+      "parameters" : [ {
+        "name" : "carId",
+        "in" : "path",
+        "required" : true,
+        "schema" : {
+          "type" : "integer",
+          "format" : "int64"
+        }
+      } ],
+      "get" : {
+        "description" : "Gets all years of bills for specified car",
+        "operationId" : "getAllMiscellaneousBillYears",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Bills found and years extracted.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "type" : "integer",
+                    "format" : "int32"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary" : "Get All My Bills",
+        "tags" : [ "Miscellaneous Resource" ]
+      }
+    },
+    "/api/bill/{carId}/recurring" : {
+      "get" : {
+        "description" : "Gets all recurring bills for specified car",
+        "operationId" : "getAllRecurringBills",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "onlyRunning",
+          "in" : "query",
+          "schema" : {
+            "type" : "boolean"
+          }
+        }, {
+          "name" : "page",
+          "in" : "query",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 1
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 10
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/BillPagedRecurringBill"
+                }
+              }
+            }
+          }
+        },
+        "summary" : "Get All Recurring Bills",
+        "tags" : [ "Recurring Resource" ]
+      },
+      "put" : {
+        "operationId" : "addNewRecurringBill",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/RecurringBillInput"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "202" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RecurringBill"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed, please check the response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
+          }
+        },
+        "summary" : "Add New Recurring Bill",
+        "tags" : [ "Recurring Resource" ]
+      }
+    },
+    "/api/bill/{carId}/recurring/{billId}" : {
+      "delete" : {
+        "operationId" : "deleteRecurringBill",
+        "parameters" : [ {
+          "name" : "billId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "202" : {
+            "description" : "Successful deleted"
+          },
+          "400" : {
+            "description" : "Not able to delete"
+          }
+        },
+        "summary" : "Delete Recurring Bill",
+        "tags" : [ "Recurring Resource" ]
+      }
+    },
     "/api/bill/{carId}/years" : {
+      "parameters" : [ {
+        "name" : "carId",
+        "in" : "path",
+        "required" : true,
+        "schema" : {
+          "type" : "integer",
+          "format" : "int64"
+        }
+      } ],
       "get" : {
         "description" : "Gets all years of bills for specified car",
         "operationId" : "getAllBillYears",
@@ -751,6 +1364,45 @@
           }
         },
         "summary" : "Get All My Bills Years",
+        "tags" : [ "Bill Resource" ]
+      }
+    },
+    "/api/bill/{carId}/{billId}" : {
+      "parameters" : [ {
+        "name" : "carId",
+        "in" : "path",
+        "required" : true,
+        "schema" : {
+          "type" : "integer",
+          "format" : "int64"
+        }
+      } ],
+      "delete" : {
+        "description" : "Deletes the bill",
+        "operationId" : "deleteBill",
+        "parameters" : [ {
+          "name" : "billId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "Bill deleted."
+          }
+        },
+        "summary" : "Delete Bill",
         "tags" : [ "Bill Resource" ]
       }
     },
@@ -788,7 +1440,7 @@
           "required" : true
         },
         "responses" : {
-          "202" : {
+          "201" : {
             "description" : "Car created."
           },
           "400" : {
@@ -898,7 +1550,7 @@
     },
     "/api/import/{carId}" : {
       "post" : {
-        "description" : "This is the description for the import of an csv of your billEntities.<br />\n<br />\nYou need to add the csv and optionally the order in the csv (starts with 0).<br />\nIf you're not adding the order, the default is: date, unit, pricePerUnit, distance, estimate\nseparator between columns is ',' (comma)\n",
+        "description" : "This is the description for the import of an csv of your fuel entities.<br />\n<br />\nYou need to add the csv and the order in the csv (starts with 0).<br />\nseparator between columns is ',' (comma)\n",
         "operationId" : "importCsv",
         "parameters" : [ {
           "name" : "carId",
@@ -925,8 +1577,14 @@
                     "type" : "string",
                     "format" : "binary"
                   },
+                  "billType" : {
+                    "$ref" : "#/components/schemas/BillType"
+                  },
                   "order" : {
-                    "$ref" : "#/components/schemas/CsvOrder"
+                    "type" : "string"
+                  },
+                  "vat" : {
+                    "type" : "integer"
                   }
                 }
               },
@@ -934,8 +1592,11 @@
                 "file" : {
                   "contentType" : "text/csv"
                 },
-                "order" : {
+                "vat" : {
                   "contentType" : "application/json"
+                },
+                "order" : {
+                  "contentType" : "text/plain"
                 }
               }
             }
@@ -947,42 +1608,25 @@
             "description" : "CSV was imported."
           },
           "400" : {
-            "description" : "- Order is invalid\n- Car not found"
+            "description" : "- Type not defined\n- Car not found"
           },
           "500" : {
             "description" : "- CSV was not set\n- Something went wrong while importing. Please ask the server admin for help."
           }
         },
-        "summary" : "Import Csv",
+        "summary" : "Import Fuel Csv",
         "tags" : [ "Import Resource" ]
       }
     },
-    "/api/stats/{carId}/average" : {
+    "/api/import/{carId}/fields" : {
       "get" : {
-        "description" : "Gets the average stats for Distance/Cost/PricePerUnit/Fuel Consumption",
-        "operationId" : "getStatsAverage",
+        "operationId" : "getCsvFields",
         "parameters" : [ {
-          "name" : "carId",
-          "in" : "path",
-          "required" : true,
+          "name" : "importType",
+          "in" : "query",
           "schema" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/BillType"
           }
-        }, {
-          "name" : "from",
-          "in" : "query",
-          "schema" : {
-            "$ref" : "#/components/schemas/LocalDate"
-          },
-          "required" : false
-        }, {
-          "name" : "to",
-          "in" : "query",
-          "schema" : {
-            "$ref" : "#/components/schemas/LocalDate"
-          },
-          "required" : false
         } ],
         "responses" : {
           "200" : {
@@ -990,20 +1634,19 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/AverageStats"
+                  "$ref" : "#/components/schemas/CsvFields"
                 }
               }
             }
           }
         },
-        "summary" : "Get Average",
-        "tags" : [ "Stats Resource" ]
+        "summary" : "Get Field Definitions",
+        "tags" : [ "Import Resource" ]
       }
     },
-    "/api/stats/{carId}/hi_lo" : {
+    "/api/stats/{carId}" : {
       "get" : {
-        "description" : "Gets the highes and lowest stats for Unit/Distance/Cost/PricePerUnit/Fuel Consumption",
-        "operationId" : "getStatsHiLo",
+        "operationId" : "getDashboardStats",
         "parameters" : [ {
           "name" : "carId",
           "in" : "path",
@@ -1033,56 +1676,13 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/HiLoStats"
+                  "$ref" : "#/components/schemas/DashboardStats"
                 }
               }
             }
           }
         },
-        "summary" : "Get Hi Lo",
-        "tags" : [ "Stats Resource" ]
-      }
-    },
-    "/api/stats/{carId}/total" : {
-      "get" : {
-        "description" : "Gets the accumulated stats for Unit/Distance/Cost",
-        "operationId" : "getStatsTotal",
-        "parameters" : [ {
-          "name" : "carId",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "type" : "integer",
-            "format" : "int64"
-          }
-        }, {
-          "name" : "from",
-          "in" : "query",
-          "schema" : {
-            "$ref" : "#/components/schemas/LocalDate"
-          },
-          "required" : false
-        }, {
-          "name" : "to",
-          "in" : "query",
-          "schema" : {
-            "$ref" : "#/components/schemas/LocalDate"
-          },
-          "required" : false
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "OK",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/TotalStats"
-                }
-              }
-            }
-          }
-        },
-        "summary" : "Get Total",
+        "summary" : "Get Stats",
         "tags" : [ "Stats Resource" ]
       }
     },

@@ -57,6 +57,9 @@ public class FuelBillEntity extends AbstractBillEntity
 		return bill.getType();
 	}
 
+	/**
+	 * @return in liter
+	 */
 	public BigDecimal getUnit()
 	{
 		return unit;
@@ -67,6 +70,9 @@ public class FuelBillEntity extends AbstractBillEntity
 		this.unit = unit;
 	}
 
+	/**
+	 * @return in cent
+	 */
 	public BigDecimal getPricePerUnit()
 	{
 		return pricePerUnit;
@@ -77,14 +83,17 @@ public class FuelBillEntity extends AbstractBillEntity
 		this.pricePerUnit = pricePerUnit;
 	}
 
+	/**
+	 * @return in km
+	 */
 	public BigDecimal getDistance()
 	{
 		return distance;
 	}
 
-	public boolean isDistanceSet()
+	public boolean isDistanceMissing()
 	{
-		return valueWasSet(distance);
+		return !valueWasSet(distance);
 	}
 
 	public void setDistance(BigDecimal distance)
@@ -112,6 +121,9 @@ public class FuelBillEntity extends AbstractBillEntity
 		this.avgConsumption = avgConsumption;
 	}
 
+	/**
+	 * @return cost per KM in cents
+	 */
 	public BigDecimal getCostPerKm()
 	{
 		return costPerKm;

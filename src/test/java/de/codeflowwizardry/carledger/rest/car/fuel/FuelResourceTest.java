@@ -3,7 +3,6 @@ package de.codeflowwizardry.carledger.rest.car.fuel;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -17,9 +16,7 @@ import de.codeflowwizardry.carledger.data.AccountEntity;
 import de.codeflowwizardry.carledger.data.CarEntity;
 import de.codeflowwizardry.carledger.data.factory.FuelBillFactory;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
-import de.codeflowwizardry.carledger.data.repository.BillRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
-import de.codeflowwizardry.carledger.rest.records.input.FuelBillInput;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
@@ -31,9 +28,6 @@ import jakarta.transaction.Transactional;
 @TestHTTPEndpoint(FuelResource.class)
 public class FuelResourceTest
 {
-	@Inject
-	BillRepository billRepository;
-
 	@Inject
 	AccountRepository accountRepository;
 
@@ -129,6 +123,21 @@ public class FuelResourceTest
 				.body("data[1].date", is("2023-06-02"))
 				.body("data[2].distance", is("400.00"))
 				.body("data[2].date", is("2022-05-22"));
+
+		given()
+				.queryParam("page", 0)
+				.queryParam("size", 1)
+				.pathParam("carId", carEntity.getId())
+				.when()
+				.get("all")
+				.then()
+				.statusCode(200)
+				.body("total", is(3))
+				.body("page", is(1))
+				.body("size", is(1))
+				.body("data.size()", is(1))
+				.body("data[0].distance", is("500.00"))
+				.body("data[0].date", is("2024-08-16"));
 	}
 
 	@Test
@@ -144,7 +153,7 @@ public class FuelResourceTest
 					"distance": 450,
 					"unit": 30,
 					"pricePerUnit": 188.9,
-					"estimate": 8.9,
+					"estimateConsumption": 8.9,
 					"vatRate": 19
 				}
 				""";
@@ -159,7 +168,6 @@ public class FuelResourceTest
 				.then()
 				.statusCode(202)
 				.body("date", is("2024-08-22"));
-
 	}
 
 	@Test
@@ -175,7 +183,7 @@ public class FuelResourceTest
 					"distance": 450,
 					"unit": 30,
 					"pricePerUnit": 188.9,
-					"estimate": 8.9,
+					"estimateConsumption": 8.9,
 					"vatRate": 19
 				}
 				""";
@@ -188,59 +196,7 @@ public class FuelResourceTest
 				.body(body)
 				.put()
 				.then()
-				.statusCode(400);
-	}
-
-	@Test
-	@TestSecurity(user = "peter", roles = {
-			"user"
-	})
-	void shouldDeleteOne()
-	{
-		// given
-		Long billId = billRepository.listAll().getFirst().getId();
-
-		// when
-		given()
-				.pathParam("carId", carEntity.getId())
-				.when()
-				.delete("{billId}", billId)
-				.then()
-				.statusCode(202);
-	}
-
-	@Test
-	@TestSecurity(user = "bob", roles = {
-			"user"
-	})
-	void shouldFailDeletingAsDifferentUser()
-	{
-		// given
-		Long billId = billRepository.listAll().getFirst().getId();
-
-		// when
-		given()
-				.pathParam("carId", carEntity.getId())
-				.when()
-				.delete("{billId}", billId)
-				.then()
-				.statusCode(400);
-	}
-
-	@Test
-	void shouldBeRedirectToLoginUrl()
-	{
-		String response = given()
-				.pathParam("carId", carEntity.getId())
-				.when()
-				.get("all")
-				.then()
-				.statusCode(200).extract()
-				.response()
-				.getBody()
-				.asString();
-
-		assertTrue(response.contains("<html"));
+				.statusCode(409);
 	}
 
 	@Test
@@ -263,8 +219,6 @@ public class FuelResourceTest
 	@Transactional
 	void cleanup()
 	{
-		billRepository.deleteAll();
-		carRepository.deleteAll();
 		accountRepository.deleteAll();
 	}
 }

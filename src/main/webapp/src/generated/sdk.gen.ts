@@ -2,7 +2,7 @@
 
 import { type Client, formDataBodySerializer, type Options as Options2, type TDataShape } from './client';
 import { client } from './client.gen';
-import type { AddNewBillData, AddNewBillErrors, AddNewBillResponses, CallbackData, CallbackResponses, CreateCarData, CreateCarErrors, CreateCarResponses, DeleteBillData, DeleteBillErrors, DeleteBillResponses, GetAllBillsData, GetAllBillsResponses, GetAllBillYearsData, GetAllBillYearsResponses, GetAllFuelBillsData, GetAllFuelBillsResponses, GetAllFuelBillYearsData, GetAllFuelBillYearsResponses, GetAllMaintenanceBillsData, GetAllMaintenanceBillsResponses, GetAllMaintenanceBillYearsData, GetAllMaintenanceBillYearsResponses, GetMyCarData, GetMyCarOverviewData, GetMyCarOverviewResponses, GetMyCarResponses, GetMyCarsData, GetMyCarsResponses, GetMyselfData, GetMyselfResponses, GetStatsAverageData, GetStatsAverageResponses, GetStatsHiLoData, GetStatsHiLoResponses, GetStatsTotalData, GetStatsTotalResponses, ImportCsvData, ImportCsvErrors, ImportCsvResponses, LoginData, LoginResponses, LogoutCallbackData, LogoutCallbackResponses, LogoutData, LogoutResponses, UpdateMyCarData, UpdateMyCarErrors, UpdateMyCarResponses } from './types.gen';
+import type { AddNewFuelBillData, AddNewFuelBillErrors, AddNewFuelBillResponses, AddNewMaintenanceBillData, AddNewMaintenanceBillErrors, AddNewMaintenanceBillResponses, AddNewMiscellaneousBillData, AddNewMiscellaneousBillErrors, AddNewMiscellaneousBillResponses, AddNewRecurringBillData, AddNewRecurringBillErrors, AddNewRecurringBillResponses, CallbackData, CallbackResponses, CreateCarData, CreateCarErrors, CreateCarResponses, DeleteBillData, DeleteBillResponses, DeleteRecurringBillData, DeleteRecurringBillErrors, DeleteRecurringBillResponses, GetAllBillsData, GetAllBillsResponses, GetAllBillYearsData, GetAllBillYearsResponses, GetAllFuelBillsData, GetAllFuelBillsResponses, GetAllFuelBillYearsData, GetAllFuelBillYearsResponses, GetAllMaintenanceBillsData, GetAllMaintenanceBillsResponses, GetAllMaintenanceBillYearsData, GetAllMaintenanceBillYearsResponses, GetAllMiscellaneousBillsData, GetAllMiscellaneousBillsResponses, GetAllMiscellaneousBillYearsData, GetAllMiscellaneousBillYearsResponses, GetAllRecurringBillsData, GetAllRecurringBillsResponses, GetCsvFieldsData, GetCsvFieldsResponses, GetDashboardStatsData, GetDashboardStatsResponses, GetMyCarData, GetMyCarOverviewData, GetMyCarOverviewResponses, GetMyCarResponses, GetMyCarsData, GetMyCarsResponses, GetMyselfData, GetMyselfResponses, ImportCsvData, ImportCsvErrors, ImportCsvResponses, LoginData, LoginResponses, LogoutCallbackData, LogoutCallbackResponses, LogoutData, LogoutResponses, UpdateMyCarData, UpdateMyCarErrors, UpdateMyCarResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -56,7 +56,7 @@ export const getAllBills = <ThrowOnError extends boolean = false>(options: Optio
 /**
  * Add New Bill
  */
-export const addNewBill = <ThrowOnError extends boolean = false>(options: Options<AddNewBillData, ThrowOnError>) => (options.client ?? client).put<AddNewBillResponses, AddNewBillErrors, ThrowOnError>({
+export const addNewFuelBill = <ThrowOnError extends boolean = false>(options: Options<AddNewFuelBillData, ThrowOnError>) => (options.client ?? client).put<AddNewFuelBillResponses, AddNewFuelBillErrors, ThrowOnError>({
     url: '/api/bill/{carId}/fuel',
     ...options,
     headers: {
@@ -80,9 +80,16 @@ export const getAllFuelBills = <ThrowOnError extends boolean = false>(options: O
 export const getAllFuelBillYears = <ThrowOnError extends boolean = false>(options: Options<GetAllFuelBillYearsData, ThrowOnError>) => (options.client ?? client).get<GetAllFuelBillYearsResponses, unknown, ThrowOnError>({ url: '/api/bill/{carId}/fuel/years', ...options });
 
 /**
- * Delete Bill
+ * Add New Bill
  */
-export const deleteBill = <ThrowOnError extends boolean = false>(options: Options<DeleteBillData, ThrowOnError>) => (options.client ?? client).delete<DeleteBillResponses, DeleteBillErrors, ThrowOnError>({ url: '/api/bill/{carId}/fuel/{billId}', ...options });
+export const addNewMaintenanceBill = <ThrowOnError extends boolean = false>(options: Options<AddNewMaintenanceBillData, ThrowOnError>) => (options.client ?? client).put<AddNewMaintenanceBillResponses, AddNewMaintenanceBillErrors, ThrowOnError>({
+    url: '/api/bill/{carId}/maintenance',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Get All My Bills
@@ -99,11 +106,68 @@ export const getAllMaintenanceBills = <ThrowOnError extends boolean = false>(opt
 export const getAllMaintenanceBillYears = <ThrowOnError extends boolean = false>(options: Options<GetAllMaintenanceBillYearsData, ThrowOnError>) => (options.client ?? client).get<GetAllMaintenanceBillYearsResponses, unknown, ThrowOnError>({ url: '/api/bill/{carId}/maintenance/years', ...options });
 
 /**
+ * Add New Bill
+ */
+export const addNewMiscellaneousBill = <ThrowOnError extends boolean = false>(options: Options<AddNewMiscellaneousBillData, ThrowOnError>) => (options.client ?? client).put<AddNewMiscellaneousBillResponses, AddNewMiscellaneousBillErrors, ThrowOnError>({
+    url: '/api/bill/{carId}/miscellaneous',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Get All My Bills
+ *
+ * Gets all bills for specified car, Pages starting at 1
+ */
+export const getAllMiscellaneousBills = <ThrowOnError extends boolean = false>(options: Options<GetAllMiscellaneousBillsData, ThrowOnError>) => (options.client ?? client).get<GetAllMiscellaneousBillsResponses, unknown, ThrowOnError>({ url: '/api/bill/{carId}/miscellaneous/all', ...options });
+
+/**
+ * Get All My Bills
+ *
+ * Gets all years of bills for specified car
+ */
+export const getAllMiscellaneousBillYears = <ThrowOnError extends boolean = false>(options: Options<GetAllMiscellaneousBillYearsData, ThrowOnError>) => (options.client ?? client).get<GetAllMiscellaneousBillYearsResponses, unknown, ThrowOnError>({ url: '/api/bill/{carId}/miscellaneous/years', ...options });
+
+/**
+ * Get All Recurring Bills
+ *
+ * Gets all recurring bills for specified car
+ */
+export const getAllRecurringBills = <ThrowOnError extends boolean = false>(options: Options<GetAllRecurringBillsData, ThrowOnError>) => (options.client ?? client).get<GetAllRecurringBillsResponses, unknown, ThrowOnError>({ url: '/api/bill/{carId}/recurring', ...options });
+
+/**
+ * Add New Recurring Bill
+ */
+export const addNewRecurringBill = <ThrowOnError extends boolean = false>(options: Options<AddNewRecurringBillData, ThrowOnError>) => (options.client ?? client).put<AddNewRecurringBillResponses, AddNewRecurringBillErrors, ThrowOnError>({
+    url: '/api/bill/{carId}/recurring',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Delete Recurring Bill
+ */
+export const deleteRecurringBill = <ThrowOnError extends boolean = false>(options: Options<DeleteRecurringBillData, ThrowOnError>) => (options.client ?? client).delete<DeleteRecurringBillResponses, DeleteRecurringBillErrors, ThrowOnError>({ url: '/api/bill/{carId}/recurring/{billId}', ...options });
+
+/**
  * Get All My Bills Years
  *
  * Gets all years of bills for specified car
  */
 export const getAllBillYears = <ThrowOnError extends boolean = false>(options: Options<GetAllBillYearsData, ThrowOnError>) => (options.client ?? client).get<GetAllBillYearsResponses, unknown, ThrowOnError>({ url: '/api/bill/{carId}/years', ...options });
+
+/**
+ * Delete Bill
+ *
+ * Deletes the bill
+ */
+export const deleteBill = <ThrowOnError extends boolean = false>(options: Options<DeleteBillData, ThrowOnError>) => (options.client ?? client).delete<DeleteBillResponses, unknown, ThrowOnError>({ url: '/api/bill/{carId}/{billId}', ...options });
 
 /**
  * Get My Cars
@@ -145,12 +209,11 @@ export const updateMyCar = <ThrowOnError extends boolean = false>(options: Optio
 export const getMyCarOverview = <ThrowOnError extends boolean = false>(options: Options<GetMyCarOverviewData, ThrowOnError>) => (options.client ?? client).get<GetMyCarOverviewResponses, unknown, ThrowOnError>({ url: '/api/car/my/{id}/overview', ...options });
 
 /**
- * Import Csv
+ * Import Fuel Csv
  *
- * This is the description for the import of an csv of your billEntities.<br />
+ * This is the description for the import of an csv of your fuel entities.<br />
  * <br />
- * You need to add the csv and optionally the order in the csv (starts with 0).<br />
- * If you're not adding the order, the default is: date, unit, pricePerUnit, distance, estimate
+ * You need to add the csv and the order in the csv (starts with 0).<br />
  * separator between columns is ',' (comma)
  *
  */
@@ -165,25 +228,14 @@ export const importCsv = <ThrowOnError extends boolean = false>(options: Options
 });
 
 /**
- * Get Average
- *
- * Gets the average stats for Distance/Cost/PricePerUnit/Fuel Consumption
+ * Get Field Definitions
  */
-export const getStatsAverage = <ThrowOnError extends boolean = false>(options: Options<GetStatsAverageData, ThrowOnError>) => (options.client ?? client).get<GetStatsAverageResponses, unknown, ThrowOnError>({ url: '/api/stats/{carId}/average', ...options });
+export const getCsvFields = <ThrowOnError extends boolean = false>(options?: Options<GetCsvFieldsData, ThrowOnError>) => (options?.client ?? client).get<GetCsvFieldsResponses, unknown, ThrowOnError>({ url: '/api/import/{carId}/fields', ...options });
 
 /**
- * Get Hi Lo
- *
- * Gets the highes and lowest stats for Unit/Distance/Cost/PricePerUnit/Fuel Consumption
+ * Get Stats
  */
-export const getStatsHiLo = <ThrowOnError extends boolean = false>(options: Options<GetStatsHiLoData, ThrowOnError>) => (options.client ?? client).get<GetStatsHiLoResponses, unknown, ThrowOnError>({ url: '/api/stats/{carId}/hi_lo', ...options });
-
-/**
- * Get Total
- *
- * Gets the accumulated stats for Unit/Distance/Cost
- */
-export const getStatsTotal = <ThrowOnError extends boolean = false>(options: Options<GetStatsTotalData, ThrowOnError>) => (options.client ?? client).get<GetStatsTotalResponses, unknown, ThrowOnError>({ url: '/api/stats/{carId}/total', ...options });
+export const getDashboardStats = <ThrowOnError extends boolean = false>(options: Options<GetDashboardStatsData, ThrowOnError>) => (options.client ?? client).get<GetDashboardStatsResponses, unknown, ThrowOnError>({ url: '/api/stats/{carId}', ...options });
 
 /**
  * Get Me

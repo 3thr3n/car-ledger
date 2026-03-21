@@ -1,9 +1,9 @@
 package de.codeflowwizardry.carledger.data;
 
-import jakarta.persistence.*;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import jakarta.persistence.*;
 
 @Entity(name = "Account")
 @SequenceGenerator(allocationSize = 1, sequenceName = "sequence_account", initialValue = 5, name = "accountSequence")
@@ -47,10 +47,5 @@ public class AccountEntity
 	public List<CarEntity> getCarList()
 	{
 		return carEntityList;
-	}
-
-	public void addCar(CarEntity carEntity)
-	{
-		carEntityList.add(carEntity);
 	}
 }

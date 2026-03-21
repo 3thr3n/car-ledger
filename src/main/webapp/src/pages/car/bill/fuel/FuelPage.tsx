@@ -1,28 +1,28 @@
 import { Box, CircularProgress, useMediaQuery } from '@mui/material';
-import React, { useState } from 'react';
-import { FuelBill } from '@/generated';
-import YearSelection from '@/components/car/fuel/YearSelection';
-import { useMutation, useQuery } from '@tanstack/react-query';
-import {
-  deleteBillMutation,
-  getAllBillYearsOptions,
-} from '@/generated/@tanstack/react-query.gen';
+import React, { createRef, useEffect, useState } from 'react';
+import YearSelection from '@/components/car/bill/YearSelection';
+import { useQuery } from '@tanstack/react-query';
+import { getAllFuelBillYearsOptions } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
-import useBillPagination from '@/hooks/useBillPagination';
-import FuelTable from '@/components/car/fuel/FuelTable';
-import { toast } from 'react-toastify';
+import useFuelBillPagination from '@/hooks/useFuelBillPagination';
+import FuelTable from '@/components/car/bill/fuel/FuelTable';
 import CarLedgerPageHeader from '@/components/CarLedgerPageHeader';
-import { NavigateOptions } from '@tanstack/router-core';
 import { useTranslation } from 'react-i18next';
+import { useScrollNearBottom } from '@/hooks/useScrollNearBottom';
+import CarLedgerPage from '@/components/CarLedgerPage';
+import useDeleteBillMutation from '@/hooks/useDeleteBillMutation';
 
-interface CarBillOverviewProps {
-  id: number;
-  navigate: (path: NavigateOptions) => void;
+interface FuelPageProps {
+  id?: string;
+  carId: number;
 }
 
-export default function AllViewPage({ id, navigate }: CarBillOverviewProps) {
+export default function FuelPage({ id, carId }: FuelPageProps) {
   const { t } = useTranslation();
   const isMobile = useMediaQuery('(max-width:900px)');
+
+  const gridRef = createRef<HTMLDivElement>();
+  const isNearBottom = useScrollNearBottom(gridRef);
 
   const {
     data: yearData,
@@ -30,51 +30,41 @@ export default function AllViewPage({ id, navigate }: CarBillOverviewProps) {
     isLoading: isYearLoading,
     refetch: yearRefetch,
   } = useQuery({
-    ...getAllBillYearsOptions({
+    ...getAllFuelBillYearsOptions({
       client: localClient,
       path: {
-        carId: id,
+        carId,
       },
     }),
   });
 
   const {
     setYear,
+    pagination,
     data: billData,
     setPagination,
     setSort,
     refetch: billRefetch,
-  } = useBillPagination(id);
+  } = useFuelBillPagination(carId);
 
-  const { mutate } = useMutation({
-    ...deleteBillMutation({
-      client: localClient,
-    }),
-    onSuccess: () => {
-      toast.info('Bill deleted!');
-    },
-    onSettled: async () => {
-      await yearRefetch();
-      await billRefetch();
-    },
-  });
-
-  function onDelete(billId: number) {
-    mutate({
-      path: {
-        carId: id,
-        billId,
-      },
-    });
-  }
+  const { onDelete } = useDeleteBillMutation(carId, yearRefetch, billRefetch);
 
   const years: number[] = yearData ?? [];
-  const bills: FuelBill[] = billData?.data ?? [];
+  const bills = billData?.data ?? [];
 
   const currentYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = useState<number>(
     years.includes(currentYear) ? currentYear : -1,
   );
+
+  useEffect(() => {
+    if (isNearBottom) {
+      setPagination({
+        page: pagination.page + 1,
+        pageSize: pagination.pageSize,
+      });
+    }
+  });
 
   async function updateYear(year: number) {
     setSelectedYear(year);
@@ -86,16 +76,10 @@ export default function AllViewPage({ id, navigate }: CarBillOverviewProps) {
   }
 
   const totalBills = billData?.total ?? 0;
-  const navigateTo: NavigateOptions = {
-    to: '/car/$id',
-    params: { id: `${id}` },
-  };
 
   const getHeader = (isMobile: boolean) => (
     <CarLedgerPageHeader
       title={t('app.car.fuel.table.title')}
-      navigate={navigate}
-      navigateTo={navigateTo}
       isMobile={isMobile}
     />
   );
@@ -103,49 +87,54 @@ export default function AllViewPage({ id, navigate }: CarBillOverviewProps) {
   // 📱 Mobile view: cards
   if (isMobile) {
     return (
-      <Box sx={{ p: 2 }}>
-        {getHeader(isMobile)}
+      <CarLedgerPage id="FuelPage" ref={gridRef}>
+        <Box sx={{ p: 2 }} id={id}>
+          {getHeader(isMobile)}
 
-        <YearSelection
-          years={years}
-          selectedYear={selectedYear}
-          setSelectedYear={updateYear}
-          isMobile
-        />
+          <YearSelection
+            years={years}
+            selectedYear={selectedYear}
+            setSelectedYear={updateYear}
+            isMobile
+          />
 
-        <FuelTable
-          onDelete={onDelete}
-          setPagination={setPagination}
-          setSortModel={setSort}
-          totalBills={totalBills}
-          bills={bills}
-          isMobile
-        />
-      </Box>
+          <FuelTable
+            onDelete={onDelete}
+            setPagination={setPagination}
+            setSortModel={setSort}
+            totalBills={totalBills}
+            bills={bills}
+            isMobile
+          />
+        </Box>
+      </CarLedgerPage>
     );
   }
 
   // 💻 Desktop view: sidebar selector + table
-  return (
-    <Box sx={{ p: 2 }}>
-      {getHeader(isMobile)}
-      <Box sx={{ display: 'flex', gap: 3 }}>
-        {/* Year Selector */}
-        <YearSelection
-          years={years}
-          selectedYear={selectedYear}
-          setSelectedYear={updateYear}
-        />
 
-        {/* DataGrid */}
-        <FuelTable
-          onDelete={onDelete}
-          bills={bills}
-          setPagination={setPagination}
-          totalBills={totalBills}
-          setSortModel={setSort}
-        />
+  return (
+    <CarLedgerPage id="FuelPage">
+      <Box sx={{ p: 2 }} id={id}>
+        {getHeader(isMobile)}
+        <Box sx={{ display: 'flex', gap: 3 }}>
+          {/* Year Selector */}
+          <YearSelection
+            years={years}
+            selectedYear={selectedYear}
+            setSelectedYear={updateYear}
+          />
+
+          {/* DataGrid */}
+          <FuelTable
+            onDelete={onDelete}
+            bills={bills}
+            setPagination={setPagination}
+            totalBills={totalBills}
+            setSortModel={setSort}
+          />
+        </Box>
       </Box>
-    </Box>
+    </CarLedgerPage>
   );
 }

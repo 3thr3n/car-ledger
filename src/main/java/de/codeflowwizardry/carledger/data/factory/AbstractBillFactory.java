@@ -1,8 +1,5 @@
 package de.codeflowwizardry.carledger.data.factory;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import de.codeflowwizardry.carledger.data.AbstractBillEntity;
 import de.codeflowwizardry.carledger.data.BillEntity;
 import de.codeflowwizardry.carledger.data.BillType;
@@ -14,8 +11,6 @@ import jakarta.persistence.EntityManager;
 
 public abstract class AbstractBillFactory<I extends AbstractBillInput, O extends AbstractBillEntity>
 {
-	private final static Logger LOG = LoggerFactory.getLogger(AbstractBillFactory.class);
-
 	protected EntityManager em;
 	protected CarRepository carRepository;
 
@@ -33,12 +28,6 @@ public abstract class AbstractBillFactory<I extends AbstractBillInput, O extends
 		this.carRepository = carRepository;
 	}
 
-	/**
-	 * Validates by default if the date and vat rate is set
-	 *
-	 */
-	abstract void validate(I input);
-
 	abstract O create(I input, long carId, String user);
 
 	public BillType getType()
@@ -52,7 +41,7 @@ public abstract class AbstractBillFactory<I extends AbstractBillInput, O extends
 
 		if (car == null)
 		{
-			throw new WrongUserException("Car cannot be found under your user!");
+			throw new WrongUserException();
 		}
 
 		BillEntity bill = new BillEntity();

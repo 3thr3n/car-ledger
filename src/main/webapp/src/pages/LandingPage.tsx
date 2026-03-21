@@ -7,11 +7,12 @@ import {
   Typography,
 } from '@mui/material';
 import CarLedgerSubPageHeader from '@/components/CarLedgerSubPageHeader';
+import CarLedgerPage from '@/components/CarLedgerPage';
 
 export default function LandingPage() {
   return (
-    <Box>
-      <Box component="section" sx={{ pt: 6 }}>
+    <CarLedgerPage id="LandingPage" py={3}>
+      <Box component="section">
         <Container>
           <Typography variant="h5" fontWeight={600} gutterBottom>
             Collect fuel receipts. See your true cost per kilometer.
@@ -109,6 +110,6 @@ export default function LandingPage() {
           </Typography>
         </Container>
       </Box>
-    </Box>
+    </CarLedgerPage>
   );
 }
