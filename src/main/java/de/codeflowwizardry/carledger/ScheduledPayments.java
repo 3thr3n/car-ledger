@@ -35,7 +35,9 @@ public class ScheduledPayments
 	void generateDuePayments()
 	{
 		recurringBillRepository.listAll().stream()
-				.filter(b -> b.getNextDueDate() != null && !b.getNextDueDate().isAfter(LocalDate.now()))
+				.filter(b -> b.getNextDueDate() != null &&
+						!b.getNextDueDate().isAfter(LocalDate.now())
+						&& (b.getEndDate() == null || b.getNextDueDate().isBefore(b.getEndDate())))
 				.forEach(b -> {
 					if (createPayment(b))
 					{

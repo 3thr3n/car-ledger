@@ -62,8 +62,8 @@ class ScheduledPaymentsTest
 		recurringBillEntity.setAmount(BigDecimal.valueOf(480));
 		recurringBillEntity.setCategory(BillCategory.FINANCE);
 		recurringBillEntity.setInterval(BillInterval.MONTHLY);
-		recurringBillEntity.setStartDate(LocalDate.now());
-		recurringBillEntity.setNextDueDate(LocalDate.now());
+		recurringBillEntity.setStartDate(LocalDate.of(2026, 2, 1));
+		recurringBillEntity.setNextDueDate(LocalDate.of(2026, 3, 1));
 		recurringBillEntity.setName("Test");
 		recurringBillEntity.setTotal(BigDecimal.ZERO);
 
@@ -77,6 +77,32 @@ class ScheduledPaymentsTest
 
 		Assertions.assertEquals(1, entities.size());
 		Assertions.assertEquals(recurringBillEntity.getId(), entities.get(0).getBill().getId());
+	}
+
+	@Test
+	@Transactional
+	void shouldCreateNotAfter()
+	{
+		// given
+		RecurringBillEntity recurringBillEntity = new RecurringBillEntity(carEntity);
+		recurringBillEntity.setAmount(BigDecimal.valueOf(480));
+		recurringBillEntity.setCategory(BillCategory.FINANCE);
+		recurringBillEntity.setInterval(BillInterval.MONTHLY);
+		recurringBillEntity.setStartDate(LocalDate.of(2025, 1, 1));
+		recurringBillEntity.setNextDueDate(LocalDate.of(2026, 1, 1));
+		recurringBillEntity.setEndDate(LocalDate.of(2025, 12, 31));
+		recurringBillEntity.setName("Test");
+		recurringBillEntity.setTotal(BigDecimal.ZERO);
+
+		recurringBillRepository.persist(recurringBillEntity);
+
+		// when
+		scheduledPayments.generateDuePayments();
+
+		// then
+		List<RecurringBillPaymentEntity> entities = recurringBillPaymentRepository.listAll();
+
+		Assertions.assertEquals(0, entities.size());
 	}
 
 	@Test
