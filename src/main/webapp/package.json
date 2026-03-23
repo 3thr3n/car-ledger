@@ -42,7 +42,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
-    "@hey-api/openapi-ts": "^0.90.10",
+    "@hey-api/openapi-ts": "^0.94.4",
     "@modyfi/vite-plugin-yaml": "^1.1.1",
     "@tanstack/router-plugin": "^1.167.2",
     "@types/i18next-browser-languagedetector": "^3.0.0",
