@@ -39,6 +39,7 @@ public class MiscellaneousBillFactory extends AbstractBillFactory<MiscellaneousB
 		}
 
 		BillEntity bill = createEntity(carId, user, input);
+		persistBill(bill);
 
 		MiscellaneousBillEntity miscellaneousBillEntity = new MiscellaneousBillEntity(bill);
 		miscellaneousBillEntity.setDescription(input.getDescription());

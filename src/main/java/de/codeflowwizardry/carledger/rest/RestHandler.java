@@ -6,6 +6,7 @@ import org.jboss.resteasy.reactive.server.ServerExceptionMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.codeflowwizardry.carledger.exception.AlreadyPresentException;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.WebApplicationException;
@@ -29,6 +30,12 @@ public class RestHandler
 	public Response handleExceptions(WebApplicationException exception)
 	{
 		return exception.getResponse();
+	}
+
+	@ServerExceptionMapper
+	public Response handleAlreadyPresent(AlreadyPresentException exception)
+	{
+		return Response.status(Response.Status.CONFLICT).entity(exception.getMessage()).build();
 	}
 
 	@ServerExceptionMapper

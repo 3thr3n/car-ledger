@@ -43,6 +43,7 @@ public class MaintenanceBillFactory extends AbstractBillFactory<MaintenanceBillI
 		}
 
 		BillEntity bill = createEntity(carId, user, input);
+		persistBill(bill);
 
 		MaintenanceBillEntity maintenanceBillEntity = new MaintenanceBillEntity(bill);
 		maintenanceBillEntity.setDescription(input.getDescription());

@@ -13,21 +13,6 @@ import jakarta.transaction.Transactional;
 @ApplicationScoped
 public class RecurringBillRepository implements PanacheRepository<RecurringBillEntity>
 {
-	public PanacheQuery<RecurringBillEntity> getAll(long carId, String name)
-	{
-		Map<String, Object> params = new HashMap<>();
-		String query = "car.user.userId = :username";
-		params.put("username", name);
-
-		if (carId >= 0)
-		{
-			query += " and car.id = :carId";
-			params.put("carId", carId);
-		}
-
-		return find(query, params);
-	}
-
 	public PanacheQuery<RecurringBillEntity> getAll(long carId, String name, Page queryPage, boolean running)
 	{
 		Map<String, Object> params = new HashMap<>();

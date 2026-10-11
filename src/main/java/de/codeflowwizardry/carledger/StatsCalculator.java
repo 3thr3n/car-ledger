@@ -14,7 +14,7 @@ import java.util.stream.Stream;
 
 import de.codeflowwizardry.carledger.data.*;
 import de.codeflowwizardry.carledger.data.repository.BillRepository;
-import de.codeflowwizardry.carledger.data.repository.RecurringBillRepository;
+import de.codeflowwizardry.carledger.data.repository.RecurringBillPaymentRepository;
 import de.codeflowwizardry.carledger.rest.car.stats.*;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -25,13 +25,14 @@ public class StatsCalculator
 	public static final BigDecimal ONE_HUNDRED = BigDecimal.valueOf(100);
 
 	private final BillRepository repository;
-	private final RecurringBillRepository recurringBillRepository;
+	private final RecurringBillPaymentRepository recurringBillPaymentRepository;
 
 	@Inject
-	public StatsCalculator(BillRepository billRepository, RecurringBillRepository recurringBillRepository)
+	public StatsCalculator(BillRepository billRepository,
+			RecurringBillPaymentRepository recurringBillPaymentRepository)
 	{
 		this.repository = billRepository;
-		this.recurringBillRepository = recurringBillRepository;
+		this.recurringBillPaymentRepository = recurringBillPaymentRepository;
 	}
 
 	public DashboardStats calculateStats(Long carId, String username, Optional<LocalDate> from, Optional<LocalDate> to)
@@ -53,11 +54,11 @@ public class StatsCalculator
 				.filter(Objects::nonNull)
 				.toList();
 
-		List<RecurringBillEntity> recurringBillEntities = recurringBillRepository.getAll(carId, username).list();
+		BigDecimal recurringTotal = recurringBillPaymentRepository.sumAmount(carId, username, from, to);
 
 		return new DashboardStats(
-				calculateTotal(fuelBillList, maintenanceBillList, miscellaneousBillList, recurringBillEntities),
-				calculateAverage(fuelBillList, maintenanceBillList, miscellaneousBillList, recurringBillEntities),
+				calculateTotal(fuelBillList, maintenanceBillList, miscellaneousBillList, recurringTotal),
+				calculateAverage(fuelBillList, maintenanceBillList, miscellaneousBillList, recurringTotal),
 				calculateHighLow(fuelBillList, maintenanceBillList));
 	}
 
@@ -74,14 +75,13 @@ public class StatsCalculator
 	private TotalStats calculateTotal(List<FuelBillEntity> fuelBillList,
 			List<MaintenanceBillEntity> maintenanceBillList,
 			List<MiscellaneousBillEntity> miscellaneousBillList,
-			List<RecurringBillEntity> recurringBillEntities)
+			BigDecimal recurringTotal)
 	{
 		BigDecimal unit = calculateTotalUnit(fuelBillList);
 		BigDecimal trackedDistance = calculateTotalDistance(fuelBillList);
 		BigDecimal fuelTotal = calculateTotal(fuelBillList);
 		BigDecimal maintenanceTotal = calculateTotal(maintenanceBillList);
 		BigDecimal miscellaneousTotal = calculateTotal(miscellaneousBillList);
-		BigDecimal recurringTotal = calculateRecurringTotal(recurringBillEntities);
 		Integer fuelBills = fuelBillList.size();
 		Integer maintenanceBills = maintenanceBillList.size();
 		Integer miscellaneousBills = miscellaneousBillList.size();
@@ -108,12 +108,6 @@ public class StatsCalculator
 		return handleReduceTotalResult(totalUnit);
 	}
 
-	private static BigDecimal calculateRecurringTotal(List<RecurringBillEntity> entities)
-	{
-		Stream<BigDecimal> totalCost = entities.stream().map(RecurringBillEntity::getTotal);
-		return handleReduceTotalResult(totalCost);
-	}
-
 	private static BigDecimal calculateTotal(List<? extends AbstractBillEntity> entities)
 	{
 		Stream<BigDecimal> totalCost = entities.stream().map(x -> x.getBill().getTotal());
@@ -136,7 +130,7 @@ public class StatsCalculator
 	 */
 	private AverageStats calculateAverage(List<FuelBillEntity> fuelBillList,
 			List<MaintenanceBillEntity> maintenanceBillList, List<MiscellaneousBillEntity> miscellaneousBillList,
-			List<RecurringBillEntity> recurringBillEntities)
+			BigDecimal recurringTotal)
 	{
 		// Price per unit
 		BigDecimal pricePerUnit = calculateAveragePricePerUnit(fuelBillList);
@@ -150,7 +144,7 @@ public class StatsCalculator
 		BigDecimal averageMaintenancePrice = calculateAverageMaintenance(maintenanceBillList);
 		// Cost per km (total, including maintenance)
 		BigDecimal costPerKm = calculateAverageCostPerKm(fuelBillList, maintenanceBillList, miscellaneousBillList,
-				recurringBillEntities);
+				recurringTotal);
 
 		return new AverageStats(pricePerUnit, distance, fuelCostPerKm, consumption, averageMaintenancePrice, costPerKm);
 	}
@@ -182,12 +176,11 @@ public class StatsCalculator
 
 	private static BigDecimal calculateAverageCostPerKm(List<FuelBillEntity> fuelBillEntities,
 			List<MaintenanceBillEntity> maintenanceBillList, List<MiscellaneousBillEntity> miscellaneousBillList,
-			List<RecurringBillEntity> recurringBillEntities)
+			BigDecimal recurring)
 	{
 		BigDecimal maintenance = calculateTotal(maintenanceBillList);
 		BigDecimal fuel = calculateTotal(fuelBillEntities);
 		BigDecimal miscellaneous = calculateTotal(miscellaneousBillList);
-		BigDecimal recurring = calculateRecurringTotal(recurringBillEntities);
 
 		BigDecimal distance = calculateTotalDistance(fuelBillEntities);
 
@@ -206,7 +199,8 @@ public class StatsCalculator
 	{
 		Optional<BigDecimal[]> optionalBigDecimal = billEntities.stream()
 				.map(bigDecimalMapFunction)
-				.filter(Objects::nonNull)
+				// unset values (e.g. no distance tracked) must not drag the average down
+				.filter(Utils::valueWasSet)
 				.map(bd -> new BigDecimal[] {
 						bd, BigDecimal.ONE
 				})

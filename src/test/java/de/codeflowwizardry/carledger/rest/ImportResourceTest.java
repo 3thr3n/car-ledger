@@ -121,6 +121,47 @@ class ImportResourceTest
 	@TestSecurity(user = "peter", roles = {
 			"user"
 	})
+	void shouldSkipDuplicatesWhenImportingMaintenanceCsvTwice()
+	{
+		String order = """
+				{
+					"date": 0,
+					"total": 1,
+					"odometer": 2,
+					"workshop": 3
+				}
+				""";
+
+		given().contentType(ContentType.MULTIPART)
+				.multiPart("file", "import.csv", getFile("csv/maintenance_import_1.csv"), "text/csv")
+				.multiPart("order", order)
+				.multiPart("billType", "MAINTENANCE")
+				.multiPart("vat", 19)
+				.when()
+				.post("/api/import/" + carEntity.getId())
+				.then()
+				.statusCode(200);
+
+		given().contentType(ContentType.MULTIPART)
+				.multiPart("file", "import.csv", getFile("csv/maintenance_import_1.csv"), "text/csv")
+				.multiPart("order", order)
+				.multiPart("billType", "MAINTENANCE")
+				.multiPart("vat", 19)
+				.when()
+				.post("/api/import/" + carEntity.getId())
+				.then()
+				.statusCode(200)
+				.body("successCount", is(0))
+				.body("skippedCount", is(2))
+				.body("errorCount", is(0));
+
+		assertEquals(2, billRepository.count());
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
 	void shouldImportMiscellaneousCsv()
 	{
 		String order = """

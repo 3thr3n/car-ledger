@@ -1,10 +1,13 @@
 package de.codeflowwizardry.carledger.data.factory;
 
+import org.hibernate.exception.ConstraintViolationException;
+
 import de.codeflowwizardry.carledger.data.AbstractBillEntity;
 import de.codeflowwizardry.carledger.data.BillEntity;
 import de.codeflowwizardry.carledger.data.BillType;
 import de.codeflowwizardry.carledger.data.CarEntity;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
+import de.codeflowwizardry.carledger.exception.AlreadyPresentException;
 import de.codeflowwizardry.carledger.exception.WrongUserException;
 import de.codeflowwizardry.carledger.rest.records.input.AbstractBillInput;
 import jakarta.persistence.EntityManager;
@@ -53,5 +56,28 @@ public abstract class AbstractBillFactory<I extends AbstractBillInput, O extends
 		bill.setTotal(input.getTotal());
 
 		return bill;
+	}
+
+	/**
+	 * Persists the bill immediately (identity id), so the unique constraint on
+	 * date, car and total is checked here.
+	 *
+	 * @throws AlreadyPresentException
+	 *             if the bill already exists
+	 */
+	protected void persistBill(BillEntity bill)
+	{
+		try
+		{
+			em.persist(bill);
+		}
+		catch (ConstraintViolationException cve)
+		{
+			if (cve.getKind() == ConstraintViolationException.ConstraintKind.UNIQUE)
+			{
+				throw new AlreadyPresentException("A bill for this car, date and total already exists.", cve);
+			}
+			throw cve;
+		}
 	}
 }

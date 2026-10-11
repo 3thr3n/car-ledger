@@ -133,6 +133,42 @@ class MaintenanceResourceTest
 	}
 
 	@Test
+	@TestSecurity(user = "alice", roles = {
+			"user"
+	})
+	void shouldRejectDuplicateBill()
+	{
+		// given
+		String body = """
+				{
+					"date": "2024-09-14",
+					"vatRate": 19,
+					"total": 300,
+					"workshop": "Hans Peters Workshop"
+				}
+				""";
+
+		given()
+				.pathParam("carId", carId)
+				.accept(ContentType.JSON)
+				.contentType(ContentType.JSON)
+				.body(body)
+				.put()
+				.then()
+				.statusCode(202);
+
+		// when
+		given()
+				.pathParam("carId", carId)
+				.accept(ContentType.JSON)
+				.contentType(ContentType.JSON)
+				.body(body)
+				.put()
+				.then()
+				.statusCode(409);
+	}
+
+	@Test
 	@TestSecurity(user = "bob", roles = {
 			"user"
 	})
