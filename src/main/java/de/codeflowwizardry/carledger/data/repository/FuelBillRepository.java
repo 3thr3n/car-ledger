@@ -6,4 +6,8 @@ import jakarta.enterprise.context.ApplicationScoped;
 @ApplicationScoped
 public class FuelBillRepository extends AbstractBillRepository<FuelBillEntity>
 {
+	public FuelBillRepository()
+	{
+		super("FuelBillEntity");
+	}
 }

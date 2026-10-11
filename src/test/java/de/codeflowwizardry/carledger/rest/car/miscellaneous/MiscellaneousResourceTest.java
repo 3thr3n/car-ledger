@@ -5,7 +5,6 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.time.LocalDate;
 
 import org.junit.jupiter.api.AfterEach;
@@ -53,7 +52,7 @@ class MiscellaneousResourceTest
 		carEntity.setName("Neat car");
 		carRepository.persist(carEntity);
 
-		MiscellaneousBillInput input = new MiscellaneousBillInput(BigDecimal.valueOf(50), BigInteger.ZERO,
+		MiscellaneousBillInput input = new MiscellaneousBillInput(BigDecimal.valueOf(50), 0,
 				LocalDate.now(), "");
 
 		carId = carEntity.getId();
@@ -192,6 +191,6 @@ class MiscellaneousResourceTest
 				.body(body)
 				.put()
 				.then()
-				.statusCode(409);
+				.statusCode(404);
 	}
 }

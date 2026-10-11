@@ -6,24 +6,22 @@ import java.util.List;
 public class CsvImportResult
 {
 	private int successCount = 0;
-	private int skippedCount = 0;
-	private int errorCount = 0;
-	private final List<RowError> errors = new ArrayList<>();
+	private final List<Row> skipped = new ArrayList<>();
+	private final List<Row> errors = new ArrayList<>();
 
-	public void addSuccess(int rowNumber)
+	public void addSuccess()
 	{
 		successCount++;
 	}
 
 	public void addSkipped(int rowNumber, String reason)
 	{
-		skippedCount++;
+		skipped.add(new Row(rowNumber, reason));
 	}
 
 	public void addError(int rowNumber, String message)
 	{
-		errorCount++;
-		errors.add(new RowError(rowNumber, message));
+		errors.add(new Row(rowNumber, message));
 	}
 
 	public int getSuccessCount()
@@ -33,20 +31,25 @@ public class CsvImportResult
 
 	public int getSkippedCount()
 	{
-		return skippedCount;
+		return skipped.size();
 	}
 
 	public int getErrorCount()
 	{
-		return errorCount;
+		return errors.size();
 	}
 
-	public List<RowError> getErrors()
+	public List<Row> getSkipped()
+	{
+		return skipped;
+	}
+
+	public List<Row> getErrors()
 	{
 		return errors;
 	}
 
-	public record RowError(int rowNumber, String message)
+	public record Row(int rowNumber, String message)
 	{
 	}
 }

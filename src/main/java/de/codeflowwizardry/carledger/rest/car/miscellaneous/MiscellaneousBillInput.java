@@ -1,7 +1,6 @@
 package de.codeflowwizardry.carledger.rest.car.miscellaneous;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.time.LocalDate;
 
 import de.codeflowwizardry.carledger.rest.records.input.AbstractBillInput;
@@ -10,7 +9,7 @@ public class MiscellaneousBillInput extends AbstractBillInput
 {
 	private final String description;
 
-	public MiscellaneousBillInput(BigDecimal total, BigInteger vatRate, LocalDate date, String description)
+	public MiscellaneousBillInput(BigDecimal total, Integer vatRate, LocalDate date, String description)
 	{
 		super(total, vatRate, date);
 		this.description = description;

@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.codeflowwizardry.carledger.exception.AlreadyPresentException;
+import de.codeflowwizardry.carledger.exception.WrongUserException;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.WebApplicationException;
@@ -36,6 +37,12 @@ public class RestHandler
 	public Response handleAlreadyPresent(AlreadyPresentException exception)
 	{
 		return Response.status(Response.Status.CONFLICT).entity(exception.getMessage()).build();
+	}
+
+	@ServerExceptionMapper
+	public Response handleWrongUser(WrongUserException exception)
+	{
+		return Response.status(Response.Status.NOT_FOUND).entity(exception.getMessage()).build();
 	}
 
 	@ServerExceptionMapper

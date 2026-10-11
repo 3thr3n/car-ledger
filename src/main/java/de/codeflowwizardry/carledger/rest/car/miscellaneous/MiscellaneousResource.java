@@ -7,17 +7,15 @@ import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import de.codeflowwizardry.carledger.data.BillType;
 import de.codeflowwizardry.carledger.data.MiscellaneousBillEntity;
 import de.codeflowwizardry.carledger.data.factory.MiscellaneousBillFactory;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.MiscellaneousBillRepository;
-import de.codeflowwizardry.carledger.exception.WrongUserException;
 import de.codeflowwizardry.carledger.rest.car.AbstractBillResource;
 import de.codeflowwizardry.carledger.rest.records.BillPaged;
+import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -26,11 +24,11 @@ import jakarta.ws.rs.core.Response;
 public class MiscellaneousResource
 		extends AbstractBillResource<MiscellaneousBillRepository, MiscellaneousBillEntity, MiscellaneousBill>
 {
-	private final static Logger LOG = LoggerFactory.getLogger(MiscellaneousResource.class);
 
 	private final MiscellaneousBillFactory miscellaneousBillFactory;
 
-	protected MiscellaneousResource(Principal context, AccountRepository accountRepository,
+	@Inject
+	public MiscellaneousResource(Principal context, AccountRepository accountRepository,
 			MiscellaneousBillRepository miscellaneousBillRepository, MiscellaneousBillFactory miscellaneousBillFactory)
 	{
 		super(context, accountRepository, miscellaneousBillRepository, BillType.MISCELLANEOUS);
@@ -63,23 +61,14 @@ public class MiscellaneousResource
 	@Produces(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "addNewMiscellaneousBill")
 	@APIResponse(responseCode = "202", description = "Bill created.")
-	@APIResponse(responseCode = "409", description = "Car is not for your user.")
+	@APIResponse(responseCode = "404", description = "Car is not for your user.")
 	@APIResponse(responseCode = "400", description = "Validation failed, please check the response", content = @Content(schema = @Schema(implementation = List.class)))
 	@APIResponse(responseCode = "500", description = "Something went wrong while saving. Please ask the server admin for help.")
 	public Response addNewBill(@PathParam("carId") long carId, MiscellaneousBillInput miscellaneousBillInput)
 	{
-		try
-		{
-			MiscellaneousBillEntity fuelBill = miscellaneousBillFactory.create(miscellaneousBillInput, carId,
-					context.getName());
-			return Response.accepted(MiscellaneousBill.convert(fuelBill)).build();
-		}
-		catch (WrongUserException e)
-		{
-			LOG.warn("Car cannot be found under your user {}!", context.getName(), e);
-			throw new WebApplicationException(Response.status(Response.Status.CONFLICT)
-					.entity("Car cannot be found under your user!")
-					.build());
-		}
+		return Response
+				.accepted(MiscellaneousBill
+						.convert(miscellaneousBillFactory.create(miscellaneousBillInput, carId, context.getName())))
+				.build();
 	}
 }

@@ -1,8 +1,8 @@
-INSERT INTO Account(max_cars, id, user_id)
-VALUES (1, nextval('sequence_account'), 'alice');
+INSERT INTO account(max_cars, id, user_id)
+VALUES (1, 5, 'alice');
 
-INSERT INTO Car(id, user_id, c_name, c_manufacture_year, c_odometer)
-VALUES (nextval('sequence_car'), 5, 'i30N', 2021, 7);
+INSERT INTO car(id, c_user_id, c_name, c_manufacture_year, c_odometer)
+VALUES (5, 5, 'i30N', 2021, 7);
 
 INSERT INTO bill (id, b_date, b_car_id, b_type, b_total, b_vat_rate, b_net_amount, b_ust_amount)
 VALUES (1, '2021-09-01', 5, 'FUEL', 56.49, 19, 0.0, 0.0),
@@ -153,4 +153,7 @@ VALUES (1, 0.00, 0.00, 162.90, 34.68, 0.0, 0.0),
        (71, 492.70, 8.40, 173.90, 40.11, 0.0, 0.0)
 ;
 
-
+-- explicit ids above do not advance the identity columns
+SELECT setval(pg_get_serial_sequence('account', 'id'), (SELECT max(id) FROM account));
+SELECT setval(pg_get_serial_sequence('car', 'id'), (SELECT max(id) FROM car));
+SELECT setval(pg_get_serial_sequence('bill', 'id'), (SELECT max(id) FROM bill));

@@ -2,7 +2,6 @@ package de.codeflowwizardry.carledger.rest.car;
 
 import java.io.File;
 import java.io.IOException;
-import java.math.BigInteger;
 import java.security.Principal;
 
 import org.apache.commons.lang3.ObjectUtils;
@@ -24,9 +23,9 @@ import de.codeflowwizardry.carledger.csv.importer.FuelBillCsvImporter;
 import de.codeflowwizardry.carledger.csv.importer.MaintenanceBillCsvImporter;
 import de.codeflowwizardry.carledger.csv.importer.MiscellaneousBillCsvImporter;
 import de.codeflowwizardry.carledger.data.BillType;
-import de.codeflowwizardry.carledger.data.CarEntity;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
+import de.codeflowwizardry.carledger.exception.WrongUserException;
 import de.codeflowwizardry.carledger.rest.AbstractResource;
 import de.codeflowwizardry.carledger.rest.records.csv.CsvFields;
 import jakarta.inject.Inject;
@@ -61,14 +60,15 @@ public class ImportResource extends AbstractResource
 	@POST
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	@APIResponse(responseCode = "202", description = "CSV was imported.")
-	@APIResponse(responseCode = "400", description = "- Type not defined\n- Car not found\n- Column mapping missing or invalid")
+	@APIResponse(responseCode = "400", description = "- Type not defined\n- Column mapping missing or invalid")
+	@APIResponse(responseCode = "404", description = "Car not found")
 	@APIResponse(responseCode = "500", description = "- CSV was not set\n- Something went wrong while importing. Please ask the server admin for help.")
 	public Response importFuelCsv(
 			@PathParam("carId") long carId,
 			@RestForm("file") @PartType("text/csv") File csv,
 			@RestForm("billType") BillType billType,
 			@RestForm("order") @PartType(MediaType.TEXT_PLAIN) String columnMappingJson,
-			@RestForm("vat") @PartType(MediaType.APPLICATION_JSON) BigInteger vat,
+			@RestForm("vat") @PartType(MediaType.APPLICATION_JSON) Integer vat,
 			@QueryParam("skipHeader") boolean skipHeader)
 	{
 		ObjectUtils.requireNonEmpty(csv, "CSV ('file') needs to be set!");
@@ -78,10 +78,9 @@ public class ImportResource extends AbstractResource
 			throw new BadRequestException(Response.status(400).entity("Vat rate cannot be null!").build());
 		}
 
-		CarEntity car = carRepository.findById(carId, context.getName());
-		if (car == null)
+		if (carRepository.findById(carId, context.getName()) == null)
 		{
-			throw new BadRequestException(Response.status(400).entity("Car cannot be found under your user!").build());
+			throw new WrongUserException();
 		}
 
 		if (billType == null)

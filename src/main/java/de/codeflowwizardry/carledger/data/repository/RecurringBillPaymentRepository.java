@@ -21,7 +21,8 @@ public class RecurringBillPaymentRepository implements PanacheRepository<Recurri
 	}
 
 	/**
-	 * Sums all payments due in the given range. A negative carId sums over all cars
+	 * Sums all payments due in the given range. {@link CarRepository#ALL_CARS} sums
+	 * over all cars
 	 * of the user.
 	 */
 	public BigDecimal sumAmount(long carId, String username, Optional<LocalDate> from, Optional<LocalDate> to)
@@ -31,7 +32,7 @@ public class RecurringBillPaymentRepository implements PanacheRepository<Recurri
 		String query = "select sum(amount) from recurring_bill_payment where bill.car.user.userId = :userId";
 		params.put("userId", username);
 
-		if (carId >= 0)
+		if (carId != CarRepository.ALL_CARS)
 		{
 			query += " and bill.car.id = :carId";
 			params.put("carId", carId);

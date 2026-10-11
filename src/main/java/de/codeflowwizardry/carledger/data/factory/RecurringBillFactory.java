@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.codeflowwizardry.carledger.Utils;
 import de.codeflowwizardry.carledger.data.CarEntity;
 import de.codeflowwizardry.carledger.data.RecurringBillEntity;
 import de.codeflowwizardry.carledger.data.RecurringBillPaymentEntity;
@@ -16,8 +17,6 @@ import de.codeflowwizardry.carledger.rest.car.recurring.RecurringBillInput;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import jakarta.ws.rs.BadRequestException;
-import jakarta.ws.rs.core.Response;
 
 @ApplicationScoped
 public class RecurringBillFactory
@@ -38,11 +37,7 @@ public class RecurringBillFactory
 	@Transactional
 	public RecurringBillEntity create(long carId, RecurringBillInput input, String name)
 	{
-		List<String> validate = input.validate();
-		if (!validate.isEmpty())
-		{
-			throw new BadRequestException(Response.status(400).entity(validate).build());
-		}
+		Utils.requireValid(input.validate());
 
 		CarEntity car = carRepository.findById(carId, name);
 

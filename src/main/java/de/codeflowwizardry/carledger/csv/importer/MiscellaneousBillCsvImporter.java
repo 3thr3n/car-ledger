@@ -1,6 +1,5 @@
 package de.codeflowwizardry.carledger.csv.importer;
 
-import java.math.BigInteger;
 import java.util.Set;
 
 import de.codeflowwizardry.carledger.csv.CsvColumnMapping;
@@ -23,11 +22,11 @@ public class MiscellaneousBillCsvImporter implements CsvImporter<MiscellaneousBi
 	}
 
 	@Override
-	public MiscellaneousBillInput parseRow(String[] line, CsvColumnMapping mapping, BigInteger vat)
+	public MiscellaneousBillInput parseRow(String[] line, CsvColumnMapping mapping, Integer vat)
 	{
 		return new MiscellaneousBillInput(
 				CsvFieldExtractors.getBigDecimal(line, mapping, "total"),
-				CsvFieldExtractors.getBigInteger(line, mapping, "vatRate", vat),
+				CsvFieldExtractors.getInteger(line, mapping, "vatRate", vat),
 				CsvFieldExtractors.getLocalDate(line, mapping, "date"),
 				CsvFieldExtractors.getString(line, mapping, "description"));
 	}

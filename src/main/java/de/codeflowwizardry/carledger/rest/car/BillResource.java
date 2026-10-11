@@ -39,6 +39,7 @@ public class BillResource extends AbstractBillResource<BillRepository, BillEntit
 	@Path("{billId}")
 	@Operation(operationId = "deleteBill", description = "Deletes the bill")
 	@APIResponse(responseCode = "204", description = "Bill deleted.")
+	@APIResponse(responseCode = "404", description = "Bill not found.")
 	public void deleteBill(@PathParam("carId") long carId, @PathParam("billId") long billId)
 	{
 		try
@@ -48,7 +49,7 @@ public class BillResource extends AbstractBillResource<BillRepository, BillEntit
 		catch (DbDeletionException e)
 		{
 			throw new WebApplicationException(Response
-					.status(400)
+					.status(404)
 					.entity("Bill could not be found! Either not connected to your user or already deleted.")
 					.build());
 		}

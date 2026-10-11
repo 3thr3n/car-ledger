@@ -2,7 +2,6 @@ package de.codeflowwizardry.carledger.csv;
 
 import java.io.File;
 import java.io.IOException;
-import java.math.BigInteger;
 
 import de.codeflowwizardry.carledger.csv.importer.FuelBillCsvImporter;
 import de.codeflowwizardry.carledger.csv.importer.MaintenanceBillCsvImporter;
@@ -29,7 +28,7 @@ public class CsvImportService
 	}
 
 	public CsvImportResult importBills(File csv, CsvColumnMapping mapping, long carId, String name, int skipLines,
-			BigInteger vat, BillType type) throws IOException
+			Integer vat, BillType type) throws IOException
 	{
 		CsvProcessor<?> processor = null;
 

@@ -7,7 +7,7 @@ import java.util.List;
 import de.codeflowwizardry.carledger.data.MiscellaneousBillEntity;
 import de.codeflowwizardry.carledger.rest.records.AbstractBill;
 
-public final class MiscellaneousBill extends AbstractBill<MiscellaneousBillEntity>
+public final class MiscellaneousBill extends AbstractBill
 {
 	private final Long id;
 	private final LocalDate date;

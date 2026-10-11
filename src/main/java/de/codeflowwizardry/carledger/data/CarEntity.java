@@ -1,33 +1,22 @@
 package de.codeflowwizardry.carledger.data;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import jakarta.persistence.*;
-import jakarta.ws.rs.DefaultValue;
 
 @Entity(name = "Car")
-@SequenceGenerator(allocationSize = 1, sequenceName = "sequence_car", initialValue = 5, name = "carSequence")
 public class CarEntity
 {
 	@Id
-	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "carSequence")
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-	@Column(name = "c_name")
+	@Column(name = "c_name", nullable = false)
 	private String name;
-	@Column(name = "c_manufacture_year")
+	@Column(name = "c_manufacture_year", nullable = false)
 	private int manufactureYear;
-	@DefaultValue("0")
 	@Column(name = "c_odometer", nullable = false)
 	private int odometer = 0;
 
-	@OneToMany(mappedBy = "car")
-	private final List<BillEntity> billEntities = new ArrayList<>();
-
-	@OneToMany(mappedBy = "car")
-	private final List<RecurringBillEntity> recurringBillEntities = new ArrayList<>();
-
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY, optional = false)
+	@JoinColumn(name = "c_user_id", nullable = false)
 	private AccountEntity user;
 
 	public String getName()
@@ -63,16 +52,6 @@ public class CarEntity
 	public Long getId()
 	{
 		return id;
-	}
-
-	public List<BillEntity> getBills()
-	{
-		return billEntities;
-	}
-
-	public List<RecurringBillEntity> getRecurringBillEntities()
-	{
-		return recurringBillEntities;
 	}
 
 	public AccountEntity getUser()

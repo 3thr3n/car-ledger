@@ -10,7 +10,7 @@ import java.util.List;
 import de.codeflowwizardry.carledger.data.FuelBillEntity;
 import de.codeflowwizardry.carledger.rest.records.AbstractBill;
 
-public final class FuelBill extends AbstractBill<FuelBillEntity>
+public final class FuelBill extends AbstractBill
 {
 	private final Long id;
 	private final LocalDate date;

@@ -3,7 +3,6 @@ package de.codeflowwizardry.carledger.csv;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.math.BigInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +25,7 @@ public class CsvProcessor<T extends AbstractBillInput>
 		this.importer = importer;
 	}
 
-	public CsvImportResult process(File csv, CsvColumnMapping mapping, int skipLines, BigInteger vat, long carId,
+	public CsvImportResult process(File csv, CsvColumnMapping mapping, int skipLines, Integer vat, long carId,
 			String name)
 			throws IOException
 	{
@@ -49,7 +48,7 @@ public class CsvProcessor<T extends AbstractBillInput>
 				{
 					T entity = importer.parseRow(line, mapping, vat);
 					importer.save(entity, carId, name);
-					result.addSuccess(rowNumber);
+					result.addSuccess();
 				}
 				catch (AlreadyPresentException e)
 				{

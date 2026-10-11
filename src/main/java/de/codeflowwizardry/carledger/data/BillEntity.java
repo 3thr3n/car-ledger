@@ -1,15 +1,11 @@
 package de.codeflowwizardry.carledger.data;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.time.LocalDate;
 
 import jakarta.persistence.*;
 
 @Entity(name = "bill")
-@Table(uniqueConstraints = @UniqueConstraint(columnNames = {
-		"b_date", "b_car_id", "b_total"
-}))
 public class BillEntity extends AbstractBillEntity
 {
 	@Id
@@ -28,7 +24,7 @@ public class BillEntity extends AbstractBillEntity
 	private BigDecimal total = BigDecimal.ZERO;
 
 	@Column(name = "b_vat_rate", nullable = false)
-	private BigInteger vatRate = BigInteger.ZERO;
+	private int vatRate;
 
 	@Column(name = "b_net_amount", nullable = false)
 	private BigDecimal netAmount = BigDecimal.ZERO;
@@ -36,17 +32,19 @@ public class BillEntity extends AbstractBillEntity
 	@Column(name = "b_ust_amount", nullable = false)
 	private BigDecimal ustAmount = BigDecimal.ZERO;
 
-	@ManyToOne(optional = false)
+	@ManyToOne(fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "b_car_id", nullable = false)
 	protected CarEntity car;
 
-	@OneToOne(mappedBy = "bill", cascade = CascadeType.ALL)
+	// lazy, otherwise every loaded bill triggers three extra selects; fetch join
+	// them where needed
+	@OneToOne(mappedBy = "bill", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private FuelBillEntity fuelBill;
 
-	@OneToOne(mappedBy = "bill", cascade = CascadeType.ALL)
+	@OneToOne(mappedBy = "bill", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private MaintenanceBillEntity maintenanceBill;
 
-	@OneToOne(mappedBy = "bill", cascade = CascadeType.ALL)
+	@OneToOne(mappedBy = "bill", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private MiscellaneousBillEntity miscellaneousBill;
 
 	public BillEntity()
@@ -119,12 +117,12 @@ public class BillEntity extends AbstractBillEntity
 		this.ustAmount = ustAmount;
 	}
 
-	public BigInteger getVatRate()
+	public int getVatRate()
 	{
 		return vatRate;
 	}
 
-	public void setVatRate(BigInteger vatRate)
+	public void setVatRate(int vatRate)
 	{
 		this.vatRate = vatRate;
 	}

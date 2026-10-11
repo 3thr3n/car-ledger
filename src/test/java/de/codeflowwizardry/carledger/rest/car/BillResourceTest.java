@@ -5,7 +5,6 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.time.LocalDate;
 
 import org.junit.jupiter.api.AfterEach;
@@ -15,10 +14,14 @@ import org.junit.jupiter.api.Test;
 import de.codeflowwizardry.carledger.data.AccountEntity;
 import de.codeflowwizardry.carledger.data.CarEntity;
 import de.codeflowwizardry.carledger.data.factory.FuelBillFactory;
+import de.codeflowwizardry.carledger.data.factory.MaintenanceBillFactory;
+import de.codeflowwizardry.carledger.data.factory.MiscellaneousBillFactory;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.BillRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import de.codeflowwizardry.carledger.rest.car.fuel.FuelBillInput;
+import de.codeflowwizardry.carledger.rest.car.maintenance.MaintenanceBillInput;
+import de.codeflowwizardry.carledger.rest.car.miscellaneous.MiscellaneousBillInput;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
@@ -40,6 +43,12 @@ class BillResourceTest
 
 	@Inject
 	FuelBillFactory fuelBillFactory;
+
+	@Inject
+	MaintenanceBillFactory maintenanceBillFactory;
+
+	@Inject
+	MiscellaneousBillFactory miscellaneousBillFactory;
 
 	CarEntity carEntity;
 
@@ -65,7 +74,7 @@ class BillResourceTest
 		FuelBillInput fuelBillInput = new FuelBillInput(
 				LocalDate.of(2024, 8, 16),
 				BigDecimal.ZERO,
-				BigInteger.valueOf(19),
+				19,
 				BigDecimal.valueOf(500),
 				BigDecimal.valueOf(28d),
 				BigDecimal.valueOf(199.9d),
@@ -76,7 +85,7 @@ class BillResourceTest
 		fuelBillInput = new FuelBillInput(
 				LocalDate.of(2022, 5, 22),
 				BigDecimal.ZERO,
-				BigInteger.valueOf(19),
+				19,
 				BigDecimal.valueOf(400),
 				BigDecimal.valueOf(20d),
 				BigDecimal.valueOf(189.9d),
@@ -87,7 +96,7 @@ class BillResourceTest
 		fuelBillInput = new FuelBillInput(
 				LocalDate.of(2023, 6, 2),
 				BigDecimal.ZERO,
-				BigInteger.valueOf(19),
+				19,
 				BigDecimal.valueOf(480),
 				BigDecimal.valueOf(28d),
 				BigDecimal.valueOf(196.9d),
@@ -169,7 +178,56 @@ class BillResourceTest
 				.when()
 				.delete("{billId}", billId)
 				.then()
-				.statusCode(400);
+				.statusCode(404);
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldCalculateVatForEveryBillType()
+	{
+		// given
+		maintenanceBillFactory.create(new MaintenanceBillInput(BigDecimal.valueOf(119), 19, LocalDate.of(2021, 3, 1),
+				null, null, null, null, "Workshop"), carEntity.getId(), "peter");
+		miscellaneousBillFactory.create(new MiscellaneousBillInput(BigDecimal.valueOf(107), 7,
+				LocalDate.of(2021, 3, 2), "Car wash"), carEntity.getId(), "peter");
+
+		// when / then
+		given()
+				.pathParam("carId", carEntity.getId())
+				.queryParam("year", 2021)
+				.when()
+				.get("all")
+				.then()
+				.statusCode(200)
+				.body("data.type", contains("MISCELLANEOUS", "MAINTENANCE"))
+				.body("data.netAmount", contains(100.00f, 100.00f))
+				.body("data.ustAmount", contains(7.00f, 19.00f));
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldAllowSameDateAndTotalForDifferentBillTypes()
+	{
+		// given
+		LocalDate date = LocalDate.of(2021, 4, 1);
+		maintenanceBillFactory.create(new MaintenanceBillInput(BigDecimal.TEN, 19, date, null, null, null, null,
+				"Workshop"), carEntity.getId(), "peter");
+		miscellaneousBillFactory.create(new MiscellaneousBillInput(BigDecimal.TEN, 19, date, null),
+				carEntity.getId(), "peter");
+
+		// when / then
+		given()
+				.pathParam("carId", carEntity.getId())
+				.queryParam("year", 2021)
+				.when()
+				.get("all")
+				.then()
+				.statusCode(200)
+				.body("total", is(2));
 	}
 
 	@AfterEach

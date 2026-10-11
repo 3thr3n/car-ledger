@@ -3,7 +3,6 @@ package de.codeflowwizardry.carledger.rest.records.input;
 import static de.codeflowwizardry.carledger.Utils.valueWasSet;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,10 +10,10 @@ import java.util.List;
 public abstract class AbstractBillInput
 {
 	private final BigDecimal total;
-	private final BigInteger vatRate;
+	private final Integer vatRate;
 	private final LocalDate date;
 
-	public AbstractBillInput(BigDecimal total, BigInteger vatRate, LocalDate date)
+	public AbstractBillInput(BigDecimal total, Integer vatRate, LocalDate date)
 	{
 		this.total = total;
 		this.vatRate = vatRate;
@@ -26,7 +25,7 @@ public abstract class AbstractBillInput
 		return total;
 	}
 
-	public BigInteger getVatRate()
+	public Integer getVatRate()
 	{
 		return vatRate;
 	}

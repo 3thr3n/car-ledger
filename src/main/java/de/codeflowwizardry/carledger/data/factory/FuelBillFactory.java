@@ -5,10 +5,6 @@ import static de.codeflowwizardry.carledger.Utils.valueWasSet;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import de.codeflowwizardry.carledger.data.BillEntity;
 import de.codeflowwizardry.carledger.data.BillType;
@@ -19,14 +15,10 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
-import jakarta.ws.rs.BadRequestException;
-import jakarta.ws.rs.core.Response;
 
 @ApplicationScoped
 public class FuelBillFactory extends AbstractBillFactory<FuelBillInput, FuelBillEntity>
 {
-	private final static Logger LOG = LoggerFactory.getLogger(FuelBillFactory.class);
-
 	@Inject
 	public FuelBillFactory(EntityManager em, CarRepository carRepository)
 	{
@@ -37,21 +29,10 @@ public class FuelBillFactory extends AbstractBillFactory<FuelBillInput, FuelBill
 	@Transactional
 	public FuelBillEntity create(FuelBillInput input, long carId, String user)
 	{
-		List<String> validate = input.validate();
-		if (!validate.isEmpty())
-		{
-			throw new BadRequestException(Response.status(400).entity(validate).build());
-		}
-
-		BigDecimal vatFactor = new BigDecimal(input.getVatRate());
-		vatFactor = BigDecimal.ONE.add(vatFactor.divide(ONE_HUNDRED, 2, RoundingMode.HALF_UP));
-
 		BillEntity bill = createEntity(carId, user, input);
 
-		BigDecimal unit = calculateUnit(input, vatFactor);
+		BigDecimal unit = calculateUnit(input);
 		calculateTotal(bill, unit, input);
-		calculateNet(bill, vatFactor);
-		calculateUst(bill);
 
 		persistBill(bill);
 
@@ -69,7 +50,7 @@ public class FuelBillFactory extends AbstractBillFactory<FuelBillInput, FuelBill
 		return fuelBill;
 	}
 
-	static BigDecimal calculateUnit(FuelBillInput input, BigDecimal vatFactor)
+	static BigDecimal calculateUnit(FuelBillInput input)
 	{
 		BigDecimal unit = input.getUnit();
 		if (!valueWasSet(unit))
@@ -88,7 +69,7 @@ public class FuelBillFactory extends AbstractBillFactory<FuelBillInput, FuelBill
 			BigDecimal tmp = input.getPricePerUnit().divide(ONE_HUNDRED, 6, RoundingMode.HALF_UP);
 			total = unit.multiply(tmp);
 		}
-		entity.setTotal(total);
+		entity.setTotal(total.setScale(2, RoundingMode.HALF_UP));
 	}
 
 	/**
@@ -104,16 +85,6 @@ public class FuelBillFactory extends AbstractBillFactory<FuelBillInput, FuelBill
 					.divide(unit, 2, RoundingMode.HALF_UP);
 		}
 		return pricePerUnit;
-	}
-
-	static void calculateNet(BillEntity entity, BigDecimal vatFactor)
-	{
-		entity.setNetAmount(entity.getTotal().divide(vatFactor, 4, RoundingMode.HALF_UP));
-	}
-
-	static void calculateUst(BillEntity entity)
-	{
-		entity.setUstAmount(entity.getTotal().subtract(entity.getNetAmount()));
 	}
 
 	static void calculateAvgConsumption(FuelBillEntity entity)

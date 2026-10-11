@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 
 import org.junit.jupiter.api.Test;
 
@@ -18,12 +17,6 @@ class UtilsTest
 		assertTrue(Utils.valueWasSet(BigDecimal.valueOf(10)));
 		assertFalse(Utils.valueWasSet(BigDecimal.ZERO));
 		assertFalse(Utils.valueWasSet(BigDecimal.valueOf(-10)));
-
-		BigInteger invalidInteger = null;
-		assertFalse(Utils.valueWasSet(invalidInteger));
-		assertTrue(Utils.valueWasSet(BigInteger.valueOf(10)));
-		assertFalse(Utils.valueWasSet(BigInteger.ZERO));
-		assertFalse(Utils.valueWasSet(BigInteger.valueOf(-10)));
 	}
 
 	@Test

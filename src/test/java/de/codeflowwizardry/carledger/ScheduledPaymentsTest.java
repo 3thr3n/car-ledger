@@ -16,10 +16,14 @@ import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import de.codeflowwizardry.carledger.data.repository.RecurringBillPaymentRepository;
 import de.codeflowwizardry.carledger.data.repository.RecurringBillRepository;
 import de.codeflowwizardry.carledger.rest.car.recurring.RecurringBillInput;
+import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
-import jakarta.transaction.Transactional;
 
+/**
+ * The job uses its own transactions, so all data is committed before and read
+ * again after running it.
+ */
 @QuarkusTest
 class ScheduledPaymentsTest
 {
@@ -44,157 +48,214 @@ class ScheduledPaymentsTest
 	CarEntity carEntity;
 
 	@BeforeEach
-	@Transactional
 	void setup()
 	{
-		AccountEntity accountEntity = new AccountEntity();
-		accountEntity.setMaxCars(2);
-		accountEntity.setUserId("peter");
-		accountRepository.persist(accountEntity);
+		QuarkusTransaction.requiringNew().run(() -> {
+			AccountEntity accountEntity = new AccountEntity();
+			accountEntity.setMaxCars(2);
+			accountEntity.setUserId("peter");
+			accountRepository.persist(accountEntity);
 
-		carEntity = new CarEntity();
-		carEntity.setUser(accountEntity);
-		carEntity.setName("Normal car");
-		carRepository.persist(carEntity);
+			carEntity = new CarEntity();
+			carEntity.setUser(accountEntity);
+			carEntity.setName("Normal car");
+			carEntity.setManufactureYear(2020);
+			carRepository.persist(carEntity);
+		});
+	}
+
+	@AfterEach
+	void cleanup()
+	{
+		QuarkusTransaction.requiringNew().run(() -> accountRepository.deleteAll());
+	}
+
+	private long persist(BillInterval interval, LocalDate startDate, LocalDate nextDueDate, LocalDate endDate,
+			BigDecimal total)
+	{
+		return QuarkusTransaction.requiringNew().call(() -> {
+			RecurringBillEntity recurringBillEntity = new RecurringBillEntity(carRepository.findById(carEntity.getId(),
+					"peter"));
+			recurringBillEntity.setAmount(BigDecimal.valueOf(480));
+			recurringBillEntity.setCategory(BillCategory.FINANCE);
+			recurringBillEntity.setInterval(interval);
+			recurringBillEntity.setStartDate(startDate);
+			recurringBillEntity.setNextDueDate(nextDueDate);
+			recurringBillEntity.setEndDate(endDate);
+			recurringBillEntity.setName("Test");
+			recurringBillEntity.setTotal(total);
+			recurringBillRepository.persist(recurringBillEntity);
+			return recurringBillEntity.getId();
+		});
+	}
+
+	private List<RecurringBillPaymentEntity> payments()
+	{
+		return QuarkusTransaction.requiringNew()
+				.call(() -> recurringBillPaymentRepository.list("order by dueDate"));
+	}
+
+	private RecurringBillEntity bill(long id)
+	{
+		return QuarkusTransaction.requiringNew().call(() -> recurringBillRepository.findById(id));
 	}
 
 	@Test
-	@Transactional
 	void shouldCreateOneEntry()
 	{
 		// given
-		RecurringBillEntity recurringBillEntity = new RecurringBillEntity(carEntity);
-		recurringBillEntity.setAmount(BigDecimal.valueOf(480));
-		recurringBillEntity.setCategory(BillCategory.FINANCE);
-		recurringBillEntity.setInterval(BillInterval.MONTHLY);
-		recurringBillEntity.setStartDate(LocalDate.of(2026, 2, 1));
-		recurringBillEntity.setNextDueDate(LocalDate.of(2026, 3, 1));
-		recurringBillEntity.setName("Test");
-		recurringBillEntity.setTotal(BigDecimal.ZERO);
-
-		recurringBillRepository.persist(recurringBillEntity);
+		LocalDate today = LocalDate.now();
+		long id = persist(BillInterval.MONTHLY, today.minusMonths(1), today, null, BigDecimal.ZERO);
 
 		// when
 		scheduledPayments.generateDuePayments();
 
 		// then
-		List<RecurringBillPaymentEntity> entities = recurringBillPaymentRepository.listAll();
+		List<RecurringBillPaymentEntity> entities = payments();
 
 		Assertions.assertEquals(1, entities.size());
-		Assertions.assertEquals(recurringBillEntity.getId(), entities.get(0).getBill().getId());
+		Assertions.assertEquals(today, entities.get(0).getDueDate());
+		Assertions.assertEquals(today.minusMonths(1).plusMonths(2), bill(id).getNextDueDate());
+		Assertions.assertEquals(0, BigDecimal.valueOf(480).compareTo(bill(id).getTotal()));
 	}
 
 	@Test
-	@Transactional
+	void shouldCatchUpMissedPayments()
+	{
+		// given: the job did not run for three months
+		LocalDate startDate = LocalDate.now().minusMonths(3);
+		long id = persist(BillInterval.MONTHLY, startDate, startDate, null, BigDecimal.ZERO);
+
+		// when
+		scheduledPayments.generateDuePayments();
+
+		// then
+		List<RecurringBillPaymentEntity> entities = payments();
+
+		Assertions.assertEquals(4, entities.size());
+		Assertions.assertEquals(startDate, entities.get(0).getDueDate());
+		Assertions.assertEquals(startDate.plusMonths(3), entities.get(3).getDueDate());
+		Assertions.assertEquals(startDate.plusMonths(4), bill(id).getNextDueDate());
+		Assertions.assertEquals(0, BigDecimal.valueOf(4 * 480).compareTo(bill(id).getTotal()));
+	}
+
+	@Test
 	void shouldCreateNotAfter()
 	{
 		// given
-		RecurringBillEntity recurringBillEntity = new RecurringBillEntity(carEntity);
-		recurringBillEntity.setAmount(BigDecimal.valueOf(480));
-		recurringBillEntity.setCategory(BillCategory.FINANCE);
-		recurringBillEntity.setInterval(BillInterval.MONTHLY);
-		recurringBillEntity.setStartDate(LocalDate.of(2025, 1, 1));
-		recurringBillEntity.setNextDueDate(LocalDate.of(2026, 1, 1));
-		recurringBillEntity.setEndDate(LocalDate.of(2025, 12, 31));
-		recurringBillEntity.setName("Test");
-		recurringBillEntity.setTotal(BigDecimal.ZERO);
-
-		recurringBillRepository.persist(recurringBillEntity);
+		persist(BillInterval.MONTHLY, LocalDate.of(2025, 1, 1), LocalDate.of(2026, 1, 1), LocalDate.of(2025, 12, 31),
+				BigDecimal.ZERO);
 
 		// when
 		scheduledPayments.generateDuePayments();
 
 		// then
-		List<RecurringBillPaymentEntity> entities = recurringBillPaymentRepository.listAll();
-
-		Assertions.assertEquals(0, entities.size());
+		Assertions.assertEquals(0, payments().size());
 	}
 
 	@Test
-	@Transactional
-	void shouldSkipOnceEntries()
+	void shouldStopAtEndDate()
 	{
 		// given
-		RecurringBillEntity recurringBillEntity = new RecurringBillEntity(carEntity);
-		recurringBillEntity.setAmount(BigDecimal.valueOf(480));
-		recurringBillEntity.setCategory(BillCategory.FINANCE);
-		recurringBillEntity.setInterval(BillInterval.ONCE);
-		recurringBillEntity.setStartDate(LocalDate.now());
-		recurringBillEntity.setName("Test");
-		recurringBillEntity.setTotal(BigDecimal.ZERO);
-
-		recurringBillRepository.persist(recurringBillEntity);
+		LocalDate startDate = LocalDate.now().minusMonths(5);
+		persist(BillInterval.MONTHLY, startDate, startDate, startDate.plusMonths(2), BigDecimal.ZERO);
 
 		// when
 		scheduledPayments.generateDuePayments();
 
-		// then
-		List<RecurringBillPaymentEntity> entities = recurringBillPaymentRepository.listAll();
-
-		Assertions.assertEquals(0, entities.size());
+		// then: end date is exclusive
+		Assertions.assertEquals(2, payments().size());
 	}
 
 	@Test
-	@Transactional
+	void shouldPayOnceEntryOnce()
+	{
+		// given
+		long id = persist(BillInterval.ONCE, LocalDate.now(), LocalDate.now(), null, BigDecimal.ZERO);
+
+		// when
+		scheduledPayments.generateDuePayments();
+		scheduledPayments.generateDuePayments();
+
+		// then
+		Assertions.assertEquals(1, payments().size());
+		Assertions.assertEquals(LocalDate.now(), bill(id).getEndDate());
+	}
+
+	@Test
 	void shouldNotPayPastOnceEntryTwice()
 	{
 		// given
 		RecurringBillInput input = new RecurringBillInput("Test", null, BillInterval.ONCE, BillCategory.FINANCE,
 				LocalDate.now().minusMonths(1), null, BigDecimal.valueOf(480));
-		RecurringBillEntity recurringBillEntity = recurringBillFactory.create(carEntity.getId(), input, "peter");
+		long id = recurringBillFactory.create(carEntity.getId(), input, "peter").getId();
 
 		// when
 		scheduledPayments.generateDuePayments();
 
 		// then
-		List<RecurringBillPaymentEntity> entities = recurringBillPaymentRepository.listAll();
-
-		Assertions.assertEquals(1, entities.size());
+		Assertions.assertEquals(1, payments().size());
+		RecurringBillEntity recurringBillEntity = bill(id);
 		Assertions.assertEquals(0, BigDecimal.valueOf(480).compareTo(recurringBillEntity.getTotal()));
 		Assertions.assertEquals(recurringBillEntity.getStartDate(), recurringBillEntity.getEndDate());
 	}
 
 	@Test
-	@Transactional
 	void shouldSkipAlreadyExistingPayment()
 	{
-		// given: state left behind by older versions for past ONCE entries
+		// given: a payment exists, but the bill was not advanced
 		LocalDate startDate = LocalDate.now().minusMonths(1);
+		long id = persist(BillInterval.ONCE, startDate, startDate, null, BigDecimal.valueOf(480));
 
-		RecurringBillEntity recurringBillEntity = new RecurringBillEntity(carEntity);
-		recurringBillEntity.setAmount(BigDecimal.valueOf(480));
-		recurringBillEntity.setCategory(BillCategory.FINANCE);
-		recurringBillEntity.setInterval(BillInterval.ONCE);
-		recurringBillEntity.setStartDate(startDate);
-		recurringBillEntity.setNextDueDate(startDate);
-		recurringBillEntity.setName("Test");
-		recurringBillEntity.setTotal(BigDecimal.valueOf(480));
-		recurringBillRepository.persist(recurringBillEntity);
-
-		RecurringBillPaymentEntity payment = new RecurringBillPaymentEntity(recurringBillEntity);
-		payment.setAmount(BigDecimal.valueOf(480));
-		payment.setDueDate(startDate);
-		payment.setPaidDate(startDate);
-		recurringBillPaymentRepository.persist(payment);
+		QuarkusTransaction.requiringNew().run(() -> {
+			RecurringBillPaymentEntity payment = new RecurringBillPaymentEntity(recurringBillRepository.findById(id));
+			payment.setAmount(BigDecimal.valueOf(480));
+			payment.setDueDate(startDate);
+			payment.setPaidDate(startDate);
+			recurringBillPaymentRepository.persist(payment);
+		});
 
 		// when
 		scheduledPayments.generateDuePayments();
 
 		// then
-		List<RecurringBillPaymentEntity> entities = recurringBillPaymentRepository.listAll();
-
-		Assertions.assertEquals(1, entities.size());
+		Assertions.assertEquals(1, payments().size());
+		RecurringBillEntity recurringBillEntity = bill(id);
 		Assertions.assertEquals(0, BigDecimal.valueOf(480).compareTo(recurringBillEntity.getTotal()));
 		Assertions.assertEquals(startDate, recurringBillEntity.getEndDate());
 	}
 
-	@AfterEach
-	@Transactional
-	void cleanup()
+	@Test
+	void shouldNotLetOneFailingBillStopTheOthers()
 	{
-		recurringBillRepository.deleteAll();
-		carRepository.deleteAll();
-		accountRepository.deleteAll();
-	}
+		// given: the first bill cannot be paid (amount violates the not null
+		// constraint)
+		LocalDate today = LocalDate.now();
+		long broken = persist(BillInterval.MONTHLY, today, today, null, BigDecimal.ZERO);
+		QuarkusTransaction.requiringNew().run(() -> recurringBillRepository.getEntityManager()
+				.createNativeQuery("alter table recurring_bill alter column r_amount drop not null")
+				.executeUpdate());
+		QuarkusTransaction.requiringNew().run(() -> recurringBillRepository.update("amount = null where id = ?1",
+				broken));
+		long working = persist(BillInterval.MONTHLY, today.minusDays(1), today.minusDays(1), null, BigDecimal.ZERO);
 
+		try
+		{
+			// when
+			scheduledPayments.generateDuePayments();
+
+			// then
+			List<RecurringBillPaymentEntity> entities = payments();
+			Assertions.assertEquals(1, entities.size());
+			Assertions.assertEquals(working, entities.get(0).getBill().getId());
+		} finally
+		{
+			QuarkusTransaction.requiringNew().run(() -> {
+				recurringBillRepository.delete("id", broken);
+				recurringBillRepository.getEntityManager()
+						.createNativeQuery("alter table recurring_bill alter column r_amount set not null")
+						.executeUpdate();
+			});
+		}
+	}
 }

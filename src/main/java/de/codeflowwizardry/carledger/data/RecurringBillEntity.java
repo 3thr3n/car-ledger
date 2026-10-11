@@ -19,7 +19,7 @@ public class RecurringBillEntity
 	@Column(insertable = false, updatable = false)
 	private Long id;
 
-	@Column(name = "r_name")
+	@Column(name = "r_name", nullable = false)
 	private String name; // e.g. "KFZ-Versicherung"
 
 	@Column(name = "r_description")
@@ -28,24 +28,24 @@ public class RecurringBillEntity
 	@Column(name = "r_amount", nullable = false)
 	private BigDecimal amount;
 
-	@Column(name = "r_category")
+	@Column(name = "r_category", nullable = false)
 	@Enumerated(EnumType.STRING)
 	private BillCategory category; // FINANCE, INSURANCE, OTHER
 
-	@Column(name = "r_interval")
+	@Column(name = "r_interval", nullable = false)
 	@Enumerated(EnumType.STRING)
 	private BillInterval interval; // ONCE, MONTHLY, QUARTERLY, SEMI_ANNUALLY, ANNUALLY
 
-	@Column(name = "r_start_date")
+	@Column(name = "r_start_date", nullable = false)
 	private LocalDate startDate;
 
-	@Column(name = "r_next_due_date")
+	@Column(name = "r_next_due_date", nullable = false)
 	private LocalDate nextDueDate; // computed/stored for easy querying
 
 	@Column(name = "r_end_date")
 	private LocalDate endDate; // nullable — open-ended subscriptions
 
-	@ManyToOne(optional = false)
+	@ManyToOne(fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "r_car_id", nullable = false)
 	private CarEntity car;
 

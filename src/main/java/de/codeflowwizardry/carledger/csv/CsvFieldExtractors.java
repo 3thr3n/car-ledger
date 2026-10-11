@@ -1,7 +1,6 @@
 package de.codeflowwizardry.carledger.csv;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -104,13 +103,13 @@ public class CsvFieldExtractors
 		return normalized.replace(',', '.');
 	}
 
-	public static BigInteger getBigInteger(String[] line, CsvColumnMapping mapping, String fieldName)
+	public static Integer getInteger(String[] line, CsvColumnMapping mapping, String fieldName)
 	{
-		return getBigInteger(line, mapping, fieldName, null);
+		return getInteger(line, mapping, fieldName, null);
 	}
 
-	public static BigInteger getBigInteger(String[] line, CsvColumnMapping mapping, String fieldName,
-			BigInteger defaultValue)
+	public static Integer getInteger(String[] line, CsvColumnMapping mapping, String fieldName,
+			Integer defaultValue)
 	{
 		String value = getString(line, mapping, fieldName);
 		if (value == null)
@@ -120,7 +119,7 @@ public class CsvFieldExtractors
 
 		try
 		{
-			return BigInteger.valueOf(Integer.parseInt(value));
+			return Integer.parseInt(value);
 		}
 		catch (NumberFormatException e)
 		{

@@ -1,7 +1,6 @@
 package de.codeflowwizardry.carledger.data;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 
 import jakarta.persistence.*;
 
@@ -29,7 +28,7 @@ public class MaintenanceBillEntity extends AbstractBillEntity
 	private BigDecimal partsCost;
 
 	@Column(name = "m_odometer")
-	private BigInteger odometer;
+	private Integer odometer;
 
 	protected MaintenanceBillEntity()
 	{
@@ -92,12 +91,12 @@ public class MaintenanceBillEntity extends AbstractBillEntity
 		this.partsCost = partsCost;
 	}
 
-	public BigInteger getOdometer()
+	public Integer getOdometer()
 	{
 		return odometer;
 	}
 
-	public void setOdometer(BigInteger odometer)
+	public void setOdometer(Integer odometer)
 	{
 		this.odometer = odometer;
 	}
