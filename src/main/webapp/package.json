@@ -18,6 +18,7 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
+    "@fontsource-variable/inter": "5.3.0",
     "@hey-api/client-fetch": "^0.13.1",
     "@mui/icons-material": "^7.3.9",
     "@mui/material": "^7.3.9",
@@ -27,7 +28,6 @@
     "@tanstack/react-router": "^1.168.1",
     "country-vat": "^1.0.23",
     "dayjs": "^1.11.20",
-    "framer-motion": "^12.38.0",
     "i18n-iso-countries": "^7.14.0",
     "i18next": "^25.10.2",
     "i18next-browser-languagedetector": "^8.2.1",
@@ -37,8 +37,7 @@
     "react-dom": "^19",
     "react-i18next": "^16.6.0",
     "react-number-format": "^5.4.4",
-    "react-toastify": "^11.0.5",
-    "zustand": "^5.0.12"
+    "react-toastify": "^11.0.5"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",

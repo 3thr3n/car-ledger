@@ -1,115 +1,158 @@
 import {
   Box,
+  Button,
   Card,
-  CardContent,
   Container,
   Grid,
+  Stack,
   Typography,
 } from '@mui/material';
-import CarLedgerSubPageHeader from '@/components/CarLedgerSubPageHeader';
-import CarLedgerPage from '@/components/CarLedgerPage';
+import ArrowForwardRounded from '@mui/icons-material/ArrowForwardRounded';
+import UploadFileRounded from '@mui/icons-material/UploadFileRounded';
+import InsightsRounded from '@mui/icons-material/InsightsRounded';
+import { ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
+import useMe from '@/hooks/useMe';
+import { baseUrl } from '@/utils/QueryClient';
+import { RouterButton } from '@/components/ui/links';
+import { billTypes, BillPaletteKey } from '@/utils/billTypes';
+import { BillType } from '@/generated';
+
+interface Feature {
+  key: string;
+  icon: ReactNode;
+  color: BillPaletteKey | 'primary';
+}
+
+const features: Feature[] = [
+  { key: 'fuel', icon: billTypes[BillType.FUEL].icon, color: 'fuel' },
+  {
+    key: 'maintenance',
+    icon: billTypes[BillType.MAINTENANCE].icon,
+    color: 'maintenance',
+  },
+  {
+    key: 'recurring',
+    icon: billTypes[BillType.RECURRING].icon,
+    color: 'recurring',
+  },
+  {
+    key: 'miscellaneous',
+    icon: billTypes[BillType.MISCELLANEOUS].icon,
+    color: 'miscellaneous',
+  },
+  {
+    key: 'import',
+    icon: <UploadFileRounded fontSize="small" />,
+    color: 'primary',
+  },
+  {
+    key: 'stats',
+    icon: <InsightsRounded fontSize="small" />,
+    color: 'primary',
+  },
+];
 
 export default function LandingPage() {
+  const { t } = useTranslation();
+  const { loggedIn } = useMe();
+
   return (
-    <CarLedgerPage id="LandingPage" py={3}>
-      <Box component="section">
-        <Container>
-          <Typography variant="h5" fontWeight={600} gutterBottom>
-            Collect fuel receipts. See your true cost per kilometer.
+    <Box id="LandingPage" sx={{ py: { xs: 5, md: 10 } }}>
+      <Container maxWidth="md">
+        <Stack
+          spacing={3}
+          alignItems="flex-start"
+          sx={{ mb: { xs: 6, md: 9 } }}
+        >
+          <Typography variant="overline" color="primary">
+            {t('landing.eyebrow')}
           </Typography>
-          <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-            Upload or enter fuel bills and CarLedger organizes them, shows
-            trends and helps you plan.
+          <Typography
+            variant="h2"
+            component="h1"
+            sx={{
+              fontSize: { xs: '2.25rem', md: '3.25rem' },
+              textWrap: 'balance',
+            }}
+          >
+            {t('landing.title')}
           </Typography>
-        </Container>
-      </Box>
+          <Typography
+            variant="h6"
+            component="p"
+            color="text.secondary"
+            sx={{ fontWeight: 400, maxWidth: 560 }}
+          >
+            {t('landing.subtitle')}
+          </Typography>
+          {loggedIn ? (
+            <RouterButton
+              to="/dashboard"
+              variant="contained"
+              size="large"
+              endIcon={<ArrowForwardRounded />}
+            >
+              {t('landing.ctaDashboard')}
+            </RouterButton>
+          ) : (
+            <Button
+              href={`${baseUrl}/api/auth/login`}
+              variant="contained"
+              size="large"
+              endIcon={<ArrowForwardRounded />}
+            >
+              {t('landing.cta')}
+            </Button>
+          )}
+        </Stack>
 
-      <Box id="features" sx={{ py: 5 }}>
-        <Container>
-          <Grid container spacing={3}>
-            <Grid size={{ xs: 12, md: 4 }}>
-              <Card variant="outlined" sx={{ height: '100%' }}>
-                <CardContent>
-                  <CarLedgerSubPageHeader
-                    title="Organized Fuel Records"
-                    isCardHeader
-                  />
-                  <Typography variant="body2" color="text.secondary">
-                    Store date, liters, price, odometer and receipt image.
-                    Search and filter by car or date range.
-                  </Typography>
-                </CardContent>
+        <Grid container spacing={2}>
+          {features.map((feature) => (
+            <Grid key={feature.key} size={{ xs: 12, sm: 6 }}>
+              <Card sx={{ p: 2.5, height: '100%' }}>
+                <Box
+                  sx={(theme) => ({
+                    display: 'grid',
+                    placeItems: 'center',
+                    width: 36,
+                    height: 36,
+                    borderRadius: 2.5,
+                    mb: 1.5,
+                    color: theme.vars.palette[feature.color].main,
+                    backgroundColor: `rgba(${theme.vars.palette[feature.color].mainChannel} / 0.12)`,
+                  })}
+                >
+                  {feature.icon}
+                </Box>
+                <Typography variant="subtitle1" fontWeight={650}>
+                  {t(`landing.features.${feature.key}.title`)}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {t(`landing.features.${feature.key}.text`)}
+                </Typography>
               </Card>
             </Grid>
+          ))}
+        </Grid>
 
-            <Grid size={{ xs: 12, md: 4 }}>
-              <Card variant="outlined" sx={{ height: '100%' }}>
-                <CardContent>
-                  <CarLedgerSubPageHeader title="Cost Insights" isCardHeader />
-                  <Typography variant="body2" color="text.secondary">
-                    Automatic cost-per-km calculations and monthly spending
-                    summaries so you spot trends fast.
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-
-            <Grid size={{ xs: 12, md: 4 }}>
-              <Card variant="outlined" sx={{ height: '100%' }}>
-                <CardContent>
-                  <CarLedgerSubPageHeader title="Multiple Cars" isCardHeader />
-                  <Typography variant="body2" color="text.secondary">
-                    Add one or many cars and keep each vehicle's history
-                    separate for accurate comparisons.
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-          </Grid>
-        </Container>
-      </Box>
-
-      <Box
-        id="future"
-        sx={{
-          py: 5,
-          background: (theme) =>
-            `linear-gradient(90deg, ${theme.palette.secondary.dark}, transparent)`,
-        }}
-      >
-        <Container>
-          <CarLedgerSubPageHeader
-            title="Planned — Maintenance & Costs"
-            isCardHeader
-          />
-          <Typography variant="body2" color="text.secondary">
-            Soon you'll be able to add maintenance entries (one-off, monthly,
-            yearly) per car — oil changes, tyres, inspections — and the app will
-            combine them with fuel to show a complete ownership cost.
-          </Typography>
-        </Container>
-      </Box>
-
-      <Box id="get-started" sx={{ py: 5 }}>
-        <Container>
-          <CarLedgerSubPageHeader title="Get started" isCardHeader />
-          <Box component="ol" sx={{ pl: 3, mb: 2 }}>
-            <Typography component="li">
-              Create a free account (coming soon).
-            </Typography>
-            <Typography component="li">
-              Add your car(s) and upload fuel bills.
-            </Typography>
-            <Typography component="li">
-              Explore spending reports and export data.
-            </Typography>
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{ mt: 6, textAlign: 'center' }}
+        >
+          {t('app.openSource')}{' '}
+          <Box
+            component="a"
+            href="https://github.com/3thr3n/car-ledger"
+            target="_blank"
+            rel="noreferrer"
+            sx={{ color: 'primary.main' }}
+          >
+            GitHub
           </Box>
-          <Typography variant="body2" color="text.secondary">
-            This project is an early-stage SPA built with React + TypeScript and
-            will integrate with a Quarkus backend for secure data storage.
-          </Typography>
-        </Container>
-      </Box>
-    </CarLedgerPage>
+        </Typography>
+      </Container>
+    </Box>
   );
 }
