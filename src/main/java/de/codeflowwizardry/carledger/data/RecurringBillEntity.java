@@ -4,6 +4,8 @@ import static de.codeflowwizardry.carledger.data.BillInterval.ONCE;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.YearMonth;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -69,14 +71,19 @@ public class RecurringBillEntity
 			endDate = nextDueDate;
 			return endDate;
 		}
-		nextDueDate = switch (interval)
+		int intervalMonths = switch (interval)
 		{
-			case MONTHLY -> nextDueDate.plusMonths(1);
-			case QUARTERLY -> nextDueDate.plusMonths(3);
-			case SEMI_ANNUALLY -> nextDueDate.plusMonths(6);
-			case ANNUALLY -> nextDueDate.plusYears(1);
-			default -> nextDueDate;
+			case MONTHLY -> 1;
+			case QUARTERLY -> 3;
+			case SEMI_ANNUALLY -> 6;
+			case ANNUALLY -> 12;
+			default -> 0;
 		};
+
+		// Always calculate from the start date, otherwise e.g. Jan 31 -> Feb 28 -> Mar
+		// 28 drifts
+		long elapsedMonths = ChronoUnit.MONTHS.between(YearMonth.from(startDate), YearMonth.from(nextDueDate));
+		nextDueDate = startDate.plusMonths(elapsedMonths + intervalMonths);
 
 		return nextDueDate;
 	}

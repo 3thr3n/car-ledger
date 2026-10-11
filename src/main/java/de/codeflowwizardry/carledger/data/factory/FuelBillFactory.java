@@ -7,7 +7,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
 
-import org.hibernate.exception.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,12 +14,10 @@ import de.codeflowwizardry.carledger.data.BillEntity;
 import de.codeflowwizardry.carledger.data.BillType;
 import de.codeflowwizardry.carledger.data.FuelBillEntity;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
-import de.codeflowwizardry.carledger.exception.AlreadyPresentException;
 import de.codeflowwizardry.carledger.rest.car.fuel.FuelBillInput;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceException;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.core.Response;
@@ -56,23 +53,7 @@ public class FuelBillFactory extends AbstractBillFactory<FuelBillInput, FuelBill
 		calculateNet(bill, vatFactor);
 		calculateUst(bill);
 
-		try
-		{
-			em.persist(bill);
-		}
-		catch (PersistenceException e)
-		{
-			if (e instanceof ConstraintViolationException cve)
-			{
-				LOG.info(cve.getMessage());
-				if (cve.getMessage().contains("not allowed"))
-				{
-					throw new RuntimeException("Something is null where it should not be null!");
-				}
-				throw new AlreadyPresentException("A bill for this car, date and total already exists.", cve);
-			}
-			throw e;
-		}
+		persistBill(bill);
 
 		FuelBillEntity fuelBill = new FuelBillEntity(bill);
 		fuelBill.setDistance(input.getDistance());

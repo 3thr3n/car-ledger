@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import de.codeflowwizardry.carledger.Utils;
 import de.codeflowwizardry.carledger.data.BillEntity;
 import de.codeflowwizardry.carledger.data.BillType;
 import de.codeflowwizardry.carledger.data.CarEntity;
@@ -31,7 +32,9 @@ public record CarOverview(BigInteger totalRefuels, BigInteger totalMaintenanceEv
 		Optional<BigDecimal[]> optAvgConsumptionArray = billEntities.stream()
 				.map(BillEntity::getFuelBill)
 				.filter(Objects::nonNull)
-				.map(FuelBillEntity::getAvgConsumption).map(bd -> new BigDecimal[] {
+				.map(FuelBillEntity::getAvgConsumption)
+				.filter(Utils::valueWasSet)
+				.map(bd -> new BigDecimal[] {
 						bd, BigDecimal.ONE
 				})
 				.reduce((a, b) -> new BigDecimal[] {

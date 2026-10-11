@@ -15,11 +15,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import de.codeflowwizardry.carledger.data.AccountEntity;
+import de.codeflowwizardry.carledger.data.BillCategory;
+import de.codeflowwizardry.carledger.data.BillInterval;
 import de.codeflowwizardry.carledger.data.CarEntity;
 import de.codeflowwizardry.carledger.data.factory.FuelBillFactory;
+import de.codeflowwizardry.carledger.data.factory.RecurringBillFactory;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import de.codeflowwizardry.carledger.rest.car.fuel.FuelBillInput;
+import de.codeflowwizardry.carledger.rest.car.recurring.RecurringBillInput;
 import de.codeflowwizardry.carledger.rest.car.stats.*;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
@@ -33,6 +37,9 @@ class StatsResourceTest
 {
 	@Inject
 	FuelBillFactory fuelBillFactory;
+
+	@Inject
+	RecurringBillFactory recurringBillFactory;
 
 	@Inject
 	AccountRepository accountRepository;
@@ -262,5 +269,95 @@ class StatsResourceTest
 				.body("total.unit", is(25.00f))
 				.body("total.fuelTotal", is(50.00f))
 				.body("hiLo.distance.max", is(0.00f));
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldGetAllTotalStatsUntil2022()
+	{
+		given()
+				.pathParam("carId", carEntity.getId())
+				.queryParam("to", "2022-12-31")
+				.when()
+				.get()
+				.then()
+				.statusCode(200)
+				.body("total.trackedDistance", is(400.00f))
+				.body("total.unit", is(20.00f))
+				.body("total.fuelTotal", is(37.98f));
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldOnlyCountRecurringPaymentsInRange()
+	{
+		// given: 12 monthly payments of 100 in 2023
+		RecurringBillInput input = new RecurringBillInput("Insurance", null, BillInterval.MONTHLY,
+				BillCategory.INSURANCE, LocalDate.of(2023, 1, 1), LocalDate.of(2024, 1, 1), BigDecimal.valueOf(100));
+		recurringBillFactory.create(carEntity.getId(), input, "peter");
+
+		// when / then
+		given()
+				.pathParam("carId", carEntity.getId())
+				.queryParam("from", "2023-01-01")
+				.queryParam("to", "2023-12-31")
+				.when()
+				.get()
+				.then()
+				.statusCode(200)
+				.body("total.total", is(1255.13f));
+
+		given()
+				.pathParam("carId", carEntity.getId())
+				.queryParam("from", "2023-06-01")
+				.queryParam("to", "2023-08-31")
+				.when()
+				.get()
+				.then()
+				.statusCode(200)
+				.body("total.total", is(355.13f));
+
+		given()
+				.pathParam("carId", carEntity.getId())
+				.queryParam("to", "2022-12-31")
+				.when()
+				.get()
+				.then()
+				.statusCode(200)
+				.body("total.total", is(37.98f));
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldIgnoreBillsWithoutDistanceInAverages()
+	{
+		// given
+		FuelBillInput withoutDistance = new FuelBillInput(
+				LocalDate.of(2021, 3, 1),
+				null,
+				BigInteger.valueOf(19),
+				null,
+				BigDecimal.valueOf(25),
+				BigDecimal.valueOf(200),
+				null);
+
+		fuelBillFactory.create(withoutDistance, carEntity.getId(), carEntity.getUser().getUserId());
+
+		// when / then
+		given()
+				.pathParam("carId", carEntity.getId())
+				.when()
+				.get()
+				.then()
+				.statusCode(200)
+				.body("average.distance", is(expected.average().distance().floatValue()))
+				.body("average.fuelCostPerKm", is(expected.average().fuelCostPerKm().floatValue()))
+				.body("average.fuelConsumption", is(expected.average().fuelConsumption().floatValue()));
 	}
 }

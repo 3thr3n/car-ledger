@@ -24,7 +24,8 @@ public record RecurringBill(
 		boolean finished = false;
 		if (entity.getEndDate() != null && entity.getNextDueDate() != null)
 		{
-			finished = entity.getEndDate().isBefore(entity.getNextDueDate());
+			// end date is exclusive, same as in the scheduler and the "onlyRunning" filter
+			finished = !entity.getNextDueDate().isBefore(entity.getEndDate());
 		}
 
 		return new RecurringBill(

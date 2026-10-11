@@ -60,16 +60,16 @@ public class BillRepository extends AbstractBillRepository<BillEntity>
 			params.put("carId", carId);
 		}
 
-		if (from.isPresent() && to.isPresent())
-		{
-			query += " and date >= :from and date <= :to";
-			params.put("from", from.get());
-			params.put("to", to.get());
-
-		} else if (from.isPresent())
+		if (from.isPresent())
 		{
 			query += " and date >= :from";
 			params.put("from", from.get());
+		}
+
+		if (to.isPresent())
+		{
+			query += " and date <= :to";
+			params.put("to", to.get());
 		}
 
 		query += " order by date desc";

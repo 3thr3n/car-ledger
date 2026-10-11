@@ -126,7 +126,8 @@ class RecurringResourceTest
 				.put()
 				.then()
 				.statusCode(202)
-				.body("total", is(1000.0F));
+				.body("total", is(1000.0F))
+				.body("finished", is(true));
 	}
 
 	@Test
