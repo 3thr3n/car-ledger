@@ -24,17 +24,29 @@ carLedger:
     auth:
       username: "postgres"
       secret: "car-ledger-postgresql"
-      secretPasswordKey: "adminPostgres"
+      secretPasswordKey: "postgres-password"
       secretUsernameKey:
 
 carledgerpostgres:
   enabled: true
-  nameOverride: postgresql
-  backup:
-    enabled: false
+  image:
+    repository: docker.io/library/postgres
+    tag: "17-bookworm"
   auth:
     database: "car-ledger"
     existingSecret: "car-ledger-postgresql"
+    secretKeys:
+      adminPasswordKey: "postgres-password"
+  persistence:
+    size: 8Gi
+    storageClass:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
 
 infinispan:
   enabled: true

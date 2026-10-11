@@ -1,15 +1,44 @@
 keycloak:
+  image:
+    repository: quay.io/keycloak/keycloak
+    tag: "26.6"
   auth:
     adminUser: car-ledger
     adminPassword: car-ledger
-  resourcesPreset: small
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
   metrics:
     enabled: false
+  # additional environment variables, e.g. KC_LOG_LEVEL
+  extraEnv: [ ]
   ingress:
     enabled: true
     ingressClassName: nginx
     tls: true
     annotations:
-      kubernetes.io/ingress.class: "nginx"
       cert-manager.io/cluster-issuer: lets-encrypt
     hostname:
+
+# Defaults match the former bitnami chart, so existing databases are reused
+postgresql:
+  image:
+    repository: docker.io/library/postgres
+    tag: "17-bookworm"
+  auth:
+    database: bitnami_keycloak
+    username: bn_keycloak
+  persistence:
+    size: 8Gi
+    storageClass:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
