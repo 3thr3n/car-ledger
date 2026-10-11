@@ -1,4 +1,4 @@
-name: Lint frontend
+name: Lint and test frontend
 on: [push]
 jobs:
   verify:
@@ -16,8 +16,10 @@ jobs:
       with:
         node-version: ${{ matrix.node_version }}
 
-    - name: Build with yarn
+    - name: Lint, type check and unit tests
       run: |
         cd src/main/webapp
-        yarn install
+        yarn install --frozen-lockfile
         yarn lint
+        yarn tsc -b
+        yarn test

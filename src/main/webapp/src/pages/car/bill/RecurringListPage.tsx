@@ -1,8 +1,16 @@
-import { FormControlLabel, Stack, Switch, Typography } from '@mui/material';
+import {
+  FormControlLabel,
+  IconButton,
+  Stack,
+  Switch,
+  Tooltip,
+  Typography,
+} from '@mui/material';
+import EventBusyRounded from '@mui/icons-material/EventBusyRounded';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { BillType } from '@/generated';
+import { BillType, RecurringBill } from '@/generated';
 import { getAllRecurringBillsOptions } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
 import { PageModel } from '@/hooks/useBillList';
@@ -11,6 +19,7 @@ import { RouterButton } from '@/components/ui/links';
 import BillTable from '@/components/bill/BillTable';
 import { useRecurringColumns } from '@/components/bill/columns';
 import useDeleteBill from '@/components/bill/useDeleteBill';
+import EndRecurringDialog from '@/components/bill/EndRecurringDialog';
 
 export default function RecurringListPage({ carId }: { carId: number }) {
   const { t } = useTranslation();
@@ -21,6 +30,7 @@ export default function RecurringListPage({ carId }: { carId: number }) {
   });
   const { columns, mobileRow } = useRecurringColumns();
   const onDelete = useDeleteBill(carId, true);
+  const [toEnd, setToEnd] = useState<RecurringBill>();
 
   const { data, isLoading, isFetching } = useQuery({
     ...getAllRecurringBillsOptions({
@@ -70,6 +80,21 @@ export default function RecurringListPage({ carId }: { carId: number }) {
         onPageModelChange={setPageModel}
         loading={isLoading || isFetching}
         onDelete={onDelete}
+        rowActions={(row) =>
+          !row.finished && (
+            <Tooltip title={t('bill.end.button')}>
+              <IconButton
+                size="small"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  setToEnd(row);
+                }}
+              >
+                <EventBusyRounded fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          )
+        }
         emptyTitle={t('bill.empty.title', { type: t('bill.types.RECURRING') })}
         emptyText={t('bill.empty.RECURRING')}
         emptyAction={
@@ -82,6 +107,11 @@ export default function RecurringListPage({ carId }: { carId: number }) {
             {t('bill.add.button')}
           </RouterButton>
         }
+      />
+      <EndRecurringDialog
+        carId={carId}
+        bill={toEnd}
+        onClose={() => setToEnd(undefined)}
       />
     </Section>
   );

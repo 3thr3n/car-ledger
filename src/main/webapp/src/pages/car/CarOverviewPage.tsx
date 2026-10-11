@@ -7,6 +7,7 @@ import WaterDropRounded from '@mui/icons-material/WaterDropRounded';
 import ArrowForwardRounded from '@mui/icons-material/ArrowForwardRounded';
 import { useQuery } from '@tanstack/react-query';
 import { Fragment } from 'react';
+import { useNavigate } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 import {
   getAllRecurringBillsOptions,
@@ -37,6 +38,7 @@ export default function CarOverviewPage({ id }: { id: number }) {
   const ledger = useBillList('all', id, 10);
   const { columns, mobileRow } = useLedgerColumns();
   const onDelete = useDeleteBill(id);
+  const navigate = useNavigate();
 
   const { data: running } = useQuery(
     getAllRecurringBillsOptions({
@@ -132,6 +134,15 @@ export default function CarOverviewPage({ id }: { id: number }) {
               onPageModelChange={ledger.setPageModel}
               loading={ledger.isLoading || ledger.isFetching}
               onDelete={onDelete}
+              onEdit={(row) =>
+                row.type &&
+                row.type !== BillType.RECURRING &&
+                navigate({
+                  to: '/car/$id/bill/$billId/edit',
+                  params: { id: `${id}`, billId: `${row.id}` },
+                  search: { type: row.type },
+                })
+              }
               emptyTitle={t('car.overview.emptyTitle')}
               emptyText={t('car.overview.emptyText')}
               emptyAction={

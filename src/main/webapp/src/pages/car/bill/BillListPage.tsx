@@ -1,5 +1,6 @@
 import { Box } from '@mui/material';
 import { GridColDef, GridValidRowModel } from '@mui/x-data-grid';
+import { useNavigate } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 import { BillType } from '@/generated';
 import useBillList from '@/hooks/useBillList';
@@ -49,6 +50,7 @@ export default function BillListPage({
   const list = useBillList(kinds[type], carId);
   const { columns, mobileRow } = useColumns(type);
   const onDelete = useDeleteBill(carId);
+  const navigate = useNavigate();
 
   return (
     <Section flush>
@@ -68,6 +70,13 @@ export default function BillListPage({
         onPageModelChange={list.setPageModel}
         loading={list.isLoading || list.isFetching}
         onDelete={onDelete}
+        onEdit={(row) =>
+          navigate({
+            to: '/car/$id/bill/$billId/edit',
+            params: { id: `${carId}`, billId: `${row.id}` },
+            search: { type },
+          })
+        }
         emptyTitle={t('bill.empty.title', { type: t(`bill.types.${type}`) })}
         emptyText={t(`bill.empty.${type}`)}
         emptyAction={

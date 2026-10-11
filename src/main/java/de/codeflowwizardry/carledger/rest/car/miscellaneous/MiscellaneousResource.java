@@ -16,6 +16,7 @@ import de.codeflowwizardry.carledger.data.repository.MiscellaneousBillRepository
 import de.codeflowwizardry.carledger.rest.car.AbstractBillResource;
 import de.codeflowwizardry.carledger.rest.records.BillPaged;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -70,5 +71,32 @@ public class MiscellaneousResource
 				.accepted(MiscellaneousBill
 						.convert(miscellaneousBillFactory.create(miscellaneousBillInput, carId, context.getName())))
 				.build();
+	}
+
+	@GET
+	@Path("{billId: \\d+}")
+	@Produces(MediaType.APPLICATION_JSON)
+	@Operation(operationId = "getMiscellaneousBill", description = "Gets one bill of the car")
+	@APIResponse(responseCode = "200", description = "Bill found.")
+	@APIResponse(responseCode = "404", description = "Bill not found for the car of your user.")
+	public MiscellaneousBill getBill(@PathParam("carId") long carId, @PathParam("billId") long billId)
+	{
+		return MiscellaneousBill.convert(findMyBill(carId, billId));
+	}
+
+	@POST
+	@Path("{billId: \\d+}")
+	@Transactional
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	@Operation(operationId = "updateMiscellaneousBill", description = "Updates a bill, calculated values are calculated again")
+	@APIResponse(responseCode = "200", description = "Bill updated.")
+	@APIResponse(responseCode = "400", description = "Validation failed, please check the response", content = @Content(schema = @Schema(implementation = List.class)))
+	@APIResponse(responseCode = "404", description = "Bill not found for the car of your user.")
+	@APIResponse(responseCode = "409", description = "Another bill with the same date and total exists.")
+	public MiscellaneousBill updateBill(@PathParam("carId") long carId, @PathParam("billId") long billId,
+			MiscellaneousBillInput input)
+	{
+		return MiscellaneousBill.convert(miscellaneousBillFactory.update(findMyBill(carId, billId), input));
 	}
 }

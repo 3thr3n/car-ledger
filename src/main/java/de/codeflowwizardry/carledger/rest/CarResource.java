@@ -170,4 +170,18 @@ public class CarResource extends AbstractResource
 				|| carInput.year() < 1900
 				|| carInput.year() > Calendar.getInstance().get(Calendar.YEAR) + 1;
 	}
+
+	@DELETE
+	@Path("/{id}")
+	@Operation(operationId = "deleteMyCar", description = "Deletes the car including all its bills and recurring bills")
+	@APIResponse(responseCode = "204", description = "Car deleted.")
+	@APIResponse(responseCode = "404", description = "Car was not found.")
+	public Response deleteCar(@PathParam("id") Long id)
+	{
+		if (!carRepository.deleteForUser(id, context.getName()))
+		{
+			return Response.status(404).build();
+		}
+		return Response.noContent().build();
+	}
 }

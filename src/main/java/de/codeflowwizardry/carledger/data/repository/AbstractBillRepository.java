@@ -45,6 +45,17 @@ public abstract class AbstractBillRepository<T extends AbstractBillEntity> imple
 	}
 
 	/**
+	 * @return the bill, if it belongs to the car of the user
+	 */
+	public Optional<T> findBill(long carId, long billId, String username)
+	{
+		return find("from " + entityName + " e join fetch e.bill b"
+				+ " where b.id = :billId and b.car.id = :carId and b.car.user.userId = :username",
+				Map.of("billId", billId, "carId", carId, "username", username))
+				.firstResultOptional();
+	}
+
+	/**
 	 * @param type
 	 *            to filter for, <code>null</code> for bills of all types
 	 * @return all years with bills, newest first

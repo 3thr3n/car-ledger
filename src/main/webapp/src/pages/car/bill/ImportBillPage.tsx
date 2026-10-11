@@ -32,6 +32,7 @@ import { invalidateCar, localClient } from '@/utils/QueryClient';
 import { BackendError } from '@/utils/BackendError';
 import { billTypeList, billTypes } from '@/utils/billTypes';
 import useVatCountry from '@/hooks/useVatCountry';
+import { guessMapping } from '@/utils/csv';
 import PageHeader from '@/components/ui/PageHeader';
 import VatCountrySelect from '@/components/bill/VatCountrySelect';
 import { RouterButton } from '@/components/ui/links';
@@ -39,21 +40,6 @@ import { RouterButton } from '@/components/ui/links';
 type ImportType = BillType.FUEL | BillType.MAINTENANCE | BillType.MISCELLANEOUS;
 
 const importTypes = billTypeList.filter((meta) => meta.importable);
-
-/** proposes a column for every field, by comparing the names */
-function guessMapping(fields: string[], headers: string[]) {
-  const mapping: Record<string, number> = {};
-  fields.forEach((field) => {
-    const index = headers.findIndex((header) =>
-      header
-        .toLowerCase()
-        .replace(/[\s_-]/g, '')
-        .includes(field.toLowerCase()),
-    );
-    if (index >= 0) mapping[field] = index;
-  });
-  return mapping;
-}
 
 export interface ImportBillPageProps {
   carId: number;

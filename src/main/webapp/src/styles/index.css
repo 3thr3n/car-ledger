@@ -11,3 +11,9 @@ body {
 code {
   font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
 }
+
+/* toasts use the font of the app, the body's font features break the spaces of
+   the default sans-serif font */
+.Toastify .Toastify__toast {
+  font-family: inherit;
+}

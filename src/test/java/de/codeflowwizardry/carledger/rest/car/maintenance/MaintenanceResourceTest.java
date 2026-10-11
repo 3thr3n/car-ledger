@@ -194,4 +194,77 @@ class MaintenanceResourceTest
 				.then()
 				.statusCode(404);
 	}
+
+	private long firstBillId()
+	{
+		return given()
+				.pathParam("carId", carId)
+				.when()
+				.get("all")
+				.then()
+				.statusCode(200)
+				.extract()
+				.jsonPath()
+				.getLong("data[0].id");
+	}
+
+	@Test
+	@TestSecurity(user = "alice", roles = {
+			"user"
+	})
+	void shouldUpdateBill()
+	{
+		long billId = firstBillId();
+
+		given()
+				.pathParam("carId", carId)
+				.contentType(ContentType.JSON)
+				.body("""
+						{
+							"date": "2025-03-01",
+							"total": 120,
+							"vatRate": 19,
+							"odometer": 12000,
+							"laborCost": 80,
+							"partsCost": 40,
+							"description": "Brakes",
+							"workshop": "Garage"
+						}
+						""")
+				.when()
+				.post(String.valueOf(billId))
+				.then()
+				.statusCode(200)
+				.body("total", is(120.0F))
+				.body("vatRate", is(19))
+				.body("workshop", is("Garage"));
+
+		given()
+				.pathParam("carId", carId)
+				.when()
+				.get(String.valueOf(billId))
+				.then()
+				.statusCode(200)
+				.body("date", is("2025-03-01"))
+				.body("description", is("Brakes"))
+				.body("odometer", is(12000));
+	}
+
+	@Test
+	@TestSecurity(user = "alice", roles = {
+			"user"
+	})
+	void shouldNotUpdateUnknownBill()
+	{
+		given()
+				.pathParam("carId", carId)
+				.contentType(ContentType.JSON)
+				.body("""
+						{ "date": "2025-03-01", "total": 120, "vatRate": 19 }
+						""")
+				.when()
+				.post("999999")
+				.then()
+				.statusCode(404);
+	}
 }

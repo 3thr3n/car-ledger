@@ -4,10 +4,14 @@ import { useMutation } from '@tanstack/react-query';
 import dayjs, { Dayjs } from 'dayjs';
 import { FormEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { BillType } from '@/generated';
-import { addNewFuelBillMutation } from '@/generated/@tanstack/react-query.gen';
+import { BillType, FuelBill } from '@/generated';
+import {
+  addNewFuelBillMutation,
+  updateFuelBillMutation,
+} from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
-import { toApiDate, useFormat } from '@/utils/format';
+import { hasValue, toApiDate, useFormat } from '@/utils/format';
+import { derive, isSet } from '@/utils/fuel';
 import useVatCountry from '@/hooks/useVatCountry';
 import NumberField from './NumberField';
 import VatCountrySelect from './VatCountrySelect';
@@ -27,37 +31,46 @@ interface FuelState {
 
 const empty = (): FuelState => ({ date: dayjs() });
 
-const isSet = (value?: number) => value !== undefined && value > 0;
-
 /**
- * Same calculation as the backend: two of total, unit and price per unit define the third
+ * Starts with total and liters only, so changing one of them calculates the price again
  */
-function derive({ total, unit, pricePerUnit }: FuelState) {
-  if (isSet(unit) && isSet(pricePerUnit) && !isSet(total)) {
-    return { total: (unit! * pricePerUnit!) / 100 };
-  }
-  if (isSet(total) && isSet(pricePerUnit) && !isSet(unit)) {
-    return { unit: total! / (pricePerUnit! / 100) };
-  }
-  if (isSet(total) && isSet(unit) && !isSet(pricePerUnit)) {
-    return { pricePerUnit: (total! * 100) / unit! };
-  }
-  return {};
-}
+const fromBill = (bill: FuelBill): FuelState => ({
+  date: dayjs(bill.date),
+  total: bill.total,
+  unit: bill.unit,
+  distance: hasValue(bill.distance) ? bill.distance : undefined,
+  estimateConsumption: hasValue(bill.estimateConsumption)
+    ? bill.estimateConsumption
+    : undefined,
+});
 
-export default function FuelForm({ carId }: { carId: number }) {
+export default function FuelForm({
+  carId,
+  bill,
+}: {
+  carId: number;
+  /** bill to edit, a new one is created without */
+  bill?: FuelBill;
+}) {
   const { t } = useTranslation();
   const format = useFormat();
-  const vat = useVatCountry();
-  const [form, setForm] = useState<FuelState>(empty);
+  const vat = useVatCountry(bill?.vatRate);
+  const [form, setForm] = useState<FuelState>(() =>
+    bill ? fromBill(bill) : empty(),
+  );
   const [touched, setTouched] = useState(false);
 
   const save = useSaveBill(carId, BillType.FUEL, () => {
     setForm(empty());
     setTouched(false);
   });
-  const mutation = useMutation({
+  const create = useMutation({
     ...addNewFuelBillMutation({ client: localClient }),
+    onSuccess: save.onSuccess,
+    onError: save.onError,
+  });
+  const update = useMutation({
+    ...updateFuelBillMutation({ client: localClient }),
     onSuccess: save.onSuccess,
     onError: save.onError,
   });
@@ -85,18 +98,20 @@ export default function FuelForm({ carId }: { carId: number }) {
     setTouched(true);
     if (errors.date || errors.amounts) return;
 
-    mutation.mutate({
-      path: { carId },
-      body: {
-        date: toApiDate(form.date),
-        vatRate: vat.vatRate,
-        total: form.total,
-        unit: form.unit,
-        pricePerUnit: form.pricePerUnit,
-        distance: form.distance,
-        estimateConsumption: form.estimateConsumption,
-      },
-    });
+    const body = {
+      date: toApiDate(form.date),
+      vatRate: vat.vatRate,
+      total: form.total,
+      unit: form.unit,
+      pricePerUnit: form.pricePerUnit,
+      distance: form.distance,
+      estimateConsumption: form.estimateConsumption,
+    };
+    if (bill?.id !== undefined) {
+      update.mutate({ path: { carId, billId: bill.id }, body });
+    } else {
+      create.mutate({ path: { carId }, body });
+    }
   };
 
   const computed = (
@@ -200,7 +215,11 @@ export default function FuelForm({ carId }: { carId: number }) {
         </Grid>
       </Grid>
 
-      <FormActions pending={mutation.isPending} onSaveAgain={save.markAgain} />
+      <FormActions
+        pending={create.isPending || update.isPending}
+        onSaveAgain={save.markAgain}
+        editing={!!bill}
+      />
     </Stack>
   );
 }

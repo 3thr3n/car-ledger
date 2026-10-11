@@ -16,6 +16,7 @@ import de.codeflowwizardry.carledger.data.repository.FuelBillRepository;
 import de.codeflowwizardry.carledger.rest.car.AbstractBillResource;
 import de.codeflowwizardry.carledger.rest.records.BillPaged;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -67,5 +68,32 @@ public class FuelResource extends AbstractBillResource<FuelBillRepository, FuelB
 	{
 		return Response.accepted(FuelBill.convert(fuelBillFactory.create(fuelBillPojo, carId, context.getName())))
 				.build();
+	}
+
+	@GET
+	@Path("{billId: \\d+}")
+	@Produces(MediaType.APPLICATION_JSON)
+	@Operation(operationId = "getFuelBill", description = "Gets one bill of the car")
+	@APIResponse(responseCode = "200", description = "Bill found.")
+	@APIResponse(responseCode = "404", description = "Bill not found for the car of your user.")
+	public FuelBill getBill(@PathParam("carId") long carId, @PathParam("billId") long billId)
+	{
+		return FuelBill.convert(findMyBill(carId, billId));
+	}
+
+	@POST
+	@Path("{billId: \\d+}")
+	@Transactional
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	@Operation(operationId = "updateFuelBill", description = "Updates a bill, calculated values are calculated again")
+	@APIResponse(responseCode = "200", description = "Bill updated.")
+	@APIResponse(responseCode = "400", description = "Validation failed, please check the response", content = @Content(schema = @Schema(implementation = List.class)))
+	@APIResponse(responseCode = "404", description = "Bill not found for the car of your user.")
+	@APIResponse(responseCode = "409", description = "Another bill with the same date and total exists.")
+	public FuelBill updateBill(@PathParam("carId") long carId, @PathParam("billId") long billId,
+			FuelBillInput input)
+	{
+		return FuelBill.convert(fuelBillFactory.update(findMyBill(carId, billId), input));
 	}
 }

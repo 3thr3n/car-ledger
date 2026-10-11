@@ -130,6 +130,7 @@ export type FuelBill = {
     id?: number;
     date?: LocalDate;
     year?: number;
+    vatRate?: number;
     distance?: number;
     unit?: number;
     pricePerUnit?: number;
@@ -168,6 +169,7 @@ export type MaintenanceBill = {
     id?: number;
     date?: LocalDate;
     year?: number;
+    vatRate?: number;
     workshop?: string;
     description?: string;
     total?: number;
@@ -191,6 +193,7 @@ export type MiscellaneousBill = {
     id?: number;
     date?: LocalDate;
     year?: number;
+    vatRate?: number;
     description?: string;
     total?: number;
 };
@@ -208,11 +211,16 @@ export type RecurringBill = {
     description?: string;
     nextDueDate?: LocalDate;
     category?: BillCategory;
+    billInterval?: BillInterval;
     startDate?: LocalDate;
     endDate?: LocalDate;
     amount?: number;
     total?: number;
     finished?: boolean;
+};
+
+export type RecurringBillEndInput = {
+    endDate?: LocalDate;
 };
 
 export type RecurringBillInput = {
@@ -393,6 +401,68 @@ export type GetAllFuelBillYearsResponses = {
 
 export type GetAllFuelBillYearsResponse = GetAllFuelBillYearsResponses[keyof GetAllFuelBillYearsResponses];
 
+export type GetFuelBillData = {
+    body?: never;
+    path: {
+        carId: number;
+        billId: number;
+    };
+    query?: never;
+    url: '/api/bill/{carId}/fuel/{billId}';
+};
+
+export type GetFuelBillErrors = {
+    /**
+     * Bill not found for the car of your user.
+     */
+    404: unknown;
+};
+
+export type GetFuelBillResponses = {
+    /**
+     * Bill found.
+     */
+    200: FuelBill;
+};
+
+export type GetFuelBillResponse = GetFuelBillResponses[keyof GetFuelBillResponses];
+
+export type UpdateFuelBillData = {
+    body: FuelBillInput;
+    path: {
+        carId: number;
+        billId: number;
+    };
+    query?: never;
+    url: '/api/bill/{carId}/fuel/{billId}';
+};
+
+export type UpdateFuelBillErrors = {
+    /**
+     * Validation failed, please check the response
+     */
+    400: Array<unknown>;
+    /**
+     * Bill not found for the car of your user.
+     */
+    404: unknown;
+    /**
+     * Another bill with the same date and total exists.
+     */
+    409: unknown;
+};
+
+export type UpdateFuelBillError = UpdateFuelBillErrors[keyof UpdateFuelBillErrors];
+
+export type UpdateFuelBillResponses = {
+    /**
+     * Bill updated.
+     */
+    200: FuelBill;
+};
+
+export type UpdateFuelBillResponse = UpdateFuelBillResponses[keyof UpdateFuelBillResponses];
+
 export type AddNewMaintenanceBillData = {
     body: MaintenanceBillInput;
     path: {
@@ -465,6 +535,68 @@ export type GetAllMaintenanceBillYearsResponses = {
 };
 
 export type GetAllMaintenanceBillYearsResponse = GetAllMaintenanceBillYearsResponses[keyof GetAllMaintenanceBillYearsResponses];
+
+export type GetMaintenanceBillData = {
+    body?: never;
+    path: {
+        carId: number;
+        billId: number;
+    };
+    query?: never;
+    url: '/api/bill/{carId}/maintenance/{billId}';
+};
+
+export type GetMaintenanceBillErrors = {
+    /**
+     * Bill not found for the car of your user.
+     */
+    404: unknown;
+};
+
+export type GetMaintenanceBillResponses = {
+    /**
+     * Bill found.
+     */
+    200: MaintenanceBill;
+};
+
+export type GetMaintenanceBillResponse = GetMaintenanceBillResponses[keyof GetMaintenanceBillResponses];
+
+export type UpdateMaintenanceBillData = {
+    body: MaintenanceBillInput;
+    path: {
+        carId: number;
+        billId: number;
+    };
+    query?: never;
+    url: '/api/bill/{carId}/maintenance/{billId}';
+};
+
+export type UpdateMaintenanceBillErrors = {
+    /**
+     * Validation failed, please check the response
+     */
+    400: Array<unknown>;
+    /**
+     * Bill not found for the car of your user.
+     */
+    404: unknown;
+    /**
+     * Another bill with the same date and total exists.
+     */
+    409: unknown;
+};
+
+export type UpdateMaintenanceBillError = UpdateMaintenanceBillErrors[keyof UpdateMaintenanceBillErrors];
+
+export type UpdateMaintenanceBillResponses = {
+    /**
+     * Bill updated.
+     */
+    200: MaintenanceBill;
+};
+
+export type UpdateMaintenanceBillResponse = UpdateMaintenanceBillResponses[keyof UpdateMaintenanceBillResponses];
 
 export type AddNewMiscellaneousBillData = {
     body: MiscellaneousBillInput;
@@ -539,6 +671,68 @@ export type GetAllMiscellaneousBillYearsResponses = {
 
 export type GetAllMiscellaneousBillYearsResponse = GetAllMiscellaneousBillYearsResponses[keyof GetAllMiscellaneousBillYearsResponses];
 
+export type GetMiscellaneousBillData = {
+    body?: never;
+    path: {
+        carId: number;
+        billId: number;
+    };
+    query?: never;
+    url: '/api/bill/{carId}/miscellaneous/{billId}';
+};
+
+export type GetMiscellaneousBillErrors = {
+    /**
+     * Bill not found for the car of your user.
+     */
+    404: unknown;
+};
+
+export type GetMiscellaneousBillResponses = {
+    /**
+     * Bill found.
+     */
+    200: MiscellaneousBill;
+};
+
+export type GetMiscellaneousBillResponse = GetMiscellaneousBillResponses[keyof GetMiscellaneousBillResponses];
+
+export type UpdateMiscellaneousBillData = {
+    body: MiscellaneousBillInput;
+    path: {
+        carId: number;
+        billId: number;
+    };
+    query?: never;
+    url: '/api/bill/{carId}/miscellaneous/{billId}';
+};
+
+export type UpdateMiscellaneousBillErrors = {
+    /**
+     * Validation failed, please check the response
+     */
+    400: Array<unknown>;
+    /**
+     * Bill not found for the car of your user.
+     */
+    404: unknown;
+    /**
+     * Another bill with the same date and total exists.
+     */
+    409: unknown;
+};
+
+export type UpdateMiscellaneousBillError = UpdateMiscellaneousBillErrors[keyof UpdateMiscellaneousBillErrors];
+
+export type UpdateMiscellaneousBillResponses = {
+    /**
+     * Bill updated.
+     */
+    200: MiscellaneousBill;
+};
+
+export type UpdateMiscellaneousBillResponse = UpdateMiscellaneousBillResponses[keyof UpdateMiscellaneousBillResponses];
+
 export type GetAllRecurringBillsData = {
     body?: never;
     path: {
@@ -612,6 +806,38 @@ export type DeleteRecurringBillResponses = {
      */
     202: unknown;
 };
+
+export type EndRecurringBillData = {
+    body: RecurringBillEndInput;
+    path: {
+        billId: number;
+        carId: number;
+    };
+    query?: never;
+    url: '/api/bill/{carId}/recurring/{billId}/end';
+};
+
+export type EndRecurringBillErrors = {
+    /**
+     * Validation failed, please check the response
+     */
+    400: Array<unknown>;
+    /**
+     * Bill not found for the car of your user.
+     */
+    404: unknown;
+};
+
+export type EndRecurringBillError = EndRecurringBillErrors[keyof EndRecurringBillErrors];
+
+export type EndRecurringBillResponses = {
+    /**
+     * Bill ended.
+     */
+    200: RecurringBill;
+};
+
+export type EndRecurringBillResponse = EndRecurringBillResponses[keyof EndRecurringBillResponses];
 
 export type GetAllBillYearsData = {
     body?: never;
@@ -697,6 +923,31 @@ export type CreateCarResponses = {
      */
     201: unknown;
 };
+
+export type DeleteMyCarData = {
+    body?: never;
+    path: {
+        id: number;
+    };
+    query?: never;
+    url: '/api/car/my/{id}';
+};
+
+export type DeleteMyCarErrors = {
+    /**
+     * Car was not found.
+     */
+    404: unknown;
+};
+
+export type DeleteMyCarResponses = {
+    /**
+     * Car deleted.
+     */
+    204: void;
+};
+
+export type DeleteMyCarResponse = DeleteMyCarResponses[keyof DeleteMyCarResponses];
 
 export type GetMyCarData = {
     body?: never;

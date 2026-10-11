@@ -4,10 +4,13 @@ import { useMutation } from '@tanstack/react-query';
 import dayjs, { Dayjs } from 'dayjs';
 import { FormEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { BillType } from '@/generated';
-import { addNewMaintenanceBillMutation } from '@/generated/@tanstack/react-query.gen';
+import { BillType, MaintenanceBill } from '@/generated';
+import {
+  addNewMaintenanceBillMutation,
+  updateMaintenanceBillMutation,
+} from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
-import { toApiDate, useFormat } from '@/utils/format';
+import { hasValue, toApiDate, useFormat } from '@/utils/format';
 import useVatCountry from '@/hooks/useVatCountry';
 import NumberField from './NumberField';
 import VatCountrySelect from './VatCountrySelect';
@@ -32,19 +35,43 @@ const empty = (): MaintenanceState => ({
   description: '',
 });
 
-export default function MaintenanceForm({ carId }: { carId: number }) {
+const fromBill = (bill: MaintenanceBill): MaintenanceState => ({
+  date: dayjs(bill.date),
+  workshop: bill.workshop ?? '',
+  description: bill.description ?? '',
+  odometer: hasValue(bill.odometer) ? bill.odometer : undefined,
+  laborCost: hasValue(bill.laborCost) ? bill.laborCost : undefined,
+  partsCost: hasValue(bill.partsCost) ? bill.partsCost : undefined,
+  total: bill.total,
+});
+
+export default function MaintenanceForm({
+  carId,
+  bill,
+}: {
+  carId: number;
+  /** bill to edit, a new one is created without */
+  bill?: MaintenanceBill;
+}) {
   const { t } = useTranslation();
   const format = useFormat();
-  const vat = useVatCountry();
-  const [form, setForm] = useState<MaintenanceState>(empty);
+  const vat = useVatCountry(bill?.vatRate);
+  const [form, setForm] = useState<MaintenanceState>(() =>
+    bill ? fromBill(bill) : empty(),
+  );
   const [touched, setTouched] = useState(false);
 
   const save = useSaveBill(carId, BillType.MAINTENANCE, () => {
     setForm(empty());
     setTouched(false);
   });
-  const mutation = useMutation({
+  const create = useMutation({
     ...addNewMaintenanceBillMutation({ client: localClient }),
+    onSuccess: save.onSuccess,
+    onError: save.onError,
+  });
+  const update = useMutation({
+    ...updateMaintenanceBillMutation({ client: localClient }),
     onSuccess: save.onSuccess,
     onError: save.onError,
   });
@@ -69,19 +96,21 @@ export default function MaintenanceForm({ carId }: { carId: number }) {
     setTouched(true);
     if (errors.date || errors.total) return;
 
-    mutation.mutate({
-      path: { carId },
-      body: {
-        date: toApiDate(form.date),
-        vatRate: vat.vatRate,
-        total,
-        workshop: form.workshop.trim() || undefined,
-        description: form.description.trim() || undefined,
-        odometer: form.odometer,
-        laborCost: form.laborCost,
-        partsCost: form.partsCost,
-      },
-    });
+    const body = {
+      date: toApiDate(form.date),
+      vatRate: vat.vatRate,
+      total,
+      workshop: form.workshop.trim() || undefined,
+      description: form.description.trim() || undefined,
+      odometer: form.odometer,
+      laborCost: form.laborCost,
+      partsCost: form.partsCost,
+    };
+    if (bill?.id !== undefined) {
+      update.mutate({ path: { carId, billId: bill.id }, body });
+    } else {
+      create.mutate({ path: { carId }, body });
+    }
   };
 
   return (
@@ -168,7 +197,11 @@ export default function MaintenanceForm({ carId }: { carId: number }) {
         </Grid>
       </Grid>
 
-      <FormActions pending={mutation.isPending} onSaveAgain={save.markAgain} />
+      <FormActions
+        pending={create.isPending || update.isPending}
+        onSaveAgain={save.markAgain}
+        editing={!!bill}
+      />
     </Stack>
   );
 }

@@ -4,8 +4,11 @@ import { useMutation } from '@tanstack/react-query';
 import dayjs, { Dayjs } from 'dayjs';
 import { FormEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { BillType } from '@/generated';
-import { addNewMiscellaneousBillMutation } from '@/generated/@tanstack/react-query.gen';
+import { BillType, MiscellaneousBill } from '@/generated';
+import {
+  addNewMiscellaneousBillMutation,
+  updateMiscellaneousBillMutation,
+} from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
 import { toApiDate } from '@/utils/format';
 import useVatCountry from '@/hooks/useVatCountry';
@@ -22,18 +25,38 @@ interface MiscellaneousState {
 
 const empty = (): MiscellaneousState => ({ date: dayjs(), description: '' });
 
-export default function MiscellaneousForm({ carId }: { carId: number }) {
+const fromBill = (bill: MiscellaneousBill): MiscellaneousState => ({
+  date: dayjs(bill.date),
+  description: bill.description ?? '',
+  total: bill.total,
+});
+
+export default function MiscellaneousForm({
+  carId,
+  bill,
+}: {
+  carId: number;
+  /** bill to edit, a new one is created without */
+  bill?: MiscellaneousBill;
+}) {
   const { t } = useTranslation();
-  const vat = useVatCountry();
-  const [form, setForm] = useState<MiscellaneousState>(empty);
+  const vat = useVatCountry(bill?.vatRate);
+  const [form, setForm] = useState<MiscellaneousState>(() =>
+    bill ? fromBill(bill) : empty(),
+  );
   const [touched, setTouched] = useState(false);
 
   const save = useSaveBill(carId, BillType.MISCELLANEOUS, () => {
     setForm(empty());
     setTouched(false);
   });
-  const mutation = useMutation({
+  const create = useMutation({
     ...addNewMiscellaneousBillMutation({ client: localClient }),
+    onSuccess: save.onSuccess,
+    onError: save.onError,
+  });
+  const update = useMutation({
+    ...updateMiscellaneousBillMutation({ client: localClient }),
     onSuccess: save.onSuccess,
     onError: save.onError,
   });
@@ -51,15 +74,17 @@ export default function MiscellaneousForm({ carId }: { carId: number }) {
     setTouched(true);
     if (errors.date || errors.total) return;
 
-    mutation.mutate({
-      path: { carId },
-      body: {
-        date: toApiDate(form.date),
-        vatRate: vat.vatRate,
-        total: form.total,
-        description: form.description.trim() || undefined,
-      },
-    });
+    const body = {
+      date: toApiDate(form.date),
+      vatRate: vat.vatRate,
+      total: form.total,
+      description: form.description.trim() || undefined,
+    };
+    if (bill?.id !== undefined) {
+      update.mutate({ path: { carId, billId: bill.id }, body });
+    } else {
+      create.mutate({ path: { carId }, body });
+    }
   };
 
   return (
@@ -104,7 +129,11 @@ export default function MiscellaneousForm({ carId }: { carId: number }) {
         </Grid>
       </Grid>
 
-      <FormActions pending={mutation.isPending} onSaveAgain={save.markAgain} />
+      <FormActions
+        pending={create.isPending || update.isPending}
+        onSaveAgain={save.markAgain}
+        editing={!!bill}
+      />
     </Stack>
   );
 }

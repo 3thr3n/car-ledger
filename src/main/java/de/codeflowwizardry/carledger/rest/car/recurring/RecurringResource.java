@@ -86,4 +86,18 @@ public class RecurringResource extends AbstractResource
 		LOG.warn("Could not delete bill {}", billId);
 		return Response.status(404).build();
 	}
+
+	@POST
+	@Path("{billId}/end")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	@Operation(operationId = "endRecurringBill", description = "Ends a recurring bill, payments due on or after the end date are removed")
+	@APIResponse(responseCode = "200", description = "Bill ended.")
+	@APIResponse(responseCode = "400", description = "Validation failed, please check the response", content = @Content(schema = @Schema(implementation = List.class)))
+	@APIResponse(responseCode = "404", description = "Bill not found for the car of your user.")
+	public RecurringBill endRecurringBill(@PathParam("carId") long carId, @PathParam("billId") long billId,
+			RecurringBillEndInput input)
+	{
+		return RecurringBill.convert(recurringBillFactory.end(carId, billId, input.endDate(), context.getName()));
+	}
 }

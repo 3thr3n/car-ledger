@@ -47,4 +47,16 @@ public class CarRepository implements PanacheRepository<CarEntity>
 	{
 		PanacheRepository.super.persist(carEntity);
 	}
+
+	/**
+	 * Deletes the car of the user, the database removes its bills and recurring
+	 * bills as well.
+	 *
+	 * @return whether the car existed
+	 */
+	@Transactional
+	public boolean deleteForUser(long id, String name)
+	{
+		return delete("id = ?1 and user.userId = ?2", id, name) == 1;
+	}
 }

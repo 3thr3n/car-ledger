@@ -42,6 +42,17 @@ public abstract class AbstractBillFactory<I extends AbstractBillInput, O extends
 
 	abstract O create(I input, long carId, String user);
 
+	/**
+	 * Updates an existing bill with the input, calculated values are calculated
+	 * again.
+	 *
+	 * @throws jakarta.ws.rs.BadRequestException
+	 *             if the input is invalid
+	 * @throws AlreadyPresentException
+	 *             if the change collides with another bill
+	 */
+	public abstract O update(O bill, I input);
+
 	public BillType getType()
 	{
 		return type;
@@ -79,6 +90,45 @@ public abstract class AbstractBillFactory<I extends AbstractBillInput, O extends
 		}
 
 		return bill;
+	}
+
+	/**
+	 * Validates the input and applies the common values to an existing bill.
+	 */
+	protected void applyInput(BillEntity bill, I input)
+	{
+		Utils.requireValid(input.validate());
+
+		bill.setDate(input.getDate());
+		bill.setVatRate(input.getVatRate());
+		if (input.getTotal() != null)
+		{
+			bill.setTotal(input.getTotal().setScale(2, RoundingMode.HALF_UP));
+		}
+	}
+
+	/**
+	 * Calculates the VAT and writes the changed bill, so the unique constraint on
+	 * car, type, date and total is checked here.
+	 *
+	 * @throws AlreadyPresentException
+	 *             if the bill collides with another bill
+	 */
+	protected void saveBill(BillEntity bill)
+	{
+		calculateVat(bill);
+		try
+		{
+			em.flush();
+		}
+		catch (ConstraintViolationException cve)
+		{
+			if (cve.getKind() == ConstraintViolationException.ConstraintKind.UNIQUE)
+			{
+				throw new AlreadyPresentException("A bill for this car, date and total already exists.", cve);
+			}
+			throw cve;
+		}
 	}
 
 	/**

@@ -37,4 +37,17 @@ public class MiscellaneousBillFactory extends AbstractBillFactory<MiscellaneousB
 		miscellaneousBillRepository.persist(miscellaneousBillEntity);
 		return miscellaneousBillEntity;
 	}
+
+	@Override
+	@Transactional
+	public MiscellaneousBillEntity update(MiscellaneousBillEntity miscellaneousBill, MiscellaneousBillInput input)
+	{
+		BillEntity bill = miscellaneousBill.getBill();
+		applyInput(bill, input);
+		saveBill(bill);
+
+		miscellaneousBill.setDescription(input.getDescription());
+
+		return miscellaneousBill;
+	}
 }
