@@ -688,12 +688,12 @@ export const importCsvMutation = (options?: Partial<Options<ImportCsvData>>): Us
     return mutationOptions;
 };
 
-export const getCsvFieldsQueryKey = (options?: Options<GetCsvFieldsData>) => createQueryKey('getCsvFields', options);
+export const getCsvFieldsQueryKey = (options: Options<GetCsvFieldsData>) => createQueryKey('getCsvFields', options);
 
 /**
  * Get Field Definitions
  */
-export const getCsvFieldsOptions = (options?: Options<GetCsvFieldsData>) => queryOptions<GetCsvFieldsResponse, DefaultError, GetCsvFieldsResponse, ReturnType<typeof getCsvFieldsQueryKey>>({
+export const getCsvFieldsOptions = (options: Options<GetCsvFieldsData>) => queryOptions<GetCsvFieldsResponse, DefaultError, GetCsvFieldsResponse, ReturnType<typeof getCsvFieldsQueryKey>>({
     queryFn: async ({ queryKey, signal }) => {
         const { data } = await getCsvFields({
             ...options,

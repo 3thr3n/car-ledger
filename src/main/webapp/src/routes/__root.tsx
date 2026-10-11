@@ -24,13 +24,24 @@ export const Route = createRootRoute({
   beforeLoad: (ctx) => {
     const { followRedirect }: { followRedirect?: string } = ctx.search;
     const redirectUrl = localStorage.getItem('postLoginRedirect');
-    if (redirectUrl) {
-      localStorage.removeItem('postLoginRedirect');
+
+    // beforeLoad can run several times for the same navigation, so the target is
+    // only cleared on the next regular navigation
+    if (followRedirect !== '') {
+      if (redirectUrl) localStorage.removeItem('postLoginRedirect');
+      return;
     }
-    if (followRedirect == '') {
-      // back from the login, continue where the user left
-      throw redirect({ to: redirectUrl ?? '/dashboard', replace: true });
+
+    // back from the login, continue where the user left (only paths of this app)
+    if (redirectUrl?.startsWith('/') && !redirectUrl.startsWith('//')) {
+      const target = new URL(redirectUrl, location.origin);
+      throw redirect({
+        to: target.pathname,
+        search: Object.fromEntries(target.searchParams),
+        replace: true,
+      });
     }
+    throw redirect({ to: '/dashboard', replace: true });
   },
   component: Root,
   errorComponent: ({ error }) => (

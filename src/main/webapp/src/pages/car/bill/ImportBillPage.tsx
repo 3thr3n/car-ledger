@@ -26,7 +26,7 @@ import Papa from 'papaparse';
 import { ChangeEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
-import { BillType, importCsv } from '@/generated';
+import { BillType, CsvImportResult, importCsv } from '@/generated';
 import { getCsvFieldsOptions } from '@/generated/@tanstack/react-query.gen';
 import { invalidateCar, localClient } from '@/utils/QueryClient';
 import { BackendError } from '@/utils/BackendError';
@@ -35,15 +35,6 @@ import useVatCountry from '@/hooks/useVatCountry';
 import PageHeader from '@/components/ui/PageHeader';
 import VatCountrySelect from '@/components/bill/VatCountrySelect';
 import { RouterButton } from '@/components/ui/links';
-
-/** Response of the import endpoint (not part of the OpenAPI spec) */
-interface ImportResult {
-  successCount?: number;
-  skippedCount?: number;
-  errorCount?: number;
-  skipped?: { rowNumber: number; message: string }[];
-  errors?: { rowNumber: number; message: string }[];
-}
 
 type ImportType = BillType.FUEL | BillType.MAINTENANCE | BillType.MISCELLANEOUS;
 
@@ -85,10 +76,14 @@ export default function ImportBillPage({
   const [file, setFile] = useState<File>();
   const [headers, setHeaders] = useState<string[]>([]);
   const [mapping, setMapping] = useState<Record<string, number>>({});
-  const [result, setResult] = useState<ImportResult>();
+  const [result, setResult] = useState<CsvImportResult>();
 
   const { data: fields } = useQuery(
-    getCsvFieldsOptions({ client: localClient, query: { importType: type } }),
+    getCsvFieldsOptions({
+      client: localClient,
+      path: { carId },
+      query: { importType: type },
+    }),
   );
   const allFields = [...(fields?.all ?? [])].sort();
   const required = fields?.required ?? [];
@@ -108,7 +103,7 @@ export default function ImportBillPage({
         },
         throwOnError: true,
       });
-      return (data ?? {}) as ImportResult;
+      return data ?? {};
     },
     onSuccess: async (data) => {
       setResult(data);
@@ -353,7 +348,7 @@ export default function ImportBillPage({
   );
 }
 
-function ImportSummary({ result }: { result: ImportResult }) {
+function ImportSummary({ result }: { result: CsvImportResult }) {
   const { t } = useTranslation();
   const problems = [
     ...(result.errors ?? []).map((row) => ({
@@ -364,7 +359,7 @@ function ImportSummary({ result }: { result: ImportResult }) {
       ...row,
       severity: 'skipped' as const,
     })),
-  ].sort((a, b) => a.rowNumber - b.rowNumber);
+  ].sort((a, b) => (a.rowNumber ?? 0) - (b.rowNumber ?? 0));
 
   return (
     <Box>

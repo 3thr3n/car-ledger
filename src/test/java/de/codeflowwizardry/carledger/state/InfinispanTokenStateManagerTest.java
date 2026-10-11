@@ -1,9 +1,13 @@
 package de.codeflowwizardry.carledger.state;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.infinispan.client.hotrod.RemoteCache;
 import org.junit.jupiter.api.Test;
@@ -133,5 +137,65 @@ public class InfinispanTokenStateManagerTest
 		// when
 		assertThrows(AuthenticationCompletionException.class,
 				() -> manager.getTokens(null, null, tokenState, null).await().atMost(Duration.ofSeconds(3)));
+	}
+
+	@Test
+	void shouldKeepReplacedStateOnRefresh()
+	{
+		// given
+		RoutingContext login = contextWith(Map.of("session-max-age", 9999999L));
+		String oldState = manager.createTokenState(login, null, new AuthorizationCodeTokens("i1", "a1", "r1"), null)
+				.await().atMost(Duration.ofSeconds(3));
+
+		RoutingContext refresh = contextWith(
+				Map.of("session-max-age", 9999999L, InfinispanTokenStateManager.REFRESH_TOKEN_GRANT_RESPONSE, true));
+
+		// when, same order as quarkus-oidc: remove the old session, create the new one
+		manager.deleteTokens(refresh, null, oldState, null).await().atMost(Duration.ofSeconds(3));
+		String newState = manager
+				.createTokenState(refresh, null, new AuthorizationCodeTokens("i2", "a2", "r2"), null)
+				.await().atMost(Duration.ofSeconds(3));
+
+		// then, requests still sending the old cookie get the refreshed tokens, for a
+		// short time
+		assertNotEquals(oldState, newState);
+		AuthorizationCodeTokens viaOldState = manager.getTokens(null, null, oldState, null).await()
+				.atMost(Duration.ofSeconds(3));
+		assertEquals("i2", viaOldState.getIdToken());
+		assertEquals("r2", viaOldState.getRefreshToken());
+		assertEquals(InfinispanTokenStateManager.REPLACED_TOKEN_STATE_GRACE,
+				authTokenCache.getWithMetadata(oldState).getLifespan());
+		assertEquals("i2", authTokenCache.get(newState).idToken());
+	}
+
+	@Test
+	void shouldNotCreateStateForUnknownReplacedState()
+	{
+		// given
+		RoutingContext refresh = contextWith(
+				Map.of("session-max-age", 9999999L, InfinispanTokenStateManager.REFRESH_TOKEN_GRANT_RESPONSE, true));
+
+		// when
+		manager.deleteTokens(refresh, null, "unknown", null).await().atMost(Duration.ofSeconds(3));
+		manager.createTokenState(refresh, null, new AuthorizationCodeTokens("i3", "a3", "r3"), null)
+				.await().atMost(Duration.ofSeconds(3));
+
+		// then
+		assertNull(authTokenCache.get("unknown"));
+	}
+
+	/**
+	 * Routing context, which remembers the values put into it
+	 */
+	private static RoutingContext contextWith(Map<String, Object> initial)
+	{
+		Map<String, Object> data = new HashMap<>(initial);
+		RoutingContext routingContext = mock(RoutingContext.class);
+		Mockito.when(routingContext.get(anyString())).thenAnswer(i -> data.get(i.<String>getArgument(0)));
+		Mockito.when(routingContext.put(anyString(), any())).thenAnswer(i -> {
+			data.put(i.getArgument(0), i.getArgument(1));
+			return routingContext;
+		});
+		return routingContext;
 	}
 }

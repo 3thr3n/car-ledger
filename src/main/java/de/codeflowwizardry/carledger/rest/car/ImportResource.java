@@ -59,7 +59,7 @@ public class ImportResource extends AbstractResource
 			""")
 	@POST
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	@APIResponse(responseCode = "202", description = "CSV was imported.")
+	@APIResponse(responseCode = "200", description = "CSV was imported, see the result for skipped or failed rows.", content = @Content(schema = @Schema(implementation = CsvImportResult.class)))
 	@APIResponse(responseCode = "400", description = "- Type not defined\n- Column mapping missing or invalid")
 	@APIResponse(responseCode = "404", description = "Car not found")
 	@APIResponse(responseCode = "500", description = "- CSV was not set\n- Something went wrong while importing. Please ask the server admin for help.")
@@ -100,7 +100,10 @@ public class ImportResource extends AbstractResource
 	@Produces(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "getCsvFields")
 	@APIResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = CsvFields.class)))
-	public Response getFieldDefinitions(@QueryParam("importType") BillType importType)
+	public Response getFieldDefinitions(
+			// not needed, the fields are the same for every car, but part of the path
+			@PathParam("carId") long carId,
+			@QueryParam("importType") BillType importType)
 	{
 		if (importType == null)
 		{
