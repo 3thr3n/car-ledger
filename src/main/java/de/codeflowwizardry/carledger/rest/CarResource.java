@@ -74,6 +74,7 @@ public class CarResource extends AbstractResource
 	@Produces(MediaType.APPLICATION_JSON)
 	@APIResponse(responseCode = "200", description = "Car found and updated.")
 	@APIResponse(responseCode = "400", description = "Input was invalid.")
+	@APIResponse(responseCode = "404", description = "Car was not found.")
 	public Response updateCar(@PathParam("id") Long id, CarInput carpojo)
 	{
 		if (isInputInvalid(carpojo))
@@ -85,6 +86,14 @@ public class CarResource extends AbstractResource
 		}
 
 		CarEntity carEntity = carRepository.findById(id, context.getName());
+		if (carEntity == null)
+		{
+			return Response
+					.status(404)
+					.entity("Car cannot be found under your user!")
+					.build();
+		}
+
 		carEntity.setName(carpojo.name());
 		carEntity.setOdometer(carpojo.odometer());
 		carEntity.setManufactureYear(carpojo.year());
@@ -105,7 +114,7 @@ public class CarResource extends AbstractResource
 	{
 		AccountEntity accountEntity = getAccount();
 
-		if (accountEntity.getMaxCars() == accountEntity.getCarList().size())
+		if (accountEntity.getCarList().size() >= accountEntity.getMaxCars())
 		{
 			return Response
 					.status(400)

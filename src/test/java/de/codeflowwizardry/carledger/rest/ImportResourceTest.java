@@ -380,7 +380,8 @@ class ImportResourceTest
 				.when()
 				.post("/api/import/" + carEntity.getId())
 				.then()
-				.statusCode(500);
+				.statusCode(400)
+				.body(is("CSV column mapping cannot be empty!"));
 
 		String order = """
 				{
@@ -408,6 +409,57 @@ class ImportResourceTest
 				.multiPart("vat", 19)
 				.when()
 				.post("/api/import/" + carEntity.getId())
+				.then()
+				.statusCode(400)
+				.body(is("Type not found!"));
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldRejectIncompleteColumnMapping()
+	{
+		String order = """
+				{
+					"date": 0,
+					"unit": 1
+				}
+				""";
+
+		given().contentType(ContentType.MULTIPART)
+				.multiPart("file", "import.csv", getFile("csv/fuel_import_1.csv"), "text/csv")
+				.multiPart("order", order)
+				.multiPart("billType", "FUEL")
+				.multiPart("vat", 19)
+				.when()
+				.post("/api/import/" + carEntity.getId())
+				.then()
+				.statusCode(400)
+				.body(is("Missing required field mappings: pricePerUnit"));
+
+		given().contentType(ContentType.MULTIPART)
+				.multiPart("file", "import.csv", getFile("csv/fuel_import_1.csv"), "text/csv")
+				.multiPart("order", "{ not json")
+				.multiPart("billType", "FUEL")
+				.multiPart("vat", 19)
+				.when()
+				.post("/api/import/" + carEntity.getId())
+				.then()
+				.statusCode(400);
+
+		assertEquals(0, billRepository.count());
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldRejectFetchingFieldsWithoutType()
+	{
+		given()
+				.when()
+				.get("/api/import/" + carEntity.getId() + "/fields")
 				.then()
 				.statusCode(400)
 				.body(is("Type not found!"));

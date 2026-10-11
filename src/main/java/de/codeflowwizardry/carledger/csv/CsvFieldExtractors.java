@@ -62,17 +62,46 @@ public class CsvFieldExtractors
 
 		try
 		{
-			// Handle both comma and dot as decimal separator
-			String normalized = value.replace(",", ".");
-			// Remove any thousand separators
-			normalized = normalized.replace(" ", "");
-			return new BigDecimal(normalized);
+			return new BigDecimal(normalizeNumber(value));
 		}
 		catch (NumberFormatException e)
 		{
 			throw new IllegalArgumentException(
 					String.format("Could not parse number '%s' for field '%s'", value, fieldName));
 		}
+	}
+
+	/**
+	 * Accepts comma or dot as decimal separator and removes thousand separators,
+	 * e.g. <code>1.234,56</code>,
+	 * <code>1,234.56</code> and <code>1 234,56</code> all become
+	 * <code>1234.56</code>. A single separator is always
+	 * treated as decimal separator.
+	 */
+	static String normalizeNumber(String value)
+	{
+		// spaces, no-break spaces and apostrophes are only used as thousand separators
+		String normalized = value.replaceAll("[\\s\u00A0\u202F']", "");
+
+		int lastComma = normalized.lastIndexOf(',');
+		int lastDot = normalized.lastIndexOf('.');
+
+		if (lastComma >= 0 && lastDot >= 0)
+		{
+			// the separator that comes last is the decimal separator
+			char thousandSeparator = lastComma > lastDot ? '.' : ',';
+			normalized = normalized.replace(String.valueOf(thousandSeparator), "");
+		} else
+		{
+			char separator = lastComma >= 0 ? ',' : '.';
+			// a separator occurring more than once can only be a thousand separator
+			if (normalized.indexOf(separator) != normalized.lastIndexOf(separator))
+			{
+				normalized = normalized.replace(String.valueOf(separator), "");
+			}
+		}
+
+		return normalized.replace(',', '.');
 	}
 
 	public static BigInteger getBigInteger(String[] line, CsvColumnMapping mapping, String fieldName)

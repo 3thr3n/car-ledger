@@ -31,6 +31,7 @@ public class InfinispanTokenStateManager implements TokenStateManager
 	private final static Logger LOG = LoggerFactory.getLogger(InfinispanTokenStateManager.class);
 
 	private static final String SESSION_MAX_AGE_PARAM = "session-max-age";
+	private static final long DEFAULT_SESSION_MAX_AGE = TimeUnit.HOURS.toSeconds(8);
 	private static final String TOKEN_STATE_INSERT_FAILED = "Failed to write token state into cache";
 	private static final String FAILED_TO_ACQUIRE_TOKEN = "Failed to acquire authorization code tokens";
 
@@ -46,8 +47,11 @@ public class InfinispanTokenStateManager implements TokenStateManager
 
 		LOG.debug("Create token: {}", id);
 
+		long sessionMaxAge = sessionMaxAge(routingContext);
+
 		CompletionStage<String> createToken = authTokenCache.putAsync(id, new AuthTokenState(tokens.getAccessToken(),
-				tokens.getIdToken(), tokens.getRefreshToken(), expiresIn(routingContext), id), 8, TimeUnit.HOURS)
+				tokens.getIdToken(), tokens.getRefreshToken(), now() + sessionMaxAge, id), sessionMaxAge,
+				TimeUnit.SECONDS)
 				.thenApply(x -> id);
 
 		return Uni.createFrom().completionStage(createToken).onFailure()
@@ -93,8 +97,17 @@ public class InfinispanTokenStateManager implements TokenStateManager
 		return Instant.now().getEpochSecond();
 	}
 
-	private static long expiresIn(RoutingContext routingContext)
+	/**
+	 * @return session max age in seconds as set by quarkus-oidc, falls back to
+	 *         {@link #DEFAULT_SESSION_MAX_AGE}
+	 */
+	static long sessionMaxAge(RoutingContext routingContext)
 	{
-		return now() + routingContext.<Long>get(SESSION_MAX_AGE_PARAM);
+		Long sessionMaxAge = routingContext.get(SESSION_MAX_AGE_PARAM);
+		if (sessionMaxAge == null || sessionMaxAge <= 0)
+		{
+			return DEFAULT_SESSION_MAX_AGE;
+		}
+		return sessionMaxAge;
 	}
 }

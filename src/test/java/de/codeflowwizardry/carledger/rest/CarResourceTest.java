@@ -19,6 +19,7 @@ import de.codeflowwizardry.carledger.data.factory.FuelBillFactory;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import de.codeflowwizardry.carledger.rest.car.fuel.FuelBillInput;
+import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
@@ -187,6 +188,26 @@ class CarResourceTest
 	@TestSecurity(user = "peter", roles = {
 			"user"
 	})
+	void shouldFailCreateCarIfAboveMaxCapacity()
+	{
+		// given: limit was lowered below the amount of existing cars
+		QuarkusTransaction.requiringNew().run(() -> accountRepository.findByIdentifier("peter").setMaxCars(0));
+
+		String body = "{\"name\": \"Hansi\", \"year\": \"2000\"}";
+		given()
+				.when()
+				.body(body)
+				.accept(ContentType.JSON)
+				.contentType(ContentType.JSON)
+				.put()
+				.then()
+				.statusCode(400);
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
 	void shouldNotCreateCarWithInvalidBody()
 	{
 		String body = "{\"namxe\": \"Hans\", \"year\": \"2000\"}";
@@ -215,6 +236,40 @@ class CarResourceTest
 				.post("{id}", carId)
 				.then()
 				.statusCode(200);
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldNotUpdateUnknownCar()
+	{
+		String body = "{\"name\": \"Hans\", \"year\": \"2000\"}";
+		given()
+				.when()
+				.body(body)
+				.accept(ContentType.JSON)
+				.contentType(ContentType.JSON)
+				.post("{id}", carId + 1000)
+				.then()
+				.statusCode(404);
+	}
+
+	@Test
+	@TestSecurity(user = "bob", roles = {
+			"user"
+	})
+	void shouldNotUpdateCarOfOtherUser()
+	{
+		String body = "{\"name\": \"Hans\", \"year\": \"2000\"}";
+		given()
+				.when()
+				.body(body)
+				.accept(ContentType.JSON)
+				.contentType(ContentType.JSON)
+				.post("{id}", carId)
+				.then()
+				.statusCode(404);
 	}
 
 	@Test

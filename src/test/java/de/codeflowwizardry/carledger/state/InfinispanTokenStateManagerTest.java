@@ -51,6 +51,37 @@ public class InfinispanTokenStateManagerTest
 	}
 
 	@Test
+	void shouldExpireTokenWithSession()
+	{
+		// given
+		RoutingContext routingContext = mock(RoutingContext.class);
+		Mockito.when(routingContext.get("session-max-age")).thenReturn(43200L);
+
+		AuthorizationCodeTokens act = new AuthorizationCodeTokens("a3", "b3", "c3");
+
+		// when
+		String id = manager.createTokenState(routingContext, null, act, null).await().atMost(Duration.ofSeconds(3));
+
+		// then
+		assertEquals(43200, authTokenCache.getWithMetadata(id).getLifespan());
+	}
+
+	@Test
+	void shouldFallBackToDefaultLifespanWithoutSessionMaxAge()
+	{
+		// given
+		RoutingContext routingContext = mock(RoutingContext.class);
+
+		AuthorizationCodeTokens act = new AuthorizationCodeTokens("a4", "b4", "c4");
+
+		// when
+		String id = manager.createTokenState(routingContext, null, act, null).await().atMost(Duration.ofSeconds(3));
+
+		// then
+		assertEquals(8 * 60 * 60, authTokenCache.getWithMetadata(id).getLifespan());
+	}
+
+	@Test
 	void shouldDeleteToken()
 	{
 		// given
