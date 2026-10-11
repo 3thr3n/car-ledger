@@ -1,10 +1,64 @@
+# Values of the codecentric keycloakx chart, see https://github.com/codecentric/helm-charts/tree/master/charts/keycloakx
 keycloak:
-  image:
-    repository: quay.io/keycloak/keycloak
-    tag: "26.6"
+  # public host name, e.g. keycloak.example.com
+  hostname: ""
+  # whether keycloak is reached via https
+  tls: true
+  # admin, created on the first start. An empty password is generated and kept in the secret <release>-admin
   auth:
     adminUser: car-ledger
-    adminPassword: car-ledger
+    adminPassword: ""
+
+  nameOverride: keycloak
+  command:
+    - /opt/keycloak/bin/kc.sh
+  args:
+    - start
+  http:
+    relativePath: /
+  proxy:
+    mode: xforwarded
+  metrics:
+    enabled: false
+  # database of the postgresql below, defaults match the former bitnami chart
+  database:
+    vendor: postgres
+    database: bitnami_keycloak
+    username: bn_keycloak
+  extraEnv: |
+    - name: KC_DB_URL_HOST
+      value: {{ .Release.Name }}-postgresql
+    - name: KC_DB_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: {{ .Release.Name }}-postgresql
+          key: password
+    - name: KC_BOOTSTRAP_ADMIN_USERNAME
+      valueFrom:
+        secretKeyRef:
+          name: {{ .Release.Name }}-admin
+          key: username
+    - name: KC_BOOTSTRAP_ADMIN_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: {{ .Release.Name }}-admin
+          key: password
+    {{- if .Values.hostname }}
+    - name: KC_HOSTNAME
+      value: {{ if .Values.tls }}https{{ else }}http{{ end }}://{{ .Values.hostname }}
+    {{- else }}
+    - name: KC_HOSTNAME_STRICT
+      value: "false"
+    {{- end }}
+  # the first start after an update migrates the database, which can take long on small nodes
+  startupProbe: |
+    httpGet:
+      path: /health
+      port: '{{ .Values.http.internalPort }}'
+    initialDelaySeconds: 15
+    timeoutSeconds: 2
+    failureThreshold: 180
+    periodSeconds: 5
   resources:
     requests:
       cpu: 250m
@@ -12,26 +66,40 @@ keycloak:
     limits:
       cpu: "1"
       memory: 1Gi
-  metrics:
-    enabled: false
-  # additional environment variables, e.g. KC_LOG_LEVEL
-  extraEnv: [ ]
+
   ingress:
     enabled: true
     ingressClassName: nginx
-    tls: true
     annotations:
       cert-manager.io/cluster-issuer: lets-encrypt
-    hostname:
+    rules:
+      - host: "{{ .Values.hostname }}"
+        paths:
+          - path: /
+            pathType: Prefix
+    tls:
+      - hosts:
+          - "{{ .Values.hostname }}"
+        secretName: "{{ .Values.hostname }}-tls"
 
-# Defaults match the former bitnami chart, so existing databases are reused
+  # Gateway API, alternative to the ingress
+  httpRoute:
+    enabled: false
+    parentRefs:
+      - name: gateway
+        sectionName: https
+    hostnames: []
+    rules:
+      - matches:
+          - path:
+              type: PathPrefix
+              value: /
+
+# Database and user are taken from keycloak.database
 postgresql:
   image:
     repository: docker.io/library/postgres
     tag: "17-bookworm"
-  auth:
-    database: bitnami_keycloak
-    username: bn_keycloak
   persistence:
     size: 8Gi
     storageClass:

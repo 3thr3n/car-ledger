@@ -1,13 +1,17 @@
+{{- if .Values.ingress.enabled }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: car-ledger-ingress
+  {{- if or .Values.ingress.certManager .Values.ingress.annotations }}
   annotations:
-    nginx.ingress.kubernetes.io/enable-cors: "true"
-    nginx.ingress.kubernetes.io/cors-allow-origin: "https://car-ledger.{{ .Values.ingress.host }}"
-{{ if .Values.ingress.certManager }}
+    {{- if .Values.ingress.certManager }}
     cert-manager.io/cluster-issuer: {{ .Values.ingress.certManager }}
-{{ end }}
+    {{- end }}
+    {{- with .Values.ingress.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- end }}
 spec:
   ingressClassName: {{ .Values.ingress.className }}
   tls:
@@ -23,5 +27,6 @@ spec:
                 name: car-ledger-sv
                 port:
                   name: http
-            path: "/"
-            pathType: ImplementationSpecific
+            path: /
+            pathType: Prefix
+{{- end }}
