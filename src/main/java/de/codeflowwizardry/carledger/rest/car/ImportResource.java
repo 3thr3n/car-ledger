@@ -2,7 +2,7 @@ package de.codeflowwizardry.carledger.rest.car;
 
 import java.io.File;
 import java.io.IOException;
-import java.security.Principal;
+import io.quarkus.security.identity.SecurityIdentity;
 
 import org.apache.commons.lang3.ObjectUtils;
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -43,10 +43,10 @@ public class ImportResource extends AbstractResource
 	private final CsvImportService csvImportService;
 
 	@Inject
-	public ImportResource(Principal context, AccountRepository accountRepository, CarRepository carRepository,
+	public ImportResource(SecurityIdentity identity, AccountRepository accountRepository, CarRepository carRepository,
 			CsvImportService csvImportService)
 	{
-		super(context, accountRepository);
+		super(identity, accountRepository);
 		this.carRepository = carRepository;
 		this.csvImportService = csvImportService;
 	}

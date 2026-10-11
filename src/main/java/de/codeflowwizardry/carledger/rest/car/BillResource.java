@@ -1,6 +1,6 @@
 package de.codeflowwizardry.carledger.rest.car;
 
-import java.security.Principal;
+import io.quarkus.security.identity.SecurityIdentity;
 import java.util.List;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -20,9 +20,9 @@ import jakarta.ws.rs.core.Response;
 public class BillResource extends AbstractBillResource<BillRepository, BillEntity, Bill>
 {
 	@Inject
-	public BillResource(Principal context, AccountRepository accountRepository, BillRepository billRepository)
+	public BillResource(SecurityIdentity identity, AccountRepository accountRepository, BillRepository billRepository)
 	{
-		super(context, accountRepository, billRepository, null);
+		super(identity, accountRepository, billRepository, null);
 	}
 
 	@GET

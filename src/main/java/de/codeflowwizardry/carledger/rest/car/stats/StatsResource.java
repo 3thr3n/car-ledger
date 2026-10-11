@@ -1,6 +1,6 @@
 package de.codeflowwizardry.carledger.rest.car.stats;
 
-import java.security.Principal;
+import io.quarkus.security.identity.SecurityIdentity;
 import java.time.LocalDate;
 import java.util.Optional;
 
@@ -19,9 +19,10 @@ public class StatsResource extends AbstractResource
 	private final StatsCalculator statsCalculator;
 
 	@Inject
-	public StatsResource(Principal context, AccountRepository accountRepository, StatsCalculator statsCalculator)
+	public StatsResource(SecurityIdentity identity, AccountRepository accountRepository,
+			StatsCalculator statsCalculator)
 	{
-		super(context, accountRepository);
+		super(identity, accountRepository);
 		this.statsCalculator = statsCalculator;
 	}
 

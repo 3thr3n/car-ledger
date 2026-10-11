@@ -1,7 +1,7 @@
 package de.codeflowwizardry.carledger.rest;
 
 import java.net.URI;
-import java.security.Principal;
+import io.quarkus.security.identity.SecurityIdentity;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
@@ -32,10 +32,10 @@ public class CarResource extends AbstractResource
 	private final BillRepository billRepository;
 
 	@Inject
-	public CarResource(Principal context, AccountRepository accountRepository, CarRepository carRepository,
+	public CarResource(SecurityIdentity identity, AccountRepository accountRepository, CarRepository carRepository,
 			BillRepository billRepository)
 	{
-		super(context, accountRepository);
+		super(identity, accountRepository);
 		this.carRepository = carRepository;
 		this.billRepository = billRepository;
 	}

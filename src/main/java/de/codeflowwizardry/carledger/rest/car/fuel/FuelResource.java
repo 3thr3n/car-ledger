@@ -1,6 +1,6 @@
 package de.codeflowwizardry.carledger.rest.car.fuel;
 
-import java.security.Principal;
+import io.quarkus.security.identity.SecurityIdentity;
 import java.util.List;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -27,10 +27,10 @@ public class FuelResource extends AbstractBillResource<FuelBillRepository, FuelB
 	private final FuelBillFactory fuelBillFactory;
 
 	@Inject
-	public FuelResource(Principal context, AccountRepository accountRepository,
+	public FuelResource(SecurityIdentity identity, AccountRepository accountRepository,
 			FuelBillRepository fuelBillRepository, FuelBillFactory fuelBillFactory)
 	{
-		super(context, accountRepository, fuelBillRepository, BillType.FUEL);
+		super(identity, accountRepository, fuelBillRepository, BillType.FUEL);
 		this.fuelBillFactory = fuelBillFactory;
 	}
 

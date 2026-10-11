@@ -2,6 +2,8 @@ package de.codeflowwizardry.carledger.rest;
 
 import java.security.Principal;
 
+import io.quarkus.security.identity.SecurityIdentity;
+
 import de.codeflowwizardry.carledger.data.AccountEntity;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import jakarta.inject.Inject;
@@ -10,13 +12,18 @@ public abstract class AbstractResource
 {
 	public static final int MAX_PAGE_SIZE = 100;
 
+	/**
+	 * The current user, resolved per request. Works for every authentication
+	 * mechanism, unlike an injected
+	 * {@link Principal}, which is bound to the access token.
+	 */
 	protected final Principal context;
 	protected final AccountRepository accountRepository;
 
 	@Inject
-	protected AbstractResource(Principal context, AccountRepository accountRepository)
+	protected AbstractResource(SecurityIdentity identity, AccountRepository accountRepository)
 	{
-		this.context = context;
+		this.context = () -> identity.getPrincipal().getName();
 		this.accountRepository = accountRepository;
 	}
 

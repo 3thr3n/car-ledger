@@ -1,6 +1,6 @@
 package de.codeflowwizardry.carledger.rest;
 
-import java.security.Principal;
+import io.quarkus.security.identity.SecurityIdentity;
 
 import org.apache.commons.lang3.ObjectUtils;
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -23,9 +23,9 @@ public class AccountResource extends AbstractResource
 	private static final Logger LOG = LoggerFactory.getLogger(AccountResource.class);
 
 	@Inject
-	public AccountResource(Principal context, AccountRepository accountRepository)
+	public AccountResource(SecurityIdentity identity, AccountRepository accountRepository)
 	{
-		super(context, accountRepository);
+		super(identity, accountRepository);
 	}
 
 	@GET
