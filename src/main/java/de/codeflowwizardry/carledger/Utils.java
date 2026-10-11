@@ -5,14 +5,14 @@ import java.math.BigInteger;
 
 public class Utils
 {
-	public static boolean atLeastTwoNotNull(Object a, Object b, Object c)
+	public static boolean atLeastTwoValuesSet(BigDecimal a, BigDecimal b, BigDecimal c)
 	{
 		int count = 0;
-		if (a != null)
+		if (valueWasSet(a))
 			count++;
-		if (b != null)
+		if (valueWasSet(b))
 			count++;
-		if (c != null)
+		if (valueWasSet(c))
 			count++;
 		return count >= 2;
 	}

@@ -10,10 +10,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import de.codeflowwizardry.carledger.data.*;
+import de.codeflowwizardry.carledger.data.factory.RecurringBillFactory;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import de.codeflowwizardry.carledger.data.repository.RecurringBillPaymentRepository;
 import de.codeflowwizardry.carledger.data.repository.RecurringBillRepository;
+import de.codeflowwizardry.carledger.rest.car.recurring.RecurringBillInput;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -32,6 +34,9 @@ class ScheduledPaymentsTest
 
 	@Inject
 	RecurringBillPaymentRepository recurringBillPaymentRepository;
+
+	@Inject
+	RecurringBillFactory recurringBillFactory;
 
 	@Inject
 	ScheduledPayments scheduledPayments;
@@ -127,6 +132,60 @@ class ScheduledPaymentsTest
 		List<RecurringBillPaymentEntity> entities = recurringBillPaymentRepository.listAll();
 
 		Assertions.assertEquals(0, entities.size());
+	}
+
+	@Test
+	@Transactional
+	void shouldNotPayPastOnceEntryTwice()
+	{
+		// given
+		RecurringBillInput input = new RecurringBillInput("Test", null, BillInterval.ONCE, BillCategory.FINANCE,
+				LocalDate.now().minusMonths(1), null, BigDecimal.valueOf(480));
+		RecurringBillEntity recurringBillEntity = recurringBillFactory.create(carEntity.getId(), input, "peter");
+
+		// when
+		scheduledPayments.generateDuePayments();
+
+		// then
+		List<RecurringBillPaymentEntity> entities = recurringBillPaymentRepository.listAll();
+
+		Assertions.assertEquals(1, entities.size());
+		Assertions.assertEquals(0, BigDecimal.valueOf(480).compareTo(recurringBillEntity.getTotal()));
+		Assertions.assertEquals(recurringBillEntity.getStartDate(), recurringBillEntity.getEndDate());
+	}
+
+	@Test
+	@Transactional
+	void shouldSkipAlreadyExistingPayment()
+	{
+		// given: state left behind by older versions for past ONCE entries
+		LocalDate startDate = LocalDate.now().minusMonths(1);
+
+		RecurringBillEntity recurringBillEntity = new RecurringBillEntity(carEntity);
+		recurringBillEntity.setAmount(BigDecimal.valueOf(480));
+		recurringBillEntity.setCategory(BillCategory.FINANCE);
+		recurringBillEntity.setInterval(BillInterval.ONCE);
+		recurringBillEntity.setStartDate(startDate);
+		recurringBillEntity.setNextDueDate(startDate);
+		recurringBillEntity.setName("Test");
+		recurringBillEntity.setTotal(BigDecimal.valueOf(480));
+		recurringBillRepository.persist(recurringBillEntity);
+
+		RecurringBillPaymentEntity payment = new RecurringBillPaymentEntity(recurringBillEntity);
+		payment.setAmount(BigDecimal.valueOf(480));
+		payment.setDueDate(startDate);
+		payment.setPaidDate(startDate);
+		recurringBillPaymentRepository.persist(payment);
+
+		// when
+		scheduledPayments.generateDuePayments();
+
+		// then
+		List<RecurringBillPaymentEntity> entities = recurringBillPaymentRepository.listAll();
+
+		Assertions.assertEquals(1, entities.size());
+		Assertions.assertEquals(0, BigDecimal.valueOf(480).compareTo(recurringBillEntity.getTotal()));
+		Assertions.assertEquals(startDate, recurringBillEntity.getEndDate());
 	}
 
 	@AfterEach

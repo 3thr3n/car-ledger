@@ -230,4 +230,37 @@ class StatsResourceTest
 				.body("total.unit", is(28.00f))
 				.body("total.fuelTotal", is(55.13f));
 	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldGetStatsForBillWithoutDistance()
+	{
+		// given
+		FuelBillInput withoutDistance = new FuelBillInput(
+				LocalDate.of(2021, 3, 1),
+				null,
+				BigInteger.valueOf(19),
+				null,
+				BigDecimal.valueOf(25),
+				BigDecimal.valueOf(200),
+				null);
+
+		fuelBillFactory.create(withoutDistance, carEntity.getId(), carEntity.getUser().getUserId());
+
+		// when
+		given()
+				.pathParam("carId", carEntity.getId())
+				.queryParam("from", "2021-01-01")
+				.queryParam("to", "2021-12-31")
+				.when()
+				.get()
+				.then()
+				.statusCode(200)
+				.body("total.trackedDistance", is(0.00f))
+				.body("total.unit", is(25.00f))
+				.body("total.fuelTotal", is(50.00f))
+				.body("hiLo.distance.max", is(0.00f));
+	}
 }

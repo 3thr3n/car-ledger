@@ -39,7 +39,15 @@ public class ScheduledPayments
 						!b.getNextDueDate().isAfter(LocalDate.now())
 						&& (b.getEndDate() == null || b.getNextDueDate().isBefore(b.getEndDate())))
 				.forEach(b -> {
-					if (createPayment(b))
+					if (recurringBillPaymentRepository.exists(b, b.getNextDueDate()))
+					{
+						// A duplicate insert would violate the unique constraint and roll back the
+						// whole run
+						LOG.warn("Payment for recurring bill {} on {} already exists, skipping", b.getId(),
+								b.getNextDueDate());
+						b.advance();
+						recurringBillRepository.persist(b);
+					} else if (createPayment(b))
 					{
 						b.advance();
 						b.setTotal(b.getTotal().add(b.getAmount()));

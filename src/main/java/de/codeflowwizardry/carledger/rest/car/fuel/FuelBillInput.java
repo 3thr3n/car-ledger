@@ -1,6 +1,6 @@
 package de.codeflowwizardry.carledger.rest.car.fuel;
 
-import static de.codeflowwizardry.carledger.Utils.atLeastTwoNotNull;
+import static de.codeflowwizardry.carledger.Utils.atLeastTwoValuesSet;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -60,7 +60,7 @@ public class FuelBillInput extends AbstractBillInput
 			errors.add("Vat rate must be set!");
 		}
 
-		if (!atLeastTwoNotNull(getUnit(), getPricePerUnit(), getTotal()))
+		if (!atLeastTwoValuesSet(getUnit(), getPricePerUnit(), getTotal()))
 		{
 			errors.add("At least two of 'unit', 'total' or 'pricePerUnit' must be set!");
 		}
