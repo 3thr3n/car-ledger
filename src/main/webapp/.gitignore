@@ -9,6 +9,8 @@
 
 # testing
 /coverage
+/test-results
+/playwright-report
 
 # vite
 /dist

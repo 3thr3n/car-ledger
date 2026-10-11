@@ -11,6 +11,7 @@ import {
   useTheme,
 } from '@mui/material';
 import DeleteOutlineRounded from '@mui/icons-material/DeleteOutlineRounded';
+import EditOutlined from '@mui/icons-material/EditOutlined';
 import { DataGrid, GridColDef, GridValidRowModel } from '@mui/x-data-grid';
 import { deDE } from '@mui/x-data-grid/locales';
 import { Fragment, ReactNode, useState } from 'react';
@@ -34,6 +35,10 @@ export interface BillTableProps<R extends GridValidRowModel & { id?: number }> {
   onPageModelChange: (model: PageModel) => void;
   loading?: boolean;
   onDelete?: (id: number) => void;
+  /** opens the edit form of a row */
+  onEdit?: (row: R) => void;
+  /** further actions of a row, shown before edit and delete */
+  rowActions?: (row: R) => ReactNode;
   mobileRow: (row: R) => MobileRow;
   emptyTitle: ReactNode;
   emptyText?: ReactNode;
@@ -50,6 +55,8 @@ export default function BillTable<
   onPageModelChange,
   loading,
   onDelete,
+  onEdit,
+  rowActions,
   mobileRow,
   emptyTitle,
   emptyText,
@@ -69,6 +76,34 @@ export default function BillTable<
       onConfirm={() => toDelete !== undefined && onDelete?.(toDelete)}
     />
   );
+
+  const actions = (row: R) => (
+    <Stack
+      direction="row"
+      spacing={0.25}
+      alignItems="center"
+      justifyContent="flex-end"
+      sx={{ height: '100%' }}
+    >
+      {rowActions?.(row)}
+      {onEdit && (
+        <Tooltip title={t('button.edit')}>
+          <IconButton
+            size="small"
+            onClick={(event) => {
+              event.stopPropagation();
+              onEdit(row);
+            }}
+          >
+            <EditOutlined fontSize="small" />
+          </IconButton>
+        </Tooltip>
+      )}
+      {deleteButton(row.id)}
+    </Stack>
+  );
+  const actionCount =
+    (onDelete ? 1 : 0) + (onEdit ? 1 : 0) + (rowActions ? 1 : 0);
 
   const deleteButton = (id?: number) =>
     onDelete &&
@@ -135,7 +170,7 @@ export default function BillTable<
                     {item.amount}
                   </Typography>
                 )}
-                {deleteButton(row.id)}
+                {actions(row)}
               </Stack>
             </Fragment>
           );
@@ -156,21 +191,22 @@ export default function BillTable<
     );
   }
 
-  const allColumns: GridColDef<R>[] = onDelete
-    ? [
-        ...columns,
-        {
-          field: '__actions',
-          headerName: '',
-          sortable: false,
-          filterable: false,
-          disableColumnMenu: true,
-          width: 56,
-          align: 'center',
-          renderCell: ({ row }) => deleteButton(row.id),
-        },
-      ]
-    : columns;
+  const allColumns: GridColDef<R>[] =
+    actionCount > 0
+      ? [
+          ...columns,
+          {
+            field: '__actions',
+            headerName: '',
+            sortable: false,
+            filterable: false,
+            disableColumnMenu: true,
+            width: 16 + actionCount * 38,
+            align: 'right',
+            renderCell: ({ row }) => actions(row),
+          },
+        ]
+      : columns;
 
   return (
     <>

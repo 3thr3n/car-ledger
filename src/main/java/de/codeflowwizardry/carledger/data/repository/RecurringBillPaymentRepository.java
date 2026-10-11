@@ -56,4 +56,21 @@ public class RecurringBillPaymentRepository implements PanacheRepository<Recurri
 		BigDecimal sum = typedQuery.getSingleResult();
 		return sum == null ? BigDecimal.ZERO : sum;
 	}
+
+	/**
+	 * Removes the payments due on or after the given day
+	 */
+	public void deleteFrom(RecurringBillEntity bill, LocalDate day)
+	{
+		delete("bill = ?1 and dueDate >= ?2", bill, day);
+	}
+
+	public BigDecimal sumAmount(RecurringBillEntity bill)
+	{
+		BigDecimal sum = getEntityManager()
+				.createQuery("select sum(amount) from recurring_bill_payment where bill = :bill", BigDecimal.class)
+				.setParameter("bill", bill)
+				.getSingleResult();
+		return sum == null ? BigDecimal.ZERO : sum;
+	}
 }

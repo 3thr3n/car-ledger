@@ -1,4 +1,4 @@
-import { Button, Card, Stack, TextField } from '@mui/material';
+import { Box, Button, Card, Stack, TextField, Typography } from '@mui/material';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useNavigate, useRouter } from '@tanstack/react-router';
 import { FormEvent, useState } from 'react';
@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
 import { createCar, CarInput } from '@/generated';
 import {
+  deleteMyCarMutation,
   getMyCarOptions,
   updateMyCarMutation,
 } from '@/generated/@tanstack/react-query.gen';
@@ -14,6 +15,7 @@ import { BackendError } from '@/utils/BackendError';
 import NumberField from '@/components/bill/NumberField';
 import Page from '@/components/layout/Page';
 import PageHeader from '@/components/ui/PageHeader';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
 
 export interface CarFormPageProps {
   /** set when editing an existing car */
@@ -41,6 +43,13 @@ export default function CarFormPage({ id }: CarFormPageProps) {
       />
       {/* keyed, so the form state is initialized from the loaded car */}
       <CarForm key={car?.id ?? 'new'} id={id} initial={car ?? {}} />
+      {id !== undefined && car && (
+        <DeleteCar
+          id={id}
+          name={car.name ?? ''}
+          entries={car.amountBills ?? 0}
+        />
+      )}
     </Page>
   );
 }
@@ -175,6 +184,68 @@ function CarForm({ id, initial }: { id?: number; initial: CarInput }) {
           </Button>
         </Stack>
       </Stack>
+    </Card>
+  );
+}
+
+function DeleteCar({
+  id,
+  name,
+  entries,
+}: {
+  id: number;
+  name: string;
+  entries: number;
+}) {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
+
+  const mutation = useMutation({
+    ...deleteMyCarMutation({ client: localClient }),
+    onSuccess: async () => {
+      toast.success(t('car.delete.done'));
+      // leave the pages of the car first, they would load it again otherwise
+      await navigate({ to: '/car', replace: true });
+      await invalidateCar(id);
+    },
+    onError: () => {
+      toast.error(t('errors.backend'));
+    },
+  });
+
+  return (
+    <Card sx={{ p: 3, mt: 3, borderColor: 'error.main' }}>
+      <Stack
+        direction={{ xs: 'column', sm: 'row' }}
+        spacing={2}
+        alignItems={{ sm: 'center' }}
+        justifyContent="space-between"
+      >
+        <Box>
+          <Typography fontWeight={600}>{t('car.delete.title')}</Typography>
+          <Typography variant="body2" color="text.secondary">
+            {t('car.delete.text', { count: entries })}
+          </Typography>
+        </Box>
+        <Button
+          color="error"
+          variant="outlined"
+          disabled={mutation.isPending}
+          onClick={() => setOpen(true)}
+          sx={{ flexShrink: 0 }}
+        >
+          {t('car.delete.button')}
+        </Button>
+      </Stack>
+      <ConfirmDialog
+        open={open}
+        title={t('car.delete.confirmTitle', { name })}
+        text={t('car.delete.confirmText', { count: entries })}
+        confirmLabel={t('car.delete.button')}
+        onClose={() => setOpen(false)}
+        onConfirm={() => mutation.mutate({ path: { id } })}
+      />
     </Card>
   );
 }

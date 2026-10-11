@@ -379,4 +379,98 @@ class RecurringResourceTest
 				.statusCode(202)
 				.body("nextDueDate", is(nextMonth.format(DateTimeFormatter.ISO_DATE)));
 	}
+
+	private int createMonthlyBill()
+	{
+		return given()
+				.pathParam("carId", carId)
+				.contentType(ContentType.JSON)
+				.body("""
+						{
+							"name": "Insurance",
+							"billInterval": "MONTHLY",
+							"category": "INSURANCE",
+							"startDate": "2025-01-01",
+							"amount": 100.00
+						}
+						""")
+				.when()
+				.put()
+				.then()
+				.statusCode(202)
+				.body("billInterval", is("MONTHLY"))
+				.extract()
+				.path("id");
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldEndRecurringBillAndRemoveLaterPayments()
+	{
+		int billId = createMonthlyBill();
+
+		// payments from January to June remain, the end date is exclusive
+		given()
+				.pathParam("carId", carId)
+				.contentType(ContentType.JSON)
+				.body("""
+						{ "endDate": "2025-07-01" }
+						""")
+				.when()
+				.post(billId + "/end")
+				.then()
+				.statusCode(200)
+				.body("endDate", is("2025-07-01"))
+				.body("total", is(600.0F))
+				.body("finished", is(true));
+
+		given()
+				.pathParam("carId", carId)
+				.queryParam("onlyRunning", true)
+				.when()
+				.get()
+				.then()
+				.statusCode(200)
+				.body("data.size()", is(0));
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldNotEndRecurringBillBeforeItsStart()
+	{
+		int billId = createMonthlyBill();
+
+		given()
+				.pathParam("carId", carId)
+				.contentType(ContentType.JSON)
+				.body("""
+						{ "endDate": "2024-12-01" }
+						""")
+				.when()
+				.post(billId + "/end")
+				.then()
+				.statusCode(400);
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldNotEndUnknownRecurringBill()
+	{
+		given()
+				.pathParam("carId", carId)
+				.contentType(ContentType.JSON)
+				.body("""
+						{ "endDate": "2025-07-01" }
+						""")
+				.when()
+				.post("999999/end")
+				.then()
+				.statusCode(404);
+	}
 }

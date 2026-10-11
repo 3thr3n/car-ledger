@@ -193,4 +193,40 @@ class MiscellaneousResourceTest
 				.then()
 				.statusCode(404);
 	}
+
+	private long firstBillId()
+	{
+		return given()
+				.pathParam("carId", carId)
+				.when()
+				.get("all")
+				.then()
+				.statusCode(200)
+				.extract()
+				.jsonPath()
+				.getLong("data[0].id");
+	}
+
+	@Test
+	@TestSecurity(user = "alice", roles = {
+			"user"
+	})
+	void shouldUpdateBill()
+	{
+		long billId = firstBillId();
+
+		given()
+				.pathParam("carId", carId)
+				.contentType(ContentType.JSON)
+				.body("""
+						{ "date": "2025-02-01", "total": 15.5, "vatRate": 19, "description": "Car wash" }
+						""")
+				.when()
+				.post(String.valueOf(billId))
+				.then()
+				.statusCode(200)
+				.body("total", is(15.5F))
+				.body("description", is("Car wash"))
+				.body("vatRate", is(19));
+	}
 }

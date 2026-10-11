@@ -41,4 +41,21 @@ public class MaintenanceBillFactory extends AbstractBillFactory<MaintenanceBillI
 		maintenanceBillRepository.persist(maintenanceBillEntity);
 		return maintenanceBillEntity;
 	}
+
+	@Override
+	@Transactional
+	public MaintenanceBillEntity update(MaintenanceBillEntity maintenanceBill, MaintenanceBillInput input)
+	{
+		BillEntity bill = maintenanceBill.getBill();
+		applyInput(bill, input);
+		saveBill(bill);
+
+		maintenanceBill.setDescription(input.getDescription());
+		maintenanceBill.setOdometer(input.getOdometer());
+		maintenanceBill.setLaborCost(input.getLaborCost());
+		maintenanceBill.setWorkshop(input.getWorkshop());
+		maintenanceBill.setPartsCost(input.getPartsCost());
+
+		return maintenanceBill;
+	}
 }

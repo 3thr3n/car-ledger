@@ -17,7 +17,7 @@ public class BillEntity extends AbstractBillEntity
 	@Column(name = "b_type", nullable = false, length = 50)
 	private BillType type;
 
-	@Column(name = "b_date", updatable = false)
+	@Column(name = "b_date", nullable = false)
 	private LocalDate date = LocalDate.now();
 
 	@Column(name = "b_total", nullable = false)

@@ -12,11 +12,13 @@ public final class MiscellaneousBill extends AbstractBill
 	private final Long id;
 	private final LocalDate date;
 	private final int year;
+	private final int vatRate;
 	private final String description;
 	private final BigDecimal total;
 
-	MiscellaneousBill(Long id, LocalDate date, String description, BigDecimal total)
+	MiscellaneousBill(Long id, LocalDate date, String description, BigDecimal total, int vatRate)
 	{
+		this.vatRate = vatRate;
 		this.id = id;
 		this.date = date;
 		this.year = date.getYear();
@@ -27,7 +29,8 @@ public final class MiscellaneousBill extends AbstractBill
 	public static MiscellaneousBill convert(MiscellaneousBillEntity billEntity)
 	{
 		return new MiscellaneousBill(billEntity.getBill().getId(), billEntity.getBill().getDate(),
-				billEntity.getDescription(), billEntity.getBill().getTotal());
+				billEntity.getDescription(), billEntity.getBill().getTotal(),
+				billEntity.getBill().getVatRate());
 	}
 
 	public static List<MiscellaneousBill> convert(List<MiscellaneousBillEntity> billEntityList)
@@ -50,6 +53,11 @@ public final class MiscellaneousBill extends AbstractBill
 	public int getYear()
 	{
 		return year;
+	}
+
+	public int getVatRate()
+	{
+		return vatRate;
 	}
 
 	public String getDescription()

@@ -130,6 +130,15 @@ car:
     runningEmpty: "No running recurring costs"
     addRecurring: "Add recurring cost"
     nextDue: "Next due {{date}}"
+  delete:
+    title: "Delete car"
+    text_one: "Removes the car and its {{count}} entry, including recurring costs."
+    text_other: "Removes the car and its {{count}} entries, including recurring costs."
+    button: "Delete car"
+    confirmTitle: "Delete {{name}}?"
+    confirmText_one: "The car and its {{count}} entry are removed permanently. This cannot be undone."
+    confirmText_other: "The car and its {{count}} entries are removed permanently. This cannot be undone."
+    done: "Car deleted"
   form:
     newTitle: "Add car"
     newSubtitle: "Basic details of your vehicle."
@@ -205,6 +214,15 @@ bill:
       MAINTENANCE: "A service, inspection or repair."
       MISCELLANEOUS: "Any other one-off expense, like a car wash or parking."
       RECURRING: "A fixed cost that repeats, like insurance or a leasing rate."
+  edit:
+    title: "Edit entry"
+    subtitle: "Calculated values like the consumption are updated."
+  end:
+    button: "End"
+    title: "End {{name}}?"
+    text: "No payments are booked from the end date on. Payments already booked on or after it are removed."
+    confirm: "End"
+    done: "Recurring cost ended"
   delete:
     title: "Delete this entry?"
     text: "The entry is removed permanently and all statistics are updated."

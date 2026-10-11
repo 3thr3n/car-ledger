@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import de.codeflowwizardry.carledger.data.BillCategory;
+import de.codeflowwizardry.carledger.data.BillInterval;
 import de.codeflowwizardry.carledger.data.RecurringBillEntity;
 
 public record RecurringBill(
@@ -13,6 +14,7 @@ public record RecurringBill(
 		String description,
 		LocalDate nextDueDate,
 		BillCategory category,
+		BillInterval billInterval,
 		LocalDate startDate,
 		LocalDate endDate,
 		BigDecimal amount,
@@ -34,6 +36,7 @@ public record RecurringBill(
 				entity.getDescription(),
 				entity.getNextDueDate(),
 				entity.getCategory(),
+				entity.getInterval(),
 				entity.getStartDate(),
 				entity.getEndDate(),
 				entity.getAmount(),

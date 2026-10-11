@@ -335,6 +335,10 @@
             "type" : "integer",
             "format" : "int32"
           },
+          "vatRate" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
           "distance" : {
             "type" : "number"
           },
@@ -435,6 +439,10 @@
             "type" : "integer",
             "format" : "int32"
           },
+          "vatRate" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
           "workshop" : {
             "type" : "string"
           },
@@ -501,6 +509,10 @@
             "type" : "integer",
             "format" : "int32"
           },
+          "vatRate" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
           "description" : {
             "type" : "string"
           },
@@ -546,6 +558,9 @@
           "category" : {
             "$ref" : "#/components/schemas/BillCategory"
           },
+          "billInterval" : {
+            "$ref" : "#/components/schemas/BillInterval"
+          },
           "startDate" : {
             "$ref" : "#/components/schemas/LocalDate"
           },
@@ -560,6 +575,14 @@
           },
           "finished" : {
             "type" : "boolean"
+          }
+        }
+      },
+      "RecurringBillEndInput" : {
+        "type" : "object",
+        "properties" : {
+          "endDate" : {
+            "$ref" : "#/components/schemas/LocalDate"
           }
         }
       },
@@ -936,6 +959,117 @@
         "tags" : [ "Fuel Resource" ]
       }
     },
+    "/api/bill/{carId}/fuel/{billId}" : {
+      "parameters" : [ {
+        "name" : "carId",
+        "in" : "path",
+        "required" : true,
+        "schema" : {
+          "type" : "integer",
+          "format" : "int64"
+        }
+      } ],
+      "post" : {
+        "description" : "Updates a bill, calculated values are calculated again",
+        "operationId" : "updateFuelBill",
+        "parameters" : [ {
+          "name" : "billId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/FuelBillInput"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Bill updated.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/FuelBill"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed, please check the response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Bill not found for the car of your user."
+          },
+          "409" : {
+            "description" : "Another bill with the same date and total exists."
+          }
+        },
+        "summary" : "Update Bill",
+        "tags" : [ "Fuel Resource" ]
+      },
+      "get" : {
+        "description" : "Gets one bill of the car",
+        "operationId" : "getFuelBill",
+        "parameters" : [ {
+          "name" : "billId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Bill found.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/FuelBill"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Bill not found for the car of your user."
+          }
+        },
+        "summary" : "Get Bill",
+        "tags" : [ "Fuel Resource" ]
+      }
+    },
     "/api/bill/{carId}/maintenance" : {
       "parameters" : [ {
         "name" : "carId",
@@ -1093,6 +1227,117 @@
           }
         },
         "summary" : "Get All My Bills",
+        "tags" : [ "Maintenance Resource" ]
+      }
+    },
+    "/api/bill/{carId}/maintenance/{billId}" : {
+      "parameters" : [ {
+        "name" : "carId",
+        "in" : "path",
+        "required" : true,
+        "schema" : {
+          "type" : "integer",
+          "format" : "int64"
+        }
+      } ],
+      "post" : {
+        "description" : "Updates a bill, calculated values are calculated again",
+        "operationId" : "updateMaintenanceBill",
+        "parameters" : [ {
+          "name" : "billId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/MaintenanceBillInput"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Bill updated.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MaintenanceBill"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed, please check the response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Bill not found for the car of your user."
+          },
+          "409" : {
+            "description" : "Another bill with the same date and total exists."
+          }
+        },
+        "summary" : "Update Bill",
+        "tags" : [ "Maintenance Resource" ]
+      },
+      "get" : {
+        "description" : "Gets one bill of the car",
+        "operationId" : "getMaintenanceBill",
+        "parameters" : [ {
+          "name" : "billId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Bill found.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MaintenanceBill"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Bill not found for the car of your user."
+          }
+        },
+        "summary" : "Get Bill",
         "tags" : [ "Maintenance Resource" ]
       }
     },
@@ -1256,6 +1501,117 @@
         "tags" : [ "Miscellaneous Resource" ]
       }
     },
+    "/api/bill/{carId}/miscellaneous/{billId}" : {
+      "parameters" : [ {
+        "name" : "carId",
+        "in" : "path",
+        "required" : true,
+        "schema" : {
+          "type" : "integer",
+          "format" : "int64"
+        }
+      } ],
+      "post" : {
+        "description" : "Updates a bill, calculated values are calculated again",
+        "operationId" : "updateMiscellaneousBill",
+        "parameters" : [ {
+          "name" : "billId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/MiscellaneousBillInput"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Bill updated.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MiscellaneousBill"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed, please check the response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Bill not found for the car of your user."
+          },
+          "409" : {
+            "description" : "Another bill with the same date and total exists."
+          }
+        },
+        "summary" : "Update Bill",
+        "tags" : [ "Miscellaneous Resource" ]
+      },
+      "get" : {
+        "description" : "Gets one bill of the car",
+        "operationId" : "getMiscellaneousBill",
+        "parameters" : [ {
+          "name" : "billId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Bill found.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MiscellaneousBill"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Bill not found for the car of your user."
+          }
+        },
+        "summary" : "Get Bill",
+        "tags" : [ "Miscellaneous Resource" ]
+      }
+    },
     "/api/bill/{carId}/recurring" : {
       "get" : {
         "description" : "Gets all recurring bills for specified car",
@@ -1385,6 +1741,67 @@
           }
         },
         "summary" : "Delete Recurring Bill",
+        "tags" : [ "Recurring Resource" ]
+      }
+    },
+    "/api/bill/{carId}/recurring/{billId}/end" : {
+      "post" : {
+        "description" : "Ends a recurring bill, payments due on or after the end date are removed",
+        "operationId" : "endRecurringBill",
+        "parameters" : [ {
+          "name" : "billId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/RecurringBillEndInput"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Bill ended.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RecurringBill"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed, please check the response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Bill not found for the car of your user."
+          }
+        },
+        "summary" : "End Recurring Bill",
         "tags" : [ "Recurring Resource" ]
       }
     },
@@ -1588,6 +2005,29 @@
           }
         },
         "summary" : "Get My Car",
+        "tags" : [ "Car Resource" ]
+      },
+      "delete" : {
+        "description" : "Deletes the car including all its bills and recurring bills",
+        "operationId" : "deleteMyCar",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "Car deleted."
+          },
+          "404" : {
+            "description" : "Car was not found."
+          }
+        },
+        "summary" : "Delete Car",
         "tags" : [ "Car Resource" ]
       }
     },

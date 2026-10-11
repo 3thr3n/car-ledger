@@ -1,6 +1,7 @@
 package de.codeflowwizardry.carledger.rest;
 
 import static io.restassured.RestAssured.given;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -16,6 +17,7 @@ import de.codeflowwizardry.carledger.data.AccountEntity;
 import de.codeflowwizardry.carledger.data.CarEntity;
 import de.codeflowwizardry.carledger.data.factory.FuelBillFactory;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
+import de.codeflowwizardry.carledger.data.repository.BillRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import de.codeflowwizardry.carledger.rest.car.fuel.FuelBillInput;
 import io.quarkus.narayana.jta.QuarkusTransaction;
@@ -38,6 +40,9 @@ class CarResourceTest
 
 	@Inject
 	CarRepository carRepository;
+
+	@Inject
+	BillRepository billRepository;
 
 	long carId = 0;
 
@@ -302,6 +307,48 @@ class CarResourceTest
 				.asString();
 
 		assertTrue(response.contains("<html"));
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldDeleteMyCarWithItsBills()
+	{
+		given()
+				.when()
+				.delete("{id}", carId)
+				.then()
+				.statusCode(204);
+
+		given()
+				.when()
+				.get("{id}", carId)
+				.then()
+				.statusCode(404);
+
+		assertEquals(0, countBills());
+	}
+
+	@Test
+	@TestSecurity(user = "bob", roles = {
+			"user"
+	})
+	void shouldNotDeleteCarOfOtherUser()
+	{
+		given()
+				.when()
+				.delete("{id}", carId)
+				.then()
+				.statusCode(404);
+
+		assertEquals(1, countBills());
+	}
+
+	@Transactional
+	long countBills()
+	{
+		return billRepository.count("car.id", carId);
 	}
 
 	@AfterEach

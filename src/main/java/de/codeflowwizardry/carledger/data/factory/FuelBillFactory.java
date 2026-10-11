@@ -50,6 +50,32 @@ public class FuelBillFactory extends AbstractBillFactory<FuelBillInput, FuelBill
 		return fuelBill;
 	}
 
+	@Override
+	@Transactional
+	public FuelBillEntity update(FuelBillEntity fuelBill, FuelBillInput input)
+	{
+		BillEntity bill = fuelBill.getBill();
+		applyInput(bill, input);
+
+		BigDecimal unit = calculateUnit(input);
+		calculateTotal(bill, unit, input);
+
+		saveBill(bill);
+
+		fuelBill.setDistance(input.getDistance());
+		fuelBill.setEstimate(input.getEstimateConsumption());
+		fuelBill.setPricePerUnit(calculatePricePerUnit(input, bill, unit));
+		fuelBill.setUnit(unit);
+
+		// only calculated with a distance, the old values must not remain without one
+		fuelBill.setAvgConsumption(BigDecimal.ZERO);
+		fuelBill.setCostPerKm(BigDecimal.ZERO);
+		calculateAvgConsumption(fuelBill);
+		calculateCostPerKm(fuelBill);
+
+		return fuelBill;
+	}
+
 	static BigDecimal calculateUnit(FuelBillInput input)
 	{
 		BigDecimal unit = input.getUnit();

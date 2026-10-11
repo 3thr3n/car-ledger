@@ -14,6 +14,7 @@ import de.codeflowwizardry.carledger.rest.records.AbstractBill;
 import de.codeflowwizardry.carledger.rest.records.BillPaged;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.panache.common.Page;
+import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.PathParam;
 
 public class AbstractBillResource<T extends AbstractBillRepository<E>, E extends AbstractBillEntity, D extends AbstractBill>
@@ -50,5 +51,16 @@ public class AbstractBillResource<T extends AbstractBillRepository<E>, E extends
 				.getBills(carId, context.getName(), queryPage, Optional.ofNullable(year));
 
 		return new BillPaged<>(query.count(), page, size, converter.apply(query.list()));
+	}
+
+	/**
+	 * @throws NotFoundException
+	 *             if the bill does not exist or does not belong to the car of the
+	 *             user
+	 */
+	protected E findMyBill(long carId, long billId)
+	{
+		return repository.findBill(carId, billId, context.getName())
+				.orElseThrow(() -> new NotFoundException("Bill not found"));
 	}
 }

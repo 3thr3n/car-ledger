@@ -130,6 +130,15 @@ car:
     runningEmpty: "Keine laufenden Kosten"
     addRecurring: "Laufende Kosten anlegen"
     nextDue: "Nächste Fälligkeit {{date}}"
+  delete:
+    title: "Fahrzeug löschen"
+    text_one: "Entfernt das Fahrzeug und seinen {{count}} Eintrag, inklusive laufender Kosten."
+    text_other: "Entfernt das Fahrzeug und seine {{count}} Einträge, inklusive laufender Kosten."
+    button: "Fahrzeug löschen"
+    confirmTitle: "{{name}} löschen?"
+    confirmText_one: "Das Fahrzeug und sein {{count}} Eintrag werden dauerhaft entfernt. Das kann nicht rückgängig gemacht werden."
+    confirmText_other: "Das Fahrzeug und seine {{count}} Einträge werden dauerhaft entfernt. Das kann nicht rückgängig gemacht werden."
+    done: "Fahrzeug gelöscht"
   form:
     newTitle: "Fahrzeug hinzufügen"
     newSubtitle: "Die wichtigsten Angaben zu deinem Fahrzeug."
@@ -205,6 +214,15 @@ bill:
       MAINTENANCE: "Ein Service, eine Inspektion oder eine Reparatur."
       MISCELLANEOUS: "Jede andere einmalige Ausgabe, z. B. Waschanlage oder Parken."
       RECURRING: "Fixkosten, die sich wiederholen, z. B. Versicherung oder Leasingrate."
+  edit:
+    title: "Eintrag bearbeiten"
+    subtitle: "Berechnete Werte wie der Verbrauch werden aktualisiert."
+  end:
+    button: "Beenden"
+    title: "{{name}} beenden?"
+    text: "Ab dem Enddatum werden keine Zahlungen mehr gebucht. Bereits gebuchte Zahlungen ab diesem Datum werden entfernt."
+    confirm: "Beenden"
+    done: "Laufende Kosten beendet"
   delete:
     title: "Eintrag löschen?"
     text: "Der Eintrag wird dauerhaft entfernt und alle Statistiken werden aktualisiert."

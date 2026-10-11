@@ -15,6 +15,7 @@ public final class FuelBill extends AbstractBill
 	private final Long id;
 	private final LocalDate date;
 	private final int year;
+	private final int vatRate;
 	private final BigDecimal distance;
 	private final BigDecimal unit;
 	private final BigDecimal pricePerUnit;
@@ -24,8 +25,9 @@ public final class FuelBill extends AbstractBill
 
 	FuelBill(Long id, LocalDate date, BigDecimal distance, BigDecimal unit, BigDecimal pricePerUnit,
 			BigDecimal estimateConsumption,
-			BigDecimal avgConsumption, BigDecimal total)
+			BigDecimal avgConsumption, BigDecimal total, int vatRate)
 	{
+		this.vatRate = vatRate;
 		this.id = id;
 		this.date = date;
 		this.year = date.getYear();
@@ -46,7 +48,8 @@ public final class FuelBill extends AbstractBill
 				billEntity.getPricePerUnit(),
 				billEntity.getEstimate(),
 				billEntity.getAvgConsumption(),
-				billEntity.getBill().getTotal());
+				billEntity.getBill().getTotal(),
+				billEntity.getBill().getVatRate());
 	}
 
 	public static List<FuelBill> convert(List<FuelBillEntity> billEntityList)
@@ -69,6 +72,11 @@ public final class FuelBill extends AbstractBill
 	public int getYear()
 	{
 		return year;
+	}
+
+	public int getVatRate()
+	{
+		return vatRate;
 	}
 
 	public BigDecimal getDistance()

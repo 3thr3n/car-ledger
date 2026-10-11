@@ -74,6 +74,39 @@ public class RecurringBillFactory
 		return recurringBillEntity;
 	}
 
+	/**
+	 * Ends the recurring bill. The end date is exclusive, payments due on or after
+	 * it are removed (it can be in the past).
+	 *
+	 * @throws WrongUserException
+	 *             if the bill does not belong to the car of the user
+	 */
+	@Transactional
+	public RecurringBillEntity end(long carId, long billId, LocalDate endDate, String user)
+	{
+		RecurringBillEntity bill = recurringBillRepository.getById(carId, user, billId);
+		if (bill == null)
+		{
+			throw new WrongUserException();
+		}
+
+		List<String> errors = new ArrayList<>();
+		if (endDate == null)
+		{
+			errors.add("End date must be set!");
+		} else if (endDate.isBefore(bill.getStartDate()))
+		{
+			errors.add("End date cannot be before the start date!");
+		}
+		Utils.requireValid(errors);
+
+		bill.setEndDate(endDate);
+		recurringBillPaymentRepository.deleteFrom(bill, endDate);
+		bill.setTotal(recurringBillPaymentRepository.sumAmount(bill));
+
+		return bill;
+	}
+
 	private List<RecurringBillPaymentEntity> generateHistory(RecurringBillEntity bill)
 	{
 		List<RecurringBillPaymentEntity> payments = new ArrayList<>();

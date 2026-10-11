@@ -44,6 +44,8 @@ public class FuelResourceTest
 
 	CarEntity carEntity;
 
+	long newestBillId;
+
 	@BeforeEach
 	@Transactional
 	void setup()
@@ -73,7 +75,8 @@ public class FuelResourceTest
 				BigDecimal.valueOf(199.9d),
 				BigDecimal.valueOf(8.5));
 
-		fuelBillFactory.create(fuelBillInput, carEntity.getId(), carEntity.getUser().getUserId());
+		newestBillId = fuelBillFactory.create(fuelBillInput, carEntity.getId(), carEntity.getUser().getUserId())
+				.getBill().getId();
 
 		fuelBillInput = new FuelBillInput(
 				LocalDate.of(2022, 5, 22),
@@ -345,5 +348,157 @@ public class FuelResourceTest
 	void cleanup()
 	{
 		accountRepository.deleteAll();
+	}
+
+	private long billId(int index)
+	{
+		return given()
+				.pathParam("carId", carEntity.getId())
+				.when()
+				.get("all")
+				.then()
+				.statusCode(200)
+				.extract()
+				.jsonPath()
+				.getLong("data[" + index + "].id");
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldUpdateBillAndCalculateAgain()
+	{
+		// given, the newest bill from 2024-08-16
+		long billId = billId(0);
+		String body = """
+				{
+					"date": "2024-08-17",
+					"unit": 30,
+					"pricePerUnit": 200,
+					"distance": 600,
+					"vatRate": 7
+				}
+				""";
+
+		// when
+		given()
+				.pathParam("carId", carEntity.getId())
+				.contentType(ContentType.JSON)
+				.body(body)
+				.when()
+				.post(String.valueOf(billId))
+				.then()
+				.statusCode(200)
+				.body("id", is((int) billId))
+				.body("date", is("2024-08-17"))
+				.body("total", is(60.00F))
+				.body("unit", is(30.00F))
+				.body("avgConsumption", is(5.00F))
+				.body("vatRate", is(7));
+
+		// then
+		given()
+				.pathParam("carId", carEntity.getId())
+				.when()
+				.get(String.valueOf(billId))
+				.then()
+				.statusCode(200)
+				.body("total", is(60.00F))
+				.body("distance", is(600.00F));
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldResetConsumptionWhenDistanceIsRemoved()
+	{
+		long billId = billId(0);
+		String body = """
+				{
+					"date": "2024-08-16",
+					"unit": 28,
+					"total": 50,
+					"vatRate": 19
+				}
+				""";
+
+		given()
+				.pathParam("carId", carEntity.getId())
+				.contentType(ContentType.JSON)
+				.body(body)
+				.when()
+				.post(String.valueOf(billId))
+				.then()
+				.statusCode(200)
+				.body("distance", is(0.00F))
+				.body("avgConsumption", is(0.00F));
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldRejectInvalidUpdate()
+	{
+		long billId = billId(0);
+
+		given()
+				.pathParam("carId", carEntity.getId())
+				.contentType(ContentType.JSON)
+				.body("""
+						{ "date": "2024-08-16", "unit": 28, "vatRate": 19 }
+						""")
+				.when()
+				.post(String.valueOf(billId))
+				.then()
+				.statusCode(400);
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldRejectUpdateCollidingWithOtherBill()
+	{
+		// given, the bill from 2023-06-02 has a total of 55.13
+		long billId = billId(0);
+
+		given()
+				.pathParam("carId", carEntity.getId())
+				.contentType(ContentType.JSON)
+				.body("""
+						{ "date": "2023-06-02", "unit": 28, "total": 55.13, "vatRate": 19 }
+						""")
+				.when()
+				.post(String.valueOf(billId))
+				.then()
+				.statusCode(409);
+	}
+
+	@Test
+	@TestSecurity(user = "bob", roles = {
+			"user"
+	})
+	void shouldNotGetOrUpdateBillOfOtherUser()
+	{
+		given()
+				.pathParam("carId", carEntity.getId())
+				.when()
+				.get(String.valueOf(newestBillId))
+				.then()
+				.statusCode(404);
+
+		given()
+				.pathParam("carId", carEntity.getId())
+				.contentType(ContentType.JSON)
+				.body("""
+						{ "date": "2024-08-16", "unit": 28, "total": 50, "vatRate": 19 }
+						""")
+				.when()
+				.post(String.valueOf(newestBillId))
+				.then()
+				.statusCode(404);
 	}
 }

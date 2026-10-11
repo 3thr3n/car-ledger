@@ -16,6 +16,7 @@ spending and usage patterns.
     - [Importing Receipts via CSV](#importing-receipts-via-csv)
     - [Data Aggregation & Summarization](#data-aggregation--summarization)
 - [CSV Format](#csv-format)
+- [Tests](#tests)
 - [Contributing](#contributing)
 - [Helm](#helm)
 - [License](#license)
@@ -80,9 +81,12 @@ To start using CarLedger, follow these steps:
 
 - Manually add new receipts by entering fuel details, cost, and date.
 
-### Deleting Receipts
+### Editing and Deleting Receipts
 
+- Correct receipts afterwards, calculated values like the consumption are updated.
 - Remove individual receipts to keep your record accurate and clutter-free.
+- End recurring costs (e.g. a cancelled insurance), payments from the end date on are removed.
+- Delete a car together with all its receipts.
 
 ### Importing Receipts via CSV
 
@@ -116,6 +120,23 @@ Date,Fuel Volume (L),Price per L (€),Distance (km),Car estimate (L)
 09.10.2024,40.03,171.9,551.5,8.0
 18.10.2024,38.23,171.9,494.2,8.2
 ```
+
+## Tests
+
+```bash
+# backend
+./mvnw verify
+
+# frontend unit tests
+cd src/main/webapp && yarn test
+
+# end-to-end tests, start Quarkus (with dev services, needs Docker) and Vite themselves,
+# running servers are reused
+cd src/main/webapp && npx playwright install chromium && yarn test:e2e
+```
+
+The build writes the OpenAPI spec of the backend to `src/main/webapp/public/openapi.json`, the frontend client is
+generated from it with `yarn openapi-ts`. Commit both, the CI fails if they are outdated.
 
 ## Contributing
 

@@ -16,6 +16,7 @@ import { Route as DevI18nRouteImport } from './routes/dev/i18n'
 import { Route as CarIdRouteRouteImport } from './routes/car/$id/route'
 import { Route as CarIdBillImportRouteImport } from './routes/car/$id/bill/import'
 import { Route as CarIdBillAddRouteImport } from './routes/car/$id/bill/add'
+import { Route as CarIdBillBillIdEditRouteImport } from './routes/car/$id/bill/$billId/edit'
 
 const ErrorLazyRouteImport = createFileRoute('/error')()
 const IndexLazyRouteImport = createFileRoute('/')()
@@ -130,6 +131,11 @@ const CarIdBillFuelIndexLazyRoute = CarIdBillFuelIndexLazyRouteImport.update({
 } as any).lazy(() =>
   import('./routes/car/$id/bill/fuel/index.lazy').then((d) => d.Route),
 )
+const CarIdBillBillIdEditRoute = CarIdBillBillIdEditRouteImport.update({
+  id: '/bill/$billId/edit',
+  path: '/bill/$billId/edit',
+  getParentRoute: () => CarIdRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexLazyRoute
@@ -144,6 +150,7 @@ export interface FileRoutesByFullPath {
   '/car/$id/': typeof CarIdIndexLazyRoute
   '/car/$id/bill/add': typeof CarIdBillAddRoute
   '/car/$id/bill/import': typeof CarIdBillImportRoute
+  '/car/$id/bill/$billId/edit': typeof CarIdBillBillIdEditRoute
   '/car/$id/bill/fuel/': typeof CarIdBillFuelIndexLazyRoute
   '/car/$id/bill/maintenance/': typeof CarIdBillMaintenanceIndexLazyRoute
   '/car/$id/bill/miscellaneous/': typeof CarIdBillMiscellaneousIndexLazyRoute
@@ -161,6 +168,7 @@ export interface FileRoutesByTo {
   '/car/$id': typeof CarIdIndexLazyRoute
   '/car/$id/bill/add': typeof CarIdBillAddRoute
   '/car/$id/bill/import': typeof CarIdBillImportRoute
+  '/car/$id/bill/$billId/edit': typeof CarIdBillBillIdEditRoute
   '/car/$id/bill/fuel': typeof CarIdBillFuelIndexLazyRoute
   '/car/$id/bill/maintenance': typeof CarIdBillMaintenanceIndexLazyRoute
   '/car/$id/bill/miscellaneous': typeof CarIdBillMiscellaneousIndexLazyRoute
@@ -180,6 +188,7 @@ export interface FileRoutesById {
   '/car/$id/': typeof CarIdIndexLazyRoute
   '/car/$id/bill/add': typeof CarIdBillAddRoute
   '/car/$id/bill/import': typeof CarIdBillImportRoute
+  '/car/$id/bill/$billId/edit': typeof CarIdBillBillIdEditRoute
   '/car/$id/bill/fuel/': typeof CarIdBillFuelIndexLazyRoute
   '/car/$id/bill/maintenance/': typeof CarIdBillMaintenanceIndexLazyRoute
   '/car/$id/bill/miscellaneous/': typeof CarIdBillMiscellaneousIndexLazyRoute
@@ -200,6 +209,7 @@ export interface FileRouteTypes {
     | '/car/$id/'
     | '/car/$id/bill/add'
     | '/car/$id/bill/import'
+    | '/car/$id/bill/$billId/edit'
     | '/car/$id/bill/fuel/'
     | '/car/$id/bill/maintenance/'
     | '/car/$id/bill/miscellaneous/'
@@ -217,6 +227,7 @@ export interface FileRouteTypes {
     | '/car/$id'
     | '/car/$id/bill/add'
     | '/car/$id/bill/import'
+    | '/car/$id/bill/$billId/edit'
     | '/car/$id/bill/fuel'
     | '/car/$id/bill/maintenance'
     | '/car/$id/bill/miscellaneous'
@@ -235,6 +246,7 @@ export interface FileRouteTypes {
     | '/car/$id/'
     | '/car/$id/bill/add'
     | '/car/$id/bill/import'
+    | '/car/$id/bill/$billId/edit'
     | '/car/$id/bill/fuel/'
     | '/car/$id/bill/maintenance/'
     | '/car/$id/bill/miscellaneous/'
@@ -366,6 +378,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CarIdBillFuelIndexLazyRouteImport
       parentRoute: typeof CarIdRouteRoute
     }
+    '/car/$id/bill/$billId/edit': {
+      id: '/car/$id/bill/$billId/edit'
+      path: '/bill/$billId/edit'
+      fullPath: '/car/$id/bill/$billId/edit'
+      preLoaderRoute: typeof CarIdBillBillIdEditRouteImport
+      parentRoute: typeof CarIdRouteRoute
+    }
   }
 }
 
@@ -374,6 +393,7 @@ interface CarIdRouteRouteChildren {
   CarIdIndexLazyRoute: typeof CarIdIndexLazyRoute
   CarIdBillAddRoute: typeof CarIdBillAddRoute
   CarIdBillImportRoute: typeof CarIdBillImportRoute
+  CarIdBillBillIdEditRoute: typeof CarIdBillBillIdEditRoute
   CarIdBillFuelIndexLazyRoute: typeof CarIdBillFuelIndexLazyRoute
   CarIdBillMaintenanceIndexLazyRoute: typeof CarIdBillMaintenanceIndexLazyRoute
   CarIdBillMiscellaneousIndexLazyRoute: typeof CarIdBillMiscellaneousIndexLazyRoute
@@ -385,6 +405,7 @@ const CarIdRouteRouteChildren: CarIdRouteRouteChildren = {
   CarIdIndexLazyRoute: CarIdIndexLazyRoute,
   CarIdBillAddRoute: CarIdBillAddRoute,
   CarIdBillImportRoute: CarIdBillImportRoute,
+  CarIdBillBillIdEditRoute: CarIdBillBillIdEditRoute,
   CarIdBillFuelIndexLazyRoute: CarIdBillFuelIndexLazyRoute,
   CarIdBillMaintenanceIndexLazyRoute: CarIdBillMaintenanceIndexLazyRoute,
   CarIdBillMiscellaneousIndexLazyRoute: CarIdBillMiscellaneousIndexLazyRoute,
