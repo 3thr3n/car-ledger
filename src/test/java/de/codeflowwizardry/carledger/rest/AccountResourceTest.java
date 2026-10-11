@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Test;
 import de.codeflowwizardry.carledger.data.AccountEntity;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.security.runtime.QuarkusSecurityIdentity;
 import io.quarkus.test.security.TestSecurity;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -107,7 +108,8 @@ class AccountResourceTest
 		Principal principal = () -> "peter";
 
 		// when
-		AccountEntity accountEntity = new AccountResource(principal, repository).checkUser("peter");
+		AccountEntity accountEntity = new AccountResource(
+				QuarkusSecurityIdentity.builder().setPrincipal(principal).build(), repository).checkUser("peter");
 
 		// then
 		assertSame(existing, accountEntity);

@@ -1,6 +1,6 @@
 package de.codeflowwizardry.carledger.rest.car.maintenance;
 
-import java.security.Principal;
+import io.quarkus.security.identity.SecurityIdentity;
 import java.util.List;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -28,10 +28,10 @@ public class MaintenanceResource
 	private final MaintenanceBillFactory maintenanceBillFactory;
 
 	@Inject
-	public MaintenanceResource(Principal context, AccountRepository accountRepository,
+	public MaintenanceResource(SecurityIdentity identity, AccountRepository accountRepository,
 			MaintenanceBillRepository maintenanceBillRepository, MaintenanceBillFactory maintenanceBillFactory)
 	{
-		super(context, accountRepository, maintenanceBillRepository, BillType.MAINTENANCE);
+		super(identity, accountRepository, maintenanceBillRepository, BillType.MAINTENANCE);
 		this.maintenanceBillFactory = maintenanceBillFactory;
 	}
 

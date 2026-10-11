@@ -1,6 +1,6 @@
 package de.codeflowwizardry.carledger.rest.car.recurring;
 
-import java.security.Principal;
+import io.quarkus.security.identity.SecurityIdentity;
 import java.util.List;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -32,10 +32,10 @@ public class RecurringResource extends AbstractResource
 	private final RecurringBillFactory recurringBillFactory;
 
 	@Inject
-	public RecurringResource(Principal context, AccountRepository accountRepository,
+	public RecurringResource(SecurityIdentity identity, AccountRepository accountRepository,
 			RecurringBillRepository recurringBillRepository, RecurringBillFactory recurringBillFactory)
 	{
-		super(context, accountRepository);
+		super(identity, accountRepository);
 		this.recurringBillRepository = recurringBillRepository;
 		this.recurringBillFactory = recurringBillFactory;
 	}

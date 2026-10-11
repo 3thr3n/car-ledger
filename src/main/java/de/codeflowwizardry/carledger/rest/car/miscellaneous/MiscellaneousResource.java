@@ -1,6 +1,6 @@
 package de.codeflowwizardry.carledger.rest.car.miscellaneous;
 
-import java.security.Principal;
+import io.quarkus.security.identity.SecurityIdentity;
 import java.util.List;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -28,10 +28,10 @@ public class MiscellaneousResource
 	private final MiscellaneousBillFactory miscellaneousBillFactory;
 
 	@Inject
-	public MiscellaneousResource(Principal context, AccountRepository accountRepository,
+	public MiscellaneousResource(SecurityIdentity identity, AccountRepository accountRepository,
 			MiscellaneousBillRepository miscellaneousBillRepository, MiscellaneousBillFactory miscellaneousBillFactory)
 	{
-		super(context, accountRepository, miscellaneousBillRepository, BillType.MISCELLANEOUS);
+		super(identity, accountRepository, miscellaneousBillRepository, BillType.MISCELLANEOUS);
 		this.miscellaneousBillFactory = miscellaneousBillFactory;
 	}
 

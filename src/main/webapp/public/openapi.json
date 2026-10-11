@@ -390,11 +390,6 @@
           },
           "max" : {
             "type" : "number"
-          },
-          "scale" : {
-            "type" : "integer",
-            "writeOnly" : true,
-            "format" : "int32"
           }
         }
       },
@@ -645,8 +640,7 @@
     "securitySchemes" : {
       "SecurityScheme" : {
         "type" : "openIdConnect",
-        "description" : "Authentication",
-        "openIdConnectUrl" : "http://localhost:32323/realms/quarkus/.well-known/openid-configuration"
+        "description" : "Authentication"
       }
     }
   },
@@ -657,7 +651,12 @@
         "operationId" : "callback",
         "responses" : {
           "200" : {
-            "description" : "OK"
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : { }
+              }
+            }
           }
         },
         "summary" : "Callback",
@@ -670,7 +669,12 @@
         "operationId" : "login",
         "responses" : {
           "200" : {
-            "description" : "OK"
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : { }
+              }
+            }
           }
         },
         "summary" : "Login",
@@ -699,7 +703,12 @@
         "operationId" : "logout-callback",
         "responses" : {
           "200" : {
-            "description" : "OK"
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : { }
+              }
+            }
           }
         },
         "summary" : "Logout Callback",
@@ -1535,7 +1544,12 @@
         },
         "responses" : {
           "200" : {
-            "description" : "Car found and updated."
+            "description" : "Car found and updated.",
+            "content" : {
+              "application/json" : {
+                "schema" : { }
+              }
+            }
           },
           "400" : {
             "description" : "Input was invalid."
@@ -1783,5 +1797,12 @@
   "info" : {
     "title" : "car-ledger API",
     "version" : "0.1.0-SNAPSHOT"
-  }
+  },
+  "servers" : [ {
+    "url" : "http://localhost:8080",
+    "description" : "Auto generated value"
+  }, {
+    "url" : "http://0.0.0.0:8080",
+    "description" : "Auto generated value"
+  } ]
 }

@@ -1,6 +1,6 @@
 package de.codeflowwizardry.carledger.rest.car;
 
-import java.security.Principal;
+import io.quarkus.security.identity.SecurityIdentity;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -22,10 +22,10 @@ public class AbstractBillResource<T extends AbstractBillRepository<E>, E extends
 	protected final T repository;
 	protected final BillType billType;
 
-	protected AbstractBillResource(Principal context, AccountRepository accountRepository,
+	protected AbstractBillResource(SecurityIdentity identity, AccountRepository accountRepository,
 			T repository, BillType billType)
 	{
-		super(context, accountRepository);
+		super(identity, accountRepository);
 		this.repository = repository;
 		this.billType = billType;
 	}
