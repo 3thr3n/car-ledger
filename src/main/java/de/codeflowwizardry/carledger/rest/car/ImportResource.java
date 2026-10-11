@@ -15,6 +15,8 @@ import org.jboss.resteasy.reactive.RestForm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+
 import de.codeflowwizardry.carledger.csv.CsvColumnMapping;
 import de.codeflowwizardry.carledger.csv.CsvImportResult;
 import de.codeflowwizardry.carledger.csv.CsvImportService;
@@ -59,7 +61,7 @@ public class ImportResource extends AbstractResource
 	@POST
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	@APIResponse(responseCode = "202", description = "CSV was imported.")
-	@APIResponse(responseCode = "400", description = "- Type not defined\n- Car not found")
+	@APIResponse(responseCode = "400", description = "- Type not defined\n- Car not found\n- Column mapping missing or invalid")
 	@APIResponse(responseCode = "500", description = "- CSV was not set\n- Something went wrong while importing. Please ask the server admin for help.")
 	public Response importFuelCsv(
 			@PathParam("carId") long carId,
@@ -101,6 +103,11 @@ public class ImportResource extends AbstractResource
 	@APIResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = CsvFields.class)))
 	public Response getFieldDefinitions(@QueryParam("importType") BillType importType)
 	{
+		if (importType == null)
+		{
+			throw new BadRequestException(Response.status(400).entity("Type not found!").build());
+		}
+
 		return switch (importType)
 		{
 			case FUEL ->
@@ -131,6 +138,12 @@ public class ImportResource extends AbstractResource
 
 			return Response.ok().entity(result).build();
 
+		}
+		catch (IllegalArgumentException | JsonProcessingException e)
+		{
+			// invalid or incomplete column mapping
+			LOG.warn("Invalid CSV import request: {}", e.getMessage());
+			return Response.status(400).entity(e.getMessage()).build();
 		}
 		catch (Exception e)
 		{

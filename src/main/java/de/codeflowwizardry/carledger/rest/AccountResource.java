@@ -13,7 +13,6 @@ import de.codeflowwizardry.carledger.data.AccountEntity;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.rest.records.Account;
 import jakarta.inject.Inject;
-import jakarta.transaction.Transactional;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
@@ -38,7 +37,6 @@ public class AccountResource extends AbstractResource
 		return Account.convert(checkUser(context.getName()));
 	}
 
-	@Transactional
 	public AccountEntity checkUser(String name)
 	{
 		ObjectUtils.requireNonEmpty(name);
@@ -54,16 +52,16 @@ public class AccountResource extends AbstractResource
 		catch (BadRequestException e)
 		{
 			LOG.debug("user does not exist! creating {}...", name);
-			accountEntity = new AccountEntity();
-			accountEntity.setUserId(name);
-			accountEntity.setMaxCars(1);
-			accountRepository.persist(accountEntity);
-			LOG.debug("user created!");
-		}
-		catch (ConstraintViolationException e)
-		{
-			LOG.debug("Duplicated request on first login");
-			accountEntity = accountRepository.findByIdentifier(name);
+			try
+			{
+				accountEntity = accountRepository.createAccount(name, 1);
+				LOG.debug("user created!");
+			}
+			catch (ConstraintViolationException cve)
+			{
+				LOG.debug("Duplicated request on first login");
+				accountEntity = accountRepository.findByIdentifier(name);
+			}
 		}
 
 		return accountEntity;
