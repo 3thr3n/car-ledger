@@ -30,9 +30,9 @@ public final class FuelBill extends AbstractBill<FuelBillEntity>
 		this.date = date;
 		this.year = date.getYear();
 		this.distance = requireNonNullElse(distance, BigDecimal.ZERO);
-		this.unit = unit;
-		this.pricePerUnit = pricePerUnit;
-		this.estimateConsumption = estimateConsumption;
+		this.unit = requireNonNullElse(unit, BigDecimal.ZERO);
+		this.pricePerUnit = requireNonNullElse(pricePerUnit, BigDecimal.ZERO);
+		this.estimateConsumption = requireNonNullElse(estimateConsumption, BigDecimal.ZERO);
 		this.avgConsumption = requireNonNullElse(avgConsumption, BigDecimal.ZERO);
 		this.total = requireNonNullElse(total, BigDecimal.ZERO);
 	}

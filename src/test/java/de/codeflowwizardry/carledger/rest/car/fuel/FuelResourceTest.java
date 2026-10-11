@@ -171,6 +171,75 @@ public class FuelResourceTest
 	}
 
 	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldAddBillWithoutPricePerUnitAndOptionalValues()
+	{
+		// given
+		String body = """
+				{
+					"date": "2024-09-01",
+					"unit": 25,
+					"total": 50,
+					"vatRate": 19
+				}
+				""";
+
+		// when
+		given()
+				.pathParam("carId", carEntity.getId())
+				.accept(ContentType.JSON)
+				.contentType(ContentType.JSON)
+				.body(body)
+				.put()
+				.then()
+				.statusCode(202)
+				.body("pricePerUnit", is("200.00"))
+				.body("estimateConsumption", is("0.00"))
+				.body("distance", is("0.00"));
+
+		// then
+		given()
+				.pathParam("carId", carEntity.getId())
+				.queryParam("year", 2024)
+				.when()
+				.get("all")
+				.then()
+				.statusCode(200)
+				.body("total", is(2))
+				.body("data[0].date", is("2024-09-01"))
+				.body("data[0].pricePerUnit", is("200.00"));
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldRejectBillWithOnlyOneValueGreaterThanZero()
+	{
+		// given
+		String body = """
+				{
+					"date": "2024-09-01",
+					"unit": 0,
+					"total": 50,
+					"vatRate": 19
+				}
+				""";
+
+		// when
+		given()
+				.pathParam("carId", carEntity.getId())
+				.accept(ContentType.JSON)
+				.contentType(ContentType.JSON)
+				.body(body)
+				.put()
+				.then()
+				.statusCode(400);
+	}
+
+	@Test
 	@TestSecurity(user = "bob", roles = {
 			"user"
 	})

@@ -122,7 +122,7 @@ public class StatsCalculator
 
 	private static BigDecimal handleReduceTotalResult(Stream<BigDecimal> decimalStream)
 	{
-		return decimalStream.reduce(BigDecimal::add).orElse(ZERO);
+		return decimalStream.filter(Objects::nonNull).reduce(BigDecimal::add).orElse(ZERO);
 	}
 
 	/**
@@ -206,6 +206,7 @@ public class StatsCalculator
 	{
 		Optional<BigDecimal[]> optionalBigDecimal = billEntities.stream()
 				.map(bigDecimalMapFunction)
+				.filter(Objects::nonNull)
 				.map(bd -> new BigDecimal[] {
 						bd, BigDecimal.ONE
 				})
@@ -269,13 +270,13 @@ public class StatsCalculator
 	{
 		BigDecimal min = billEntities.stream()
 				.map(bigDecimalFunction)
-				.filter(bigDecimal -> bigDecimal.signum() != 0)
+				.filter(bigDecimal -> bigDecimal != null && bigDecimal.signum() != 0)
 				.min(Comparator.naturalOrder())
 				.orElse(ZERO);
 
 		BigDecimal max = billEntities.stream()
 				.map(bigDecimalFunction)
-				.filter(bigDecimal -> bigDecimal.signum() != 0)
+				.filter(bigDecimal -> bigDecimal != null && bigDecimal.signum() != 0)
 				.max(Comparator.naturalOrder())
 				.orElse(ZERO);
 

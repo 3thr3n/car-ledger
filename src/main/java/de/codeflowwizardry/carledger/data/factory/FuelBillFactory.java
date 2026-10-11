@@ -77,7 +77,7 @@ public class FuelBillFactory extends AbstractBillFactory<FuelBillInput, FuelBill
 		FuelBillEntity fuelBill = new FuelBillEntity(bill);
 		fuelBill.setDistance(input.getDistance());
 		fuelBill.setEstimate(input.getEstimateConsumption());
-		fuelBill.setPricePerUnit(input.getPricePerUnit());
+		fuelBill.setPricePerUnit(calculatePricePerUnit(input, bill, unit));
 		fuelBill.setUnit(unit);
 
 		calculateAvgConsumption(fuelBill);
@@ -108,6 +108,21 @@ public class FuelBillFactory extends AbstractBillFactory<FuelBillInput, FuelBill
 			total = unit.multiply(tmp);
 		}
 		entity.setTotal(total);
+	}
+
+	/**
+	 * @return price per unit in cent
+	 */
+	static BigDecimal calculatePricePerUnit(FuelBillInput input, BillEntity entity, BigDecimal unit)
+	{
+		BigDecimal pricePerUnit = input.getPricePerUnit();
+		if (!valueWasSet(pricePerUnit))
+		{
+			pricePerUnit = entity.getTotal()
+					.multiply(ONE_HUNDRED)
+					.divide(unit, 2, RoundingMode.HALF_UP);
+		}
+		return pricePerUnit;
 	}
 
 	static void calculateNet(BillEntity entity, BigDecimal vatFactor)
