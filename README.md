@@ -134,8 +134,21 @@ For using the helm chart, you can add this as a dependency and update the values
 ```yaml
 dependencies:
   - name: helm
-    version: 0.1.0
+    version: 0.2.0
     repository: oci://ghcr.io/3thr3n/car-ledger
+```
+
+### Upgrading from 0.1.x
+
+Since 0.2.0 the charts no longer use bitnami charts/images. PostgreSQL and Keycloak are deployed with the official
+images (`postgres`, `quay.io/keycloak/keycloak`). The existing PostgreSQL volumes are reused. If `helm upgrade` fails
+with `updates to statefulset spec for fields other than ... are forbidden`, recreate the StatefulSet once (the volume
+is kept):
+
+```bash
+kubectl delete statefulset <release>-postgresql --cascade=orphan
+kubectl delete pod <release>-postgresql-0
+helm upgrade ...
 ```
 
 ## License
