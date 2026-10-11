@@ -134,22 +134,41 @@ For using the helm chart, you can add this as a dependency and update the values
 ```yaml
 dependencies:
   - name: helm
-    version: 0.2.1
+    version: 0.3.0
     repository: oci://ghcr.io/3thr3n/car-ledger
 ```
 
-### Upgrading from 0.1.x
+The chart in `helm/keycloak` deploys Keycloak (via the [keycloakx chart](https://github.com/codecentric/helm-charts/tree/master/charts/keycloakx))
+together with its own PostgreSQL. Set at least `keycloak.hostname`.
 
-Since 0.2.0 the charts no longer use bitnami charts/images. PostgreSQL and Keycloak are deployed with the official
-images (`postgres`, `quay.io/keycloak/keycloak`). The existing PostgreSQL volumes are reused. If `helm upgrade` fails
-with `updates to statefulset spec for fields other than ... are forbidden`, recreate the StatefulSet once (the volume
-is kept):
+Notes:
+
+- Passwords (PostgreSQL, Infinispan, Keycloak admin) are generated on the first install and kept on upgrades.
+- Instead of an ingress, a Gateway API `HTTPRoute` can be used (`httpRoute.enabled` / `keycloak.httpRoute.enabled`),
+  ingress-nginx is retired.
+- Infinispan runs with the 15.2 image, as 16.x needs a CPU with x86-64-v3 support (not offered e.g. by VMs with the
+  default QEMU CPU model). Set `infinispan.images.server` to `quay.io/infinispan/server:16.2` if your nodes support it.
+
+### Upgrading from 0.1.x (bitnami)
+
+PostgreSQL and Keycloak now use the official images. The existing PostgreSQL volumes are reused and Keycloak migrates
+its database on the first start, which can take a few minutes. As the StatefulSets changed, delete them once before
+the upgrade, their volumes are kept:
 
 ```bash
-kubectl delete statefulset <release>-postgresql --cascade=orphan
-kubectl delete pod <release>-postgresql-0
+# car-ledger chart
+kubectl delete statefulset <release>-postgresql
+helm upgrade ...
+
+# keycloak chart: the database of the bitnami Keycloak (26.0/26.1) can not be migrated to 26.7 directly,
+# upgrade to 26.6 first and to the default version afterwards
+kubectl delete statefulset keycloak keycloak-postgresql
+helm upgrade ... --set keycloak.image.tag=26.6
 helm upgrade ...
 ```
+
+The values of the keycloak chart changed: `keycloak.ingress.hostname` is now `keycloak.hostname`, the ingress is
+configured as in the keycloakx chart (`keycloak.ingress`).
 
 ## License
 
