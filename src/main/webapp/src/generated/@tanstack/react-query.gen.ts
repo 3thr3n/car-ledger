@@ -710,6 +710,8 @@ export const getDashboardStatsQueryKey = (options: Options<GetDashboardStatsData
 
 /**
  * Get Stats
+ *
+ * Stats of a car, use -1 as carId for all your cars
  */
 export const getDashboardStatsOptions = (options: Options<GetDashboardStatsData>) => queryOptions<GetDashboardStatsResponse, DefaultError, GetDashboardStatsResponse, ReturnType<typeof getDashboardStatsQueryKey>>({
     queryFn: async ({ queryKey, signal }) => {

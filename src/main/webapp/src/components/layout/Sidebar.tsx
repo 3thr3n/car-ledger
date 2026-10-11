@@ -1,0 +1,216 @@
+import {
+  Box,
+  Button,
+  Divider,
+  IconButton,
+  List,
+  ListItemIcon,
+  ListItemText,
+  ListSubheader,
+  Stack,
+  ToggleButton,
+  ToggleButtonGroup,
+  Tooltip,
+  Typography,
+  useColorScheme,
+} from '@mui/material';
+import SpaceDashboardRounded from '@mui/icons-material/SpaceDashboardRounded';
+import GarageRounded from '@mui/icons-material/GarageRounded';
+import AddRounded from '@mui/icons-material/AddRounded';
+import LogoutRounded from '@mui/icons-material/LogoutRounded';
+import LightModeRounded from '@mui/icons-material/LightModeRounded';
+import DarkModeRounded from '@mui/icons-material/DarkModeRounded';
+import SettingsBrightnessRounded from '@mui/icons-material/SettingsBrightnessRounded';
+import { useQuery } from '@tanstack/react-query';
+import { useLocation } from '@tanstack/react-router';
+import { useTranslation } from 'react-i18next';
+import { getMyCarsOptions } from '@/generated/@tanstack/react-query.gen';
+import { baseUrl, localClient } from '@/utils/QueryClient';
+import useMe from '@/hooks/useMe';
+import { RouterListItemButton } from '@/components/ui/links';
+import CarAvatar from '@/components/layout/CarAvatar';
+import productLogo from '@/assets/car-ledger.svg';
+
+const languages = ['EN', 'DE'];
+
+export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
+  const { t, i18n } = useTranslation();
+  const { pathname } = useLocation();
+  const { account, loggedIn, maxCars } = useMe();
+  const { mode, setMode } = useColorScheme();
+
+  const { data: cars } = useQuery({
+    ...getMyCarsOptions({ client: localClient }),
+    enabled: loggedIn,
+  });
+
+  const canAddCar = (cars?.length ?? 0) < maxCars;
+
+  const nextMode =
+    mode === 'light' ? 'dark' : mode === 'dark' ? 'system' : 'light';
+  const modeIcon =
+    mode === 'light' ? (
+      <LightModeRounded fontSize="small" />
+    ) : mode === 'dark' ? (
+      <DarkModeRounded fontSize="small" />
+    ) : (
+      <SettingsBrightnessRounded fontSize="small" />
+    );
+
+  return (
+    <Stack sx={{ height: '100%' }}>
+      <Stack
+        direction="row"
+        spacing={1.25}
+        alignItems="center"
+        sx={{ px: 2.5, py: 2.25 }}
+      >
+        <Box component="img" src={productLogo} alt="" sx={{ height: 30 }} />
+        <Typography
+          variant="h6"
+          sx={{ fontWeight: 750, letterSpacing: '-0.02em' }}
+        >
+          {t('app.title')}
+        </Typography>
+      </Stack>
+
+      <Box sx={{ flexGrow: 1, overflowY: 'auto', px: 1.5 }}>
+        {loggedIn && (
+          <>
+            <List dense disablePadding>
+              <RouterListItemButton
+                to="/dashboard"
+                selected={pathname.startsWith('/dashboard')}
+                onClick={onNavigate}
+                sx={{ borderRadius: 2, mb: 0.5 }}
+              >
+                <ListItemIcon sx={{ minWidth: 36 }}>
+                  <SpaceDashboardRounded fontSize="small" />
+                </ListItemIcon>
+                <ListItemText primary={t('nav.dashboard')} />
+              </RouterListItemButton>
+              <RouterListItemButton
+                to="/car"
+                selected={pathname === '/car' || pathname === '/car/'}
+                onClick={onNavigate}
+                sx={{ borderRadius: 2 }}
+              >
+                <ListItemIcon sx={{ minWidth: 36 }}>
+                  <GarageRounded fontSize="small" />
+                </ListItemIcon>
+                <ListItemText primary={t('nav.garage')} />
+              </RouterListItemButton>
+            </List>
+
+            <List
+              dense
+              disablePadding
+              sx={{ mt: 2 }}
+              subheader={
+                <ListSubheader
+                  disableSticky
+                  sx={{
+                    bgcolor: 'transparent',
+                    lineHeight: '32px',
+                    fontWeight: 600,
+                    px: 1,
+                  }}
+                >
+                  {t('nav.yourCars')}
+                </ListSubheader>
+              }
+            >
+              {cars?.map((car) => (
+                <RouterListItemButton
+                  key={car.id}
+                  to="/car/$id"
+                  params={{ id: `${car.id}` }}
+                  selected={pathname.startsWith(`/car/${car.id}`)}
+                  onClick={onNavigate}
+                  sx={{ borderRadius: 2, mb: 0.25, py: 0.75 }}
+                >
+                  <ListItemIcon sx={{ minWidth: 42 }}>
+                    <CarAvatar id={car.id} name={car.name} size={28} />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={car.name}
+                    secondary={t('garage.entries', {
+                      count: car.amountBills ?? 0,
+                    })}
+                    slotProps={{
+                      primary: { noWrap: true, fontWeight: 500 },
+                      secondary: { noWrap: true, variant: 'caption' },
+                    }}
+                  />
+                </RouterListItemButton>
+              ))}
+              {canAddCar && (
+                <RouterListItemButton
+                  to="/car/new"
+                  onClick={onNavigate}
+                  sx={{ borderRadius: 2, color: 'text.secondary' }}
+                >
+                  <ListItemIcon sx={{ minWidth: 42, pl: 0.5 }}>
+                    <AddRounded fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText primary={t('garage.add')} />
+                </RouterListItemButton>
+              )}
+            </List>
+          </>
+        )}
+      </Box>
+
+      <Divider />
+      <Stack spacing={1.5} sx={{ p: 2 }}>
+        <Stack direction="row" spacing={1} alignItems="center">
+          <ToggleButtonGroup
+            size="small"
+            exclusive
+            value={i18n.language}
+            onChange={(_, value) => value && i18n.changeLanguage(value)}
+            aria-label={t('app.language')}
+          >
+            {languages.map((lang) => (
+              <ToggleButton key={lang} value={lang} sx={{ px: 1.25, py: 0.25 }}>
+                {lang}
+              </ToggleButton>
+            ))}
+          </ToggleButtonGroup>
+          <Box sx={{ flexGrow: 1 }} />
+          <Tooltip title={t(`theme.${mode ?? 'system'}`)}>
+            <IconButton size="small" onClick={() => setMode(nextMode)}>
+              {modeIcon}
+            </IconButton>
+          </Tooltip>
+        </Stack>
+
+        {loggedIn ? (
+          <Stack direction="row" spacing={1} alignItems="center">
+            <Box sx={{ minWidth: 0, flexGrow: 1 }}>
+              <Typography variant="caption" color="text.secondary">
+                {t('nav.signedInAs')}
+              </Typography>
+              <Typography variant="body2" fontWeight={600} noWrap>
+                {account?.name}
+              </Typography>
+            </Box>
+            <Tooltip title={t('button.logout')}>
+              <IconButton size="small" href={`${baseUrl}/api/auth/logout`}>
+                <LogoutRounded fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          </Stack>
+        ) : (
+          <Button
+            variant="contained"
+            href={`${baseUrl}/api/auth/login`}
+            fullWidth
+          >
+            {t('button.login')}
+          </Button>
+        )}
+      </Stack>
+    </Stack>
+  );
+}

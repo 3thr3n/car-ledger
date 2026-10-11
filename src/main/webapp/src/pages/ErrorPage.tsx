@@ -1,82 +1,51 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { useNavigate } from '@tanstack/react-router';
-import { Box, Button, Container, Typography } from '@mui/material';
-import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
-import CarLedgerPage from '@/components/CarLedgerPage';
+import { Button, Stack, Typography } from '@mui/material';
+import ErrorOutlineRounded from '@mui/icons-material/ErrorOutlineRounded';
+import { useTranslation } from 'react-i18next';
+import { RouterButton } from '@/components/ui/links';
+import { BackendError } from '@/utils/BackendError';
+import { baseUrl } from '@/utils/QueryClient';
 
-type ErrorPageProps = {
+export interface ErrorPageProps {
   error?: unknown;
-  title?: string;
-};
+}
 
-export default function ErrorPage({ error, title }: ErrorPageProps) {
-  const navigate = useNavigate();
-  const [countdown, setCountdown] = useState(10);
+export default function ErrorPage({ error }: ErrorPageProps) {
+  const { t } = useTranslation();
 
-  const handleGoHome = useCallback(async () => {
-    await navigate({ to: '/' });
-  }, [navigate]);
-
-  // Optionally, extract message from the error
+  const needsLogin = error instanceof BackendError && error.status === 401;
   const message =
-    error instanceof Error
-      ? error.message
-      : typeof error === 'string'
-        ? error
-        : 'An unexpected error occurred.';
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCountdown((prev) => prev - 1);
-    }, 1000);
-
-    const reload = setTimeout(async () => {
-      await handleGoHome(); // 🔁 auto reload after 10 seconds
-    }, 10000);
-
-    return () => {
-      clearInterval(timer);
-      clearTimeout(reload);
-    };
-  }, [handleGoHome]);
+    error instanceof BackendError
+      ? needsLogin
+        ? t('errors.loginRequired')
+        : error.message || t('errors.backend')
+      : error instanceof Error
+        ? error.message
+        : t('errors.generic');
 
   return (
-    <CarLedgerPage id="ErrorPage">
-      <Container
-        maxWidth="sm"
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          alignItems: 'center',
-          textAlign: 'center',
-          gap: 3,
-        }}
-      >
-        <ErrorOutlineIcon color="error" sx={{ fontSize: 80 }} />
-
-        <Box>
-          <Typography variant="h3" fontWeight={700} gutterBottom>
-            {title ? title : 'Oops!'}
-          </Typography>
-          <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-            {message}
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Going to Homepage in <strong>{countdown}</strong> second
-            {countdown !== 1 ? 's' : ''}...
-          </Typography>
-        </Box>
-
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleGoHome}
-          sx={{ px: 4, py: 1.5, borderRadius: 3 }}
-        >
-          Go Back Home
-        </Button>
-      </Container>
-    </CarLedgerPage>
+    <Stack
+      id="ErrorPage"
+      alignItems="center"
+      justifyContent="center"
+      textAlign="center"
+      spacing={2}
+      sx={{ flexGrow: 1, py: 10, px: 2 }}
+    >
+      <ErrorOutlineRounded color="error" sx={{ fontSize: 56 }} />
+      <Typography variant="h4">{t('errors.title')}</Typography>
+      <Typography color="text.secondary" maxWidth={440}>
+        {message}
+      </Typography>
+      <Stack direction="row" spacing={1}>
+        {needsLogin && (
+          <Button variant="contained" href={`${baseUrl}/api/auth/login`}>
+            {t('button.login')}
+          </Button>
+        )}
+        <RouterButton to="/" variant={needsLogin ? 'outlined' : 'contained'}>
+          {t('errors.goHome')}
+        </RouterButton>
+      </Stack>
+    </Stack>
   );
 }

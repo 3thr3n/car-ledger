@@ -1,4 +1,4 @@
-import { QueryCache, QueryClient } from '@tanstack/react-query';
+import { QueryCache, QueryClient, QueryKey } from '@tanstack/react-query';
 import { BackendError } from './BackendError';
 import { Client, createClient } from '@/generated/client';
 import { toast } from 'react-toastify';
@@ -25,16 +25,30 @@ localClient.interceptors.request.use((req) => {
   return req;
 });
 
-const noRedirectUrls = ['/', '/error', '/about', '/dev/i18n', '/dev/404'];
+const noRedirectUrls = ['/', '/error', '/dev/i18n', '/dev/404'];
+
+/**
+ * Validation errors are either plain text or a json list of messages
+ */
+function parseErrorBody(body: string): string {
+  try {
+    const parsed: unknown = JSON.parse(body);
+    if (Array.isArray(parsed)) {
+      return parsed.map(String).join('\n');
+    }
+  } catch {
+    // plain text
+  }
+  return body;
+}
 
 localClient.interceptors.response.use(async (res) => {
   if (res.status == 400) {
-    throw new BackendError(res.status, await res.text());
+    throw new BackendError(res.status, parseErrorBody(await res.text()));
   }
 
   if (res.status == 499) {
     if (noRedirectUrls.includes(location.pathname)) {
-      // toast.warn('Session expired');
       throw new BackendError(401, 'Login required');
     } else {
       localStorage.setItem('postLoginRedirect', location.pathname);
@@ -52,10 +66,30 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: false,
-      // gcTime: 60 * 1000,
-      // staleTime: 60 * 1000,
+      refetchOnWindowFocus: false,
     },
   },
 });
+
+interface GeneratedKey {
+  _id?: string;
+  path?: { carId?: number; id?: number };
+}
+
+/**
+ * Invalidates every query belonging to a car, plus the car list and dashboard stats
+ */
+export function invalidateCar(carId: number) {
+  return queryClient.invalidateQueries({
+    predicate: (query) => {
+      const key = (query.queryKey as QueryKey)[0] as GeneratedKey | undefined;
+      if (!key) return false;
+      if (key._id === 'getMyCars' || key._id === 'getDashboardStats') {
+        return true;
+      }
+      return key.path?.carId === carId || key.path?.id === carId;
+    },
+  });
+}
 
 export default queryClient;

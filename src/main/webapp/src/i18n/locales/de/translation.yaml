@@ -1,128 +1,291 @@
 app:
   title: "CarLedger"
-  slogan: "Rechnungen sammeln. Wartung planen. Kosten kennen."
   language: "Sprache"
-  button:
-    continue: "Weiter"
-    done: "Fertig"
-    refresh: "Neuladen"
-    cancel: "Abbrechen"
-    back: "Zurück"
-    save: "Speichern"
-    upload: "Hochladen"
-  nav:
-    title: "Menü"
-    overview: "Übersicht"
-    cars: "Autos"
-    dashboard: "Dashboard"
-    more: "mehr"
-  login:
-    loginButton: "Einloggen"
-    logoutButton: "Ausloggen"
-    welcome: "Willkommen"
+  openSource: "CarLedger ist Open Source — zu finden auf"
 
-  dashboard:
-    title: "Dashboard"
-    filter:
-      cars: "Alle Fahrzeuge"
-      from: "Von"
-      to: "Bis"
+theme:
+  light: "Helles Design"
+  dark: "Dunkles Design"
+  system: "Systemeinstellung"
 
-  car:
-    myCars: "Meine Fahrzeuge"
-    description: "Fahrzeuge anzeigen, hinzufügen und verwalten"
+button:
+  continue: "Weiter"
+  back: "Zurück"
+  cancel: "Abbrechen"
+  save: "Speichern"
+  delete: "Löschen"
+  edit: "Bearbeiten"
+  import: "CSV importieren"
+  login: "Anmelden"
+  logout: "Abmelden"
 
-    maxCars: "Fahrzeuglimit erreicht – lösche eines oder kontaktiere den Administrator."
-    info: "Fahrzeuginformation"
+nav:
+  dashboard: "Dashboard"
+  garage: "Garage"
+  yourCars: "Deine Fahrzeuge"
+  signedInAs: "Angemeldet als"
 
-    newCar:
-      button: "Neues Fahrzeug"
-      title: "Neues Fahrzeug"
-      description: "Trage deine Fahrzeugdaten ein"
+common:
+  all: "Alle anzeigen"
+  allYears: "Alle Jahre"
 
-    updateCar:
-      button: "Editieren"
-      title: "Fahrzeug bearbeiten"
-      description: "Aktualisiere deine Fahrzeugdaten"
-
-    common:
-      model: "Name oder Modell"
-      name: "Name"
-      year: "Baujahr"
-      date: "Datum"
-      total: "Kosten"
-      vatRate: "Mwst"
-      description: "Beschreibung"
-      #
-      distance: "Strecke"
-      unit: "Einheit"
-      pricePerUnit: "Kosten/Einheit"
-      estimateConsumption: "Verbrauch (Bordcomputer)"
-      avgConsumption: "Verbrauch"
-      #
-      workshop: "Werkstatt"
-      laborCost: "Stunden kosten"
-      partsCost: "Teilekosten"
-      odometer: "Kilometerstand (KM)"
-      odometerDescription: "Kilometerstand von z.B. beim Kauf"
-      #
-      amount: "Einzelkosten"
-      nextDueDate: "Nächste Abrechung"
-      endDate: "Enddatum"
-      startDate: "Startdatum"
-      #
-      showMore: "Alle anzeigen"
-      seeMore: "Alle Einträge"
-      loading: "Lade Einträge"
-      loadingFailed: "Laden der Einträge fehlgeschlagen!"
-
-    types:
-      RECURRING: "Wiederholende Kosten"
-      MAINTENANCE: "Wartungen"
-      FUEL: "Tankkosten"
-      MISCELLANEOUS: "Sonstige Kosten"
-
-    csvImport: "CSV importieren"
-    add:
-      button: "Rechnung hinzufügen"
-      title: "Hinzufügen:"
-
-    stats:
-      title: "Statistik"
-      cost: "Kosten"
-      fuel:
-        amount: "Tankfüllungen"
-        consumption: "Verbrauch"
-      maintenance:
-        amount: "Wartungen"
-      miscellaneous:
-        amount: "Anderes"
-
-    filter:
-      all: "Alle"
-      year: "Jahr"
-
-    import:
-      upload: "CSV hochladen"
-      configureOrder: "Reihenfolge anpassen"
-      importData: "Daten importieren"
-
+landing:
+  eyebrow: "Fahrzeugkosten im Blick"
+  title: "Wisse, was dein Auto wirklich kostet."
+  subtitle: "Erfasse Tankfüllungen, Werkstattbesuche, Versicherung und alles andere. CarLedger macht aus deinen Belegen Kosten pro Kilometer, Verbrauch und Trends."
+  cta: "Anmelden und loslegen"
+  ctaDashboard: "Zum Dashboard"
+  features:
     fuel:
-      recentTitle: "Letzten Tank-Rechnungen"
-      table:
-        title: "Tank-Rechnungen"
-
+      title: "Tanken"
+      text: "Zwei von Betrag, Litern und Literpreis genügen — der Rest inklusive Verbrauch wird berechnet."
     maintenance:
-      recentTitle: "Letzten Wartungen"
-      table:
-        title: "Wartungen"
-
-    miscellaneous:
-      recentTitle: "Letzten allgemeinen Rechnungen"
-      table:
-        title: "Diverse Rechnungen"
-
+      title: "Wartung"
+      text: "Werkstatt, Kilometerstand, Arbeitslohn und Teile für jeden Service und jede Reparatur."
     recurring:
-      recentTitle: "Aktuell laufend"
-      table:
-        title: "Laufende kosten"
+      title: "Laufende Kosten"
+      text: "Versicherung, Finanzierung und andere Fixkosten werden an jedem Fälligkeitstag automatisch gebucht."
+    miscellaneous:
+      title: "Alles andere"
+      text: "Waschanlage, Parken, Vignetten — alles mit Beleg."
+    import:
+      title: "CSV-Import"
+      text: "Nimm deine Historie mit: Spalten eines beliebigen CSV-Exports zuordnen und auf einmal importieren."
+    stats:
+      title: "Statistiken"
+      text: "Kosten pro km, Verbrauch sowie Höchst- und Tiefstwerte — pro Fahrzeug oder für alle zusammen."
+
+dashboard:
+  title: "Dashboard"
+  subtitle: "Wohin dein Geld fließt, auf Basis aller erfassten Einträge."
+  filter:
+    car: "Fahrzeug"
+    allCars: "Alle Fahrzeuge"
+    from: "Von"
+    to: "Bis"
+    period:
+      all: "Gesamt"
+      year: "Dieses Jahr"
+      last12: "Letzte 12 Monate"
+      custom: "Zeitraum"
+  kpi:
+    total: "Ausgaben gesamt"
+    costPerKm: "Kosten pro km"
+    consumption: "Ø Verbrauch"
+    distance: "Erfasste Strecke"
+    fuelVolume: "{{value}} Kraftstoff"
+  split:
+    title: "Kostenaufteilung"
+    subtitle: "Anteil jeder Kostenart"
+    count_one: "{{count}} Eintrag"
+    count_other: "{{count}} Einträge"
+  average:
+    title: "Durchschnittswerte"
+    pricePerUnit: "Kraftstoffpreis"
+    distance: "Strecke pro Tankfüllung"
+    fuelCostPerKm: "Kraftstoffkosten pro km"
+    maintenanceCost: "Kosten pro Wartung"
+  range:
+    title: "Tiefst- und Höchstwerte"
+    subtitle: "Spanne über einzelne Einträge"
+    pricePerUnit: "Kraftstoffpreis"
+    consumption: "Verbrauch"
+    fuelCostPerKm: "Kraftstoffkosten pro km"
+    distance: "Strecke pro Tankfüllung"
+    fuelCost: "Kosten pro Tankfüllung"
+    maintenanceCost: "Kosten pro Wartung"
+  empty:
+    title: "Noch nichts auszuwerten"
+    text: "Erfasse Einträge für eines deiner Fahrzeuge, dann erscheinen hier die Zahlen."
+    action: "Zur Garage"
+
+garage:
+  title: "Garage"
+  subtitle: "Deine Fahrzeuge und ihre Einträge."
+  slots: "{{used}} von {{max}} Fahrzeugen"
+  add: "Fahrzeug hinzufügen"
+  emptyHint: "Leg dein erstes Fahrzeug an"
+  limitReached: "Du hast die maximale Anzahl an Fahrzeugen erreicht. Frag den Administrator nach mehr."
+  entriesLabel: "Einträge"
+  entries_one: "{{count}} Eintrag"
+  entries_other: "{{count}} Einträge"
+
+car:
+  built: "Baujahr {{year}}"
+  odometer: "Kilometerstand"
+  tabs:
+    overview: "Übersicht"
+  overview:
+    totalCost: "Gesamtkosten"
+    avgConsumption: "Ø Verbrauch"
+    refuels: "Tankfüllungen"
+    maintenance: "Wartungen"
+    miscellaneous: "Sonstiges"
+    ledger: "Kassenbuch"
+    ledgerSubtitle: "Alle Einträge dieses Fahrzeugs, neueste zuerst"
+    toDashboard: "Statistik"
+    emptyTitle: "Noch keine Einträge"
+    emptyText: "Erfasse deinen ersten Beleg oder importiere einen CSV-Export."
+    running: "Laufende Kosten"
+    runningEmpty: "Keine laufenden Kosten"
+    addRecurring: "Laufende Kosten anlegen"
+    nextDue: "Nächste Fälligkeit {{date}}"
+  form:
+    newTitle: "Fahrzeug hinzufügen"
+    newSubtitle: "Die wichtigsten Angaben zu deinem Fahrzeug."
+    editTitle: "Fahrzeug bearbeiten"
+    editSubtitle: "Aktualisiere die Angaben zu deinem Fahrzeug."
+    name: "Name oder Modell"
+    namePlaceholder: "z. B. VW Golf 1.5 TSI"
+    year: "Baujahr"
+    odometer: "Kilometerstand"
+    odometerHelp: "Kilometerstand zu Beginn der Erfassung"
+    saved: "Fahrzeug angelegt"
+    updated: "Fahrzeug aktualisiert"
+    errors:
+      name: "Bitte einen Namen eingeben"
+      year: "Bitte ein gültiges Jahr eingeben"
+      odometer: "Bitte einen positiven Kilometerstand eingeben"
+
+bill:
+  types:
+    FUEL: "Tanken"
+    MAINTENANCE: "Wartung"
+    MISCELLANEOUS: "Sonstiges"
+    RECURRING: "Laufend"
+  categories:
+    FINANCE: "Finanzierung"
+    INSURANCE: "Versicherung"
+    OTHER: "Sonstiges"
+  intervals:
+    ONCE: "Einmalig"
+    MONTHLY: "Monatlich"
+    QUARTERLY: "Vierteljährlich"
+    SEMI_ANNUALLY: "Halbjährlich"
+    ANNUALLY: "Jährlich"
+  status:
+    running: "Läuft"
+    finished: "Beendet"
+  fields:
+    type: "Art"
+    date: "Datum"
+    total: "Betrag"
+    netAmount: "Netto"
+    ustAmount: "MwSt."
+    vatCountry: "MwSt.-Land"
+    vatRate: "MwSt.-Satz"
+    distance: "Strecke"
+    unit: "Liter"
+    pricePerUnit: "Literpreis"
+    estimateConsumption: "Verbrauch (Bordcomputer)"
+    estimateShort: "Bordcomputer"
+    avgConsumption: "Verbrauch"
+    workshop: "Werkstatt"
+    description: "Beschreibung"
+    odometer: "Kilometerstand"
+    laborCost: "Arbeitslohn"
+    partsCost: "Teile"
+    name: "Name"
+    category: "Kategorie"
+    interval: "Intervall"
+    startDate: "Beginn"
+    endDate: "Ende"
+    nextDueDate: "Nächste Fälligkeit"
+    amount: "Betrag"
+    paidTotal: "Bisher bezahlt"
+    status: "Status"
+  add:
+    button: "Eintrag erfassen"
+    title: "Neuer Eintrag"
+    subtitle: "Wähle, welche Art von Beleg du erfassen möchtest."
+    saveAgain: "Speichern und weiteren erfassen"
+    saved: "Eintrag gespeichert"
+    describe:
+      FUEL: "Eine Tankfüllung. Zwei von Betrag, Litern und Literpreis genügen."
+      MAINTENANCE: "Ein Service, eine Inspektion oder eine Reparatur."
+      MISCELLANEOUS: "Jede andere einmalige Ausgabe, z. B. Waschanlage oder Parken."
+      RECURRING: "Fixkosten, die sich wiederholen, z. B. Versicherung oder Leasingrate."
+  delete:
+    title: "Eintrag löschen?"
+    text: "Der Eintrag wird dauerhaft entfernt und alle Statistiken werden aktualisiert."
+    done: "Eintrag gelöscht"
+    failed: "Eintrag konnte nicht gelöscht werden"
+  empty:
+    title: "Noch keine Einträge: {{type}}"
+    FUEL: "Erfasse deine Tankfüllungen, um Verbrauch und Kraftstoffkosten zu sehen."
+    MAINTENANCE: "Erfasse Services und Reparaturen, um Wartungskosten zu verfolgen."
+    MISCELLANEOUS: "Erfasse sonstige Ausgaben wie Parken oder Waschanlage."
+    RECURRING: "Lege Fixkosten wie die Versicherung an — sie werden automatisch gebucht."
+  vatHelp: "Wird genutzt, um den Betrag in Netto und MwSt. aufzuteilen"
+  fuelHint: "Fülle mindestens zwei von Betrag, Litern und Literpreis aus. Der dritte Wert wird berechnet."
+  computed: "Berechnet: {{value}}"
+  consumption: "Verbrauch: {{value}}"
+  distanceHelp: "Kilometer seit der letzten Tankfüllung"
+  estimateHelp: "Laut Bordcomputer"
+  totalHelp: "Leer lassen für Arbeitslohn + Teile"
+  amountHelp: "Wird an jedem Fälligkeitstag gebucht"
+  endDateHelp: "Leer lassen, wenn unbefristet"
+  maintenancePlaceholder: "z. B. Jahresinspektion, neue Bremsbeläge"
+  miscellaneousPlaceholder: "z. B. Waschanlage"
+  recurringPlaceholder: "z. B. Kfz-Versicherung"
+  recurringPastHint: "Der Beginn liegt in der Vergangenheit — alle Zahlungen seitdem werden sofort gebucht."
+  recurringInfo: "Zahlungen werden an jedem Fälligkeitstag automatisch gebucht."
+  onlyRunning: "Nur laufende"
+  errors:
+    date: "Bitte ein gültiges Datum wählen"
+    total: "Bitte den Betrag eingeben"
+    atLeastTwo: "Zwei von Betrag, Litern und Literpreis sind nötig"
+    name: "Bitte einen Namen eingeben"
+    startDate: "Bitte einen Beginn wählen"
+    dateOrder: "Das Ende muss nach dem Beginn liegen"
+    amount: "Bitte einen Betrag eingeben"
+
+import:
+  title: "CSV importieren"
+  subtitle: "Übernimm vorhandene Belege aus einer Tabelle oder einer anderen App."
+  steps:
+    type: "Was importierst du?"
+    file: "Datei auswählen"
+    mapping: "Spalten zuordnen"
+    vat: "MwSt.-Land"
+    result: "Fertig"
+  typeHint: "Laufende Kosten können nicht importiert werden."
+  fileHint: "Eine kommagetrennte Datei mit Kopfzeile. Diese Felder können importiert werden (* Pflicht):"
+  chooseFile: "CSV-Datei wählen"
+  noHeader: "Die Datei hat keine Kopfzeile."
+  mappingHint_one: "{{count}} Spalte gefunden. Ordne sie dem passenden Feld zu."
+  mappingHint_other: "{{count}} Spalten gefunden. Ordne sie den passenden Feldern zu."
+  notMapped: "Nicht importieren"
+  missingRequired: "Pflichtfelder ohne Spalte: {{fields}}"
+  start: "Import starten"
+  failed: "Import fehlgeschlagen"
+  showEntries: "Einträge anzeigen"
+  again: "Weitere Datei importieren"
+  result:
+    success_one: "{{count}} Eintrag importiert"
+    success_other: "{{count}} Einträge importiert"
+    skipped: "{{count}} übersprungen"
+    errors_one: "{{count}} Fehler"
+    errors_other: "{{count}} Fehler"
+    row: "Zeile {{row}}"
+
+errors:
+  title: "Etwas ist schiefgelaufen"
+  generic: "Ein unerwarteter Fehler ist aufgetreten."
+  backend: "Der Server hat nicht wie erwartet geantwortet. Bitte versuche es später erneut."
+  loginRequired: "Bitte melde dich an, um diese Seite zu sehen."
+  goHome: "Zurück zum Start"
+
+notFound:
+  wrongTurn:
+    title: "Falsch abgebogen"
+    text: "Diese Seite gibt es nicht — vielleicht die falsche Ausfahrt genommen."
+  outOfFuel:
+    title: "Tank leer"
+    text: "Dieser Seite ist unterwegs der Sprit ausgegangen."
+  engine:
+    title: "Motor nicht gefunden"
+    text: "Unter der Haube fehlt etwas."
+  redLight:
+    title: "Rote Ampel"
+    text: "Halt — unter dieser Adresse gibt es nichts."

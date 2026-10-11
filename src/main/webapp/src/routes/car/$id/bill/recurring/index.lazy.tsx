@@ -1,5 +1,5 @@
 import { createLazyFileRoute } from '@tanstack/react-router';
-import RecurringPage from '@/pages/car/bill/recurring/RecurringPage';
+import RecurringListPage from '@/pages/car/bill/RecurringListPage';
 
 export const Route = createLazyFileRoute('/car/$id/bill/recurring/')({
   component: RouteComponent,
@@ -7,5 +7,5 @@ export const Route = createLazyFileRoute('/car/$id/bill/recurring/')({
 
 function RouteComponent() {
   const { id } = Route.useParams();
-  return <RecurringPage id="RecurringPage" carId={Number(id)} />;
+  return <RecurringListPage carId={Number(id)} />;
 }

@@ -1,5 +1,6 @@
-import FuelPage from '@/pages/car/bill/fuel/FuelPage';
 import { createLazyFileRoute } from '@tanstack/react-router';
+import { BillType } from '@/generated';
+import BillListPage from '@/pages/car/bill/BillListPage';
 
 export const Route = createLazyFileRoute('/car/$id/bill/fuel/')({
   component: RouteComponent,
@@ -7,5 +8,5 @@ export const Route = createLazyFileRoute('/car/$id/bill/fuel/')({
 
 function RouteComponent() {
   const { id } = Route.useParams();
-  return <FuelPage id="FuelPage" carId={Number(id)} />;
+  return <BillListPage carId={Number(id)} type={BillType.FUEL} />;
 }

@@ -1,12 +1,6 @@
 import { createLazyFileRoute } from '@tanstack/react-router';
-import CarUpdatePage from '@/pages/car/CarUpdatePage';
+import CarFormPage from '@/pages/car/CarFormPage';
 
 export const Route = createLazyFileRoute('/car/new')({
-  component: RouteComponent,
+  component: () => <CarFormPage />,
 });
-
-function RouteComponent() {
-  const navigate = Route.useNavigate();
-
-  return <CarUpdatePage navigate={navigate} />;
-}

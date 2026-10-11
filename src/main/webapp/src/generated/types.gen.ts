@@ -345,7 +345,7 @@ export type AddNewFuelBillErrors = {
     /**
      * Car is not for your user.
      */
-    409: unknown;
+    404: unknown;
     /**
      * Something went wrong while saving. Please ask the server admin for help.
      */
@@ -358,7 +358,7 @@ export type AddNewFuelBillResponses = {
     /**
      * Bill created.
      */
-    200: unknown;
+    202: unknown;
 };
 
 export type GetAllFuelBillsData = {
@@ -418,7 +418,7 @@ export type AddNewMaintenanceBillErrors = {
     /**
      * Car is not for your user.
      */
-    409: unknown;
+    404: unknown;
     /**
      * Something went wrong while saving. Please ask the server admin for help.
      */
@@ -431,7 +431,7 @@ export type AddNewMaintenanceBillResponses = {
     /**
      * Bill created.
      */
-    200: unknown;
+    202: unknown;
 };
 
 export type GetAllMaintenanceBillsData = {
@@ -491,7 +491,7 @@ export type AddNewMiscellaneousBillErrors = {
     /**
      * Car is not for your user.
      */
-    409: unknown;
+    404: unknown;
     /**
      * Something went wrong while saving. Please ask the server admin for help.
      */
@@ -583,6 +583,10 @@ export type AddNewRecurringBillErrors = {
      * Validation failed, please check the response
      */
     400: Array<unknown>;
+    /**
+     * Car is not for your user.
+     */
+    404: unknown;
 };
 
 export type AddNewRecurringBillError = AddNewRecurringBillErrors[keyof AddNewRecurringBillErrors];
@@ -605,9 +609,9 @@ export type DeleteRecurringBillData = {
 
 export type DeleteRecurringBillErrors = {
     /**
-     * Not able to delete
+     * Bill not found
      */
-    400: unknown;
+    404: unknown;
 };
 
 export type DeleteRecurringBillResponses = {
@@ -643,6 +647,13 @@ export type DeleteBillData = {
     };
     query?: never;
     url: '/api/bill/{carId}/{billId}';
+};
+
+export type DeleteBillErrors = {
+    /**
+     * Bill not found.
+     */
+    404: unknown;
 };
 
 export type DeleteBillResponses = {
@@ -704,15 +715,18 @@ export type GetMyCarData = {
     url: '/api/car/my/{id}';
 };
 
+export type GetMyCarErrors = {
+    /**
+     * Car was not found.
+     */
+    404: unknown;
+};
+
 export type GetMyCarResponses = {
     /**
      * Car found.
      */
     200: Car;
-    /**
-     * Id was not found.
-     */
-    204: void;
 };
 
 export type GetMyCarResponse = GetMyCarResponses[keyof GetMyCarResponses];
@@ -731,6 +745,10 @@ export type UpdateMyCarErrors = {
      * Input was invalid.
      */
     400: unknown;
+    /**
+     * Car was not found.
+     */
+    404: unknown;
 };
 
 export type UpdateMyCarResponses = {
@@ -749,15 +767,18 @@ export type GetMyCarOverviewData = {
     url: '/api/car/my/{id}/overview';
 };
 
+export type GetMyCarOverviewErrors = {
+    /**
+     * Car was not found.
+     */
+    404: unknown;
+};
+
 export type GetMyCarOverviewResponses = {
     /**
      * Car found.
      */
     200: CarOverview;
-    /**
-     * Id was not found.
-     */
-    204: void;
 };
 
 export type GetMyCarOverviewResponse = GetMyCarOverviewResponses[keyof GetMyCarOverviewResponses];
@@ -781,9 +802,13 @@ export type ImportCsvData = {
 export type ImportCsvErrors = {
     /**
      * - Type not defined
-     * - Car not found
+     * - Column mapping missing or invalid
      */
     400: unknown;
+    /**
+     * Car not found
+     */
+    404: unknown;
     /**
      * - CSV was not set
      * - Something went wrong while importing. Please ask the server admin for help.

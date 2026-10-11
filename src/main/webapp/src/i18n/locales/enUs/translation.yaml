@@ -1,130 +1,291 @@
 app:
   title: "CarLedger"
-  slogan: "Collect fuel bills. Plan maintenance. Know your costs."
   language: "Language"
-  button:
-    continue: "Continue"
-    done: "Done"
-    refresh: "Refresh"
-    cancel: "Cancel"
-    back: "Back"
-    save: "Save"
-    upload: "Upload"
-  nav:
-    title: "Menu"
-    overview: "Overview"
-    cars: "Cars"
-    dashboard: "Dashboard"
-    more: "more"
-  login:
-    loginButton: "Login"
-    logoutButton: "Logout"
-    welcome: "Welcome"
+  openSource: "CarLedger is open source — find it on"
 
-  dashboard:
-    title: "Dashboard"
-    filter:
-      cars: "All cars"
-      from: "From"
-      to: "To"
+theme:
+  light: "Light theme"
+  dark: "Dark theme"
+  system: "System theme"
 
-  car:
-    myCars: "My Cars"
-    description: "View, add, and manage your vehicles"
+button:
+  continue: "Continue"
+  back: "Back"
+  cancel: "Cancel"
+  save: "Save"
+  delete: "Delete"
+  edit: "Edit"
+  import: "Import CSV"
+  login: "Log in"
+  logout: "Log out"
 
-    maxCars: "Max cars reached, either delete one or ask the administrator to allow one more!"
-    info: "Car information"
+nav:
+  dashboard: "Dashboard"
+  garage: "Garage"
+  yourCars: "Your cars"
+  signedInAs: "Signed in as"
 
-    newCar:
-      button: "New car"
-      title: "New car"
-      description: "Insert your car details"
+common:
+  all: "See all"
+  allYears: "All years"
 
-    updateCar:
-      button: "Edit"
-      title: "Edit car"
-      description: "Update your car details"
-
-    common:
-      model: "Car name / Model"
-      name: "Name"
-      year: "Manufacture year"
-      date: "Date"
-      total: "Total"
-      vatRate: "VAT rate"
-      description: "Description"
-      #
-      distance: "Distance"
-      unit: "Unit"
-      pricePerUnit: "Price/Unit"
-      estimateConsumption: "Estimate"
-      avgConsumption: "Avg"
-      #
-      workshop: "Workshop"
-      laborCost: "Labor cost"
-      partsCost: "Parts cost"
-      odometer: "Odometer"
-      odometerDescription: "Odometer e.g. when bought"
-      #
-      amount: "Amount"
-      nextDueDate: "Next due date"
-      endDate: "End date"
-      startDate: "Start date"
-      category: "Category"
-      #
-      showMore: "See all entries"
-      seeMore: "See all entries"
-      loading: "Loading fuel entries"
-      loadingFailed: "Loading fuel entries failed!"
-
-    types:
-      RECURRING: "Recurring"
-      MAINTENANCE: "Maintenance"
-      FUEL: "Fuel"
-      MISCELLANEOUS: "Miscellaneous"
-
-    csvImport: "Import CSV"
-    add:
-      button: "Add Bill"
-      title: "Add:"
-
+landing:
+  eyebrow: "Car cost tracking"
+  title: "Know what your car really costs."
+  subtitle: "Log refuels, workshop visits, insurance and everything else. CarLedger turns your receipts into cost per kilometer, consumption and trends."
+  cta: "Log in to start"
+  ctaDashboard: "Open dashboard"
+  features:
+    fuel:
+      title: "Refuels"
+      text: "Enter any two of total, liters and price per liter — the rest, including consumption, is calculated."
+    maintenance:
+      title: "Maintenance"
+      text: "Workshop, odometer, labor and parts for every service and repair."
+    recurring:
+      title: "Recurring costs"
+      text: "Insurance, financing and other fixed costs are booked automatically on every due date."
+    miscellaneous:
+      title: "Everything else"
+      text: "Car wash, parking, vignettes — anything with a receipt."
+    import:
+      title: "CSV import"
+      text: "Bring your history along: map the columns of any CSV export and import it at once."
     stats:
       title: "Statistics"
-      cost: "Cost"
-      fuel:
-        amount: "Refuels"
-        consumption: "Consumption"
-      maintenance:
-        amount: "Maintenance events"
-      miscellaneous:
-        amount: "Miscellaneous events"
+      text: "Cost per km, consumption and highs and lows — per car or across all your cars."
 
-    import:
-      upload: "Upload CSV"
-      mapping: "Mapping of columns"
-      importData: "Import data"
+dashboard:
+  title: "Dashboard"
+  subtitle: "Where your money goes, based on all recorded entries."
+  filter:
+    car: "Car"
+    allCars: "All cars"
+    from: "From"
+    to: "To"
+    period:
+      all: "All time"
+      year: "This year"
+      last12: "Last 12 months"
+      custom: "Custom"
+  kpi:
+    total: "Total spent"
+    costPerKm: "Cost per km"
+    consumption: "Avg. consumption"
+    distance: "Tracked distance"
+    fuelVolume: "{{value}} fuel"
+  split:
+    title: "Cost breakdown"
+    subtitle: "Share of each kind of expense"
+    count_one: "{{count}} entry"
+    count_other: "{{count}} entries"
+  average:
+    title: "Averages"
+    pricePerUnit: "Fuel price"
+    distance: "Distance per refuel"
+    fuelCostPerKm: "Fuel cost per km"
+    maintenanceCost: "Cost per maintenance"
+  range:
+    title: "Lowest and highest"
+    subtitle: "Spread across single entries"
+    pricePerUnit: "Fuel price"
+    consumption: "Consumption"
+    fuelCostPerKm: "Fuel cost per km"
+    distance: "Distance per refuel"
+    fuelCost: "Cost per refuel"
+    maintenanceCost: "Cost per maintenance"
+  empty:
+    title: "Nothing to analyze yet"
+    text: "Add entries to one of your cars and the numbers show up here."
+    action: "Go to garage"
 
-    filter:
-      all: "All"
-      year: "Year"
+garage:
+  title: "Garage"
+  subtitle: "Your vehicles and their entries."
+  slots: "{{used}} of {{max}} cars"
+  add: "Add car"
+  emptyHint: "Start with your first car"
+  limitReached: "You reached the maximum number of cars. Ask the administrator for more."
+  entriesLabel: "Entries"
+  entries_one: "{{count}} entry"
+  entries_other: "{{count}} entries"
 
-    fuel:
-      recentTitle: "Recent fuel entries"
-      table:
-        title: "Fuel entries"
+car:
+  built: "Built {{year}}"
+  odometer: "Odometer"
+  tabs:
+    overview: "Overview"
+  overview:
+    totalCost: "Total cost"
+    avgConsumption: "Avg. consumption"
+    refuels: "Refuels"
+    maintenance: "Maintenance"
+    miscellaneous: "Miscellaneous"
+    ledger: "Ledger"
+    ledgerSubtitle: "All entries of this car, newest first"
+    toDashboard: "Statistics"
+    emptyTitle: "No entries yet"
+    emptyText: "Add your first receipt or import a CSV export."
+    running: "Running recurring costs"
+    runningEmpty: "No running recurring costs"
+    addRecurring: "Add recurring cost"
+    nextDue: "Next due {{date}}"
+  form:
+    newTitle: "Add car"
+    newSubtitle: "Basic details of your vehicle."
+    editTitle: "Edit car"
+    editSubtitle: "Update the details of your vehicle."
+    name: "Name or model"
+    namePlaceholder: "e.g. VW Golf 1.5 TSI"
+    year: "Year of manufacture"
+    odometer: "Odometer"
+    odometerHelp: "Mileage when you started tracking"
+    saved: "Car added"
+    updated: "Car updated"
+    errors:
+      name: "Please enter a name"
+      year: "Please enter a valid year"
+      odometer: "Please enter a positive mileage"
 
-    maintenance:
-      recentTitle: "Recent maintenance entries"
+bill:
+  types:
+    FUEL: "Fuel"
+    MAINTENANCE: "Maintenance"
+    MISCELLANEOUS: "Miscellaneous"
+    RECURRING: "Recurring"
+  categories:
+    FINANCE: "Financing"
+    INSURANCE: "Insurance"
+    OTHER: "Other"
+  intervals:
+    ONCE: "Once"
+    MONTHLY: "Monthly"
+    QUARTERLY: "Quarterly"
+    SEMI_ANNUALLY: "Every six months"
+    ANNUALLY: "Yearly"
+  status:
+    running: "Running"
+    finished: "Finished"
+  fields:
+    type: "Type"
+    date: "Date"
+    total: "Total"
+    netAmount: "Net"
+    ustAmount: "VAT"
+    vatCountry: "VAT country"
+    vatRate: "VAT rate"
+    distance: "Distance"
+    unit: "Liters"
+    pricePerUnit: "Price per liter"
+    estimateConsumption: "Consumption (car)"
+    estimateShort: "On-board"
+    avgConsumption: "Consumption"
+    workshop: "Workshop"
+    description: "Description"
+    odometer: "Odometer"
+    laborCost: "Labor"
+    partsCost: "Parts"
+    name: "Name"
+    category: "Category"
+    interval: "Interval"
+    startDate: "Start"
+    endDate: "End"
+    nextDueDate: "Next due"
+    amount: "Amount"
+    paidTotal: "Paid so far"
+    status: "Status"
+  add:
+    button: "Add entry"
+    title: "New entry"
+    subtitle: "Choose what kind of receipt you want to record."
+    saveAgain: "Save and add another"
+    saved: "Entry saved"
+    describe:
+      FUEL: "A refuel. Two of total, liters and price per liter are enough."
+      MAINTENANCE: "A service, inspection or repair."
+      MISCELLANEOUS: "Any other one-off expense, like a car wash or parking."
+      RECURRING: "A fixed cost that repeats, like insurance or a leasing rate."
+  delete:
+    title: "Delete this entry?"
+    text: "The entry is removed permanently and all statistics are updated."
+    done: "Entry deleted"
+    failed: "Entry could not be deleted"
+  empty:
+    title: "No {{type}} entries yet"
+    FUEL: "Record your refuels to see consumption and fuel costs."
+    MAINTENANCE: "Record services and repairs to track maintenance costs."
+    MISCELLANEOUS: "Record other expenses like parking or a car wash."
+    RECURRING: "Add fixed costs like insurance — they are booked automatically."
+  vatHelp: "Used to split the total into net and VAT"
+  fuelHint: "Fill in at least two of total, liters and price per liter. The third value is calculated."
+  computed: "Calculated: {{value}}"
+  consumption: "Consumption: {{value}}"
+  distanceHelp: "Kilometers since the last refuel"
+  estimateHelp: "As shown by the on-board computer"
+  totalHelp: "Leave empty to use labor + parts"
+  amountHelp: "Charged on every due date"
+  endDateHelp: "Leave empty if it runs indefinitely"
+  maintenancePlaceholder: "e.g. Annual service, new brake pads"
+  miscellaneousPlaceholder: "e.g. Car wash"
+  recurringPlaceholder: "e.g. Car insurance"
+  recurringPastHint: "The start date is in the past — all payments since then are booked right away."
+  recurringInfo: "Payments are booked automatically on each due date."
+  onlyRunning: "Only running"
+  errors:
+    date: "Please choose a valid date"
+    total: "Please enter the total"
+    atLeastTwo: "Two of total, liters and price per liter are required"
+    name: "Please enter a name"
+    startDate: "Please choose a start date"
+    dateOrder: "The end must be after the start"
+    amount: "Please enter an amount"
 
-      table:
-        title: "Maintenance entries"
+import:
+  title: "Import CSV"
+  subtitle: "Bring existing receipts in from a spreadsheet or another app."
+  steps:
+    type: "What do you import?"
+    file: "Choose the file"
+    mapping: "Assign columns"
+    vat: "VAT country"
+    result: "Done"
+  typeHint: "Recurring costs cannot be imported."
+  fileHint: "A comma separated file with a header row. These fields can be imported (* required):"
+  chooseFile: "Choose CSV file"
+  noHeader: "The file has no header row."
+  mappingHint_one: "{{count}} column found. Assign it to the matching field."
+  mappingHint_other: "{{count}} columns found. Assign them to the matching fields."
+  notMapped: "Not imported"
+  missingRequired: "Required fields without column: {{fields}}"
+  start: "Start import"
+  failed: "Import failed"
+  showEntries: "Show entries"
+  again: "Import another file"
+  result:
+    success_one: "{{count}} entry imported"
+    success_other: "{{count}} entries imported"
+    skipped: "{{count}} skipped"
+    errors_one: "{{count}} error"
+    errors_other: "{{count}} errors"
+    row: "Row {{row}}"
 
-    miscellaneous:
-      recentTitle: "Recent miscellaneous entries"
-      table:
-        title: "Miscellaneous entries"
+errors:
+  title: "Something went wrong"
+  generic: "An unexpected error occurred."
+  backend: "The server did not respond as expected. Please try again later."
+  loginRequired: "Please log in to see this page."
+  goHome: "Back to start"
 
-    recurring:
-      recentTitle: "Current running entries"
-      table:
-        title: "Recurring entries"
+notFound:
+  wrongTurn:
+    title: "Missed the turn"
+    text: "This page doesn't exist — maybe it took a wrong exit."
+  outOfFuel:
+    title: "Out of fuel"
+    text: "This page ran dry before it got here."
+  engine:
+    title: "Engine not found"
+    text: "Something went missing under the hood."
+  redLight:
+    title: "Red light"
+    text: "Stop right there — there is nothing at this address."

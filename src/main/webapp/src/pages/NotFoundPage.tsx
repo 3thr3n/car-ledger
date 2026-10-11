@@ -1,114 +1,53 @@
 import { useMemo } from 'react';
-import { Box, Button, Paper, Typography } from '@mui/material';
-import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
-import LocalGasStationIcon from '@mui/icons-material/LocalGasStation';
-import AltRouteIcon from '@mui/icons-material/AltRoute';
-import BuildCircleIcon from '@mui/icons-material/BuildCircle';
-import TrafficIcon from '@mui/icons-material/Traffic';
-import LocalCarWashIcon from '@mui/icons-material/LocalCarWash';
-import EvStationIcon from '@mui/icons-material/EvStation';
-import EngineeringIcon from '@mui/icons-material/Engineering';
-import { useNavigate } from '@tanstack/react-router';
-import CarLedgerPage from '@/components/CarLedgerPage';
+import { Stack, Typography } from '@mui/material';
+import AltRouteRounded from '@mui/icons-material/AltRouteRounded';
+import LocalGasStationRounded from '@mui/icons-material/LocalGasStationRounded';
+import BuildCircleRounded from '@mui/icons-material/BuildCircleRounded';
+import TrafficRounded from '@mui/icons-material/TrafficRounded';
+import { useTranslation } from 'react-i18next';
+import { RouterButton } from '@/components/ui/links';
 
-const messages = [
-  {
-    title: 'Lost on the road?',
-    description:
-      'This page doesn’t seem to exist — maybe it took a wrong turn.',
-    icon: <DirectionsCarIcon sx={{ fontSize: 60, color: 'primary.main' }} />,
-    button: 'Go back home',
-  },
-  {
-    title: '404 — Flat tire!',
-    description: 'Looks like this page didn’t make it to the destination.',
-    icon: <LocalGasStationIcon sx={{ fontSize: 60, color: 'primary.main' }} />,
-    button: 'Back to the garage',
-  },
-  {
-    title: 'Missed the turn!',
-    description: 'Looks like you took the wrong exit.',
-    icon: <AltRouteIcon sx={{ fontSize: 60, color: 'primary.main' }} />,
-    button: 'Back on track',
-  },
-  {
-    title: 'Engine not found!',
-    description: 'Something went missing under the hood.',
-    icon: <BuildCircleIcon sx={{ fontSize: 60, color: 'primary.main' }} />,
-    button: 'Pop back to the garage',
-  },
-  {
-    title: 'Red light ahead',
-    description: 'Stop right there — this page doesn’t exist.',
-    icon: <TrafficIcon sx={{ fontSize: 60, color: 'primary.main' }} />,
-    button: 'Go back safely',
-  },
-  {
-    title: 'Car wash timeout',
-    description: 'The page took too long to clean up.',
-    icon: <LocalCarWashIcon sx={{ fontSize: 60, color: 'primary.main' }} />,
-    button: 'Return to the homepage',
-  },
-  {
-    title: 'Out of fuel',
-    description: 'This page ran out of gas.',
-    icon: <EvStationIcon sx={{ fontSize: 60, color: 'primary.main' }} />,
-    button: 'Refuel at the homepage',
-  },
-  {
-    title: 'Maintenance required',
-    description: 'The page you’re looking for needs a tune-up.',
-    icon: <EngineeringIcon sx={{ fontSize: 60, color: 'primary.main' }} />,
-    button: 'Head back home',
-  },
+const variants = [
+  { key: 'wrongTurn', icon: <AltRouteRounded /> },
+  { key: 'outOfFuel', icon: <LocalGasStationRounded /> },
+  { key: 'engine', icon: <BuildCircleRounded /> },
+  { key: 'redLight', icon: <TrafficRounded /> },
 ];
 
 export default function NotFoundPage() {
-  const navigate = useNavigate();
+  const { t } = useTranslation();
 
   // Pick one message randomly on first render
-  const message = useMemo(
-    () => messages[Math.floor(Math.random() * messages.length)],
+  const variant = useMemo(
+    () => variants[Math.floor(Math.random() * variants.length)],
     [],
   );
 
   return (
-    <CarLedgerPage id="NotFoundPage">
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: '100%',
-          backgroundColor: (theme) => theme.palette.background.default,
-          px: 2,
-        }}
-      >
-        <Paper
-          elevation={3}
-          sx={{
-            p: 4,
-            textAlign: 'center',
-            maxWidth: 400,
-            borderRadius: 4,
-          }}
-        >
-          <Box sx={{ mb: 2 }}>{message.icon}</Box>
-          <Typography variant="h5" fontWeight="bold" gutterBottom>
-            {message.title}
-          </Typography>
-          <Typography variant="body1" sx={{ mb: 3 }}>
-            {message.description}
-          </Typography>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => navigate({ to: '/' })}
-          >
-            {message.button}
-          </Button>
-        </Paper>
-      </Box>
-    </CarLedgerPage>
+    <Stack
+      id="NotFoundPage"
+      alignItems="center"
+      justifyContent="center"
+      textAlign="center"
+      spacing={2}
+      sx={{
+        flexGrow: 1,
+        py: 10,
+        px: 2,
+        '& > svg': { fontSize: 56, color: 'primary.main' },
+      }}
+    >
+      {variant.icon}
+      <Typography variant="overline" color="text.secondary">
+        404
+      </Typography>
+      <Typography variant="h4">{t(`notFound.${variant.key}.title`)}</Typography>
+      <Typography color="text.secondary">
+        {t(`notFound.${variant.key}.text`)}
+      </Typography>
+      <RouterButton to="/" variant="contained">
+        {t('errors.goHome')}
+      </RouterButton>
+    </Stack>
   );
 }
