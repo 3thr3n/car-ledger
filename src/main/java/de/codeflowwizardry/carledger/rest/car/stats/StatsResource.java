@@ -27,7 +27,7 @@ public class StatsResource extends AbstractResource
 
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
-	@Operation(operationId = "getDashboardStats")
+	@Operation(operationId = "getDashboardStats", description = "Stats of a car, use -1 as carId for all your cars")
 	public DashboardStats getStats(@BeanParam DefaultParams params)
 	{
 		return statsCalculator.calculateStats(params.carId, context.getName(), params.from, params.to);

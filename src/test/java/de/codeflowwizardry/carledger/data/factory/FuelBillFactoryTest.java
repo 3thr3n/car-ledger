@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertLinesMatch;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.List;
@@ -26,7 +25,7 @@ class FuelBillFactoryTest
 	void shouldFailValidating()
 	{
 		// when date not set
-		FuelBillInput missingDate = new FuelBillInput(null, null, BigInteger.TEN, null, BigDecimal.TEN,
+		FuelBillInput missingDate = new FuelBillInput(null, null, 10, null, BigDecimal.TEN,
 				BigDecimal.valueOf(199.9),
 				null);
 		List<String> dateValidate = missingDate.validate();
@@ -38,7 +37,7 @@ class FuelBillFactoryTest
 		List<String> vatValidate = missingVat.validate();
 		assertLinesMatch(List.of("Vat rate must be set!"), vatValidate);
 
-		FuelBillInput missingKeyValues = new FuelBillInput(LocalDate.now(), null, BigInteger.TEN, null, null,
+		FuelBillInput missingKeyValues = new FuelBillInput(LocalDate.now(), null, 10, null, null,
 				BigDecimal.valueOf(199.9), null);
 		List<String> keyValidate = missingKeyValues.validate();
 		assertLinesMatch(List.of("At least two of 'unit', 'total' or 'pricePerUnit' must be set!"), keyValidate);
@@ -55,7 +54,7 @@ class FuelBillFactoryTest
 		// when date not set
 		FuelBillInput minimalValidation = new FuelBillInput(LocalDate.now(),
 				BigDecimal.TEN,
-				BigInteger.TEN,
+				10,
 				null,
 				null,
 				BigDecimal.valueOf(199.9),
@@ -70,13 +69,13 @@ class FuelBillFactoryTest
 		// given
 		FuelBillInput missingUnit = new FuelBillInput(LocalDate.now(),
 				BigDecimal.valueOf(68.78),
-				BigInteger.valueOf(19),
+				19,
 				null,
 				null,
 				BigDecimal.valueOf(181.9),
 				null);
 		// when
-		BigDecimal calculatedUnit = FuelBillFactory.calculateUnit(missingUnit, BigDecimal.valueOf(1.19));
+		BigDecimal calculatedUnit = FuelBillFactory.calculateUnit(missingUnit);
 
 		// then
 		assertEquals(BigDecimal.valueOf(3781, 2), calculatedUnit);
@@ -106,7 +105,7 @@ class FuelBillFactoryTest
 
 		FuelBillInput missingUnit = new FuelBillInput(LocalDate.now(),
 				BigDecimal.valueOf(80),
-				BigInteger.valueOf(19),
+				19,
 				BigDecimal.valueOf(400),
 				null,
 				BigDecimal.valueOf(181.9),
@@ -144,7 +143,7 @@ class FuelBillFactoryTest
 
 		FuelBillInput noDistance = new FuelBillInput(LocalDate.now(),
 				BigDecimal.valueOf(80),
-				BigInteger.valueOf(19),
+				19,
 				null,
 				null,
 				BigDecimal.valueOf(181.9),

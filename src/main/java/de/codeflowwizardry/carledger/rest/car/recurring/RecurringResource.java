@@ -14,7 +14,6 @@ import de.codeflowwizardry.carledger.data.RecurringBillEntity;
 import de.codeflowwizardry.carledger.data.factory.RecurringBillFactory;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.RecurringBillRepository;
-import de.codeflowwizardry.carledger.exception.WrongUserException;
 import de.codeflowwizardry.carledger.rest.AbstractResource;
 import de.codeflowwizardry.carledger.rest.records.BillPaged;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
@@ -49,10 +48,8 @@ public class RecurringResource extends AbstractResource
 			@QueryParam("size") @DefaultValue("10") int size,
 			@QueryParam("onlyRunning") boolean running)
 	{
-		if (page < 1)
-		{
-			page = 1;
-		}
+		page = toPageNumber(page);
+		size = toPageSize(size);
 		Page queryPage = new Page(page - 1, size);
 
 		PanacheQuery<RecurringBillEntity> all = recurringBillRepository.getAll(carId, context.getName(), queryPage,
@@ -67,27 +64,18 @@ public class RecurringResource extends AbstractResource
 	@Operation(operationId = "addNewRecurringBill")
 	@APIResponse(responseCode = "202", content = @Content(schema = @Schema(implementation = RecurringBill.class)))
 	@APIResponse(responseCode = "400", description = "Validation failed, please check the response", content = @Content(schema = @Schema(implementation = List.class)))
+	@APIResponse(responseCode = "404", description = "Car is not for your user.")
 	public Response addNewRecurringBill(@PathParam("carId") long carId, RecurringBillInput input)
 	{
-		try
-		{
-			RecurringBillEntity recurringBillEntity = recurringBillFactory.create(carId, input, context.getName());
-			return Response.accepted(RecurringBill.convert(recurringBillEntity)).build();
-		}
-		catch (WrongUserException e)
-		{
-			LOG.warn("Car cannot be found under your user {}!", context.getName(), e);
-			throw new WebApplicationException(Response.status(Response.Status.CONFLICT)
-					.entity("Car cannot be found under your user!")
-					.build());
-		}
+		RecurringBillEntity recurringBillEntity = recurringBillFactory.create(carId, input, context.getName());
+		return Response.accepted(RecurringBill.convert(recurringBillEntity)).build();
 	}
 
 	@DELETE
 	@Path("{billId}")
 	@Operation(operationId = "deleteRecurringBill")
 	@APIResponse(responseCode = "202", description = "Successful deleted")
-	@APIResponse(responseCode = "400", description = "Not able to delete")
+	@APIResponse(responseCode = "404", description = "Bill not found")
 	public Response deleteRecurringBill(@PathParam("carId") long carId, @PathParam("billId") long billId)
 	{
 		boolean b = recurringBillRepository.deleteById(carId, billId, context.getName());
@@ -96,6 +84,6 @@ public class RecurringResource extends AbstractResource
 			return Response.accepted().build();
 		}
 		LOG.warn("Could not delete bill {}", billId);
-		return Response.status(400).build();
+		return Response.status(404).build();
 	}
 }

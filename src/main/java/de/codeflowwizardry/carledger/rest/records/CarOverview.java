@@ -1,62 +1,29 @@
 package de.codeflowwizardry.carledger.rest.records;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.math.RoundingMode;
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 
-import de.codeflowwizardry.carledger.Utils;
-import de.codeflowwizardry.carledger.data.BillEntity;
 import de.codeflowwizardry.carledger.data.BillType;
-import de.codeflowwizardry.carledger.data.CarEntity;
-import de.codeflowwizardry.carledger.data.FuelBillEntity;
+import de.codeflowwizardry.carledger.data.repository.BillRepository.BillTypeSummary;
 
-public record CarOverview(BigInteger totalRefuels, BigInteger totalMaintenanceEvents,
-		BigInteger totalMiscellaneousEvents, BigDecimal totalCost, BigDecimal avgConsumption)
+public record CarOverview(long totalRefuels, long totalMaintenanceEvents, long totalMiscellaneousEvents,
+		BigDecimal totalCost, BigDecimal avgConsumption)
 {
-	public static CarOverview convert(CarEntity carEntity)
+	public static CarOverview convert(List<BillTypeSummary> summaries, BigDecimal avgConsumption)
 	{
-		if (carEntity == null)
-		{
-			return null;
-		}
+		BigDecimal totalCost = summaries.stream()
+				.map(BillTypeSummary::total)
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
 
-		List<BillEntity> billEntities = carEntity.getBills();
+		return new CarOverview(count(summaries, BillType.FUEL), count(summaries, BillType.MAINTENANCE),
+				count(summaries, BillType.MISCELLANEOUS), totalCost, avgConsumption);
+	}
 
-		BigDecimal totalCost = billEntities.stream().map(BillEntity::getTotal).reduce(BigDecimal.ZERO,
-				BigDecimal::add);
-
-		BigDecimal avgConsumption = BigDecimal.ZERO;
-		Optional<BigDecimal[]> optAvgConsumptionArray = billEntities.stream()
-				.map(BillEntity::getFuelBill)
-				.filter(Objects::nonNull)
-				.map(FuelBillEntity::getAvgConsumption)
-				.filter(Utils::valueWasSet)
-				.map(bd -> new BigDecimal[] {
-						bd, BigDecimal.ONE
-				})
-				.reduce((a, b) -> new BigDecimal[] {
-						a[0].add(b[0]), a[1].add(BigDecimal.ONE)
-				});
-		if (optAvgConsumptionArray.isPresent())
-		{
-			BigDecimal[] avgConsumptionArray = optAvgConsumptionArray.get();
-			avgConsumption = avgConsumptionArray[0].divide(avgConsumptionArray[1],
-					RoundingMode.HALF_UP);
-		}
-
-		BigInteger totalRefuels = BigInteger
-				.valueOf(billEntities.stream().filter(x -> x.getType().equals(BillType.FUEL)).count());
-
-		BigInteger totalMaintenanceEvents = BigInteger
-				.valueOf(billEntities.stream().filter(x -> x.getType().equals(BillType.MAINTENANCE)).count());
-
-		BigInteger totalMiscellaneousEvents = BigInteger
-				.valueOf(billEntities.stream().filter(x -> x.getType().equals(BillType.MISCELLANEOUS)).count());
-
-		return new CarOverview(totalRefuels, totalMaintenanceEvents, totalMiscellaneousEvents, totalCost,
-				avgConsumption);
+	private static long count(List<BillTypeSummary> summaries, BillType type)
+	{
+		return summaries.stream()
+				.filter(summary -> summary.type() == type)
+				.mapToLong(BillTypeSummary::count)
+				.sum();
 	}
 }

@@ -3,15 +3,17 @@ package de.codeflowwizardry.carledger.rest.car.fuel;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.time.LocalDate;
 
+import org.hibernate.SessionFactory;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import de.codeflowwizardry.carledger.QueryCounter;
 import de.codeflowwizardry.carledger.data.AccountEntity;
 import de.codeflowwizardry.carledger.data.CarEntity;
 import de.codeflowwizardry.carledger.data.factory.FuelBillFactory;
@@ -36,6 +38,9 @@ public class FuelResourceTest
 
 	@Inject
 	FuelBillFactory fuelBillFactory;
+
+	@Inject
+	SessionFactory sessionFactory;
 
 	CarEntity carEntity;
 
@@ -62,7 +67,7 @@ public class FuelResourceTest
 		FuelBillInput fuelBillInput = new FuelBillInput(
 				LocalDate.of(2024, 8, 16),
 				BigDecimal.ZERO,
-				BigInteger.valueOf(19),
+				19,
 				BigDecimal.valueOf(500),
 				BigDecimal.valueOf(28d),
 				BigDecimal.valueOf(199.9d),
@@ -73,7 +78,7 @@ public class FuelResourceTest
 		fuelBillInput = new FuelBillInput(
 				LocalDate.of(2022, 5, 22),
 				BigDecimal.ZERO,
-				BigInteger.valueOf(19),
+				19,
 				BigDecimal.valueOf(400),
 				BigDecimal.valueOf(20d),
 				BigDecimal.valueOf(189.9d),
@@ -84,7 +89,7 @@ public class FuelResourceTest
 		fuelBillInput = new FuelBillInput(
 				LocalDate.of(2023, 6, 2),
 				BigDecimal.ZERO,
-				BigInteger.valueOf(19),
+				19,
 				BigDecimal.valueOf(480),
 				BigDecimal.valueOf(28d),
 				BigDecimal.valueOf(196.9d),
@@ -138,6 +143,57 @@ public class FuelResourceTest
 				.body("data.size()", is(1))
 				.body("data[0].distance", is("500.00"))
 				.body("data[0].date", is("2024-08-16"));
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldNotQueryPerBill()
+	{
+		Runnable getBills = () -> given()
+				.pathParam("carId", carEntity.getId())
+				.queryParam("size", 100)
+				.when()
+				.get("all")
+				.then()
+				.statusCode(200);
+
+		long queriesWithThreeBills = QueryCounter.count(sessionFactory, getBills);
+
+		for (int day = 1; day <= 10; day++)
+		{
+			fuelBillFactory.create(new FuelBillInput(LocalDate.of(2020, 1, day), null, 19, BigDecimal.valueOf(400),
+					BigDecimal.valueOf(30), BigDecimal.valueOf(180), null), carEntity.getId(), "peter");
+		}
+
+		assertEquals(queriesWithThreeBills, QueryCounter.count(sessionFactory, getBills));
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldLimitPageSize()
+	{
+		given()
+				.pathParam("carId", carEntity.getId())
+				.queryParam("size", 100000)
+				.when()
+				.get("all")
+				.then()
+				.statusCode(200)
+				.body("size", is(100));
+
+		given()
+				.pathParam("carId", carEntity.getId())
+				.queryParam("size", 0)
+				.when()
+				.get("all")
+				.then()
+				.statusCode(200)
+				.body("size", is(1))
+				.body("data.size()", is(1));
 	}
 
 	@Test
@@ -265,7 +321,7 @@ public class FuelResourceTest
 				.body(body)
 				.put()
 				.then()
-				.statusCode(409);
+				.statusCode(404);
 	}
 
 	@Test

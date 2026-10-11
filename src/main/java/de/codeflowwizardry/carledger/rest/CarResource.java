@@ -4,6 +4,7 @@ import java.net.URI;
 import java.security.Principal;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -12,7 +13,9 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import de.codeflowwizardry.carledger.data.AccountEntity;
 import de.codeflowwizardry.carledger.data.CarEntity;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
+import de.codeflowwizardry.carledger.data.repository.BillRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
+import de.codeflowwizardry.carledger.exception.WrongUserException;
 import de.codeflowwizardry.carledger.rest.records.Car;
 import de.codeflowwizardry.carledger.rest.records.CarInput;
 import de.codeflowwizardry.carledger.rest.records.CarOverview;
@@ -26,12 +29,15 @@ import jakarta.ws.rs.core.Response;
 public class CarResource extends AbstractResource
 {
 	private final CarRepository carRepository;
+	private final BillRepository billRepository;
 
 	@Inject
-	public CarResource(Principal context, AccountRepository accountRepository, CarRepository carRepository)
+	public CarResource(Principal context, AccountRepository accountRepository, CarRepository carRepository,
+			BillRepository billRepository)
 	{
 		super(context, accountRepository);
 		this.carRepository = carRepository;
+		this.billRepository = billRepository;
 	}
 
 	@GET
@@ -40,7 +46,12 @@ public class CarResource extends AbstractResource
 	@APIResponse(responseCode = "200", description = "Get all cars.")
 	public List<Car> getMyCars()
 	{
-		return Car.convert(getAccount().getCarList());
+		Map<Long, Long> billsPerCar = billRepository.countBillsPerCar(context.getName());
+
+		return carRepository.listForUser(context.getName())
+				.stream()
+				.map(car -> Car.convert(car, billsPerCar.getOrDefault(car.getId(), 0L)))
+				.toList();
 	}
 
 	@GET
@@ -48,11 +59,10 @@ public class CarResource extends AbstractResource
 	@Operation(operationId = "getMyCar")
 	@Produces(MediaType.APPLICATION_JSON)
 	@APIResponse(responseCode = "200", description = "Car found.")
-	@APIResponse(responseCode = "204", description = "Id was not found.")
+	@APIResponse(responseCode = "404", description = "Car was not found.")
 	public Car getMyCar(@PathParam("id") Long id)
 	{
-		CarEntity carEntity = carRepository.findById(id, context.getName());
-		return Car.convert(carEntity);
+		return convert(findCar(id));
 	}
 
 	@GET
@@ -60,11 +70,12 @@ public class CarResource extends AbstractResource
 	@Operation(operationId = "getMyCarOverview")
 	@Produces(MediaType.APPLICATION_JSON)
 	@APIResponse(responseCode = "200", description = "Car found.")
-	@APIResponse(responseCode = "204", description = "Id was not found.")
+	@APIResponse(responseCode = "404", description = "Car was not found.")
 	public CarOverview getMyCarOverview(@PathParam("id") Long id)
 	{
-		CarEntity carEntity = carRepository.findById(id, context.getName());
-		return CarOverview.convert(carEntity);
+		findCar(id);
+		return CarOverview.convert(billRepository.summarizeByType(id, context.getName()),
+				billRepository.averageConsumption(id, context.getName()));
 	}
 
 	@POST
@@ -85,22 +96,14 @@ public class CarResource extends AbstractResource
 					.build();
 		}
 
-		CarEntity carEntity = carRepository.findById(id, context.getName());
-		if (carEntity == null)
-		{
-			return Response
-					.status(404)
-					.entity("Car cannot be found under your user!")
-					.build();
-		}
-
+		CarEntity carEntity = findCar(id);
 		carEntity.setName(carpojo.name());
 		carEntity.setOdometer(carpojo.odometer());
 		carEntity.setManufactureYear(carpojo.year());
 
 		carRepository.persist(carEntity);
 
-		return Response.ok().entity(Car.convert(carEntity)).build();
+		return Response.ok().entity(convert(carEntity)).build();
 	}
 
 	@PUT
@@ -114,7 +117,7 @@ public class CarResource extends AbstractResource
 	{
 		AccountEntity accountEntity = getAccount();
 
-		if (accountEntity.getCarList().size() >= accountEntity.getMaxCars())
+		if (carRepository.countForUser(context.getName()) >= accountEntity.getMaxCars())
 		{
 			return Response
 					.status(400)
@@ -139,6 +142,25 @@ public class CarResource extends AbstractResource
 		carRepository.persist(carEntity);
 
 		return Response.created(URI.create("car/my/" + carEntity.getId())).build();
+	}
+
+	/**
+	 * @throws WrongUserException
+	 *             if the car does not exist for the user
+	 */
+	private CarEntity findCar(Long id)
+	{
+		CarEntity carEntity = carRepository.findById(id, context.getName());
+		if (carEntity == null)
+		{
+			throw new WrongUserException();
+		}
+		return carEntity;
+	}
+
+	private Car convert(CarEntity carEntity)
+	{
+		return Car.convert(carEntity, billRepository.count("car.id", carEntity.getId()));
 	}
 
 	private boolean isInputInvalid(CarInput carInput)

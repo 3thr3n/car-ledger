@@ -1,14 +1,13 @@
 package de.codeflowwizardry.carledger.rest.car.maintenance;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.time.LocalDate;
 import java.util.List;
 
 import de.codeflowwizardry.carledger.data.MaintenanceBillEntity;
 import de.codeflowwizardry.carledger.rest.records.AbstractBill;
 
-public final class MaintenanceBill extends AbstractBill<MaintenanceBillEntity>
+public final class MaintenanceBill extends AbstractBill
 {
 	private final Long id;
 	private final LocalDate date;
@@ -18,10 +17,10 @@ public final class MaintenanceBill extends AbstractBill<MaintenanceBillEntity>
 	private final BigDecimal total;
 	private final BigDecimal laborCost;
 	private final BigDecimal partsCost;
-	private final BigInteger odometer;
+	private final Integer odometer;
 
 	MaintenanceBill(Long id, LocalDate date, String workshop, String description, BigDecimal total,
-			BigDecimal laborCost, BigDecimal partsCost, BigInteger odometer)
+			BigDecimal laborCost, BigDecimal partsCost, Integer odometer)
 	{
 		this.id = id;
 		this.date = date;
@@ -88,7 +87,7 @@ public final class MaintenanceBill extends AbstractBill<MaintenanceBillEntity>
 		return partsCost;
 	}
 
-	public BigInteger getOdometer()
+	public Integer getOdometer()
 	{
 		return odometer;
 	}

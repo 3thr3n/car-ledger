@@ -2,18 +2,20 @@ package de.codeflowwizardry.carledger.rest;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
+import org.hibernate.SessionFactory;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import de.codeflowwizardry.carledger.QueryCounter;
 import de.codeflowwizardry.carledger.data.AccountEntity;
 import de.codeflowwizardry.carledger.data.BillCategory;
 import de.codeflowwizardry.carledger.data.BillInterval;
@@ -40,6 +42,9 @@ class StatsResourceTest
 
 	@Inject
 	RecurringBillFactory recurringBillFactory;
+
+	@Inject
+	SessionFactory sessionFactory;
 
 	@Inject
 	AccountRepository accountRepository;
@@ -81,7 +86,7 @@ class StatsResourceTest
 		FuelBillInput fuelBillInput = new FuelBillInput(
 				LocalDate.now(),
 				BigDecimal.ZERO,
-				BigInteger.valueOf(19),
+				19,
 				BigDecimal.valueOf(500),
 				BigDecimal.valueOf(28d),
 				BigDecimal.valueOf(199.9d),
@@ -94,7 +99,7 @@ class StatsResourceTest
 		fuelBillInput = new FuelBillInput(
 				LocalDate.of(2022, 5, 22),
 				BigDecimal.ZERO,
-				BigInteger.valueOf(19),
+				19,
 				BigDecimal.valueOf(400),
 				BigDecimal.valueOf(20d),
 				BigDecimal.valueOf(189.9d),
@@ -107,7 +112,7 @@ class StatsResourceTest
 		fuelBillInput = new FuelBillInput(
 				LocalDate.of(2023, 6, 2),
 				BigDecimal.ZERO,
-				BigInteger.valueOf(19),
+				19,
 				BigDecimal.valueOf(480),
 				BigDecimal.valueOf(28d),
 				BigDecimal.valueOf(196.9d),
@@ -248,7 +253,7 @@ class StatsResourceTest
 		FuelBillInput withoutDistance = new FuelBillInput(
 				LocalDate.of(2021, 3, 1),
 				null,
-				BigInteger.valueOf(19),
+				19,
 				null,
 				BigDecimal.valueOf(25),
 				BigDecimal.valueOf(200),
@@ -269,6 +274,30 @@ class StatsResourceTest
 				.body("total.unit", is(25.00f))
 				.body("total.fuelTotal", is(50.00f))
 				.body("hiLo.distance.max", is(0.00f));
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldNotQueryPerBill()
+	{
+		Runnable getStats = () -> given()
+				.pathParam("carId", carEntity.getId())
+				.when()
+				.get()
+				.then()
+				.statusCode(200);
+
+		long queriesWithThreeBills = QueryCounter.count(sessionFactory, getStats);
+
+		for (int day = 1; day <= 10; day++)
+		{
+			fuelBillFactory.create(new FuelBillInput(LocalDate.of(2020, 1, day), null, 19, BigDecimal.valueOf(400),
+					BigDecimal.valueOf(30), BigDecimal.valueOf(180), null), carEntity.getId(), "peter");
+		}
+
+		assertEquals(queriesWithThreeBills, QueryCounter.count(sessionFactory, getStats));
 	}
 
 	@Test
@@ -341,7 +370,7 @@ class StatsResourceTest
 		FuelBillInput withoutDistance = new FuelBillInput(
 				LocalDate.of(2021, 3, 1),
 				null,
-				BigInteger.valueOf(19),
+				19,
 				null,
 				BigDecimal.valueOf(25),
 				BigDecimal.valueOf(200),

@@ -1,7 +1,8 @@
 package de.codeflowwizardry.carledger.rest.records;
 
-import de.codeflowwizardry.carledger.data.AbstractBillEntity;
-
-public abstract class AbstractBill<T extends AbstractBillEntity>
+/**
+ * Parent of all bill responses
+ */
+public abstract class AbstractBill
 {
 }

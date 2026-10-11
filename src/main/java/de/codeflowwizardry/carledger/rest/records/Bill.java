@@ -1,25 +1,24 @@
 package de.codeflowwizardry.carledger.rest.records;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.time.LocalDate;
 import java.util.List;
 
 import de.codeflowwizardry.carledger.data.BillEntity;
 import de.codeflowwizardry.carledger.data.BillType;
 
-public class Bill extends AbstractBill<BillEntity>
+public class Bill extends AbstractBill
 {
 	private final Long id;
 	private final LocalDate date;
 	private final int year;
 	private final BigDecimal total;
-	private final BigInteger vatRate;
+	private final int vatRate;
 	private final BigDecimal ustAmount;
 	private final BigDecimal netAmount;
 	private final BillType type;
 
-	Bill(Long id, LocalDate date, int year, BigDecimal total, BigInteger vatRate, BigDecimal ustAmount,
+	Bill(Long id, LocalDate date, int year, BigDecimal total, int vatRate, BigDecimal ustAmount,
 			BigDecimal netAmount, BillType type)
 	{
 		this.id = id;
@@ -65,7 +64,7 @@ public class Bill extends AbstractBill<BillEntity>
 		return total;
 	}
 
-	public BigInteger getVatRate()
+	public int getVatRate()
 	{
 		return vatRate;
 	}

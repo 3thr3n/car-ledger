@@ -213,7 +213,7 @@ class RecurringResourceTest
 				.when()
 				.put()
 				.then()
-				.statusCode(409);
+				.statusCode(404);
 	}
 
 	@Test
@@ -268,7 +268,7 @@ class RecurringResourceTest
 				.when()
 				.delete("{billId}")
 				.then()
-				.statusCode(400);
+				.statusCode(404);
 	}
 
 	@Test

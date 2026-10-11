@@ -3,7 +3,6 @@ package de.codeflowwizardry.carledger.rest.car.fuel;
 import static de.codeflowwizardry.carledger.Utils.atLeastTwoValuesSet;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +16,7 @@ public class FuelBillInput extends AbstractBillInput
 	private final BigDecimal pricePerUnit;
 	private final BigDecimal estimateConsumption;
 
-	public FuelBillInput(LocalDate date, BigDecimal total, BigInteger vatRate, BigDecimal distance, BigDecimal unit,
+	public FuelBillInput(LocalDate date, BigDecimal total, Integer vatRate, BigDecimal distance, BigDecimal unit,
 			BigDecimal pricePerUnit, BigDecimal estimateConsumption)
 	{
 		super(total, vatRate, date);

@@ -16,7 +16,7 @@ import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.panache.common.Page;
 import jakarta.ws.rs.PathParam;
 
-public class AbstractBillResource<T extends AbstractBillRepository<E>, E extends AbstractBillEntity, D extends AbstractBill<?>>
+public class AbstractBillResource<T extends AbstractBillRepository<E>, E extends AbstractBillEntity, D extends AbstractBill>
 		extends AbstractResource
 {
 	protected final T repository;
@@ -42,10 +42,8 @@ public class AbstractBillResource<T extends AbstractBillRepository<E>, E extends
 			Integer year,
 			Function<List<E>, List<D>> converter)
 	{
-		if (page < 1)
-		{
-			page = 1;
-		}
+		page = toPageNumber(page);
+		size = toPageSize(size);
 		Page queryPage = new Page(page - 1, size);
 
 		PanacheQuery<E> query = repository

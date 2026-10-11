@@ -5,7 +5,6 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.time.LocalDate;
 
 import org.junit.jupiter.api.AfterEach;
@@ -53,8 +52,8 @@ class MaintenanceResourceTest
 		carEntity.setName("Neat car");
 		carRepository.persist(carEntity);
 
-		MaintenanceBillInput input = new MaintenanceBillInput(BigDecimal.valueOf(50), BigInteger.ZERO, LocalDate.now(),
-				BigInteger.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, "", "");
+		MaintenanceBillInput input = new MaintenanceBillInput(BigDecimal.valueOf(50), 0, LocalDate.now(),
+				0, BigDecimal.ZERO, BigDecimal.ZERO, "", "");
 
 		carId = carEntity.getId();
 		factory.create(input, carId, "alice");
@@ -193,6 +192,6 @@ class MaintenanceResourceTest
 				.body(body)
 				.put()
 				.then()
-				.statusCode(409);
+				.statusCode(404);
 	}
 }

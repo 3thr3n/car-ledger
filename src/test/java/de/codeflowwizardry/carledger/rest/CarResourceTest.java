@@ -5,7 +5,6 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.time.LocalDate;
 
 import org.hamcrest.Matchers;
@@ -59,7 +58,7 @@ class CarResourceTest
 		FuelBillInput fuelBillInput = new FuelBillInput(
 				LocalDate.now(),
 				BigDecimal.ZERO,
-				BigInteger.valueOf(19),
+				19,
 				BigDecimal.valueOf(500),
 				BigDecimal.valueOf(40d),
 				BigDecimal.valueOf(199.9d),
@@ -111,7 +110,7 @@ class CarResourceTest
 				.pathParam("id", 1)
 				.get("{id}")
 				.then()
-				.statusCode(204);
+				.statusCode(404);
 	}
 
 	@Test
@@ -134,9 +133,9 @@ class CarResourceTest
 	@TestSecurity(user = "bob", roles = {
 			"user"
 	})
-	void shouldFailGettingCarData()
+	void shouldGetNoCarsWithoutAccount()
 	{
-		given().when().get().then().statusCode(400);
+		given().when().get().then().statusCode(200).body("size()", is(0));
 	}
 
 	@Test

@@ -1,20 +1,19 @@
 package de.codeflowwizardry.carledger.rest.car.maintenance;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.time.LocalDate;
 
 import de.codeflowwizardry.carledger.rest.records.input.AbstractBillInput;
 
 public class MaintenanceBillInput extends AbstractBillInput
 {
-	private final BigInteger odometer;
+	private final Integer odometer;
 	private final BigDecimal laborCost;
 	private final BigDecimal partsCost;
 	private final String description;
 	private final String workshop;
 
-	public MaintenanceBillInput(BigDecimal total, BigInteger vatRate, LocalDate date, BigInteger odometer,
+	public MaintenanceBillInput(BigDecimal total, Integer vatRate, LocalDate date, Integer odometer,
 			BigDecimal laborCost, BigDecimal partsCost, String description, String workshop)
 	{
 		super(total, vatRate, date);
@@ -25,7 +24,7 @@ public class MaintenanceBillInput extends AbstractBillInput
 		this.workshop = workshop;
 	}
 
-	public BigInteger getOdometer()
+	public Integer getOdometer()
 	{
 		return odometer;
 	}

@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertLinesMatch;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -18,7 +17,7 @@ class MaintenanceBillFactoryTest
 	void shouldValidate()
 	{
 		// when
-		MaintenanceBillInput minimalValidation = new MaintenanceBillInput(BigDecimal.TEN, BigInteger.ZERO,
+		MaintenanceBillInput minimalValidation = new MaintenanceBillInput(BigDecimal.TEN, 0,
 				LocalDate.now(), null, null, null, null, null);
 		List<String> validate = minimalValidation.validate();
 		assertEquals(0, validate.size());
@@ -28,7 +27,7 @@ class MaintenanceBillFactoryTest
 	void shouldFailValidating()
 	{
 		// when date not set
-		MaintenanceBillInput missingDate = new MaintenanceBillInput(BigDecimal.TEN, BigInteger.ZERO, null,
+		MaintenanceBillInput missingDate = new MaintenanceBillInput(BigDecimal.TEN, 0, null,
 				null, null, null, null, null);
 		List<String> dateValidate = missingDate.validate();
 		assertLinesMatch(List.of("Date must be set!"), dateValidate);
@@ -40,7 +39,7 @@ class MaintenanceBillFactoryTest
 		assertLinesMatch(List.of("Vat rate must be set!"), vatValidate);
 
 		// when total not set
-		MaintenanceBillInput missingTotal = new MaintenanceBillInput(null, BigInteger.TEN, LocalDate.now(),
+		MaintenanceBillInput missingTotal = new MaintenanceBillInput(null, 10, LocalDate.now(),
 				null, null, null, null, null);
 		List<String> totalValidate = missingTotal.validate();
 		assertLinesMatch(List.of("Total must be set!"), totalValidate);

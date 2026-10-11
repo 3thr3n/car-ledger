@@ -1,7 +1,5 @@
 package de.codeflowwizardry.carledger.rest.car.stats;
 
-import static java.math.BigDecimal.ZERO;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
@@ -19,26 +17,6 @@ public record TotalStats(BigDecimal unit, BigDecimal trackedDistance, BigDecimal
 		BigDecimal miscellaneousTotal,
 		BigDecimal total, Integer fuelBills, Integer maintenanceBills, Integer miscellaneousBills)
 {
-	public TotalStats(BigDecimal unit, BigDecimal trackedDistance, BigDecimal fuelTotal, BigDecimal maintenanceTotal,
-			BigDecimal miscellaneousTotal,
-			BigDecimal total, Integer fuelBills, Integer maintenanceBills, Integer miscellaneousBills)
-	{
-		this.unit = unit;
-		this.trackedDistance = trackedDistance;
-		this.fuelTotal = fuelTotal;
-		this.maintenanceTotal = maintenanceTotal;
-		this.miscellaneousTotal = miscellaneousTotal;
-		this.total = total;
-		this.fuelBills = fuelBills;
-		this.maintenanceBills = maintenanceBills;
-		this.miscellaneousBills = miscellaneousBills;
-	}
-
-	public TotalStats()
-	{
-		this(ZERO, ZERO, ZERO, ZERO, ZERO, ZERO, 0, 0, 0);
-	}
-
 	@Override
 	public BigDecimal unit()
 	{

@@ -1,7 +1,10 @@
 package de.codeflowwizardry.carledger;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
+import java.util.List;
+
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.core.Response;
 
 public class Utils
 {
@@ -30,14 +33,16 @@ public class Utils
 	}
 
 	/**
-	 * Check if the BigInteger value is grater than 0. <b>Null safe</b>
-	 *
-	 * @param unit
-	 *            to check
-	 * @return <code>true</code> if value is set.
+	 * @param errors
+	 *            validation errors of an input
+	 * @throws BadRequestException
+	 *             with the errors as body, if there are any
 	 */
-	public static boolean valueWasSet(BigInteger unit)
+	public static void requireValid(List<String> errors)
 	{
-		return unit != null && unit.signum() > 0;
+		if (!errors.isEmpty())
+		{
+			throw new BadRequestException(Response.status(400).entity(errors).build());
+		}
 	}
 }

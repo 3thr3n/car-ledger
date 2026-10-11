@@ -1,23 +1,17 @@
 package de.codeflowwizardry.carledger.data;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import jakarta.persistence.*;
 
 @Entity(name = "Account")
-@SequenceGenerator(allocationSize = 1, sequenceName = "sequence_account", initialValue = 5, name = "accountSequence")
 public class AccountEntity
 {
 	@Id
-	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "accountSequence")
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-	@Column(name = "user_id", unique = true)
+	@Column(name = "user_id", nullable = false, unique = true)
 	private String userId;
-	@Column(name = "max_cars")
+	@Column(name = "max_cars", nullable = false)
 	private int maxCars;
-	@OneToMany(mappedBy = "user", targetEntity = CarEntity.class)
-	private final List<CarEntity> carEntityList = new ArrayList<>();
 
 	public Long getId()
 	{
@@ -42,10 +36,5 @@ public class AccountEntity
 	public void setMaxCars(int maxCars)
 	{
 		this.maxCars = maxCars;
-	}
-
-	public List<CarEntity> getCarList()
-	{
-		return carEntityList;
 	}
 }

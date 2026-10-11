@@ -1,7 +1,5 @@
 package de.codeflowwizardry.carledger.data.factory;
 
-import java.util.List;
-
 import de.codeflowwizardry.carledger.data.BillEntity;
 import de.codeflowwizardry.carledger.data.BillType;
 import de.codeflowwizardry.carledger.data.MiscellaneousBillEntity;
@@ -12,8 +10,6 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
-import jakarta.ws.rs.BadRequestException;
-import jakarta.ws.rs.core.Response;
 
 @ApplicationScoped
 public class MiscellaneousBillFactory extends AbstractBillFactory<MiscellaneousBillInput, MiscellaneousBillEntity>
@@ -32,12 +28,6 @@ public class MiscellaneousBillFactory extends AbstractBillFactory<MiscellaneousB
 	@Transactional
 	public MiscellaneousBillEntity create(MiscellaneousBillInput input, long carId, String user)
 	{
-		List<String> validate = input.validate();
-		if (!validate.isEmpty())
-		{
-			throw new BadRequestException(Response.status(400).entity(validate).build());
-		}
-
 		BillEntity bill = createEntity(carId, user, input);
 		persistBill(bill);
 

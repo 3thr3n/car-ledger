@@ -1,6 +1,7 @@
 package de.codeflowwizardry.carledger.rest;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -153,6 +154,8 @@ class ImportResourceTest
 				.statusCode(200)
 				.body("successCount", is(0))
 				.body("skippedCount", is(2))
+				.body("skipped.rowNumber", contains(1, 2))
+				.body("skipped.message", contains("Already exists", "Already exists"))
 				.body("errorCount", is(0));
 
 		assertEquals(2, billRepository.count());
@@ -319,7 +322,7 @@ class ImportResourceTest
 				.multiPart("billType", "FUEL")
 				.multiPart("vat", 19)
 				.when()
-				.post("/api/import/" + carEntity.getId()).then().statusCode(400);
+				.post("/api/import/" + carEntity.getId()).then().statusCode(404);
 
 		assertEquals(0, billRepository.count());
 	}
