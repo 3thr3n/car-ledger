@@ -122,11 +122,11 @@ public class FuelResourceTest
 				.body("page", is(1))
 				.body("size", is(10))
 				.body("data.size()", is(3))
-				.body("data[0].distance", is("500.00"))
+				.body("data[0].distance", is(500.00F))
 				.body("data[0].date", is("2024-08-16"))
-				.body("data[1].distance", is("480.00"))
+				.body("data[1].distance", is(480.00F))
 				.body("data[1].date", is("2023-06-02"))
-				.body("data[2].distance", is("400.00"))
+				.body("data[2].distance", is(400.00F))
 				.body("data[2].date", is("2022-05-22"));
 
 		given()
@@ -141,7 +141,7 @@ public class FuelResourceTest
 				.body("page", is(1))
 				.body("size", is(1))
 				.body("data.size()", is(1))
-				.body("data[0].distance", is("500.00"))
+				.body("data[0].distance", is(500.00F))
 				.body("data[0].date", is("2024-08-16"));
 	}
 
@@ -251,9 +251,9 @@ public class FuelResourceTest
 				.put()
 				.then()
 				.statusCode(202)
-				.body("pricePerUnit", is("200.00"))
-				.body("estimateConsumption", is("0.00"))
-				.body("distance", is("0.00"));
+				.body("pricePerUnit", is(200.00F))
+				.body("estimateConsumption", is(0.00F))
+				.body("distance", is(0.00F));
 
 		// then
 		given()
@@ -265,7 +265,7 @@ public class FuelResourceTest
 				.statusCode(200)
 				.body("total", is(2))
 				.body("data[0].date", is("2024-09-01"))
-				.body("data[0].pricePerUnit", is("200.00"));
+				.body("data[0].pricePerUnit", is(200.00F));
 	}
 
 	@Test

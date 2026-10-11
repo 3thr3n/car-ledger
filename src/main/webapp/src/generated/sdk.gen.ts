@@ -230,7 +230,7 @@ export const importCsv = <ThrowOnError extends boolean = false>(options: Options
 /**
  * Get Field Definitions
  */
-export const getCsvFields = <ThrowOnError extends boolean = false>(options?: Options<GetCsvFieldsData, ThrowOnError>) => (options?.client ?? client).get<GetCsvFieldsResponses, unknown, ThrowOnError>({ url: '/api/import/{carId}/fields', ...options });
+export const getCsvFields = <ThrowOnError extends boolean = false>(options: Options<GetCsvFieldsData, ThrowOnError>) => (options.client ?? client).get<GetCsvFieldsResponses, unknown, ThrowOnError>({ url: '/api/import/{carId}/fields', ...options });
 
 /**
  * Get Stats

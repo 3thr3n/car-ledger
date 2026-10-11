@@ -71,33 +71,33 @@ public final class FuelBill extends AbstractBill
 		return year;
 	}
 
-	public String getDistance()
+	public BigDecimal getDistance()
 	{
-		return distance.setScale(2, RoundingMode.HALF_UP).toString();
+		return distance.setScale(2, RoundingMode.HALF_UP);
 	}
 
-	public String getUnit()
+	public BigDecimal getUnit()
 	{
-		return unit.setScale(2, RoundingMode.HALF_UP).toString();
+		return unit.setScale(2, RoundingMode.HALF_UP);
 	}
 
-	public String getPricePerUnit()
+	public BigDecimal getPricePerUnit()
 	{
-		return pricePerUnit.setScale(2, RoundingMode.HALF_UP).toString();
+		return pricePerUnit.setScale(2, RoundingMode.HALF_UP);
 	}
 
-	public String getEstimateConsumption()
+	public BigDecimal getEstimateConsumption()
 	{
-		return estimateConsumption.setScale(2, RoundingMode.HALF_UP).toString();
+		return estimateConsumption.setScale(2, RoundingMode.HALF_UP);
 	}
 
-	public String getAvgConsumption()
+	public BigDecimal getAvgConsumption()
 	{
-		return avgConsumption.setScale(2, RoundingMode.HALF_UP).toString();
+		return avgConsumption.setScale(2, RoundingMode.HALF_UP);
 	}
 
-	public String getTotal()
+	public BigDecimal getTotal()
 	{
-		return total.setScale(2, RoundingMode.HALF_UP).toString();
+		return total.setScale(2, RoundingMode.HALF_UP);
 	}
 }

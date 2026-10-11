@@ -278,6 +278,35 @@
           }
         }
       },
+      "CsvImportResult" : {
+        "type" : "object",
+        "properties" : {
+          "successCount" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "skipped" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Row"
+            }
+          },
+          "errors" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Row"
+            }
+          },
+          "skippedCount" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "errorCount" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
       "DashboardStats" : {
         "type" : "object",
         "properties" : {
@@ -364,8 +393,8 @@
           },
           "scale" : {
             "type" : "integer",
-            "format" : "int32",
-            "writeOnly" : true
+            "writeOnly" : true,
+            "format" : "int32"
           }
         }
       },
@@ -565,6 +594,18 @@
           }
         }
       },
+      "Row" : {
+        "type" : "object",
+        "properties" : {
+          "rowNumber" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "message" : {
+            "type" : "string"
+          }
+        }
+      },
       "TotalStats" : {
         "type" : "object",
         "properties" : {
@@ -604,7 +645,8 @@
     "securitySchemes" : {
       "SecurityScheme" : {
         "type" : "openIdConnect",
-        "description" : "Authentication"
+        "description" : "Authentication",
+        "openIdConnectUrl" : "http://localhost:32323/realms/quarkus/.well-known/openid-configuration"
       }
     }
   },
@@ -1623,8 +1665,9 @@
           "required" : true
         },
         "responses" : {
-          "202" : {
-            "description" : "CSV was imported."
+          "200" : {
+            "description" : "CSV was imported, see the result for skipped or failed rows.",
+            "content" : { }
           },
           "400" : {
             "description" : "- Type not defined\n- Column mapping missing or invalid"
@@ -1644,6 +1687,14 @@
       "get" : {
         "operationId" : "getCsvFields",
         "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
           "name" : "importType",
           "in" : "query",
           "schema" : {
@@ -1732,12 +1783,5 @@
   "info" : {
     "title" : "car-ledger API",
     "version" : "0.1.0-SNAPSHOT"
-  },
-  "servers" : [ {
-    "url" : "http://localhost:8080",
-    "description" : "Auto generated value"
-  }, {
-    "url" : "http://0.0.0.0:8080",
-    "description" : "Auto generated value"
-  } ]
+  }
 }

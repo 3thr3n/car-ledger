@@ -26,7 +26,7 @@ export interface Formatter {
 export const EMPTY = '—';
 
 /**
- * The API serializes decimals as strings ("12.30"), even though the spec says number
+ * Number of an API value, undefined when missing
  */
 export function num(value?: number | string | null): number | undefined {
   if (value === null || value === undefined || value === '') return undefined;

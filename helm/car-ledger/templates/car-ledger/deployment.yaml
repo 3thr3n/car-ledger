@@ -42,7 +42,8 @@ spec:
                   key: secret
             - name: QUARKUS_OIDC_AUTHENTICATION_SCOPES
               value: {{ .Values.carLedger.auth.scopes }}
-            - name: QUARKUS_OIDC_TOKEN_STATE_MANAGER_ENCRYPTION_SECRET
+            # encrypts the PKCE state cookie during the login, has to be the same for all replicas (>= 32 chars)
+            - name: QUARKUS_OIDC_AUTHENTICATION_STATE_SECRET
               valueFrom:
                 secretKeyRef:
                   name: keycloak

@@ -47,13 +47,18 @@ localClient.interceptors.response.use(async (res) => {
     throw new BackendError(res.status, parseErrorBody(await res.text()));
   }
 
+  // the session is missing or expired, the backend answers JS requests with 499 instead of redirecting
   if (res.status == 499) {
     if (noRedirectUrls.includes(location.pathname)) {
       throw new BackendError(401, 'Login required');
-    } else {
-      localStorage.setItem('postLoginRedirect', location.pathname);
-      location.href = `${baseUrl}/api/auth/login`;
     }
+    localStorage.setItem(
+      'postLoginRedirect',
+      location.pathname + location.search,
+    );
+    location.href = `${baseUrl}/api/auth/login`;
+    // keep the request pending while the browser leaves, instead of flashing an error
+    return new Promise<Response>(() => {});
   }
 
   return res;
