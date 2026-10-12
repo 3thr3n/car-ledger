@@ -2,7 +2,7 @@ import { Alert, Grid, Stack } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
 import { useMutation } from '@tanstack/react-query';
 import dayjs, { Dayjs } from 'dayjs';
-import { FormEvent, useState } from 'react';
+import { SubmitEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BillType, FuelBill } from '@/generated';
 import {
@@ -93,7 +93,7 @@ export default function FuelForm({
       ? (unit! / form.distance!) * 100
       : undefined;
 
-  const submit = (event: FormEvent) => {
+  const submit = (event: SubmitEvent) => {
     event.preventDefault();
     setTouched(true);
     if (errors.date || errors.amounts) return;

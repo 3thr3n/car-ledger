@@ -16,9 +16,7 @@ import MiscellaneousForm from '@/components/bill/MiscellaneousForm';
 import ErrorPage from '@/pages/ErrorPage';
 
 export type EditableBillType =
-  | BillType.FUEL
-  | BillType.MAINTENANCE
-  | BillType.MISCELLANEOUS;
+  BillType.FUEL | BillType.MAINTENANCE | BillType.MISCELLANEOUS;
 
 export interface EditBillPageProps {
   carId: number;

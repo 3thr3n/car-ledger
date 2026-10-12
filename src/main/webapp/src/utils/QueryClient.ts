@@ -12,12 +12,19 @@ const localClient: Client = createClient({
   redirect: 'manual',
 });
 
-localClient.interceptors.error.use(async (_, res) => {
-  if (res.status == 500) {
+// Every error of a request passes here, also the ones of the response interceptor below
+localClient.interceptors.error.use(async (error, res) => {
+  // e.g. validation messages of a 400, already parsed
+  if (error instanceof BackendError) {
+    throw error;
+  }
+
+  if (res?.status == 500) {
     toast.error('Server internal error, please retry later!');
   }
 
-  throw new BackendError(res.status);
+  // without a response the server was not reachable
+  throw new BackendError(res?.status ?? 0);
 });
 
 localClient.interceptors.request.use((req) => {

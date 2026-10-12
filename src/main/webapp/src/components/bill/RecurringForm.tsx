@@ -2,7 +2,7 @@ import { Alert, Grid, MenuItem, Stack, TextField } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
 import { useMutation } from '@tanstack/react-query';
 import dayjs, { Dayjs } from 'dayjs';
-import { FormEvent, useState } from 'react';
+import { SubmitEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BillCategory, BillInterval, BillType } from '@/generated';
 import { addNewRecurringBillMutation } from '@/generated/@tanstack/react-query.gen';
@@ -66,7 +66,7 @@ export default function RecurringForm({ carId }: { carId: number }) {
 
   const startsInPast = form.startDate?.isBefore(dayjs(), 'day');
 
-  const submit = (event: FormEvent) => {
+  const submit = (event: SubmitEvent) => {
     event.preventDefault();
     setTouched(true);
     if (!valid) return;

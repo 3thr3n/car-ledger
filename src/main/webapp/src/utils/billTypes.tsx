@@ -6,10 +6,7 @@ import EventRepeatRounded from '@mui/icons-material/EventRepeatRounded';
 import { ReactElement } from 'react';
 
 export type BillPaletteKey =
-  | 'fuel'
-  | 'maintenance'
-  | 'miscellaneous'
-  | 'recurring';
+  'fuel' | 'maintenance' | 'miscellaneous' | 'recurring';
 
 export interface BillTypeMeta {
   type: BillType;
