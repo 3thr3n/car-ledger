@@ -96,6 +96,9 @@ dashboard:
     distance: "Distance per refuel"
     fuelCost: "Cost per refuel"
     maintenanceCost: "Cost per maintenance"
+  reminders:
+    title: "Due soon"
+    subtitle: "Overdue reminders and the ones due in the next 30 days or 1,000 km"
   monthly:
     title: "Costs per month"
     costs: "Costs"
@@ -126,6 +129,7 @@ car:
   odometer: "Odometer"
   tabs:
     overview: "Overview"
+    reminders: "Reminders"
   overview:
     totalCost: "Total cost"
     avgConsumption: "Avg. consumption"
@@ -138,6 +142,8 @@ car:
     emptyTitle: "No entries yet"
     emptyText: "Add your first receipt or import a CSV export."
     running: "Running recurring costs"
+    reminders: "Reminders"
+    remindersEmpty: "No reminders yet"
     runningEmpty: "No running recurring costs"
     addRecurring: "Add recurring cost"
     nextDue: "Next due {{date}}"
@@ -367,3 +373,69 @@ notFound:
   redLight:
     title: "Red light"
     text: "Stop right there — there is nothing at this address."
+
+reminder:
+  title: "Reminders"
+  subtitle: "Inspection, service, tires and anything else that is due on a date or at a mileage."
+  add:
+    button: "Add reminder"
+    title: "Add reminder"
+  edit:
+    title: "Edit reminder"
+  added: "Reminder added"
+  updated: "Reminder saved"
+  deleted: "Reminder deleted"
+  delete:
+    title: "Delete {{title}}?"
+  empty:
+    title: "No reminders yet"
+    text: "Add one for the next inspection or service, and it shows up on the dashboard when it is due."
+  fields:
+    title: "Title"
+    due: "Due"
+    dueDate: "Date"
+    dueOdometer: "Odometer"
+    repeat: "Repeat"
+    intervalMonths: "Every … months"
+    intervalKm: "Every … km"
+    note: "Note"
+  dueHint: "A date, a mileage or both, whichever comes first."
+  repeatHint: "Optional. When done, it is due again after this interval."
+  currentOdometer: "Currently {{km}}"
+  odometerInfo: "The mileage is the one of the car or of the latest maintenance, whichever is higher."
+  errors:
+    due: "Enter a date or a mileage."
+    intervalMonths: "Needs a due date."
+    intervalKm: "Needs a due mileage."
+  presets:
+    inspection: "Inspection"
+    service: "Service"
+    tires: "Tire change"
+    vignette: "Vignette"
+  status:
+    OVERDUE: "Overdue"
+    DUE_SOON: "Due soon"
+    UPCOMING: "Upcoming"
+  due:
+    today: "today"
+    inDays_one: "in {{count}} day"
+    inDays_other: "in {{count}} days"
+    daysOverdue_one: "{{count}} day overdue"
+    daysOverdue_other: "{{count}} days overdue"
+    at: "at {{km}}"
+    kmLeft: "{{km}} left"
+    kmOverdue: "{{km}} overdue"
+  repeat:
+    every: "Every {{interval}}"
+    months_one: "month"
+    months_other: "{{count}} months"
+  or: " or "
+  done:
+    button: "Done"
+    title: "{{title}} done?"
+    repeating: "The next due date and mileage are counted from when it was done."
+    oneOff: "It does not repeat and will be removed."
+    date: "Done on"
+    odometer: "Odometer when done"
+    confirm: "Mark as done"
+    success: "Marked as done"

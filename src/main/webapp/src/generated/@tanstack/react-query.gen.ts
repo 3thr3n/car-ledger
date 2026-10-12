@@ -3,8 +3,8 @@
 import { type DefaultError, type InfiniteData, infiniteQueryOptions, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen';
-import { addNewFuelBill, addNewMaintenanceBill, addNewMiscellaneousBill, addNewRecurringBill, callback, createCar, deleteAdminAccount, deleteBill, deleteMyCar, deleteRecurringBill, endRecurringBill, getAdminAccounts, getAdminStats, getAllBills, getAllBillYears, getAllFuelBills, getAllFuelBillYears, getAllMaintenanceBills, getAllMaintenanceBillYears, getAllMiscellaneousBills, getAllMiscellaneousBillYears, getAllRecurringBills, getCsvFields, getDashboardStats, getFuelBill, getMaintenanceBill, getMiscellaneousBill, getMonthlyStats, getMyCar, getMyCarOverview, getMyCars, getMyself, importCsv, login, logout, logoutCallback, type Options, updateAdminAccount, updateFuelBill, updateMaintenanceBill, updateMiscellaneousBill, updateMyCar, updateMySettings } from '../sdk.gen';
-import type { AddNewFuelBillData, AddNewFuelBillError, AddNewMaintenanceBillData, AddNewMaintenanceBillError, AddNewMiscellaneousBillData, AddNewMiscellaneousBillError, AddNewRecurringBillData, AddNewRecurringBillError, AddNewRecurringBillResponse, CallbackData, CreateCarData, DeleteAdminAccountData, DeleteAdminAccountResponse, DeleteBillData, DeleteBillResponse, DeleteMyCarData, DeleteMyCarResponse, DeleteRecurringBillData, EndRecurringBillData, EndRecurringBillError, EndRecurringBillResponse, GetAdminAccountsData, GetAdminAccountsResponse, GetAdminStatsData, GetAdminStatsResponse, GetAllBillsData, GetAllBillsResponse, GetAllBillYearsData, GetAllBillYearsResponse, GetAllFuelBillsData, GetAllFuelBillsResponse, GetAllFuelBillYearsData, GetAllFuelBillYearsResponse, GetAllMaintenanceBillsData, GetAllMaintenanceBillsResponse, GetAllMaintenanceBillYearsData, GetAllMaintenanceBillYearsResponse, GetAllMiscellaneousBillsData, GetAllMiscellaneousBillsResponse, GetAllMiscellaneousBillYearsData, GetAllMiscellaneousBillYearsResponse, GetAllRecurringBillsData, GetAllRecurringBillsResponse, GetCsvFieldsData, GetCsvFieldsResponse, GetDashboardStatsData, GetDashboardStatsResponse, GetFuelBillData, GetFuelBillResponse, GetMaintenanceBillData, GetMaintenanceBillResponse, GetMiscellaneousBillData, GetMiscellaneousBillResponse, GetMonthlyStatsData, GetMonthlyStatsResponse, GetMyCarData, GetMyCarOverviewData, GetMyCarOverviewResponse, GetMyCarResponse, GetMyCarsData, GetMyCarsResponse, GetMyselfData, GetMyselfResponse, ImportCsvData, LoginData, LogoutCallbackData, LogoutData, UpdateAdminAccountData, UpdateAdminAccountError, UpdateAdminAccountResponse, UpdateFuelBillData, UpdateFuelBillError, UpdateFuelBillResponse, UpdateMaintenanceBillData, UpdateMaintenanceBillError, UpdateMaintenanceBillResponse, UpdateMiscellaneousBillData, UpdateMiscellaneousBillError, UpdateMiscellaneousBillResponse, UpdateMyCarData, UpdateMySettingsData, UpdateMySettingsError, UpdateMySettingsResponse } from '../types.gen';
+import { addNewFuelBill, addNewMaintenanceBill, addNewMiscellaneousBill, addNewRecurringBill, addReminder, callback, completeReminder, createCar, deleteAdminAccount, deleteBill, deleteMyCar, deleteRecurringBill, deleteReminder, endRecurringBill, getAdminAccounts, getAdminStats, getAllBills, getAllBillYears, getAllFuelBills, getAllFuelBillYears, getAllMaintenanceBills, getAllMaintenanceBillYears, getAllMiscellaneousBills, getAllMiscellaneousBillYears, getAllRecurringBills, getCsvFields, getDashboardStats, getFuelBill, getMaintenanceBill, getMiscellaneousBill, getMonthlyStats, getMyCar, getMyCarOverview, getMyCars, getMyself, getReminders, importCsv, login, logout, logoutCallback, type Options, updateAdminAccount, updateFuelBill, updateMaintenanceBill, updateMiscellaneousBill, updateMyCar, updateMySettings, updateReminder } from '../sdk.gen';
+import type { AddNewFuelBillData, AddNewFuelBillError, AddNewMaintenanceBillData, AddNewMaintenanceBillError, AddNewMiscellaneousBillData, AddNewMiscellaneousBillError, AddNewRecurringBillData, AddNewRecurringBillError, AddNewRecurringBillResponse, AddReminderData, AddReminderError, AddReminderResponse, CallbackData, CompleteReminderData, CompleteReminderError, CompleteReminderResponse, CreateCarData, DeleteAdminAccountData, DeleteAdminAccountResponse, DeleteBillData, DeleteBillResponse, DeleteMyCarData, DeleteMyCarResponse, DeleteRecurringBillData, DeleteReminderData, DeleteReminderResponse, EndRecurringBillData, EndRecurringBillError, EndRecurringBillResponse, GetAdminAccountsData, GetAdminAccountsResponse, GetAdminStatsData, GetAdminStatsResponse, GetAllBillsData, GetAllBillsResponse, GetAllBillYearsData, GetAllBillYearsResponse, GetAllFuelBillsData, GetAllFuelBillsResponse, GetAllFuelBillYearsData, GetAllFuelBillYearsResponse, GetAllMaintenanceBillsData, GetAllMaintenanceBillsResponse, GetAllMaintenanceBillYearsData, GetAllMaintenanceBillYearsResponse, GetAllMiscellaneousBillsData, GetAllMiscellaneousBillsResponse, GetAllMiscellaneousBillYearsData, GetAllMiscellaneousBillYearsResponse, GetAllRecurringBillsData, GetAllRecurringBillsResponse, GetCsvFieldsData, GetCsvFieldsResponse, GetDashboardStatsData, GetDashboardStatsResponse, GetFuelBillData, GetFuelBillResponse, GetMaintenanceBillData, GetMaintenanceBillResponse, GetMiscellaneousBillData, GetMiscellaneousBillResponse, GetMonthlyStatsData, GetMonthlyStatsResponse, GetMyCarData, GetMyCarOverviewData, GetMyCarOverviewResponse, GetMyCarResponse, GetMyCarsData, GetMyCarsResponse, GetMyselfData, GetMyselfResponse, GetRemindersData, GetRemindersResponse, ImportCsvData, LoginData, LogoutCallbackData, LogoutData, UpdateAdminAccountData, UpdateAdminAccountError, UpdateAdminAccountResponse, UpdateFuelBillData, UpdateFuelBillError, UpdateFuelBillResponse, UpdateMaintenanceBillData, UpdateMaintenanceBillError, UpdateMaintenanceBillResponse, UpdateMiscellaneousBillData, UpdateMiscellaneousBillError, UpdateMiscellaneousBillResponse, UpdateMyCarData, UpdateMySettingsData, UpdateMySettingsError, UpdateMySettingsResponse, UpdateReminderData, UpdateReminderError, UpdateReminderResponse } from '../types.gen';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -967,6 +967,96 @@ export const getCsvFieldsOptions = (options: Options<GetCsvFieldsData>) => query
     },
     queryKey: getCsvFieldsQueryKey(options)
 });
+
+export const getRemindersQueryKey = (options: Options<GetRemindersData>) => createQueryKey('getReminders', options);
+
+/**
+ * Get Reminders
+ *
+ * Reminders of a car, the most urgent first. Use -1 as carId for all your cars.
+ */
+export const getRemindersOptions = (options: Options<GetRemindersData>) => queryOptions<GetRemindersResponse, DefaultError, GetRemindersResponse, ReturnType<typeof getRemindersQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getReminders({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getRemindersQueryKey(options)
+});
+
+/**
+ * Add Reminder
+ */
+export const addReminderMutation = (options?: Partial<Options<AddReminderData>>): UseMutationOptions<AddReminderResponse, AddReminderError, Options<AddReminderData>> => {
+    const mutationOptions: UseMutationOptions<AddReminderResponse, AddReminderError, Options<AddReminderData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await addReminder({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Delete Reminder
+ */
+export const deleteReminderMutation = (options?: Partial<Options<DeleteReminderData>>): UseMutationOptions<DeleteReminderResponse, DefaultError, Options<DeleteReminderData>> => {
+    const mutationOptions: UseMutationOptions<DeleteReminderResponse, DefaultError, Options<DeleteReminderData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await deleteReminder({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Update Reminder
+ */
+export const updateReminderMutation = (options?: Partial<Options<UpdateReminderData>>): UseMutationOptions<UpdateReminderResponse, UpdateReminderError, Options<UpdateReminderData>> => {
+    const mutationOptions: UseMutationOptions<UpdateReminderResponse, UpdateReminderError, Options<UpdateReminderData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await updateReminder({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Complete Reminder
+ *
+ * Marks a reminder as done. A repeating one is due again one interval later, any other is deleted.
+ */
+export const completeReminderMutation = (options?: Partial<Options<CompleteReminderData>>): UseMutationOptions<CompleteReminderResponse, CompleteReminderError, Options<CompleteReminderData>> => {
+    const mutationOptions: UseMutationOptions<CompleteReminderResponse, CompleteReminderError, Options<CompleteReminderData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await completeReminder({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 export const getDashboardStatsQueryKey = (options: Options<GetDashboardStatsData>) => createQueryKey('getDashboardStats', options);
 
