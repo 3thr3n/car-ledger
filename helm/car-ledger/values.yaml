@@ -20,10 +20,18 @@ carLedger:
     tag: 97
   securityContext:
     runAsNonRoot: true
+  # OpenID Connect provider, Keycloak of the keycloak chart by default, any other works as well
+  # (see docs/DEPLOYMENT.md), e.g. authentik of the authentik chart
   auth:
+    # issuer, defaults to https://keycloak.<ingress.host>/realms/car-ledger
     url:
     clientId: "carLedger"
     scopes: "offline_access,email,profile"
+    # secret with the client secret and the state secret (encrypts the PKCE state cookie, >= 16 chars)
+    existingSecret: "keycloak"
+    secretKeys:
+      clientSecret: "secret"
+      stateSecret: "state-secret"
   infinispan:
     hosts: "car-ledger-infinispan"
   postgres:

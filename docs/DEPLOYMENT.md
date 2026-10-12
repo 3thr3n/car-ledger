@@ -1,20 +1,49 @@
 # Deployment
 
-CarLedger runs on Kubernetes with two Helm charts:
+CarLedger runs on Kubernetes. It needs an OpenID Connect provider for the login, the repository has charts for two:
 
 | Chart             | Deploys                                                                                                                                 |
 |-------------------|-----------------------------------------------------------------------------------------------------------------------------------------|
-| `helm/keycloak`   | Keycloak 26.7 (via the [keycloakx chart](https://github.com/codecentric/helm-charts/tree/master/charts/keycloakx)) with its own PostgreSQL |
 | `helm/car-ledger` | The app, its PostgreSQL and Infinispan (keeps the login sessions, shared by all replicas)                                                |
+| `helm/keycloak`   | Keycloak 26.7 (via the [keycloakx chart](https://github.com/codecentric/helm-charts/tree/master/charts/keycloakx)) with its own PostgreSQL |
+| `helm/authentik`  | authentik 2026.8 with its own PostgreSQL, CarLedger is set up by a blueprint, see [its README](../helm/authentik/README.md)              |
 
-The app is reachable as `car-ledger.<host>`, Keycloak as `keycloak.<host>`.
+The app is reachable as `car-ledger.<host>`.
 
-- [Fresh install](#fresh-install)
+- [Identity provider](#identity-provider)
+- [Fresh install with Keycloak](#fresh-install-with-keycloak)
 - [Upgrading to the current version](#upgrading-to-the-current-version)
 - [Upgrading from the bitnami based charts (0.1.x)](#upgrading-from-the-bitnami-based-charts-01x)
 - [Operations](#operations)
 
-## Fresh install
+## Identity provider
+
+CarLedger uses standard OpenID Connect, nothing is specific to Keycloak:
+
+- **Keycloak** (`helm/keycloak`): the default of the car-ledger chart. The realm, the client and the secret for the
+  app are set up by hand, see [below](#fresh-install-with-keycloak).
+- **authentik** (`helm/authentik`): sets up the client, the groups and the secret for the app by itself. See
+  [its README](../helm/authentik/README.md). It is not lighter than Keycloak, idle it uses about 1.1 GiB.
+- **Any other provider**, e.g. an existing one. It has to offer:
+
+  | Requirement                    | Details                                                                                                  |
+  |--------------------------------|----------------------------------------------------------------------------------------------------------|
+  | Confidential client            | Authorization code flow with PKCE (S256) and refresh tokens                                              |
+  | Redirect URIs                  | `https://car-ledger.<host>/api/auth/callback`, post logout `https://car-ledger.<host>/api/auth/logout-callback` |
+  | Roles `user` and `admin`       | In the claim `groups` (or Keycloak's `realm_access.roles`) of the tokens, every user needs one of them    |
+  | User name                      | Claim `preferred_username` (or `upn`, else `sub`); the account of a user is bound to it                  |
+  | Scopes                         | `offline_access`, `email`, `profile` by default (`carLedger.auth.scopes`)                                |
+  | Signed tokens                  | Verifiable with the published keys (`jwks_uri`), e.g. RS256                                              |
+  | Logout (optional)              | `end_session_endpoint`, otherwise only the session of CarLedger ends                                     |
+
+  Configure the car-ledger chart with `carLedger.auth.url` (the issuer), `carLedger.auth.clientId` and a secret with
+  the client secret and a state secret (see [step 3](#3-secret-for-the-app)), named by
+  `carLedger.auth.existingSecret` (default `keycloak`, keys `carLedger.auth.secretKeys.*`).
+
+Moving to another provider: the accounts of CarLedger are bound to the user name. Users keep their data when they
+have the same user name at the new provider.
+
+## Fresh install with Keycloak
 
 ### 1. Keycloak
 
@@ -47,7 +76,8 @@ There is no realm import, set it up once in the Keycloak admin console:
 
 ### 3. Secret for the app
 
-The app reads the client secret and the state secret from the secret `keycloak`, neither chart creates it:
+The app reads the client secret and the state secret from the secret `keycloak` (`carLedger.auth.existingSecret`),
+the keycloak chart does not create it:
 
 ```bash
 kubectl create secret generic keycloak \
@@ -70,8 +100,8 @@ helm install car-ledger helm/car-ledger \
 Images are published to `ghcr.io/3thr3n/car-ledger`, tagged with the GitHub run number of the build, the branch name
 and git tags. The default tag in `values.yaml` is old, always set the one you want to run.
 
-With another release name than `car-ledger`, set `carLedger.postgres.host` to `<release>-postgresql`. Passwords of PostgreSQL and Infinispan are generated on the first install and kept on
-upgrades.
+With another release name than `car-ledger`, set `carLedger.postgres.host` to `<release>-postgresql`. Passwords of
+PostgreSQL and Infinispan are generated on the first install and kept on upgrades.
 
 Log in with a user with the role `admin`: the sidebar shows *Administration*. If the API answers with 403 for users
 with the role `user`, the roles are missing in the tokens of the client.

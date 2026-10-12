@@ -38,16 +38,17 @@ spec:
             - name: QUARKUS_OIDC_CREDENTIALS_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: keycloak
-                  key: secret
+                  name: {{ .Values.carLedger.auth.existingSecret }}
+                  key: {{ .Values.carLedger.auth.secretKeys.clientSecret }}
             - name: QUARKUS_OIDC_AUTHENTICATION_SCOPES
               value: {{ .Values.carLedger.auth.scopes }}
-            # encrypts the PKCE state cookie during the login, has to be the same for all replicas (>= 32 chars)
+            # encrypts the PKCE state cookie during the login, has to be the same for all replicas
+            # (at least 16 chars, 32 recommended)
             - name: QUARKUS_OIDC_AUTHENTICATION_STATE_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: keycloak
-                  key: state-secret
+                  name: {{ .Values.carLedger.auth.existingSecret }}
+                  key: {{ .Values.carLedger.auth.secretKeys.stateSecret }}
             - name: QUARKUS_INFINISPAN_CLIENT_HOSTS
               value: {{ .Values.carLedger.infinispan.hosts }}
             - name: QUARKUS_INFINISPAN_CLIENT_USERNAME

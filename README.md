@@ -168,10 +168,11 @@ dependencies:
     repository: oci://ghcr.io/3thr3n/car-ledger
 ```
 
-The chart in `helm/keycloak` deploys Keycloak together with its own PostgreSQL.
+The login uses OpenID Connect: `helm/keycloak` deploys Keycloak, `helm/authentik` deploys authentik with CarLedger
+already set up, any other provider works as well.
 
-See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for a fresh install (including the Keycloak realm and the secret the app
-needs), the checklist for upgrading and the upgrade from the bitnami based charts.
+See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for choosing the identity provider, a fresh install (including the Keycloak
+realm and the secret the app needs), the checklist for upgrading and the upgrade from the bitnami based charts.
 
 ## License
 
