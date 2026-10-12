@@ -906,6 +906,10 @@
           }
         }
       },
+      "SortOrder" : {
+        "type" : "string",
+        "enum" : [ "ASC", "DESC" ]
+      },
       "TotalStats" : {
         "type" : "object",
         "properties" : {
@@ -1215,6 +1219,16 @@
             "format" : "int64"
           }
         }, {
+          "name" : "order",
+          "in" : "query",
+          "schema" : {
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/SortOrder"
+            }, {
+              "default" : "DESC"
+            } ]
+          }
+        }, {
           "name" : "page",
           "in" : "query",
           "schema" : {
@@ -1229,6 +1243,14 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 10
+          }
+        }, {
+          "description" : "Field to sort by, the bills are sorted by date if equal",
+          "name" : "sort",
+          "in" : "query",
+          "schema" : {
+            "type" : "string",
+            "default" : "date"
           }
         }, {
           "name" : "year",
@@ -1248,6 +1270,9 @@
                 }
               }
             }
+          },
+          "400" : {
+            "description" : "The bills cannot be sorted by the field."
           }
         },
         "summary" : "Get All My Bills",
@@ -1333,6 +1358,16 @@
             "format" : "int64"
           }
         }, {
+          "name" : "order",
+          "in" : "query",
+          "schema" : {
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/SortOrder"
+            }, {
+              "default" : "DESC"
+            } ]
+          }
+        }, {
           "name" : "page",
           "in" : "query",
           "schema" : {
@@ -1347,6 +1382,14 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 10
+          }
+        }, {
+          "description" : "Field to sort by, the bills are sorted by date if equal",
+          "name" : "sort",
+          "in" : "query",
+          "schema" : {
+            "type" : "string",
+            "default" : "date"
           }
         }, {
           "name" : "year",
@@ -1366,6 +1409,9 @@
                 }
               }
             }
+          },
+          "400" : {
+            "description" : "The bills cannot be sorted by the field."
           }
         },
         "summary" : "Get All My Bills",
@@ -1604,6 +1650,16 @@
             "format" : "int64"
           }
         }, {
+          "name" : "order",
+          "in" : "query",
+          "schema" : {
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/SortOrder"
+            }, {
+              "default" : "DESC"
+            } ]
+          }
+        }, {
           "name" : "page",
           "in" : "query",
           "schema" : {
@@ -1618,6 +1674,14 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 10
+          }
+        }, {
+          "description" : "Field to sort by, the bills are sorted by date if equal",
+          "name" : "sort",
+          "in" : "query",
+          "schema" : {
+            "type" : "string",
+            "default" : "date"
           }
         }, {
           "name" : "year",
@@ -1637,6 +1701,9 @@
                 }
               }
             }
+          },
+          "400" : {
+            "description" : "The bills cannot be sorted by the field."
           }
         },
         "summary" : "Get All My Bills",
@@ -1875,6 +1942,16 @@
             "format" : "int64"
           }
         }, {
+          "name" : "order",
+          "in" : "query",
+          "schema" : {
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/SortOrder"
+            }, {
+              "default" : "DESC"
+            } ]
+          }
+        }, {
           "name" : "page",
           "in" : "query",
           "schema" : {
@@ -1889,6 +1966,14 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 10
+          }
+        }, {
+          "description" : "Field to sort by, the bills are sorted by date if equal",
+          "name" : "sort",
+          "in" : "query",
+          "schema" : {
+            "type" : "string",
+            "default" : "date"
           }
         }, {
           "name" : "year",
@@ -1908,6 +1993,9 @@
                 }
               }
             }
+          },
+          "400" : {
+            "description" : "The bills cannot be sorted by the field."
           }
         },
         "summary" : "Get All My Bills",

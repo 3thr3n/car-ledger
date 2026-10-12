@@ -18,7 +18,7 @@ import { Fragment, ReactNode, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import EmptyState from '@/components/ui/EmptyState';
-import { PageModel } from '@/hooks/useBillList';
+import { PageModel, SortModel } from '@/hooks/useBillList';
 
 export interface MobileRow {
   primary: ReactNode;
@@ -33,6 +33,9 @@ export interface BillTableProps<R extends GridValidRowModel & { id?: number }> {
   columns: GridColDef<R>[];
   pageModel: PageModel;
   onPageModelChange: (model: PageModel) => void;
+  /** sorting on the server, without it the columns cannot be sorted */
+  sortModel?: SortModel;
+  onSortModelChange?: (model: SortModel | undefined) => void;
   loading?: boolean;
   onDelete?: (id: number) => void;
   /** opens the edit form of a row */
@@ -53,6 +56,8 @@ export default function BillTable<
   columns,
   pageModel,
   onPageModelChange,
+  sortModel,
+  onSortModelChange,
   loading,
   onDelete,
   onEdit,
@@ -222,7 +227,15 @@ export default function BillTable<
         pageSizeOptions={[10, 20, 50, 100]}
         disableRowSelectionOnClick
         disableColumnFilter
-        disableColumnSorting
+        disableColumnSorting={!onSortModelChange}
+        sortingMode="server"
+        sortModel={sortModel ? [sortModel] : []}
+        onSortModelChange={(model) => {
+          const [first] = model;
+          onSortModelChange?.(
+            first?.sort ? { field: first.field, sort: first.sort } : undefined,
+          );
+        }}
         autoHeight
         density="comfortable"
         localeText={
