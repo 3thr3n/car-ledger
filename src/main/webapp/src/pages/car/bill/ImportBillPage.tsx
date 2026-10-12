@@ -32,7 +32,12 @@ import { invalidateCar, localClient } from '@/utils/QueryClient';
 import { BackendError } from '@/utils/BackendError';
 import { billTypeList, billTypes } from '@/utils/billTypes';
 import useVatCountry from '@/hooks/useVatCountry';
-import { guessMapping } from '@/utils/csv';
+import {
+  loadMapping,
+  restoreMapping,
+  saveMapping,
+  toSavedMapping,
+} from '@/utils/csv';
 import PageHeader from '@/components/ui/PageHeader';
 import VatCountrySelect from '@/components/bill/VatCountrySelect';
 import { RouterButton } from '@/components/ui/links';
@@ -62,6 +67,7 @@ export default function ImportBillPage({
   const [file, setFile] = useState<File>();
   const [headers, setHeaders] = useState<string[]>([]);
   const [mapping, setMapping] = useState<Record<string, number>>({});
+  const [restored, setRestored] = useState(false);
   const [result, setResult] = useState<CsvImportResult>();
 
   const { data: fields } = useQuery(
@@ -92,6 +98,8 @@ export default function ImportBillPage({
       return data ?? {};
     },
     onSuccess: async (data) => {
+      // the next import of this type starts with this mapping
+      saveMapping(type, toSavedMapping(allFields, headers, mapping));
       setResult(data);
       setStep(4);
       await invalidateCar(carId);
@@ -122,7 +130,9 @@ export default function ImportBillPage({
         }
         setFile(selected);
         setHeaders(columns);
-        setMapping(guessMapping(allFields, columns));
+        const proposal = restoreMapping(allFields, columns, loadMapping(type));
+        setMapping(proposal.mapping);
+        setRestored(proposal.restored);
         setStep(2);
       },
     });
@@ -133,6 +143,7 @@ export default function ImportBillPage({
     setFile(undefined);
     setHeaders([]);
     setMapping({});
+    setRestored(false);
     setResult(undefined);
   };
 
@@ -234,6 +245,11 @@ export default function ImportBillPage({
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                 {t('import.mappingHint', { count: headers.length })}
               </Typography>
+              {restored && (
+                <Alert severity="info" variant="outlined" sx={{ mb: 2 }}>
+                  {t('import.mappingRestored')}
+                </Alert>
+              )}
               <Stack spacing={1.5} sx={{ mb: 2 }}>
                 {allFields.map((field) => (
                   <TextField
