@@ -2,6 +2,7 @@ package de.codeflowwizardry.carledger.rest.car.recurring;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.contains;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -473,5 +474,60 @@ class RecurringResourceTest
 				.post("999999/end")
 				.then()
 				.statusCode(404);
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldSortRunningAndNewestFirstOrByNextDue()
+	{
+		LocalDate today = LocalDate.now();
+		addMonthly("finished", LocalDate.of(2025, 1, 1), LocalDate.of(2025, 12, 31));
+		addMonthly("soon", today.plusDays(10), null);
+		addMonthly("later", today.plusDays(30), null);
+
+		given()
+				.pathParam("carId", carId)
+				.accept(ContentType.JSON)
+				.when()
+				.get()
+				.then()
+				.statusCode(200)
+				.body("data.name", contains("later", "soon", "finished"));
+
+		given()
+				.pathParam("carId", carId)
+				.queryParam("onlyRunning", true)
+				.queryParam("sort", "NEXT_DUE")
+				.accept(ContentType.JSON)
+				.when()
+				.get()
+				.then()
+				.statusCode(200)
+				.body("data.name", contains("soon", "later"));
+	}
+
+	private void addMonthly(String name, LocalDate start, LocalDate end)
+	{
+		String body = """
+				{
+				    "name": "%s",
+				    "billInterval": "MONTHLY",
+				    "category": "FINANCE",
+				    "startDate": "%s",
+				    %s
+				    "amount": 10.00
+				}
+				""".formatted(name, start, end == null ? "" : "\"endDate\": \"" + end + "\",");
+
+		given()
+				.pathParam("carId", carId)
+				.body(body)
+				.contentType(ContentType.JSON)
+				.when()
+				.put()
+				.then()
+				.statusCode(202);
 	}
 }
