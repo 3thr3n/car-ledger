@@ -1,0 +1,85 @@
+{{- $carLedger := printf "%s://%s" (include "carLedger.scheme" .) (required "carLedger.hostname is required" .Values.carLedger.hostname) }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  # mounted by the authentik worker (authentik.blueprints.configMaps)
+  name: authentik-car-ledger-blueprint
+data:
+  car-ledger.yaml: |
+    # yaml-language-server: $schema=https://goauthentik.io/blueprints/schema.json
+    version: 1
+    metadata:
+      name: CarLedger
+      labels:
+        blueprints.goauthentik.io/description: CarLedger application, its OpenID provider and the groups user and admin
+    entries:
+      # applied first, so akadmin, the flows and the scope mappings exist
+      - model: authentik_blueprints.metaapplyblueprint
+        attrs:
+          identifiers:
+            path: system/bootstrap.yaml
+          required: false
+      - model: authentik_blueprints.metaapplyblueprint
+        attrs:
+          identifiers:
+            path: system/providers-oauth2.yaml
+      - model: authentik_blueprints.metaapplyblueprint
+        attrs:
+          identifiers:
+            path: default/flow-default-provider-authorization-implicit-consent.yaml
+      - model: authentik_blueprints.metaapplyblueprint
+        attrs:
+          identifiers:
+            path: default/flow-default-invalidation-flow.yaml
+
+      # The groups are the roles of CarLedger (claim "groups" of the scope profile).
+      # Created once, memberships changed afterwards are kept.
+      - model: authentik_core.group
+        state: created
+        identifiers:
+          name: user
+      - model: authentik_core.group
+        state: created
+        identifiers:
+          name: admin
+        attrs:
+          users:
+            - !Find [ authentik_core.user, [ username, akadmin ] ]
+
+      - model: authentik_providers_oauth2.oauth2provider
+        id: car-ledger-provider
+        identifiers:
+          name: CarLedger
+        attrs:
+          authorization_flow: !Find [ authentik_flows.flow, [ slug, default-provider-authorization-implicit-consent ] ]
+          # logs out of authentik as well, like the logout of CarLedger with Keycloak
+          invalidation_flow: !Find [ authentik_flows.flow, [ slug, default-invalidation-flow ] ]
+          client_type: confidential
+          # not set by default for providers of blueprints, the login fails with "invalid_request" without it
+          grant_types:
+            - authorization_code
+            - refresh_token
+          client_id: {{ .Values.carLedger.clientId | quote }}
+          client_secret: !Env CAR_LEDGER_CLIENT_SECRET
+          redirect_uris:
+            - matching_mode: strict
+              url: {{ printf "%s/api/auth/callback" $carLedger | quote }}
+              redirect_uri_type: authorization
+            - matching_mode: strict
+              url: {{ printf "%s/api/auth/logout-callback" $carLedger | quote }}
+              redirect_uri_type: logout
+          # RS256 with the managed key, CarLedger verifies the tokens with the published keys
+          signing_key: !Find [ authentik_crypto.certificatekeypair, [ managed, goauthentik.io/crypto/jwt-managed ] ]
+          property_mappings:
+            - !Find [ authentik_providers_oauth2.scopemapping, [ managed, goauthentik.io/providers/oauth2/scope-openid ] ]
+            - !Find [ authentik_providers_oauth2.scopemapping, [ managed, goauthentik.io/providers/oauth2/scope-email ] ]
+            - !Find [ authentik_providers_oauth2.scopemapping, [ managed, goauthentik.io/providers/oauth2/scope-profile ] ]
+            - !Find [ authentik_providers_oauth2.scopemapping, [ managed, goauthentik.io/providers/oauth2/scope-offline_access ] ]
+
+      - model: authentik_core.application
+        identifiers:
+          slug: {{ .Values.carLedger.slug | quote }}
+        attrs:
+          name: CarLedger
+          provider: !KeyOf car-ledger-provider
+          meta_launch_url: {{ printf "%s/" $carLedger | quote }}

@@ -1,0 +1,112 @@
+# public host name of authentik, e.g. authentik.example.com
+hostname: ""
+# whether authentik and CarLedger are reached via https
+tls: true
+
+# CarLedger as OpenID Connect client, created by the blueprint in templates/blueprint.yaml
+carLedger:
+  # public host name of CarLedger, e.g. car-ledger.example.com, for the redirect URIs
+  hostname: ""
+  clientId: car-ledger
+  # application slug, part of the issuer: https://<hostname>/application/o/<slug>/
+  slug: car-ledger
+  # The generated client secret (key "secret") and state secret (key "state-secret") are in the
+  # secret car-ledger-oidc, set carLedger.auth.existingSecret of the car-ledger chart to it.
+
+# admin, created on the first start. An empty password is generated and kept in the secret
+# authentik-bootstrap (key "password")
+bootstrap:
+  email: "admin@example.com"
+  password: ""
+
+ingress:
+  enabled: true
+  className: nginx
+  # cluster issuer of cert-manager, e.g. lets-encrypt
+  certManager:
+  annotations: {}
+
+# Gateway API, alternative to the ingress
+httpRoute:
+  enabled: false
+  parentRefs:
+    - name: gateway
+      sectionName: https
+
+# Database and user are "authentik"
+postgresql:
+  image:
+    repository: docker.io/library/postgres
+    tag: "17-bookworm"
+  persistence:
+    size: 8Gi
+    storageClass:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+# Values of the authentik chart, see https://github.com/goauthentik/helm/tree/main/charts/authentik
+authentik:
+  authentik:
+    # secret key and database password come from the secret authentik-generated (global.env)
+    postgresql:
+      host: "{{ .Release.Name }}-postgresql"
+      name: authentik
+      user: authentik
+  # the bitnami PostgreSQL of the authentik chart is not used, its images are no longer available
+  postgresql:
+    enabled: false
+  # ingress and HTTPRoute come from this chart (templates/ingress.yaml), driven by hostname
+  # idle, the server uses about 730 MiB and the worker about 350 MiB
+  server:
+    ingress:
+      enabled: false
+    resources:
+      requests:
+        cpu: 100m
+        memory: 768Mi
+      limits:
+        memory: 1536Mi
+  worker:
+    resources:
+      requests:
+        cpu: 100m
+        memory: 384Mi
+      limits:
+        memory: 1Gi
+  blueprints:
+    configMaps:
+      - authentik-car-ledger-blueprint
+  global:
+    # The secret names are fixed, the authentik chart does not template env values
+    env:
+      - name: AUTHENTIK_SECRET_KEY
+        valueFrom:
+          secretKeyRef:
+            name: authentik-generated
+            key: secret-key
+      - name: AUTHENTIK_POSTGRESQL__PASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: authentik-generated
+            key: postgres-password
+      - name: AUTHENTIK_BOOTSTRAP_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: authentik-bootstrap
+            key: password
+      - name: AUTHENTIK_BOOTSTRAP_EMAIL
+        valueFrom:
+          secretKeyRef:
+            name: authentik-bootstrap
+            key: email
+      # client secret of CarLedger, read by the blueprint
+      - name: CAR_LEDGER_CLIENT_SECRET
+        valueFrom:
+          secretKeyRef:
+            name: car-ledger-oidc
+            key: secret
