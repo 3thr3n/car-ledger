@@ -30,13 +30,26 @@ export default function AverageList({ average }: { average: AverageStats }) {
             {index > 0 && <Divider />}
             <Stack
               direction="row"
-              justifyContent="space-between"
-              sx={{ py: 1.25 }}
+              sx={{
+                justifyContent: 'space-between',
+                py: 1.25,
+              }}
             >
-              <Typography variant="body2" color="text.secondary">
+              <Typography
+                variant="body2"
+                sx={{
+                  color: 'text.secondary',
+                }}
+              >
                 {t(`dashboard.average.${row.key}`)}
               </Typography>
-              <Typography variant="body2" fontWeight={600} className="tabular">
+              <Typography
+                variant="body2"
+                className="tabular"
+                sx={{
+                  fontWeight: 600,
+                }}
+              >
                 {row.value}
               </Typography>
             </Stack>

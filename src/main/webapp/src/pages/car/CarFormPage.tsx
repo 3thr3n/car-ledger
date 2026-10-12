@@ -200,7 +200,13 @@ function CarForm({
           error={touched ? errors.odometer : undefined}
           required
         />
-        <Stack direction="row" spacing={1} justifyContent="flex-end">
+        <Stack
+          direction="row"
+          spacing={1}
+          sx={{
+            justifyContent: 'flex-end',
+          }}
+        >
           <Button color="inherit" onClick={() => router.history.back()}>
             {t('button.cancel')}
           </Button>
@@ -248,12 +254,25 @@ function DeleteCar({
       <Stack
         direction={{ xs: 'column', sm: 'row' }}
         spacing={2}
-        alignItems={{ sm: 'center' }}
-        justifyContent="space-between"
+        sx={{
+          alignItems: { sm: 'center' },
+          justifyContent: 'space-between',
+        }}
       >
         <Box>
-          <Typography fontWeight={600}>{t('car.delete.title')}</Typography>
-          <Typography variant="body2" color="text.secondary">
+          <Typography
+            sx={{
+              fontWeight: 600,
+            }}
+          >
+            {t('car.delete.title')}
+          </Typography>
+          <Typography
+            variant="body2"
+            sx={{
+              color: 'text.secondary',
+            }}
+          >
             {t('car.delete.text', { count: entries })}
           </Typography>
         </Box>

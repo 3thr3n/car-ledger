@@ -52,7 +52,13 @@ export default function AddBillPage({
                   transition: 'border-color .15s, background-color .15s',
                 })}
               >
-                <Stack direction="row" spacing={1.25} alignItems="center">
+                <Stack
+                  direction="row"
+                  spacing={1.25}
+                  sx={{
+                    alignItems: 'center',
+                  }}
+                >
                   <Box
                     sx={(theme) => ({
                       display: 'grid',
@@ -66,7 +72,11 @@ export default function AddBillPage({
                   >
                     {meta.icon}
                   </Box>
-                  <Typography fontWeight={600}>
+                  <Typography
+                    sx={{
+                      fontWeight: 600,
+                    }}
+                  >
                     {t(`bill.types.${meta.type}`)}
                   </Typography>
                 </Stack>
@@ -77,7 +87,13 @@ export default function AddBillPage({
       </Grid>
 
       <Card sx={{ p: { xs: 2, sm: 3 } }}>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 2.5 }}>
+        <Typography
+          variant="body2"
+          sx={{
+            color: 'text.secondary',
+            mb: 2.5,
+          }}
+        >
           {t(`bill.add.describe.${type}`)}
         </Typography>
         {/* keyed, so switching the type starts with a fresh form */}

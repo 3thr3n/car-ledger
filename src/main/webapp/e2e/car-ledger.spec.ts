@@ -193,7 +193,7 @@ test.describe.serial('car ledger', () => {
 
     // the imported refuels of January and February are in the monthly chart
     const chart = page.locator('.MuiCard-root', { hasText: 'Costs per month' });
-    await expect(chart.locator('.MuiBarElement-root').first()).toBeVisible();
+    await expect(chart.locator('.MuiBarChart-element').first()).toBeVisible();
     await expect(chart.getByText('Jan 26')).toBeVisible();
     await chart.getByRole('button', { name: 'Fuel', exact: true }).click();
     await expect(chart.getByText('Fuel price')).toBeVisible();

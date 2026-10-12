@@ -61,33 +61,60 @@ export default function GaragePage() {
                 <Stack
                   direction="row"
                   spacing={2}
-                  alignItems="center"
-                  sx={{ mb: 2.5 }}
+                  sx={{
+                    alignItems: 'center',
+                    mb: 2.5,
+                  }}
                 >
                   <CarAvatar id={car.id} name={car.name} size={48} />
                   <Box sx={{ minWidth: 0 }}>
                     <Typography variant="h6" noWrap>
                       {car.name}
                     </Typography>
-                    <Typography variant="body2" color="text.secondary">
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: 'text.secondary',
+                      }}
+                    >
                       {car.year && t('car.built', { year: car.year })}
                     </Typography>
                   </Box>
                 </Stack>
                 <Stack direction="row" spacing={4}>
                   <Box>
-                    <Typography variant="caption" color="text.secondary">
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: 'text.secondary',
+                      }}
+                    >
                       {t('car.odometer')}
                     </Typography>
-                    <Typography fontWeight={600} className="tabular">
+                    <Typography
+                      className="tabular"
+                      sx={{
+                        fontWeight: 600,
+                      }}
+                    >
                       <OdometerValue odometer={car.currentOdometer} />
                     </Typography>
                   </Box>
                   <Box>
-                    <Typography variant="caption" color="text.secondary">
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: 'text.secondary',
+                      }}
+                    >
                       {t('garage.entriesLabel')}
                     </Typography>
-                    <Typography fontWeight={600} className="tabular">
+                    <Typography
+                      className="tabular"
+                      sx={{
+                        fontWeight: 600,
+                      }}
+                    >
                       {car.amountBills ?? 0}
                     </Typography>
                   </Box>
@@ -117,9 +144,20 @@ export default function GaragePage() {
                     color: 'text.secondary',
                   }}
                 >
-                  <Stack alignItems="center" spacing={0.5}>
+                  <Stack
+                    spacing={0.5}
+                    sx={{
+                      alignItems: 'center',
+                    }}
+                  >
                     <AddRounded />
-                    <Typography fontWeight={600}>{t('garage.add')}</Typography>
+                    <Typography
+                      sx={{
+                        fontWeight: 600,
+                      }}
+                    >
+                      {t('garage.add')}
+                    </Typography>
                     {used === 0 && (
                       <Typography variant="body2">
                         {t('garage.emptyHint')}
@@ -129,14 +167,19 @@ export default function GaragePage() {
                 </RouterCardActionArea>
               ) : (
                 <Stack
-                  sx={{ height: '100%', p: 3 }}
-                  alignItems="center"
-                  justifyContent="center"
+                  sx={{
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    height: '100%',
+                    p: 3,
+                  }}
                 >
                   <Typography
                     variant="body2"
-                    color="text.secondary"
-                    textAlign="center"
+                    sx={{
+                      color: 'text.secondary',
+                      textAlign: 'center',
+                    }}
                   >
                     {t('garage.limitReached')}
                   </Typography>

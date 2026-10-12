@@ -26,11 +26,11 @@ export default function NotFoundPage() {
   return (
     <Stack
       id="NotFoundPage"
-      alignItems="center"
-      justifyContent="center"
-      textAlign="center"
       spacing={2}
       sx={{
+        alignItems: 'center',
+        justifyContent: 'center',
+        textAlign: 'center',
         flexGrow: 1,
         py: 10,
         px: 2,
@@ -38,11 +38,20 @@ export default function NotFoundPage() {
       }}
     >
       {variant.icon}
-      <Typography variant="overline" color="text.secondary">
+      <Typography
+        variant="overline"
+        sx={{
+          color: 'text.secondary',
+        }}
+      >
         404
       </Typography>
       <Typography variant="h4">{t(`notFound.${variant.key}.title`)}</Typography>
-      <Typography color="text.secondary">
+      <Typography
+        sx={{
+          color: 'text.secondary',
+        }}
+      >
         {t(`notFound.${variant.key}.text`)}
       </Typography>
       <RouterButton to="/" variant="contained">

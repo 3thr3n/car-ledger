@@ -79,8 +79,10 @@ export default function CostSplit({ total }: { total: TotalStats }) {
           <Stack
             key={part.type}
             direction="row"
-            alignItems="center"
             spacing={1.5}
+            sx={{
+              alignItems: 'center',
+            }}
           >
             <Box
               sx={{
@@ -97,7 +99,9 @@ export default function CostSplit({ total }: { total: TotalStats }) {
                 <Typography
                   component="span"
                   variant="body2"
-                  color="text.secondary"
+                  sx={{
+                    color: 'text.secondary',
+                  }}
                 >
                   {' · '}
                   {t('dashboard.split.count', { count: part.count })}
@@ -106,17 +110,23 @@ export default function CostSplit({ total }: { total: TotalStats }) {
             </Typography>
             <Typography
               variant="body2"
-              color="text.secondary"
               className="tabular"
-              sx={{ width: 48, textAlign: 'right' }}
+              sx={{
+                color: 'text.secondary',
+                width: 48,
+                textAlign: 'right',
+              }}
             >
               {format.number(share(part.amount), 0)} %
             </Typography>
             <Typography
               variant="body2"
-              fontWeight={600}
               className="tabular"
-              sx={{ minWidth: 96, textAlign: 'right' }}
+              sx={{
+                fontWeight: 600,
+                minWidth: 96,
+                textAlign: 'right',
+              }}
             >
               {format.money(part.amount)}
             </Typography>

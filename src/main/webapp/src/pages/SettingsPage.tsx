@@ -107,7 +107,13 @@ function SettingsForm({ account }: { account: Account }) {
     <Card component="form" onSubmit={submit} sx={{ p: 3 }}>
       <Stack spacing={3}>
         <Box>
-          <Typography variant="subtitle1" fontWeight={650} sx={{ mb: 1.5 }}>
+          <Typography
+            variant="subtitle1"
+            sx={{
+              fontWeight: 650,
+              mb: 1.5,
+            }}
+          >
             {t('settings.entries')}
           </Typography>
           <VatCountrySelect
@@ -118,7 +124,13 @@ function SettingsForm({ account }: { account: Account }) {
         </Box>
 
         <Box>
-          <Typography variant="subtitle1" fontWeight={650} sx={{ mb: 1.5 }}>
+          <Typography
+            variant="subtitle1"
+            sx={{
+              fontWeight: 650,
+              mb: 1.5,
+            }}
+          >
             {t('settings.display')}
           </Typography>
           <Stack spacing={2.5}>
@@ -139,7 +151,12 @@ function SettingsForm({ account }: { account: Account }) {
                       columnGap: 1,
                     }}
                   >
-                    <Box component="span" fontWeight={600}>
+                    <Box
+                      component="span"
+                      sx={{
+                        fontWeight: 600,
+                      }}
+                    >
                       {code}
                     </Box>
                     <span>{currencyName(code)}</span>
@@ -165,7 +182,12 @@ function SettingsForm({ account }: { account: Account }) {
           </Stack>
         </Box>
 
-        <Stack direction="row" justifyContent="flex-end">
+        <Stack
+          direction="row"
+          sx={{
+            justifyContent: 'flex-end',
+          }}
+        >
           <Button
             type="submit"
             variant="contained"

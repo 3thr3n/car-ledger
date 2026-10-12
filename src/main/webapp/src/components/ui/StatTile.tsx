@@ -24,7 +24,14 @@ export default function StatTile({
 }: StatTileProps) {
   return (
     <Card sx={{ p: 2.25, height: '100%' }}>
-      <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1.25 }}>
+      <Stack
+        direction="row"
+        spacing={1}
+        sx={{
+          alignItems: 'center',
+          mb: 1.25,
+        }}
+      >
         {icon && (
           <Box
             sx={(theme) => ({
@@ -41,7 +48,13 @@ export default function StatTile({
             {icon}
           </Box>
         )}
-        <Typography variant="body2" color="text.secondary" noWrap>
+        <Typography
+          variant="body2"
+          noWrap
+          sx={{
+            color: 'text.secondary',
+          }}
+        >
           {label}
         </Typography>
       </Stack>
@@ -54,7 +67,13 @@ export default function StatTile({
         {loading ? <Skeleton width="60%" /> : value}
       </Typography>
       {hint && (
-        <Typography variant="caption" color="text.secondary" component="div">
+        <Typography
+          variant="caption"
+          component="div"
+          sx={{
+            color: 'text.secondary',
+          }}
+        >
           {loading ? <Skeleton width="40%" /> : hint}
         </Typography>
       )}

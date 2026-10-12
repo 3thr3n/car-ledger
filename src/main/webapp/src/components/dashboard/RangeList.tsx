@@ -50,17 +50,27 @@ export default function RangeList({ hiLo }: { hiLo: HiLoStats }) {
             <Box key={key}>
               <Typography
                 variant="body2"
-                color="text.secondary"
-                sx={{ mb: 0.5 }}
+                sx={{
+                  color: 'text.secondary',
+                  mb: 0.5,
+                }}
               >
                 {t(`dashboard.range.${key}`)}
               </Typography>
-              <Stack direction="row" alignItems="center" spacing={1.5}>
+              <Stack
+                direction="row"
+                spacing={1.5}
+                sx={{
+                  alignItems: 'center',
+                }}
+              >
                 <Typography
                   variant="body2"
-                  fontWeight={600}
                   className="tabular"
-                  sx={{ minWidth: 92 }}
+                  sx={{
+                    fontWeight: 600,
+                    minWidth: 92,
+                  }}
                 >
                   {value(range, 'min', row)}
                 </Typography>
@@ -77,9 +87,12 @@ export default function RangeList({ hiLo }: { hiLo: HiLoStats }) {
                 />
                 <Typography
                   variant="body2"
-                  fontWeight={600}
                   className="tabular"
-                  sx={{ minWidth: 92, textAlign: 'right' }}
+                  sx={{
+                    fontWeight: 600,
+                    minWidth: 92,
+                    textAlign: 'right',
+                  }}
                 >
                   {value(range, 'max', row)}
                 </Typography>

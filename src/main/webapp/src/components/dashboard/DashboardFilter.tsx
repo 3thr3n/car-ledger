@@ -73,8 +73,10 @@ export default function DashboardFilter({
     <Stack
       direction={{ xs: 'column', md: 'row' }}
       spacing={1.5}
-      alignItems={{ xs: 'stretch', md: 'center' }}
-      sx={{ mb: 3 }}
+      sx={{
+        alignItems: { xs: 'stretch', md: 'center' },
+        mb: 3,
+      }}
     >
       <TextField
         select

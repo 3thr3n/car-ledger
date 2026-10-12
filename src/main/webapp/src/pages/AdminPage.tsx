@@ -180,8 +180,10 @@ function AccountTable() {
         <Stack
           direction="row"
           spacing={1}
-          alignItems="center"
-          sx={{ height: '100%' }}
+          sx={{
+            alignItems: 'center',
+            height: '100%',
+          }}
         >
           <span>{row.name}</span>
           {row.name === me?.name && (
@@ -227,9 +229,11 @@ function AccountTable() {
       renderCell: ({ row }) => (
         <Stack
           direction="row"
-          alignItems="center"
-          justifyContent="flex-end"
-          sx={{ height: '100%' }}
+          sx={{
+            alignItems: 'center',
+            justifyContent: 'flex-end',
+            height: '100%',
+          }}
         >
           <Tooltip title={t('admin.edit.button')}>
             <IconButton size="small" onClick={() => setToEdit(row)}>

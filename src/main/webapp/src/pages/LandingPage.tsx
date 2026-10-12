@@ -62,8 +62,10 @@ export default function LandingPage() {
       <Container maxWidth="md">
         <Stack
           spacing={3}
-          alignItems="flex-start"
-          sx={{ mb: { xs: 6, md: 9 } }}
+          sx={{
+            alignItems: 'flex-start',
+            mb: { xs: 6, md: 9 },
+          }}
         >
           <Typography variant="overline" color="primary">
             {t('landing.eyebrow')}
@@ -81,8 +83,11 @@ export default function LandingPage() {
           <Typography
             variant="h6"
             component="p"
-            color="text.secondary"
-            sx={{ fontWeight: 400, maxWidth: 560 }}
+            sx={{
+              color: 'text.secondary',
+              fontWeight: 400,
+              maxWidth: 560,
+            }}
           >
             {t('landing.subtitle')}
           </Typography>
@@ -125,10 +130,20 @@ export default function LandingPage() {
                 >
                   {feature.icon}
                 </Box>
-                <Typography variant="subtitle1" fontWeight={650}>
+                <Typography
+                  variant="subtitle1"
+                  sx={{
+                    fontWeight: 650,
+                  }}
+                >
                   {t(`landing.features.${feature.key}.title`)}
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color: 'text.secondary',
+                  }}
+                >
                   {t(`landing.features.${feature.key}.text`)}
                 </Typography>
               </Card>
@@ -138,8 +153,11 @@ export default function LandingPage() {
 
         <Typography
           variant="body2"
-          color="text.secondary"
-          sx={{ mt: 6, textAlign: 'center' }}
+          sx={{
+            color: 'text.secondary',
+            mt: 6,
+            textAlign: 'center',
+          }}
         >
           {t('app.openSource')}{' '}
           <Box

@@ -239,20 +239,37 @@ export default function CarOverviewPage({ id }: { id: number }) {
                       <Stack
                         direction="row"
                         spacing={2}
-                        alignItems="center"
-                        sx={{ py: 1.25 }}
+                        sx={{
+                          alignItems: 'center',
+                          py: 1.25,
+                        }}
                       >
                         <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-                          <Typography fontWeight={600} noWrap>
+                          <Typography
+                            noWrap
+                            sx={{
+                              fontWeight: 600,
+                            }}
+                          >
                             {bill.name}
                           </Typography>
-                          <Typography variant="body2" color="text.secondary">
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              color: 'text.secondary',
+                            }}
+                          >
                             {t('car.overview.nextDue', {
                               date: format.date(bill.nextDueDate),
                             })}
                           </Typography>
                         </Box>
-                        <Typography fontWeight={600} className="tabular">
+                        <Typography
+                          className="tabular"
+                          sx={{
+                            fontWeight: 600,
+                          }}
+                        >
                           {format.money(bill.amount)}
                         </Typography>
                       </Stack>

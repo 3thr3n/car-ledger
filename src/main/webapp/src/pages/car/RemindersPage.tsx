@@ -92,7 +92,12 @@ export default function RemindersPage({ carId }: { carId: number }) {
       )}
       {odometer !== undefined && reminders.length > 0 && (
         <Stack sx={{ mt: 1 }}>
-          <Typography variant="caption" color="text.secondary">
+          <Typography
+            variant="caption"
+            sx={{
+              color: 'text.secondary',
+            }}
+          >
             {t('reminder.odometerInfo')}
           </Typography>
         </Stack>
