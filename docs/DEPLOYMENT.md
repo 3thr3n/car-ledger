@@ -204,6 +204,8 @@ configured as in the keycloakx chart (`keycloak.ingress`).
 
 - **Health**: the management port 9000 serves `/q/health/live` and `/q/health` (used by the probes), it is not
   exposed by the ingress.
+- **HTTPS only**: the app expects TLS at the ingress, it sends the redirect URIs to the provider with https and
+  marks its cookies as secure. Over plain http the login fails.
 - **Replicas**: `carLedger.replicas` can be raised, sessions live in Infinispan and the state secret is shared.
 - **Passwords**: generated ones are in the secrets `car-ledger-postgresql` (`postgres-password`), `infinispan`,
   `keycloak-postgresql` and `keycloak-admin`.
