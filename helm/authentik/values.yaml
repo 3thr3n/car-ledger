@@ -12,6 +12,9 @@ carLedger:
   slug: car-ledger
   # The generated client secret (key "secret") and state secret (key "state-secret") are in the
   # secret car-ledger-oidc, set carLedger.auth.existingSecret of the car-ledger chart to it.
+  # Namespace of CarLedger, if it is not the one of authentik: the secret is created there as well
+  # (the namespace has to exist).
+  namespace: ""
 
 # admin, created on the first start. An empty password is generated and kept in the secret
 # authentik-bootstrap (key "password")

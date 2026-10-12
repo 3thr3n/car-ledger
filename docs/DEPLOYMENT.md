@@ -23,7 +23,8 @@ CarLedger uses standard OpenID Connect, nothing is specific to Keycloak:
 - **Keycloak** (`helm/keycloak`): the default of the car-ledger chart. The realm, the client and the secret for the
   app are set up by hand, see [below](#fresh-install-with-keycloak).
 - **authentik** (`helm/authentik`): sets up the client, the groups and the secret for the app by itself. See
-  [its README](../helm/authentik/README.md). It is not lighter than Keycloak, idle it uses about 1.1 GiB.
+  [its README](../helm/authentik/README.md). It is not lighter than Keycloak, idle it uses about 1.1 GiB. In separate
+  namespaces, set `carLedger.namespace`, so the secret is created in the namespace of the app as well.
 - **Any other provider**, e.g. an existing one. It has to offer:
 
   | Requirement                    | Details                                                                                                  |
