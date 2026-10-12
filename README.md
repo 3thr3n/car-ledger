@@ -14,6 +14,7 @@ spending and usage patterns.
     - [Adding Receipts](#adding-receipts)
     - [Deleting Receipts](#deleting-receipts)
     - [Importing Receipts via CSV](#importing-receipts-via-csv)
+    - [Exporting Receipts as CSV](#exporting-receipts-as-csv)
     - [Data Aggregation & Summarization](#data-aggregation--summarization)
 - [CSV Format](#csv-format)
 - [Tests](#tests)
@@ -25,6 +26,7 @@ spending and usage patterns.
 
 - **Add/Delete Receipts:** Easily add or delete individual refueling receipts to keep your records up-to-date.
 - **CSV Import:** Import multiple receipts at once using a CSV file, making it quick to upload historical or bulk data.
+- **CSV Export:** Export the receipts of a type as CSV, in the format of the import.
 - **Data Aggregation & Summarization:** Get insights on your fuel expenses, including:
     - Total money spent on fuel
     - Total fuel volume purchased
@@ -100,6 +102,12 @@ To start using CarLedger, follow these steps:
 ### Importing Receipts via CSV
 
 - Use the CSV import feature to upload multiple receipts at once. Ensure your file follows the specified format below.
+
+### Exporting Receipts as CSV
+
+- The lists of refuels, maintenance and other costs export their entries as CSV, all of them or of the selected year.
+- The file uses the field names of the import as header, ISO dates and a dot as decimal separator, so it can be
+  imported again without assigning the columns. Entries that exist already are skipped by the import.
 
 ### Data Aggregation & Summarization
 

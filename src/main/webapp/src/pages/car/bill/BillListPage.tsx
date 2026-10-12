@@ -1,4 +1,5 @@
-import { Box } from '@mui/material';
+import { Box, Button, Stack } from '@mui/material';
+import FileDownloadRounded from '@mui/icons-material/FileDownloadRounded';
 import { GridColDef, GridValidRowModel } from '@mui/x-data-grid';
 import { useNavigate } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
@@ -14,6 +15,7 @@ import {
   useMiscellaneousColumns,
 } from '@/components/bill/columns';
 import useDeleteBill from '@/components/bill/useDeleteBill';
+import { baseUrl } from '@/utils/QueryClient';
 
 type ListType = BillType.FUEL | BillType.MAINTENANCE | BillType.MISCELLANEOUS;
 
@@ -22,6 +24,13 @@ const kinds = {
   [BillType.MAINTENANCE]: 'maintenance',
   [BillType.MISCELLANEOUS]: 'miscellaneous',
 } as const;
+
+/** the bills of the list as CSV, in the format of the import */
+function exportUrl(carId: number, type: ListType, year?: number) {
+  const query = new URLSearchParams({ type });
+  if (year !== undefined) query.set('year', `${year}`);
+  return `${baseUrl}/api/export/${carId}?${query}`;
+}
 
 function useColumns(type: ListType) {
   const fuel = useFuelColumns();
@@ -54,13 +63,30 @@ export default function BillListPage({
 
   return (
     <Section flush>
-      <Box sx={{ px: 2.5, pt: 2, pb: 1.5 }}>
-        <YearFilter
-          years={list.years}
-          value={list.year}
-          onChange={list.setYear}
-        />
-      </Box>
+      <Stack
+        direction="row"
+        spacing={1.5}
+        sx={{ px: 2.5, pt: 2, pb: 1.5, alignItems: 'center' }}
+      >
+        <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+          <YearFilter
+            years={list.years}
+            value={list.year}
+            onChange={list.setYear}
+          />
+        </Box>
+        {list.total > 0 && (
+          <Button
+            href={exportUrl(carId, type, list.year)}
+            variant="outlined"
+            size="small"
+            startIcon={<FileDownloadRounded />}
+            sx={{ flexShrink: 0 }}
+          >
+            {t('button.export')}
+          </Button>
+        )}
+      </Stack>
       <BillTable
         rows={list.rows}
         total={list.total}

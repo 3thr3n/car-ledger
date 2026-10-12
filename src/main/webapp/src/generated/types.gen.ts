@@ -1298,6 +1298,38 @@ export type GetMyCarOverviewResponses = {
 
 export type GetMyCarOverviewResponse = GetMyCarOverviewResponses[keyof GetMyCarOverviewResponses];
 
+export type ExportCsvData = {
+    body?: never;
+    path: {
+        carId: number;
+    };
+    query?: {
+        type?: BillType;
+        year?: number;
+    };
+    url: '/api/export/{carId}';
+};
+
+export type ExportCsvErrors = {
+    /**
+     * Type missing or not exportable.
+     */
+    400: unknown;
+    /**
+     * Car not found.
+     */
+    404: unknown;
+};
+
+export type ExportCsvResponses = {
+    /**
+     * The bills as CSV.
+     */
+    200: string;
+};
+
+export type ExportCsvResponse = ExportCsvResponses[keyof ExportCsvResponses];
+
 export type ImportCsvData = {
     body: {
         file?: Blob | File;

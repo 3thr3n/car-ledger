@@ -134,4 +134,24 @@ public abstract class AbstractBillRepository<T extends AbstractBillEntity> imple
 		}
 		return typedQuery.getResultList();
 	}
+
+	/**
+	 * @return all bills of the car, optionally of one year, the oldest first
+	 */
+	public List<T> listBills(long carId, String username, Optional<Integer> year)
+	{
+		String query = "from " + entityName + " e join fetch e.bill b"
+				+ " where b.car.id = :carId and b.car.user.userId = :username";
+		Map<String, Object> params = new HashMap<>();
+		params.put("carId", carId);
+		params.put("username", username);
+
+		if (year.isPresent())
+		{
+			query += " and year(b.date) = :year";
+			params.put("year", year.get());
+		}
+
+		return find(query + " order by b.date asc, b.id asc", params).list();
+	}
 }

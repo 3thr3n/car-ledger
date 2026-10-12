@@ -1,4 +1,5 @@
 import { expect, Page, test } from '@playwright/test';
+import { readFile } from 'node:fs/promises';
 import { deleteAllCars, money } from './helpers';
 
 /**
@@ -181,6 +182,27 @@ test.describe.serial('car ledger', () => {
     await expect(column(/^Price per liter/)).toHaveText('Cent');
     await expect(column(/^Distance/)).toHaveText('Strecke');
     await expect(visibleButton('Continue')).toBeEnabled();
+  });
+
+  test('exports the refuels as CSV in the format of the import', async () => {
+    await page.goto(`${carUrl}/bill/fuel`);
+
+    const download = page.waitForEvent('download');
+    await page.getByRole('link', { name: 'Export CSV' }).click();
+    const file = await download;
+
+    expect(file.suggestedFilename()).toBe('e2e-golf-fuel.csv');
+    const lines = (await readFile(await file.path(), 'utf8'))
+      .trim()
+      .split('\n');
+    expect(lines[0]).toBe(
+      'date,total,vatRate,unit,pricePerUnit,distance,estimateConsumption',
+    );
+    // the refuel added today and the two imported ones, the oldest first
+    const dates = lines.slice(1).map((line) => line.split(',')[0]);
+    expect(dates).toHaveLength(3);
+    expect(dates.slice(0, 2)).toEqual(['2026-01-10', '2026-02-07']);
+    expect([...dates].sort()).toEqual(dates);
   });
 
   test('shows the costs on the dashboard', async () => {
