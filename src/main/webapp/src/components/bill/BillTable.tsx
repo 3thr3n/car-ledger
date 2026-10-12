@@ -14,7 +14,7 @@ import DeleteOutlineRounded from '@mui/icons-material/DeleteOutlineRounded';
 import EditOutlined from '@mui/icons-material/EditOutlined';
 import { DataGrid, GridColDef, GridValidRowModel } from '@mui/x-data-grid';
 import { deDE } from '@mui/x-data-grid/locales';
-import { Fragment, ReactNode, useState } from 'react';
+import { Fragment, ReactNode, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import EmptyState from '@/components/ui/EmptyState';
@@ -71,6 +71,12 @@ export default function BillTable<
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [toDelete, setToDelete] = useState<number>();
+  // the grid compares the sort model by reference: a new array on every render
+  // counts as a new order and sends the grid back to the first page
+  const gridSortModel = useMemo(
+    () => (sortModel ? [sortModel] : []),
+    [sortModel],
+  );
 
   const confirm = (
     <ConfirmDialog
@@ -258,7 +264,7 @@ export default function BillTable<
         disableColumnFilter
         disableColumnSorting={!onSortModelChange}
         sortingMode="server"
-        sortModel={sortModel ? [sortModel] : []}
+        sortModel={gridSortModel}
         onSortModelChange={(model) => {
           const [first] = model;
           onSortModelChange?.(
