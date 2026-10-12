@@ -9,12 +9,13 @@ import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 import de.codeflowwizardry.carledger.rest.records.input.AbstractBillInput;
+import de.codeflowwizardry.carledger.exception.CsvImportException;
 
 class CsvProcessorTest
 {
 	/**
-	 * rejects the row "invalid" like a parser, every other row fails while
-	 * saving
+	 * rejects the row "invalid" like a parser, the row "library" fails with an
+	 * exception of a library, every other row fails while saving
 	 */
 	private static class FailingImporter implements CsvImporter<AbstractBillInput>
 	{
@@ -28,7 +29,11 @@ class CsvProcessorTest
 		{
 			if ("invalid".equals(line[0]))
 			{
-				throw new IllegalArgumentException("Could not parse date 'invalid'");
+				throw new CsvImportException("Could not parse date 'invalid'");
+			}
+			if ("library".equals(line[0]))
+			{
+				throw new NumberFormatException("Character l is neither a decimal digit number, nor a decimal point");
 			}
 			return null;
 		}
@@ -44,14 +49,16 @@ class CsvProcessorTest
 	void shouldNotExposeTheMessageOfUnexpectedErrors() throws IOException
 	{
 		CsvImportResult result = new CsvProcessor<>(new FailingImporter())
-				.process(new StringReader("2024-01-01\ninvalid\n"), new CsvColumnMapping(Map.of("date", 0)), 0,
+				.process(new StringReader("2024-01-01\ninvalid\nlibrary\n"), new CsvColumnMapping(Map.of("date", 0)), 0,
 						19, 1, "peter");
 
-		assertEquals(2, result.getErrorCount());
+		assertEquals(3, result.getErrorCount());
 		// unexpected errors only point to the log, the database details stay on the
 		// server
 		assertEquals("Unexpected error, see the server log", result.getErrors().get(0).message());
 		// the messages of the parser are written for the user
 		assertEquals("Could not parse date 'invalid'", result.getErrors().get(1).message());
+		// an IllegalArgumentException of a library is no message of CarLedger
+		assertEquals("Unexpected error, see the server log", result.getErrors().get(2).message());
 	}
 }
