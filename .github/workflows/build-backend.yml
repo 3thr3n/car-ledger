@@ -81,3 +81,37 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+
+  # The chart of this build: version <major>.<minor>.<run number> of Chart.yaml, its default image is the one
+  # pushed above, so a published chart never points to an older image.
+  chart:
+    needs: build
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && github.actor != 'dependabot[bot]' }}
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Package the chart
+        id: package
+        env:
+          IMAGE_TAG: ${{ github.run_number }}
+        run: |
+          BASE=$(sed -n 's/^version: *//p' helm/car-ledger/Chart.yaml)
+          VERSION="${BASE%.*}.${IMAGE_TAG}"
+          helm dependency update helm/car-ledger
+          helm package helm/car-ledger --version "$VERSION" --app-version "$IMAGE_TAG" --destination chart-dist
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "file=$(ls chart-dist/*.tgz)" >> "$GITHUB_OUTPUT"
+
+      - name: Push the chart
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "$TOKEN" | helm registry login ghcr.io -u "${{ github.actor }}" --password-stdin
+          helm push "${{ steps.package.outputs.file }}" "oci://${{ env.REGISTRY }}/${{ github.repository }}"
+          echo "Chart ${{ steps.package.outputs.version }} with image ${{ github.run_number }}" >> "$GITHUB_STEP_SUMMARY"

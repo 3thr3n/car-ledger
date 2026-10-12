@@ -18,7 +18,7 @@ spec:
       serviceAccountName: "car-ledger-sa"
       containers:
         - name: car-ledger
-          image: "{{ .Values.carLedger.image.repository }}:{{ .Values.carLedger.image.tag }}"
+          image: "{{ .Values.carLedger.image.repository }}:{{ .Values.carLedger.image.tag | default .Chart.AppVersion }}"
           securityContext:
             {{- toYaml .Values.carLedger.securityContext | nindent 12 }}
           ports:
