@@ -202,8 +202,12 @@ configured as in the keycloakx chart (`keycloak.ingress`).
 
 ## Operations
 
-- **Health**: the management port 9000 serves `/q/health/live` and `/q/health` (used by the probes), it is not
-  exposed by the ingress.
+- **Health**: the management port 9000 serves `/q/health/started`, `/q/health/live` and `/q/health` (used by the
+  probes), it is not exposed by the ingress.
+- **Slow start**: the startup probe allows 150 s (`carLedger.startupProbe.failureThreshold` 30 × `periodSeconds` 5)
+  before Kubernetes restarts the pod, liveness and readiness only start afterwards. Raise the threshold on slow
+  nodes, or the CPU limit (`carLedger.resources`, 350m by default): the start takes most of its time on CPU.
+  `carLedger.livenessProbe` and `carLedger.readinessProbe` are configurable the same way.
 - **HTTPS only**: the app expects TLS at the ingress, it sends the redirect URIs to the provider with https and
   marks its cookies as secure. Over plain http the login fails.
 - **Replicas**: `carLedger.replicas` can be raised, sessions live in Infinispan and the state secret is shared.
