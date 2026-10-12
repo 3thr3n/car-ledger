@@ -50,11 +50,20 @@ export default function RecurringListPage({ carId }: { carId: number }) {
       <Stack
         direction={{ xs: 'column', sm: 'row' }}
         spacing={1}
-        alignItems={{ sm: 'center' }}
-        justifyContent="space-between"
-        sx={{ px: 2.5, pt: 1.5, pb: 1 }}
+        sx={{
+          alignItems: { sm: 'center' },
+          justifyContent: 'space-between',
+          px: 2.5,
+          pt: 1.5,
+          pb: 1,
+        }}
       >
-        <Typography variant="body2" color="text.secondary">
+        <Typography
+          variant="body2"
+          sx={{
+            color: 'text.secondary',
+          }}
+        >
           {t('bill.recurringInfo')}
         </Typography>
         <FormControlLabel

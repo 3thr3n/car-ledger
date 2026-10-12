@@ -85,11 +85,20 @@ function DoneForm({
           <Stack
             direction="row"
             spacing={1}
-            alignItems="center"
-            sx={{ mb: 1, '& svg': { fontSize: 18 } }}
+            sx={{
+              alignItems: 'center',
+              mb: 1,
+              '& svg': { fontSize: 18 },
+            }}
           >
             <RepeatRounded color="primary" />
-            <Typography fontWeight={600}>{repeat}</Typography>
+            <Typography
+              sx={{
+                fontWeight: 600,
+              }}
+            >
+              {repeat}
+            </Typography>
           </Stack>
         )}
         <DialogContentText sx={{ mb: 2.5 }}>

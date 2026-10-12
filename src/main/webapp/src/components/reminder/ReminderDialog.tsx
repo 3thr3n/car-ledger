@@ -168,7 +168,14 @@ function ReminderForm({
       <DialogContent>
         <Stack spacing={2.5} sx={{ pt: 1 }}>
           {!reminder && (
-            <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
+            <Stack
+              direction="row"
+              spacing={1}
+              useFlexGap
+              sx={{
+                flexWrap: 'wrap',
+              }}
+            >
               {presets.map((preset) => (
                 <Chip
                   key={preset.key}
@@ -230,7 +237,13 @@ function ReminderForm({
             <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
               {t('reminder.fields.repeat')}
             </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+            <Typography
+              variant="body2"
+              sx={{
+                color: 'text.secondary',
+                mb: 1.5,
+              }}
+            >
               {t('reminder.repeatHint')}
             </Typography>
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>

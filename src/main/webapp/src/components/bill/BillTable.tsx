@@ -81,9 +81,11 @@ export default function BillTable<
     <Stack
       direction="row"
       spacing={0.25}
-      alignItems="center"
-      justifyContent="flex-end"
-      sx={{ height: '100%' }}
+      sx={{
+        alignItems: 'center',
+        justifyContent: 'flex-end',
+        height: '100%',
+      }}
     >
       {rowActions?.(row)}
       {onEdit && (
@@ -145,17 +147,37 @@ export default function BillTable<
               <Stack
                 direction="row"
                 spacing={1.5}
-                alignItems="center"
-                sx={{ px: 2, py: 1.5 }}
+                sx={{
+                  alignItems: 'center',
+                  px: 2,
+                  py: 1.5,
+                }}
               >
                 <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-                  <Typography fontWeight={600} noWrap>
+                  <Typography
+                    noWrap
+                    sx={{
+                      fontWeight: 600,
+                    }}
+                  >
                     {item.primary}
                   </Typography>
-                  <Stack direction="row" spacing={1} alignItems="center">
+                  <Stack
+                    direction="row"
+                    spacing={1}
+                    sx={{
+                      alignItems: 'center',
+                    }}
+                  >
                     {item.badge}
                     {item.secondary && (
-                      <Typography variant="body2" color="text.secondary" noWrap>
+                      <Typography
+                        variant="body2"
+                        noWrap
+                        sx={{
+                          color: 'text.secondary',
+                        }}
+                      >
                         {item.secondary}
                       </Typography>
                     )}
@@ -163,9 +185,11 @@ export default function BillTable<
                 </Box>
                 {item.amount && (
                   <Typography
-                    fontWeight={650}
                     className="tabular"
-                    sx={{ flexShrink: 0 }}
+                    sx={{
+                      fontWeight: 650,
+                      flexShrink: 0,
+                    }}
                   >
                     {item.amount}
                   </Typography>
@@ -176,7 +200,12 @@ export default function BillTable<
           );
         })}
         {pages > 1 && (
-          <Stack alignItems="center" sx={{ py: 2 }}>
+          <Stack
+            sx={{
+              alignItems: 'center',
+              py: 2,
+            }}
+          >
             <Pagination
               count={pages}
               page={pageModel.page + 1}

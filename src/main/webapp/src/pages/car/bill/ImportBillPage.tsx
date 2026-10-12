@@ -162,7 +162,13 @@ export default function ImportBillPage({
           <Step>
             <StepLabel>{t('import.steps.type')}</StepLabel>
             <StepContent>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              <Typography
+                variant="body2"
+                sx={{
+                  color: 'text.secondary',
+                  mb: 2,
+                }}
+              >
                 {t('import.typeHint')}
               </Typography>
               <ToggleButtonGroup
@@ -199,7 +205,13 @@ export default function ImportBillPage({
               {t('import.steps.file')}
             </StepLabel>
             <StepContent>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+              <Typography
+                variant="body2"
+                sx={{
+                  color: 'text.secondary',
+                  mb: 1,
+                }}
+              >
                 {t('import.fileHint')}
               </Typography>
               {allFields.length > 0 && (
@@ -207,8 +219,10 @@ export default function ImportBillPage({
                   direction="row"
                   spacing={0.75}
                   useFlexGap
-                  flexWrap="wrap"
-                  sx={{ mb: 2 }}
+                  sx={{
+                    flexWrap: 'wrap',
+                    mb: 2,
+                  }}
                 >
                   {allFields.map((field) => (
                     <Chip
@@ -242,7 +256,13 @@ export default function ImportBillPage({
           <Step>
             <StepLabel>{t('import.steps.mapping')}</StepLabel>
             <StepContent>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              <Typography
+                variant="body2"
+                sx={{
+                  color: 'text.secondary',
+                  mb: 2,
+                }}
+              >
                 {t('import.mappingHint', { count: headers.length })}
               </Typography>
               {restored && (
@@ -365,9 +385,20 @@ function ImportSummary({ result }: { result: CsvImportResult }) {
 
   return (
     <Box>
-      <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1.5 }}>
+      <Stack
+        direction="row"
+        spacing={1}
+        sx={{
+          alignItems: 'center',
+          mb: 1.5,
+        }}
+      >
         <CheckCircleRounded color="success" />
-        <Typography fontWeight={600}>
+        <Typography
+          sx={{
+            fontWeight: 600,
+          }}
+        >
           {t('import.result.success', { count: result.successCount ?? 0 })}
         </Typography>
       </Stack>
@@ -398,7 +429,7 @@ function ImportSummary({ result }: { result: CsvImportResult }) {
                       primary: {
                         color:
                           row.severity === 'error' ? 'error' : 'text.secondary',
-                        fontWeight: 600,
+                        sx: { fontWeight: 600 },
                       },
                     }}
                   />

@@ -87,8 +87,11 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
       <Stack
         direction="row"
         spacing={1.25}
-        alignItems="center"
-        sx={{ px: 2.5, py: 2.25 }}
+        sx={{
+          alignItems: 'center',
+          px: 2.5,
+          py: 2.25,
+        }}
       >
         <Box component="img" src={productLogo} alt="" sx={{ height: 30 }} />
         <Typography
@@ -187,7 +190,7 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
                       count: car.amountBills ?? 0,
                     })}
                     slotProps={{
-                      primary: { noWrap: true, fontWeight: 500 },
+                      primary: { noWrap: true, sx: { fontWeight: 500 } },
                       secondary: { noWrap: true, variant: 'caption' },
                     }}
                   />
@@ -212,7 +215,13 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
 
       <Divider />
       <Stack spacing={1.5} sx={{ p: 2 }}>
-        <Stack direction="row" spacing={1} alignItems="center">
+        <Stack
+          direction="row"
+          spacing={1}
+          sx={{
+            alignItems: 'center',
+          }}
+        >
           <ToggleButtonGroup
             size="small"
             exclusive
@@ -235,12 +244,29 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
         </Stack>
 
         {loggedIn ? (
-          <Stack direction="row" spacing={1} alignItems="center">
+          <Stack
+            direction="row"
+            spacing={1}
+            sx={{
+              alignItems: 'center',
+            }}
+          >
             <Box sx={{ minWidth: 0, flexGrow: 1 }}>
-              <Typography variant="caption" color="text.secondary">
+              <Typography
+                variant="caption"
+                sx={{
+                  color: 'text.secondary',
+                }}
+              >
                 {t('nav.signedInAs')}
               </Typography>
-              <Typography variant="body2" fontWeight={600} noWrap>
+              <Typography
+                variant="body2"
+                noWrap
+                sx={{
+                  fontWeight: 600,
+                }}
+              >
                 {account?.name}
               </Typography>
             </Box>

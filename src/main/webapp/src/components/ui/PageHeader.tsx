@@ -18,13 +18,21 @@ export default function PageHeader({
     <Stack
       direction={{ xs: 'column', sm: 'row' }}
       spacing={2}
-      alignItems={{ xs: 'stretch', sm: 'flex-end' }}
-      justifyContent="space-between"
-      sx={{ mb: 3 }}
+      sx={{
+        alignItems: { xs: 'stretch', sm: 'flex-end' },
+        justifyContent: 'space-between',
+        mb: 3,
+      }}
     >
       <Box sx={{ minWidth: 0 }}>
         {eyebrow && (
-          <Typography variant="overline" color="text.secondary" component="div">
+          <Typography
+            variant="overline"
+            component="div"
+            sx={{
+              color: 'text.secondary',
+            }}
+          >
             {eyebrow}
           </Typography>
         )}
@@ -32,7 +40,12 @@ export default function PageHeader({
           {title}
         </Typography>
         {subtitle && (
-          <Typography color="text.secondary" sx={{ mt: 0.5 }}>
+          <Typography
+            sx={{
+              color: 'text.secondary',
+              mt: 0.5,
+            }}
+          >
             {subtitle}
           </Typography>
         )}

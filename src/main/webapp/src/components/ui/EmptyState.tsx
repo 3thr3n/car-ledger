@@ -18,10 +18,13 @@ export default function EmptyState({
 }: EmptyStateProps) {
   return (
     <Stack
-      alignItems="center"
-      textAlign="center"
       spacing={1}
-      sx={{ py: compact ? 3 : 6, px: 2 }}
+      sx={{
+        alignItems: 'center',
+        textAlign: 'center',
+        py: compact ? 3 : 6,
+        px: 2,
+      }}
     >
       {icon && (
         <Box
@@ -35,11 +38,22 @@ export default function EmptyState({
           {icon}
         </Box>
       )}
-      <Typography variant="subtitle1" fontWeight={600}>
+      <Typography
+        variant="subtitle1"
+        sx={{
+          fontWeight: 600,
+        }}
+      >
         {title}
       </Typography>
       {text && (
-        <Typography variant="body2" color="text.secondary" maxWidth={420}>
+        <Typography
+          variant="body2"
+          sx={{
+            color: 'text.secondary',
+            maxWidth: 420,
+          }}
+        >
           {text}
         </Typography>
       )}

@@ -97,21 +97,30 @@ export default function CarLayout({ id }: { id: number }) {
             <Stack
               direction={{ xs: 'column', sm: 'row' }}
               spacing={2}
-              alignItems={{ xs: 'flex-start', sm: 'center' }}
-              sx={{ mb: 2.5 }}
+              sx={{
+                alignItems: { xs: 'flex-start', sm: 'center' },
+                mb: 2.5,
+              }}
             >
               <Stack
                 direction="row"
                 spacing={2}
-                alignItems="center"
-                sx={{ flexGrow: 1, minWidth: 0 }}
+                sx={{
+                  alignItems: 'center',
+                  flexGrow: 1,
+                  minWidth: 0,
+                }}
               >
                 <CarAvatar id={car?.id} name={car?.name} size={52} />
                 <Box sx={{ minWidth: 0 }}>
                   <Typography variant="h4" component="h1" noWrap>
                     {isLoading ? <Skeleton width={220} /> : car?.name}
                   </Typography>
-                  <Typography color="text.secondary">
+                  <Typography
+                    sx={{
+                      color: 'text.secondary',
+                    }}
+                  >
                     {isLoading ? (
                       <Skeleton width={160} />
                     ) : (
