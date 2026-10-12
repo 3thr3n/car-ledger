@@ -785,6 +785,10 @@
           }
         }
       },
+      "RecurringBillSort" : {
+        "type" : "string",
+        "enum" : [ "ACTIVE", "NEXT_DUE" ]
+      },
       "Reminder" : {
         "type" : "object",
         "required" : [ "id", "carId", "carName", "title", "status", "odometer" ],
@@ -2188,6 +2192,16 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 10
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "schema" : {
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/RecurringBillSort"
+            }, {
+              "default" : "ACTIVE"
+            } ]
           }
         } ],
         "responses" : {

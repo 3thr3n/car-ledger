@@ -46,14 +46,15 @@ public class RecurringResource extends AbstractResource
 	public BillPaged<RecurringBill> getAllRecurringBills(@PathParam("carId") long carId,
 			@QueryParam("page") @DefaultValue("1") int page,
 			@QueryParam("size") @DefaultValue("10") int size,
-			@QueryParam("onlyRunning") boolean running)
+			@QueryParam("onlyRunning") boolean running,
+			@QueryParam("sort") @DefaultValue("ACTIVE") RecurringBillSort sort)
 	{
 		page = toPageNumber(page);
 		size = toPageSize(size);
 		Page queryPage = new Page(page - 1, size);
 
 		PanacheQuery<RecurringBillEntity> all = recurringBillRepository.getAll(carId, context.getName(), queryPage,
-				running);
+				running, sort == RecurringBillSort.NEXT_DUE);
 
 		return new BillPaged<>(all.count(), page, size, RecurringBill.convert(all.list()));
 	}

@@ -16,7 +16,7 @@ import {
   getRemindersOptions,
 } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
-import { BillType } from '@/generated';
+import { BillType, RecurringBillSort } from '@/generated';
 import { toApiDate, useFormat } from '@/utils/format';
 import useBillList from '@/hooks/useBillList';
 import StatTile from '@/components/ui/StatTile';
@@ -54,7 +54,13 @@ export default function CarOverviewPage({ id }: { id: number }) {
     getAllRecurringBillsOptions({
       client: localClient,
       path: { carId: id },
-      query: { onlyRunning: true, page: 1, size: 5 },
+      // the next due payment on top
+      query: {
+        onlyRunning: true,
+        sort: RecurringBillSort.NEXT_DUE,
+        page: 1,
+        size: 5,
+      },
     }),
   );
 

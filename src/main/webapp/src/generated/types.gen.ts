@@ -291,6 +291,11 @@ export type RecurringBillInput = {
     amount?: number;
 };
 
+export enum RecurringBillSort {
+    ACTIVE = 'ACTIVE',
+    NEXT_DUE = 'NEXT_DUE'
+}
+
 export type Reminder = {
     id: number;
     carId: number;
@@ -1008,6 +1013,7 @@ export type GetAllRecurringBillsData = {
         onlyRunning?: boolean;
         page?: number;
         size?: number;
+        sort?: RecurringBillSort & unknown;
     };
     url: '/api/bill/{carId}/recurring';
 };

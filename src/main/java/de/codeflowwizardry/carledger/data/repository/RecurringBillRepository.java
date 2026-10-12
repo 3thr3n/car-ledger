@@ -15,7 +15,19 @@ import jakarta.transaction.Transactional;
 @ApplicationScoped
 public class RecurringBillRepository implements PanacheRepository<RecurringBillEntity>
 {
-	public PanacheQuery<RecurringBillEntity> getAll(long carId, String name, Page queryPage, boolean running)
+	/**
+	 * a bill is running until its next payment would be on or after the end date
+	 */
+	private static final String RUNNING = "(endDate is null or nextDueDate < endDate)";
+
+	/**
+	 * @param byNextDue
+	 *            the next due payment first, otherwise running bills before
+	 *            finished ones, the newest (by id, ids are assigned in order of
+	 *            creation) first
+	 */
+	public PanacheQuery<RecurringBillEntity> getAll(long carId, String name, Page queryPage, boolean running,
+			boolean byNextDue)
 	{
 		Map<String, Object> params = new HashMap<>();
 		String query = "car.id = :carId and car.user.userId = :username";
@@ -24,10 +36,16 @@ public class RecurringBillRepository implements PanacheRepository<RecurringBillE
 
 		if (running)
 		{
-			query += " and (nextDueDate < endDate or endDate is null)";
+			query += " and " + RUNNING;
 		}
 
-		query += " order by nextDueDate desc";
+		if (byNextDue)
+		{
+			query += " order by nextDueDate asc, id asc";
+		} else
+		{
+			query += " order by case when " + RUNNING + " then 0 else 1 end, id desc";
+		}
 
 		return find(query, params).page(queryPage);
 	}
