@@ -7,7 +7,7 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 /**
  * @param odometer
  *            current odometer of the car, see
- *            {@link de.codeflowwizardry.carledger.data.repository.ReminderRepository#currentOdometers}
+ *            {@link de.codeflowwizardry.carledger.OdometerService}
  * @param daysLeft
  *            negative when overdue, missing without a due date
  * @param kmLeft

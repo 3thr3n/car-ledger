@@ -304,11 +304,18 @@
             "type" : "integer",
             "format" : "int32"
           },
+          "odometerDate" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          },
+          "currentOdometer" : {
+            "$ref" : "#/components/schemas/Odometer"
+          },
           "amountBills" : {
             "type" : "integer",
             "format" : "int64"
           }
-        }
+        },
+        "required" : [ "currentOdometer" ]
       },
       "CarInput" : {
         "type" : "object",
@@ -675,6 +682,28 @@
           },
           "costPerKm" : {
             "type" : "number"
+          }
+        }
+      },
+      "Odometer" : {
+        "type" : "object",
+        "required" : [ "value", "reading", "readingDate", "driven" ],
+        "properties" : {
+          "value" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "reading" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "readingDate" : {
+            "type" : "string",
+            "$ref" : "#/components/schemas/LocalDate"
+          },
+          "driven" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         }
       },

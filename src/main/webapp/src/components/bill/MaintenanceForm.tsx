@@ -1,11 +1,12 @@
 import { Grid, Stack, TextField } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import dayjs, { Dayjs } from 'dayjs';
 import { FormEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BillType, MaintenanceBill } from '@/generated';
 import {
+  getMyCarOptions,
   addNewMaintenanceBillMutation,
   updateMaintenanceBillMutation,
 } from '@/generated/@tanstack/react-query.gen';
@@ -55,6 +56,9 @@ export default function MaintenanceForm({
 }) {
   const { t } = useTranslation();
   const format = useFormat();
+  const { data: car } = useQuery(
+    getMyCarOptions({ client: localClient, path: { id: carId } }),
+  );
   const vat = useVatCountry(bill?.vatRate);
   const [form, setForm] = useState<MaintenanceState>(() =>
     bill ? fromBill(bill) : empty(),
@@ -149,6 +153,12 @@ export default function MaintenanceForm({
             decimalScale={0}
             suffix=" km"
             max={10_000_000}
+            helperText={
+              car &&
+              t('bill.currentOdometer', {
+                km: format.unit(car.currentOdometer.value, 'km', 0),
+              })
+            }
           />
         </Grid>
         <Grid size={12}>

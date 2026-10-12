@@ -125,6 +125,7 @@ garage:
   entries_other: "{{count}} Einträge"
 
 car:
+  odometerEstimated: "Letzter Stand {{reading}} am {{date}}, plus {{driven}} aus den Tankfüllungen seitdem"
   built: "Baujahr {{year}}"
   odometer: "Kilometerstand"
   tabs:
@@ -165,7 +166,8 @@ car:
     namePlaceholder: "z. B. VW Golf 1.5 TSI"
     year: "Baujahr"
     odometer: "Kilometerstand"
-    odometerHelp: "Kilometerstand zu Beginn der Erfassung"
+    odometerHelp: "Aktueller Kilometerstand. Die Strecken deiner Tankfüllungen ab morgen werden hinzugerechnet."
+    odometerHelpEdit: "Geschätzt aus dem letzten Stand und den Tankfüllungen seitdem. Eine Änderung speichert einen neuen Stand ab heute."
     saved: "Fahrzeug angelegt"
     updated: "Fahrzeug aktualisiert"
     errors:
@@ -174,6 +176,7 @@ car:
       odometer: "Bitte einen positiven Kilometerstand eingeben"
 
 bill:
+  currentOdometer: "Aktuell etwa {{km}}"
   types:
     FUEL: "Tanken"
     MAINTENANCE: "Wartung"
@@ -402,7 +405,7 @@ reminder:
   dueHint: "Ein Datum, ein Kilometerstand oder beides, was zuerst eintritt."
   repeatHint: "Optional. Wenn erledigt, ist sie nach diesem Intervall wieder fällig."
   currentOdometer: "Aktuell {{km}}"
-  odometerInfo: "Der Kilometerstand ist der des Autos oder der letzten Wartung, je nachdem, welcher höher ist."
+  odometerInfo: "Der Kilometerstand wird aus dem letzten Stand des Autos oder einer Wartung und den Strecken der Tankfüllungen seitdem geschätzt."
   errors:
     due: "Gib ein Datum oder einen Kilometerstand an."
     intervalMonths: "Braucht ein Fälligkeitsdatum."

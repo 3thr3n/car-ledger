@@ -205,8 +205,9 @@ class RecurringResourceTest
 				 }
 				""";
 
+		// not the car of peter, a fixed id would depend on the id sequence
 		given()
-				.pathParam("carId", 99)
+				.pathParam("carId", carId + 1)
 				.body(body)
 				.accept(ContentType.JSON)
 				.contentType(ContentType.JSON)

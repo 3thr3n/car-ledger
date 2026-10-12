@@ -125,6 +125,7 @@ garage:
   entries_other: "{{count}} entries"
 
 car:
+  odometerEstimated: "Last reading {{reading}} on {{date}}, plus {{driven}} from the refuels since"
   built: "Built {{year}}"
   odometer: "Odometer"
   tabs:
@@ -165,7 +166,8 @@ car:
     namePlaceholder: "e.g. VW Golf 1.5 TSI"
     year: "Year of manufacture"
     odometer: "Odometer"
-    odometerHelp: "Mileage when you started tracking"
+    odometerHelp: "Current mileage. The distances of your refuels from tomorrow on are added to it."
+    odometerHelpEdit: "Estimated from the last reading and the refuels since. Changing it saves a new reading as of today."
     saved: "Car added"
     updated: "Car updated"
     errors:
@@ -174,6 +176,7 @@ car:
       odometer: "Please enter a positive mileage"
 
 bill:
+  currentOdometer: "Currently about {{km}}"
   types:
     FUEL: "Fuel"
     MAINTENANCE: "Maintenance"
@@ -402,7 +405,7 @@ reminder:
   dueHint: "A date, a mileage or both, whichever comes first."
   repeatHint: "Optional. When done, it is due again after this interval."
   currentOdometer: "Currently {{km}}"
-  odometerInfo: "The mileage is the one of the car or of the latest maintenance, whichever is higher."
+  odometerInfo: "The mileage is estimated from the latest reading of the car or a maintenance, plus the distances of the refuels since."
   errors:
     due: "Enter a date or a mileage."
     intervalMonths: "Needs a due date."

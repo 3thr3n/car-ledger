@@ -1,5 +1,7 @@
 package de.codeflowwizardry.carledger.data;
 
+import java.time.LocalDate;
+
 import jakarta.persistence.*;
 
 @Entity(name = "Car")
@@ -14,6 +16,9 @@ public class CarEntity
 	private int manufactureYear;
 	@Column(name = "c_odometer", nullable = false)
 	private int odometer = 0;
+	/** day of the odometer reading, refuels after it are added to it */
+	@Column(name = "c_odometer_date", nullable = false)
+	private LocalDate odometerDate = LocalDate.now();
 
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "c_user_id", nullable = false)
@@ -62,5 +67,15 @@ public class CarEntity
 	public void setUser(AccountEntity user)
 	{
 		this.user = user;
+	}
+
+	public LocalDate getOdometerDate()
+	{
+		return odometerDate;
+	}
+
+	public void setOdometerDate(LocalDate odometerDate)
+	{
+		this.odometerDate = odometerDate;
 	}
 }

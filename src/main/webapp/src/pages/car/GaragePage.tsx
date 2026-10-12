@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { getMyCarsOptions } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
-import { useFormat } from '@/utils/format';
+import OdometerValue from '@/components/ui/OdometerValue';
 import useMe from '@/hooks/useMe';
 import Page from '@/components/layout/Page';
 import PageHeader from '@/components/ui/PageHeader';
@@ -14,7 +14,6 @@ import ErrorPage from '@/pages/ErrorPage';
 
 export default function GaragePage() {
   const { t } = useTranslation();
-  const format = useFormat();
   const { maxCars } = useMe();
 
   const {
@@ -81,7 +80,7 @@ export default function GaragePage() {
                       {t('car.odometer')}
                     </Typography>
                     <Typography fontWeight={600} className="tabular">
-                      {format.unit(car.odometer, 'km', 0)}
+                      <OdometerValue odometer={car.currentOdometer} />
                     </Typography>
                   </Box>
                   <Box>
