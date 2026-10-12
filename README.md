@@ -168,37 +168,10 @@ dependencies:
     repository: oci://ghcr.io/3thr3n/car-ledger
 ```
 
-The chart in `helm/keycloak` deploys Keycloak (via the [keycloakx chart](https://github.com/codecentric/helm-charts/tree/master/charts/keycloakx))
-together with its own PostgreSQL. Set at least `keycloak.hostname`.
+The chart in `helm/keycloak` deploys Keycloak together with its own PostgreSQL.
 
-Notes:
-
-- Passwords (PostgreSQL, Infinispan, Keycloak admin) are generated on the first install and kept on upgrades.
-- Instead of an ingress, a Gateway API `HTTPRoute` can be used (`httpRoute.enabled` / `keycloak.httpRoute.enabled`),
-  ingress-nginx is retired.
-- Infinispan runs with the 15.2 image, as 16.x needs a CPU with x86-64-v3 support (not offered e.g. by VMs with the
-  default QEMU CPU model). Set `infinispan.images.server` to `quay.io/infinispan/server:16.2` if your nodes support it.
-
-### Upgrading from 0.1.x (bitnami)
-
-PostgreSQL and Keycloak now use the official images. The existing PostgreSQL volumes are reused and Keycloak migrates
-its database on the first start, which can take a few minutes. As the StatefulSets changed, delete them once before
-the upgrade, their volumes are kept:
-
-```bash
-# car-ledger chart
-kubectl delete statefulset <release>-postgresql
-helm upgrade ...
-
-# keycloak chart: the database of the bitnami Keycloak (26.0/26.1) can not be migrated to 26.7 directly,
-# upgrade to 26.6 first and to the default version afterwards
-kubectl delete statefulset keycloak keycloak-postgresql
-helm upgrade ... --set keycloak.image.tag=26.6
-helm upgrade ...
-```
-
-The values of the keycloak chart changed: `keycloak.ingress.hostname` is now `keycloak.hostname`, the ingress is
-configured as in the keycloakx chart (`keycloak.ingress`).
+See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for a fresh install (including the Keycloak realm and the secret the app
+needs), the checklist for upgrading and the upgrade from the bitnami based charts.
 
 ## License
 
