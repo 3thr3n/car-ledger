@@ -6,13 +6,14 @@ jobs:
 
     strategy:
       matrix:
-        node_version: [ 20, 22, 24 ]
+        # vitest needs ^22.12.0 || ^24 || >=26, Node 20 is end of life
+        node_version: [ 22, 24 ]
 
     steps:
     - uses: actions/checkout@v4
 
     - name: Use Node.js ${{ matrix.node_version }}
-      uses: actions/setup-node@v1
+      uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node_version }}
 
