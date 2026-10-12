@@ -2619,6 +2619,54 @@
         "tags" : [ "Car Resource" ]
       }
     },
+    "/api/export/{carId}" : {
+      "get" : {
+        "description" : "Exports the bills of one type as CSV, in the format of the import: the header names the fields of the import, ISO dates, a dot as decimal separator. The oldest bill comes first.",
+        "operationId" : "exportCsv",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "type",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/BillType"
+          }
+        }, {
+          "name" : "year",
+          "in" : "query",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "The bills as CSV.",
+            "content" : {
+              "text/csv" : {
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Type missing or not exportable."
+          },
+          "404" : {
+            "description" : "Car not found."
+          }
+        },
+        "summary" : "Export Csv",
+        "tags" : [ "Export Resource" ]
+      }
+    },
     "/api/import/{carId}" : {
       "post" : {
         "description" : "This is the description for the import of an csv of your fuel entities.<br />\n<br />\nYou need to add the csv and the order in the csv (starts with 0).<br />\nseparator between columns is ',' (comma)\n",

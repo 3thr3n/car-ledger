@@ -16,6 +16,7 @@ button:
   delete: "Delete"
   edit: "Edit"
   import: "Import CSV"
+  export: "Export CSV"
   login: "Log in"
   logout: "Log out"
 
