@@ -1,15 +1,63 @@
-# To get started with Dependabot version updates, you'll need to specify which
-# package ecosystems to update and where the package manifests are located.
-# Please see the documentation for all configuration options:
+# Dependabot version updates, see
 # https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+#
+# - cooldown: only versions released at least 14 days ago are proposed, a compromised release is usually found by
+#   then. Security updates are not delayed by it.
+# - groups: minor and patch updates come in one pull request per ecosystem, major updates one by one
 
 version: 2
 updates:
-  - package-ecosystem: "maven" # See documentation for possible values
-    directory: "/" # Location of package manifests
+  - package-ecosystem: "maven"
+    directory: "/"
     schedule:
       interval: "weekly"
-  - package-ecosystem: "npm" # See documentation for possible values
-    directory: "/src/main/webapp" # Location of package manifests
+    cooldown:
+      default-days: 14
+    groups:
+      maven-minor-patch:
+        update-types: [ "minor", "patch" ]
+
+  - package-ecosystem: "npm"
+    directory: "/src/main/webapp"
     schedule:
       interval: "weekly"
+    cooldown:
+      default-days: 14
+    groups:
+      npm-minor-patch:
+        update-types: [ "minor", "patch" ]
+
+  # base images of src/main/docker/Dockerfile.*
+  - package-ecosystem: "docker"
+    directory: "/src/main/docker"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 14
+    groups:
+      docker-minor-patch:
+        update-types: [ "minor", "patch" ]
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 14
+    groups:
+      actions-minor-patch:
+        update-types: [ "minor", "patch" ]
+
+  # chart dependencies (infinispan, keycloakx, authentik)
+  - package-ecosystem: "helm"
+    directories:
+      - "/helm/car-ledger"
+      - "/helm/keycloak"
+      - "/helm/authentik"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 14
+    groups:
+      helm-minor-patch:
+        update-types: [ "minor", "patch" ]
