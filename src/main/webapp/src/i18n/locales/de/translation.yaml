@@ -106,6 +106,7 @@ dashboard:
     fuel: "Kraftstoff"
     pricePerUnit: "Kraftstoffpreis"
     consumption: "Verbrauch"
+    tooltipTotal: "{{month}} · Gesamt {{total}}"
     empty:
       costs: "Keine Kosten in diesem Zeitraum"
       fuel: "Keine Tankfüllungen in diesem Zeitraum"
