@@ -152,6 +152,8 @@ export default function CarOverviewPage({ id }: { id: number }) {
               mobileRow={mobileRow}
               pageModel={ledger.pageModel}
               onPageModelChange={ledger.setPageModel}
+              sortModel={ledger.sortModel}
+              onSortModelChange={ledger.setSortModel}
               loading={ledger.isLoading || ledger.isFetching}
               onDelete={onDelete}
               onEdit={(row) =>

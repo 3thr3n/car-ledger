@@ -68,6 +68,8 @@ export default function BillListPage({
         mobileRow={mobileRow}
         pageModel={list.pageModel}
         onPageModelChange={list.setPageModel}
+        sortModel={list.sortModel}
+        onSortModelChange={list.setSortModel}
         loading={list.isLoading || list.isFetching}
         onDelete={onDelete}
         onEdit={(row) =>

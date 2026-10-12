@@ -338,6 +338,11 @@ export type SettingsInput = {
     language?: string;
 };
 
+export enum SortOrder {
+    ASC = 'ASC',
+    DESC = 'DESC'
+}
+
 export type TotalStats = {
     unit?: number;
     trackedDistance?: number;
@@ -525,11 +530,23 @@ export type GetAllBillsData = {
         carId: number;
     };
     query?: {
+        order?: SortOrder & unknown;
         page?: number;
         size?: number;
+        /**
+         * Field to sort by, the bills are sorted by date if equal
+         */
+        sort?: string;
         year?: number;
     };
     url: '/api/bill/{carId}/all';
+};
+
+export type GetAllBillsErrors = {
+    /**
+     * The bills cannot be sorted by the field.
+     */
+    400: unknown;
 };
 
 export type GetAllBillsResponses = {
@@ -580,11 +597,23 @@ export type GetAllFuelBillsData = {
         carId: number;
     };
     query?: {
+        order?: SortOrder & unknown;
         page?: number;
         size?: number;
+        /**
+         * Field to sort by, the bills are sorted by date if equal
+         */
+        sort?: string;
         year?: number;
     };
     url: '/api/bill/{carId}/fuel/all';
+};
+
+export type GetAllFuelBillsErrors = {
+    /**
+     * The bills cannot be sorted by the field.
+     */
+    400: unknown;
 };
 
 export type GetAllFuelBillsResponses = {
@@ -715,11 +744,23 @@ export type GetAllMaintenanceBillsData = {
         carId: number;
     };
     query?: {
+        order?: SortOrder & unknown;
         page?: number;
         size?: number;
+        /**
+         * Field to sort by, the bills are sorted by date if equal
+         */
+        sort?: string;
         year?: number;
     };
     url: '/api/bill/{carId}/maintenance/all';
+};
+
+export type GetAllMaintenanceBillsErrors = {
+    /**
+     * The bills cannot be sorted by the field.
+     */
+    400: unknown;
 };
 
 export type GetAllMaintenanceBillsResponses = {
@@ -850,11 +891,23 @@ export type GetAllMiscellaneousBillsData = {
         carId: number;
     };
     query?: {
+        order?: SortOrder & unknown;
         page?: number;
         size?: number;
+        /**
+         * Field to sort by, the bills are sorted by date if equal
+         */
+        sort?: string;
         year?: number;
     };
     url: '/api/bill/{carId}/miscellaneous/all';
+};
+
+export type GetAllMiscellaneousBillsErrors = {
+    /**
+     * The bills cannot be sorted by the field.
+     */
+    400: unknown;
 };
 
 export type GetAllMiscellaneousBillsResponses = {

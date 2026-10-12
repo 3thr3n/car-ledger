@@ -12,8 +12,6 @@ import java.util.stream.Collectors;
 import de.codeflowwizardry.carledger.data.BillEntity;
 import de.codeflowwizardry.carledger.data.BillType;
 import de.codeflowwizardry.carledger.exception.DbDeletionException;
-import io.quarkus.hibernate.orm.panache.PanacheQuery;
-import io.quarkus.panache.common.Page;
 import io.quarkus.panache.common.Parameters;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
@@ -26,21 +24,18 @@ public class BillRepository extends AbstractBillRepository<BillEntity>
 		super("bill");
 	}
 
+	private static final Map<String, String> SORT_FIELDS = withBillSortFields(Map.of("type", "b.type"));
+
 	@Override
-	public PanacheQuery<BillEntity> getBills(long carId, String username, Page page, Optional<Integer> year)
+	public Map<String, String> getSortFields()
 	{
-		String query = "car.id = :carId and car.user.userId = :username";
-		Map<String, Object> params = new HashMap<>();
-		params.put("carId", carId);
-		params.put("username", username);
+		return SORT_FIELDS;
+	}
 
-		if (year.isPresent())
-		{
-			query += " and year(date) = :year";
-			params.put("year", year.get());
-		}
-
-		return find(query + " order by date desc", params).page(page);
+	@Override
+	protected String fromClause()
+	{
+		return "from bill b";
 	}
 
 	/**

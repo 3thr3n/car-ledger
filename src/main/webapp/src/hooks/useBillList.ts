@@ -16,6 +16,7 @@ import {
   FuelBill,
   MaintenanceBill,
   MiscellaneousBill,
+  SortOrder,
 } from '@/generated';
 
 export type ListKind = 'all' | 'fuel' | 'maintenance' | 'miscellaneous';
@@ -33,6 +34,15 @@ export interface PageModel {
   pageSize: number;
 }
 
+export interface SortModel {
+  /** field of the row, sorted by on the server */
+  field: string;
+  sort: 'asc' | 'desc';
+}
+
+/** the order of the API without a sort model: newest first */
+export const DEFAULT_SORT: SortModel = { field: 'date', sort: 'desc' };
+
 const listOptions = {
   all: getAllBillsOptions,
   fuel: getAllFuelBillsOptions,
@@ -48,7 +58,8 @@ const yearOptions = {
 };
 
 /**
- * Paged bills of one kind, filterable by the years the API reports for that kind.
+ * Paged bills of one kind, sorted on the server, filterable by the years the API reports for
+ * that kind.
  */
 export default function useBillList<K extends ListKind>(
   kind: K,
@@ -60,6 +71,7 @@ export default function useBillList<K extends ListKind>(
     page: 0,
     pageSize: initialPageSize,
   });
+  const [sortModel, setSortModelState] = useState<SortModel>(DEFAULT_SORT);
 
   const years = useQuery(
     (yearOptions[kind] as typeof getAllBillYearsOptions)({
@@ -78,6 +90,8 @@ export default function useBillList<K extends ListKind>(
         page: pageModel.page + 1,
         size: pageModel.pageSize,
         year,
+        sort: sortModel.field,
+        order: sortModel.sort === 'asc' ? SortOrder.ASC : SortOrder.DESC,
       },
     }),
     placeholderData: keepPreviousData,
@@ -88,6 +102,12 @@ export default function useBillList<K extends ListKind>(
     setPageModel((model) => ({ ...model, page: 0 }));
   };
 
+  // a new order starts at the first page again
+  const setSortModel = (value: SortModel | undefined) => {
+    setSortModelState(value ?? DEFAULT_SORT);
+    setPageModel((model) => ({ ...model, page: 0 }));
+  };
+
   return {
     years: [...(years.data ?? [])].sort((a, b) => b - a),
 
@@ -95,6 +115,8 @@ export default function useBillList<K extends ListKind>(
     setYear,
     pageModel,
     setPageModel,
+    sortModel,
+    setSortModel,
     rows: (bills.data?.data ?? []) as RowMap[K][],
     total: bills.data?.total ?? 0,
     isLoading: bills.isLoading,
