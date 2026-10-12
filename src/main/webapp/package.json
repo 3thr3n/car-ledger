@@ -30,7 +30,7 @@
     "country-vat": "^1.0.23",
     "dayjs": "^1.11.20",
     "i18n-iso-countries": "^7.14.0",
-    "i18next": "^25.10.2",
+    "i18next": "^26.4.2",
     "i18next-browser-languagedetector": "^8.2.1",
     "papaparse": "^5.5.3",
     "react": "^19",
