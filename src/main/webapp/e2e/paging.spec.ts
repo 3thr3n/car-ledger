@@ -1,10 +1,5 @@
 import { APIRequestContext, expect, test } from '@playwright/test';
-import { aliceApi, deleteAllCars } from './helpers';
-
-const day = (offset: number) =>
-  new Date(Date.now() + offset * 24 * 60 * 60 * 1000)
-    .toISOString()
-    .slice(0, 10);
+import { aliceApi, day, deleteAllCars } from './helpers';
 
 test.describe.serial('paging', () => {
   let api: APIRequestContext;
