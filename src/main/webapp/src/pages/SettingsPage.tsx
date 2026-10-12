@@ -2,18 +2,28 @@ import {
   Box,
   Button,
   Card,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   MenuItem,
   Stack,
   TextField,
   Typography,
 } from '@mui/material';
+import { useMutation } from '@tanstack/react-query';
 import { SubmitEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
 import { Account } from '@/generated';
+import { deleteMyselfMutation } from '@/generated/@tanstack/react-query.gen';
 import useMe from '@/hooks/useMe';
 import useSaveSettings from '@/hooks/useSaveSettings';
 import { BackendError } from '@/utils/BackendError';
+import queryClient, { baseUrl, localClient } from '@/utils/QueryClient';
+import { clearMappings } from '@/utils/csv';
+import { markAccountDeleted } from '@/utils/accountDeleted';
 import { currencySymbol, DEFAULT_CURRENCY, useFormat } from '@/utils/format';
 import Page from '@/components/layout/Page';
 import PageHeader from '@/components/ui/PageHeader';
@@ -51,6 +61,7 @@ export default function SettingsPage() {
       />
       {/* keyed, so the form starts with the loaded settings */}
       {account && <SettingsForm key={account.name} account={account} />}
+      {account?.name && <DeleteAccount name={account.name} />}
     </Page>
   );
 }
@@ -197,6 +208,101 @@ function SettingsForm({ account }: { account: Account }) {
           </Button>
         </Stack>
       </Stack>
+    </Card>
+  );
+}
+
+function DeleteAccount({ name }: { name: string }) {
+  const { t } = useTranslation();
+  const [open, setOpen] = useState(false);
+  const [confirmation, setConfirmation] = useState('');
+
+  const mutation = useMutation({
+    ...deleteMyselfMutation({ client: localClient }),
+    onSuccess: () => {
+      // no more requests, the next one would create the account again
+      queryClient.cancelQueries();
+      queryClient.clear();
+      clearMappings();
+      markAccountDeleted();
+      location.href = `${baseUrl}/api/auth/logout`;
+    },
+    onError: () => toast.error(t('errors.backend')),
+  });
+
+  const close = () => {
+    setOpen(false);
+    setConfirmation('');
+  };
+
+  return (
+    <Card sx={{ p: 3, mt: 3, borderColor: 'error.main' }}>
+      <Stack
+        direction={{ xs: 'column', sm: 'row' }}
+        spacing={2}
+        sx={{
+          alignItems: { sm: 'center' },
+          justifyContent: 'space-between',
+        }}
+      >
+        <Box>
+          <Typography
+            sx={{
+              fontWeight: 600,
+            }}
+          >
+            {t('settings.deleteAccount.title')}
+          </Typography>
+          <Typography
+            variant="body2"
+            sx={{
+              color: 'text.secondary',
+            }}
+          >
+            {t('settings.deleteAccount.text')}
+          </Typography>
+        </Box>
+        <Button
+          color="error"
+          variant="outlined"
+          onClick={() => setOpen(true)}
+          sx={{ flexShrink: 0 }}
+        >
+          {t('settings.deleteAccount.button')}
+        </Button>
+      </Stack>
+      <Dialog open={open} onClose={close} maxWidth="xs" fullWidth>
+        <DialogTitle>{t('settings.deleteAccount.confirmTitle')}</DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ mb: 1.5 }}>
+            {t('settings.deleteAccount.confirmText')}
+          </DialogContentText>
+          <DialogContentText sx={{ mb: 2 }}>
+            {t('settings.deleteAccount.identityProvider')}
+          </DialogContentText>
+          <TextField
+            label={t('settings.deleteAccount.typeName', { name })}
+            value={confirmation}
+            onChange={(e) => setConfirmation(e.target.value)}
+            autoComplete="off"
+            fullWidth
+            autoFocus
+          />
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={close} color="inherit">
+            {t('button.cancel')}
+          </Button>
+          <Button
+            variant="contained"
+            color="error"
+            disabled={confirmation.trim() !== name || mutation.isPending}
+            onClick={() => mutation.mutate({})}
+          >
+            {t('settings.deleteAccount.button')}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Card>
   );
 }
