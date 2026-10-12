@@ -1,7 +1,7 @@
 import { Box, Button, Card, Stack, TextField, Typography } from '@mui/material';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useNavigate, useRouter } from '@tanstack/react-router';
-import { FormEvent, useState } from 'react';
+import { SubmitEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
 import { createCar, CarInput } from '@/generated';
@@ -143,7 +143,7 @@ function CarForm({
     onError,
   });
 
-  const submit = (event: FormEvent) => {
+  const submit = (event: SubmitEvent) => {
     event.preventDefault();
     setTouched(true);
     if (!valid) return;

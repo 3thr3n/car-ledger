@@ -13,7 +13,7 @@ import {
 import { DatePicker } from '@mui/x-date-pickers';
 import { useMutation } from '@tanstack/react-query';
 import dayjs, { Dayjs } from 'dayjs';
-import { FormEvent, useState } from 'react';
+import { SubmitEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
 import { Reminder, ReminderInput } from '@/generated';
@@ -142,7 +142,7 @@ function ReminderForm({
     }
   };
 
-  const submit = (event: FormEvent) => {
+  const submit = (event: SubmitEvent) => {
     event.preventDefault();
     if (invalid) return;
     const body: ReminderInput = {

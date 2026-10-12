@@ -2,7 +2,7 @@ import { Grid, Stack, TextField } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import dayjs, { Dayjs } from 'dayjs';
-import { FormEvent, useState } from 'react';
+import { SubmitEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BillType, MaintenanceBill } from '@/generated';
 import {
@@ -95,7 +95,7 @@ export default function MaintenanceForm({
     total: !total ? t('bill.errors.total') : undefined,
   };
 
-  const submit = (event: FormEvent) => {
+  const submit = (event: SubmitEvent) => {
     event.preventDefault();
     setTouched(true);
     if (errors.date || errors.total) return;
