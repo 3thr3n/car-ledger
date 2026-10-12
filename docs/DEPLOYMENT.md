@@ -94,10 +94,14 @@ shorter ones), 32 or more are recommended, and all replicas need the same one.
 helm install car-ledger oci://ghcr.io/3thr3n/car-ledger/helm --set ingress.host=example.com
 ```
 
-Every build of `main` publishes the image `ghcr.io/3thr3n/car-ledger:<run number>` and the chart
-`oci://ghcr.io/3thr3n/car-ledger/helm` in version `0.3.<run number>`, which runs the image of the same build. Without
-`--version` the latest one is installed, `--version 0.3.123` installs build 123. Leave `carLedger.image.tag` empty,
-it would override the image of the chart.
+Without `--version` the latest release is installed. A release (e.g. `0.2.0`, see the
+[releases](https://github.com/3thr3n/car-ledger/releases)) publishes the image `ghcr.io/3thr3n/car-ledger:0.2.0` and the
+chart `oci://ghcr.io/3thr3n/car-ledger/helm` in version `0.2.0`, which runs that image.
+
+Every build of `main` publishes the image `ghcr.io/3thr3n/car-ledger:<run number>` and the chart as the prerelease
+`<next release>-dev.<run number>`, e.g. `0.2.0-dev.123`, which runs the image of the same build: `--version
+0.2.0-dev.123` installs build 123, `--devel` the latest build. Leave `carLedger.image.tag` empty, it would override
+the image of the chart.
 
 From the repository (`helm dependency update helm/car-ledger`, `helm install car-ledger helm/car-ledger ...`) the chart
 runs the image `main`, the latest build of `main`.
