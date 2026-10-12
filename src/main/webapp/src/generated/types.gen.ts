@@ -1574,6 +1574,22 @@ export type GetMonthlyStatsResponses = {
 
 export type GetMonthlyStatsResponse = GetMonthlyStatsResponses[keyof GetMonthlyStatsResponses];
 
+export type DeleteMyselfData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/user/me';
+};
+
+export type DeleteMyselfResponses = {
+    /**
+     * Account deleted.
+     */
+    204: void;
+};
+
+export type DeleteMyselfResponse = DeleteMyselfResponses[keyof DeleteMyselfResponses];
+
 export type GetMyselfData = {
     body?: never;
     path?: never;
