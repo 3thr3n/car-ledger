@@ -7,20 +7,26 @@ import { baseUrl } from '@/utils/QueryClient';
 
 export interface ErrorPageProps {
   error?: unknown;
+  /** error of the OIDC provider during the login, offers to log in again */
+  loginError?: string;
 }
 
-export default function ErrorPage({ error }: ErrorPageProps) {
+export default function ErrorPage({ error, loginError }: ErrorPageProps) {
   const { t } = useTranslation();
 
-  const needsLogin = error instanceof BackendError && error.status === 401;
+  const needsLogin =
+    loginError !== undefined ||
+    (error instanceof BackendError && error.status === 401);
   const message =
-    error instanceof BackendError
-      ? needsLogin
-        ? t('errors.loginRequired')
-        : error.message || t('errors.backend')
-      : error instanceof Error
-        ? error.message
-        : t('errors.generic');
+    loginError !== undefined
+      ? t('errors.loginFailed', { reason: loginError })
+      : error instanceof BackendError
+        ? needsLogin
+          ? t('errors.loginRequired')
+          : error.message || t('errors.backend')
+        : error instanceof Error
+          ? error.message
+          : t('errors.generic');
 
   return (
     <Stack

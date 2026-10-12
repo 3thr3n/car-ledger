@@ -361,6 +361,7 @@ errors:
   generic: "Ein unerwarteter Fehler ist aufgetreten."
   backend: "Der Server hat nicht wie erwartet geantwortet. Bitte versuche es später erneut."
   loginRequired: "Bitte melde dich an, um diese Seite zu sehen."
+  loginFailed: "Die Anmeldung ist fehlgeschlagen: {{reason}}"
   goHome: "Zurück zum Start"
 
 notFound:
