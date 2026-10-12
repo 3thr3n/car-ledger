@@ -18,7 +18,7 @@ export default defineConfig({
     include: ['src/**/*.test.{ts,tsx}'],
   },
   build: {
-    rollupOptions: {
+    rolldownOptions: {
       output: {
         // libraries the app always loads completely, in an own chunk that stays
         // cached between releases. Not @mui/material: parts of it are only used
@@ -34,8 +34,8 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
-      $: path.resolve(__dirname, './node_modules'),
+      '@': path.resolve(import.meta.dirname, './src'),
+      $: path.resolve(import.meta.dirname, './node_modules'),
     },
   },
 });
