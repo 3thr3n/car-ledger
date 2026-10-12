@@ -1,18 +1,21 @@
 import {
   MenuItem,
+  Skeleton,
   Stack,
   TextField,
   ToggleButton,
   ToggleButtonGroup,
 } from '@mui/material';
-import { DatePicker } from '@mui/x-date-pickers';
 import { useQuery } from '@tanstack/react-query';
 import dayjs from 'dayjs';
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getMyCarsOptions } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
 import { toApiDate } from '@/utils/format';
+
+// the date pickers are only needed for a custom period
+const DateRangeFields = lazy(() => import('./DateRangeFields'));
 
 export interface DashboardSearch {
   car?: number;
@@ -107,32 +110,15 @@ export default function DashboardFilter({
       </ToggleButtonGroup>
 
       {period === 'custom' && (
-        <Stack direction="row" spacing={1.5}>
-          <DatePicker
-            label={t('dashboard.filter.from')}
-            value={search.from ? dayjs(search.from) : null}
-            maxDate={search.to ? dayjs(search.to) : undefined}
-            onChange={(value) =>
-              onChange({
-                ...search,
-                from: value?.isValid() ? toApiDate(value) : undefined,
-              })
-            }
-            slotProps={{ textField: { size: 'small' } }}
+        <Suspense
+          fallback={<Skeleton variant="rounded" width={330} height={40} />}
+        >
+          <DateRangeFields
+            from={search.from}
+            to={search.to}
+            onChange={(range) => onChange({ ...search, ...range })}
           />
-          <DatePicker
-            label={t('dashboard.filter.to')}
-            value={search.to ? dayjs(search.to) : null}
-            minDate={search.from ? dayjs(search.from) : undefined}
-            onChange={(value) =>
-              onChange({
-                ...search,
-                to: value?.isValid() ? toApiDate(value) : undefined,
-              })
-            }
-            slotProps={{ textField: { size: 'small' } }}
-          />
-        </Stack>
+        </Suspense>
       )}
     </Stack>
   );
