@@ -5,6 +5,7 @@ import static de.codeflowwizardry.carledger.data.repository.CarRepository.ALL_CA
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -134,6 +135,88 @@ public class BillRepository extends AbstractBillRepository<BillEntity>
 		return ((BigDecimal) sumAndCount[0]).divide(BigDecimal.valueOf(count), RoundingMode.HALF_UP);
 	}
 
+	/**
+	 * @param carId
+	 *            or {@link CarRepository#ALL_CARS}
+	 * @return total of the bills per month and type, months without bills are
+	 *         missing
+	 */
+	public List<MonthTotal> sumPerMonth(long carId, String username, Optional<LocalDate> from,
+			Optional<LocalDate> to)
+	{
+		Map<String, Object> params = new HashMap<>();
+		String query = "select year(b.date), month(b.date), b.type, sum(b.total) from bill b"
+				+ where(carId, username, from, to, params)
+				+ " group by year(b.date), month(b.date), b.type";
+
+		return rows(query, params).stream()
+				.map(row -> new MonthTotal(month(row), (BillType) row[2], (BigDecimal) row[3]))
+				.toList();
+	}
+
+	/**
+	 * Liters and distance per month. Consumption and price only use refuels with a
+	 * distance, the others would distort them.
+	 *
+	 * @param carId
+	 *            or {@link CarRepository#ALL_CARS}
+	 * @return months without refuels are missing
+	 */
+	public List<MonthFuel> sumFuelPerMonth(long carId, String username, Optional<LocalDate> from,
+			Optional<LocalDate> to)
+	{
+		Map<String, Object> params = new HashMap<>();
+		String query = "select year(b.date), month(b.date), sum(f.unit), sum(coalesce(f.distance, 0)),"
+				+ " sum(case when f.distance > 0 then f.unit else 0 end),"
+				+ " sum(f.pricePerUnit * f.unit)"
+				+ " from bill b join b.fuelBill f"
+				+ where(carId, username, from, to, params)
+				+ " group by year(b.date), month(b.date)";
+
+		return rows(query, params).stream()
+				.map(row -> new MonthFuel(month(row), (BigDecimal) row[2], (BigDecimal) row[3],
+						(BigDecimal) row[4], (BigDecimal) row[5]))
+				.toList();
+	}
+
+	private static String where(long carId, String username, Optional<LocalDate> from, Optional<LocalDate> to,
+			Map<String, Object> params)
+	{
+		String where = " where b.car.user.userId = :userId";
+		params.put("userId", username);
+
+		if (carId != ALL_CARS)
+		{
+			where += " and b.car.id = :carId";
+			params.put("carId", carId);
+		}
+
+		if (from.isPresent())
+		{
+			where += " and b.date >= :from";
+			params.put("from", from.get());
+		}
+
+		if (to.isPresent())
+		{
+			where += " and b.date <= :to";
+			params.put("to", to.get());
+		}
+		return where;
+	}
+
+	private List<Object[]> rows(String query, Map<String, Object> params)
+	{
+		var typedQuery = getEntityManager().createQuery(query, Object[].class);
+		params.forEach(typedQuery::setParameter);
+		return typedQuery.getResultList();
+	}
+
+	private static YearMonth month(Object[] row)
+	{
+		return YearMonth.of((Integer) row[0], (Integer) row[1]);
+	}
+
 	@Transactional
 	public void delete(long carId, long billId, String username)
 	{
@@ -150,6 +233,21 @@ public class BillRepository extends AbstractBillRepository<BillEntity>
 	}
 
 	public record BillTypeSummary(BillType type, long count, BigDecimal total)
+	{
+	}
+
+	public record MonthTotal(YearMonth month, BillType type, BigDecimal total)
+	{
+	}
+
+	/**
+	 * @param unitWithDistance
+	 *            liters of the refuels with a distance
+	 * @param pricedUnit
+	 *            sum of price per liter (cent) times liters
+	 */
+	public record MonthFuel(YearMonth month, BigDecimal unit, BigDecimal distance, BigDecimal unitWithDistance,
+			BigDecimal pricedUnit)
 	{
 	}
 }

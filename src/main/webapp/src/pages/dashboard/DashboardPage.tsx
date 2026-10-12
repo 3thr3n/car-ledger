@@ -20,6 +20,7 @@ import DashboardFilter, {
 import CostSplit from '@/components/dashboard/CostSplit';
 import AverageList from '@/components/dashboard/AverageList';
 import RangeList from '@/components/dashboard/RangeList';
+import MonthlyChart from '@/components/dashboard/LazyMonthlyChart';
 import ErrorPage from '@/pages/ErrorPage';
 
 export interface DashboardPageProps {
@@ -118,6 +119,13 @@ export default function DashboardPage({
       ) : (
         data && (
           <Grid container spacing={2}>
+            <Grid size={12}>
+              <MonthlyChart
+                carId={search.car ?? ALL_CARS}
+                from={search.from}
+                to={search.to}
+              />
+            </Grid>
             <Grid size={{ xs: 12, lg: 7 }}>
               <Stack spacing={2}>
                 <CostSplit total={total} />

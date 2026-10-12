@@ -2,7 +2,9 @@ package de.codeflowwizardry.carledger.data.repository;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -55,6 +57,47 @@ public class RecurringBillPaymentRepository implements PanacheRepository<Recurri
 
 		BigDecimal sum = typedQuery.getSingleResult();
 		return sum == null ? BigDecimal.ZERO : sum;
+	}
+
+	/**
+	 * Sums the payments per month they are due in, months without payments are
+	 * missing. {@link CarRepository#ALL_CARS} sums over all cars of the user.
+	 */
+	public Map<YearMonth, BigDecimal> sumAmountPerMonth(long carId, String username, Optional<LocalDate> from,
+			Optional<LocalDate> to)
+	{
+		Map<String, Object> params = new HashMap<>();
+
+		String query = "select year(dueDate), month(dueDate), sum(amount) from recurring_bill_payment"
+				+ " where bill.car.user.userId = :userId";
+		params.put("userId", username);
+
+		if (carId != CarRepository.ALL_CARS)
+		{
+			query += " and bill.car.id = :carId";
+			params.put("carId", carId);
+		}
+
+		if (from.isPresent())
+		{
+			query += " and dueDate >= :from";
+			params.put("from", from.get());
+		}
+
+		if (to.isPresent())
+		{
+			query += " and dueDate <= :to";
+			params.put("to", to.get());
+		}
+
+		TypedQuery<Object[]> typedQuery = getEntityManager()
+				.createQuery(query + " group by year(dueDate), month(dueDate)", Object[].class);
+		params.forEach(typedQuery::setParameter);
+
+		Map<YearMonth, BigDecimal> sums = new HashMap<>();
+		List<Object[]> rows = typedQuery.getResultList();
+		rows.forEach(row -> sums.put(YearMonth.of((Integer) row[0], (Integer) row[1]), (BigDecimal) row[2]));
+		return sums;
 	}
 
 	/**

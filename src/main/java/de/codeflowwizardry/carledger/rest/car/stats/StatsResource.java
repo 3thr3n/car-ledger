@@ -2,6 +2,7 @@ package de.codeflowwizardry.carledger.rest.car.stats;
 
 import io.quarkus.security.identity.SecurityIdentity;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -32,6 +33,16 @@ public class StatsResource extends AbstractResource
 	public DashboardStats getStats(@BeanParam DefaultParams params)
 	{
 		return statsCalculator.calculateStats(params.carId, context.getName(), params.from, params.to);
+	}
+
+	@GET
+	@Path("monthly")
+	@Produces(MediaType.APPLICATION_JSON)
+	@Operation(operationId = "getMonthlyStats", description = "Costs and fuel per month of a car, use -1 as carId for all your cars. "
+			+ "Every month of the range is included, without from/to it starts/ends with the first/last month with bills.")
+	public List<MonthStats> getMonthlyStats(@BeanParam DefaultParams params)
+	{
+		return statsCalculator.calculateMonthly(params.carId, context.getName(), params.from, params.to);
 	}
 
 	public static class DefaultParams

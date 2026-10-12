@@ -638,6 +638,46 @@
           }
         }
       },
+      "MonthStats" : {
+        "type" : "object",
+        "required" : [ "month", "fuel", "maintenance", "miscellaneous", "recurring", "total", "distance", "unit" ],
+        "properties" : {
+          "month" : {
+            "type" : "string",
+            "examples" : [ "2026-03" ]
+          },
+          "fuel" : {
+            "type" : "number"
+          },
+          "maintenance" : {
+            "type" : "number"
+          },
+          "miscellaneous" : {
+            "type" : "number"
+          },
+          "recurring" : {
+            "type" : "number"
+          },
+          "total" : {
+            "type" : "number"
+          },
+          "distance" : {
+            "type" : "number"
+          },
+          "unit" : {
+            "type" : "number"
+          },
+          "pricePerUnit" : {
+            "type" : "number"
+          },
+          "consumption" : {
+            "type" : "number"
+          },
+          "costPerKm" : {
+            "type" : "number"
+          }
+        }
+      },
       "OffsetDateTime" : {
         "type" : "string",
         "format" : "date-time",
@@ -2471,6 +2511,52 @@
           }
         },
         "summary" : "Get Stats",
+        "tags" : [ "Stats Resource" ]
+      }
+    },
+    "/api/stats/{carId}/monthly" : {
+      "get" : {
+        "description" : "Costs and fuel per month of a car, use -1 as carId for all your cars. Every month of the range is included, without from/to it starts/ends with the first/last month with bills.",
+        "operationId" : "getMonthlyStats",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "from",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          },
+          "required" : false
+        }, {
+          "name" : "to",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          },
+          "required" : false
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/MonthStats"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary" : "Get Monthly Stats",
         "tags" : [ "Stats Resource" ]
       }
     },

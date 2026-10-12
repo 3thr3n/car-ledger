@@ -5,15 +5,16 @@ import static java.math.BigDecimal.ZERO;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.time.YearMonth;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
 import de.codeflowwizardry.carledger.data.*;
 import de.codeflowwizardry.carledger.data.repository.BillRepository;
+import de.codeflowwizardry.carledger.data.repository.BillRepository.MonthFuel;
+import de.codeflowwizardry.carledger.data.repository.BillRepository.MonthTotal;
 import de.codeflowwizardry.carledger.data.repository.RecurringBillPaymentRepository;
 import de.codeflowwizardry.carledger.rest.car.stats.*;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -23,6 +24,8 @@ import jakarta.inject.Inject;
 public class StatsCalculator
 {
 	public static final BigDecimal ONE_HUNDRED = BigDecimal.valueOf(100);
+	/** guards against absurd ranges, 100 years */
+	static final int MAX_MONTHS = 1200;
 
 	private final BillRepository repository;
 	private final RecurringBillPaymentRepository recurringBillPaymentRepository;
@@ -60,6 +63,82 @@ public class StatsCalculator
 				calculateTotal(fuelBillList, maintenanceBillList, miscellaneousBillList, recurringTotal),
 				calculateAverage(fuelBillList, maintenanceBillList, miscellaneousBillList, recurringTotal),
 				calculateHighLow(fuelBillList, maintenanceBillList));
+	}
+
+	/**
+	 * Costs and fuel per month, the sums are calculated by the database. Every
+	 * month of the range is included, also the ones without bills. Without a
+	 * from/to, the range starts/ends with the first/last month with bills.
+	 */
+	public List<MonthStats> calculateMonthly(Long carId, String username, Optional<LocalDate> from,
+			Optional<LocalDate> to)
+	{
+		Map<YearMonth, Map<BillType, BigDecimal>> totals = new HashMap<>();
+		for (MonthTotal row : repository.sumPerMonth(carId, username, from, to))
+		{
+			totals.computeIfAbsent(row.month(), month -> new EnumMap<>(BillType.class)).put(row.type(), row.total());
+		}
+		Map<YearMonth, MonthFuel> fuel = new HashMap<>();
+		repository.sumFuelPerMonth(carId, username, from, to).forEach(row -> fuel.put(row.month(), row));
+		Map<YearMonth, BigDecimal> recurring = recurringBillPaymentRepository.sumAmountPerMonth(carId, username,
+				from, to);
+
+		SortedSet<YearMonth> withData = new TreeSet<>(totals.keySet());
+		withData.addAll(recurring.keySet());
+
+		Optional<YearMonth> first = from.map(YearMonth::from)
+				.or(() -> withData.isEmpty() ? Optional.empty() : Optional.of(withData.first()));
+		Optional<YearMonth> last = to.map(YearMonth::from)
+				.or(() -> withData.isEmpty() ? Optional.empty() : Optional.of(withData.last()));
+		if (first.isEmpty() || last.isEmpty() || first.get().isAfter(last.get()))
+		{
+			return List.of();
+		}
+
+		YearMonth start = first.get();
+		if (ChronoUnit.MONTHS.between(start, last.get()) >= MAX_MONTHS)
+		{
+			start = last.get().minusMonths(MAX_MONTHS - 1);
+		}
+
+		List<MonthStats> months = new ArrayList<>();
+		for (YearMonth month = start; !month.isAfter(last.get()); month = month.plusMonths(1))
+		{
+			months.add(calculateMonth(month, totals.getOrDefault(month, Map.of()), fuel.get(month),
+					recurring.getOrDefault(month, ZERO)));
+		}
+		return months;
+	}
+
+	private static MonthStats calculateMonth(YearMonth month, Map<BillType, BigDecimal> totals, MonthFuel fuel,
+			BigDecimal recurring)
+	{
+		BigDecimal fuelTotal = totals.getOrDefault(BillType.FUEL, ZERO);
+		BigDecimal maintenance = totals.getOrDefault(BillType.MAINTENANCE, ZERO);
+		BigDecimal miscellaneous = totals.getOrDefault(BillType.MISCELLANEOUS, ZERO);
+		BigDecimal total = fuelTotal.add(maintenance).add(miscellaneous).add(recurring);
+
+		BigDecimal unit = fuel == null ? ZERO : fuel.unit();
+		BigDecimal distance = fuel == null ? ZERO : fuel.distance();
+
+		BigDecimal pricePerUnit = Utils.valueWasSet(unit)
+				? fuel.pricedUnit().divide(unit, 1, RoundingMode.HALF_UP)
+				: null;
+		boolean hasDistance = Utils.valueWasSet(distance);
+		BigDecimal consumption = hasDistance
+				? fuel.unitWithDistance().multiply(ONE_HUNDRED).divide(distance, 2, RoundingMode.HALF_UP)
+				: null;
+		BigDecimal costPerKm = hasDistance
+				? total.multiply(ONE_HUNDRED).divide(distance, 2, RoundingMode.HALF_UP)
+				: null;
+
+		return new MonthStats(month.toString(), money(fuelTotal), money(maintenance), money(miscellaneous),
+				money(recurring), money(total), money(distance), money(unit), pricePerUnit, consumption, costPerKm);
+	}
+
+	private static BigDecimal money(BigDecimal value)
+	{
+		return value.setScale(2, RoundingMode.HALF_UP);
 	}
 
 	/**

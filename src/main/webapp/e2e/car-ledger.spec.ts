@@ -190,6 +190,14 @@ test.describe.serial('car ledger', () => {
     // 70 + 2 imported refuels (71.75 + 66.60) + 125.50 maintenance
     await expect(page.getByText(money(333.85)).first()).toBeVisible();
     await expect(page.getByText('3 entries')).toBeVisible();
+
+    // the imported refuels of January and February are in the monthly chart
+    const chart = page.locator('.MuiCard-root', { hasText: 'Costs per month' });
+    await expect(chart.locator('.MuiBarElement-root').first()).toBeVisible();
+    await expect(chart.getByText('Jan 26')).toBeVisible();
+    await chart.getByRole('button', { name: 'Fuel', exact: true }).click();
+    await expect(chart.getByText('Fuel price')).toBeVisible();
+    await expect(chart.getByText('No refuels in this period')).toHaveCount(0);
   });
 
   test('deletes an entry from the ledger', async () => {

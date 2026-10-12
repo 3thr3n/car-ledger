@@ -238,6 +238,20 @@ export type MiscellaneousBillInput = {
     description?: string;
 };
 
+export type MonthStats = {
+    month: string;
+    fuel: number;
+    maintenance: number;
+    miscellaneous: number;
+    recurring: number;
+    total: number;
+    distance: number;
+    unit: number;
+    pricePerUnit?: number;
+    consumption?: number;
+    costPerKm?: number;
+};
+
 export type OffsetDateTime = string;
 
 export type RecurringBill = {
@@ -1243,6 +1257,27 @@ export type GetDashboardStatsResponses = {
 };
 
 export type GetDashboardStatsResponse = GetDashboardStatsResponses[keyof GetDashboardStatsResponses];
+
+export type GetMonthlyStatsData = {
+    body?: never;
+    path: {
+        carId: number;
+    };
+    query?: {
+        from?: LocalDate;
+        to?: LocalDate;
+    };
+    url: '/api/stats/{carId}/monthly';
+};
+
+export type GetMonthlyStatsResponses = {
+    /**
+     * OK
+     */
+    200: Array<MonthStats>;
+};
+
+export type GetMonthlyStatsResponse = GetMonthlyStatsResponses[keyof GetMonthlyStatsResponses];
 
 export type GetMyselfData = {
     body?: never;

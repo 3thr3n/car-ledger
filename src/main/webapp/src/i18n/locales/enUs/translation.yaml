@@ -96,6 +96,15 @@ dashboard:
     distance: "Distance per refuel"
     fuelCost: "Cost per refuel"
     maintenanceCost: "Cost per maintenance"
+  monthly:
+    title: "Costs per month"
+    costs: "Costs"
+    fuel: "Fuel"
+    pricePerUnit: "Fuel price"
+    consumption: "Consumption"
+    empty:
+      costs: "No costs in this period"
+      fuel: "No refuels in this period"
   empty:
     title: "Nothing to analyze yet"
     text: "Add entries to one of your cars and the numbers show up here."
