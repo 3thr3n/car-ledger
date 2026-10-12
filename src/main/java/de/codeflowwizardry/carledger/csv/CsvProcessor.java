@@ -12,6 +12,7 @@ import com.opencsv.exceptions.CsvValidationException;
 
 import de.codeflowwizardry.carledger.exception.AlreadyPresentException;
 import de.codeflowwizardry.carledger.rest.records.input.AbstractBillInput;
+import de.codeflowwizardry.carledger.exception.CsvImportException;
 
 public class CsvProcessor<T extends AbstractBillInput>
 {
@@ -54,10 +55,10 @@ public class CsvProcessor<T extends AbstractBillInput>
 					LOG.debug("Row {} already exists", rowNumber);
 					result.addSkipped(rowNumber, "Already exists");
 				}
-				catch (IllegalArgumentException e)
+				catch (CsvImportException e)
 				{
-					LOG.warn("Row {}: {}", rowNumber, e.getMessage());
-					result.addError(rowNumber, e.getMessage());
+					LOG.warn("Row {}: {}", rowNumber, e.getUserMessage());
+					result.addError(rowNumber, e.getUserMessage());
 				}
 				catch (Exception e)
 				{

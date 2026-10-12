@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
+import de.codeflowwizardry.carledger.exception.CsvImportException;
 
 public class CsvFieldExtractors
 {
@@ -46,7 +47,7 @@ public class CsvFieldExtractors
 			}
 		}
 
-		throw new IllegalArgumentException(
+		throw new CsvImportException(
 				String.format("Could not parse date '%s' for field '%s'", value, fieldName));
 	}
 
@@ -65,7 +66,7 @@ public class CsvFieldExtractors
 		}
 		catch (NumberFormatException e)
 		{
-			throw new IllegalArgumentException(
+			throw new CsvImportException(
 					String.format("Could not parse number '%s' for field '%s'", value, fieldName));
 		}
 	}
@@ -123,7 +124,7 @@ public class CsvFieldExtractors
 		}
 		catch (NumberFormatException e)
 		{
-			throw new IllegalArgumentException(
+			throw new CsvImportException(
 					String.format("Could not parse integer '%s' for field '%s'", value, fieldName));
 		}
 	}

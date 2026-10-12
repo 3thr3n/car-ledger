@@ -35,6 +35,7 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import de.codeflowwizardry.carledger.exception.CsvImportException;
 
 @Path("import/{carId}")
 public class ImportResource extends AbstractResource
@@ -154,11 +155,11 @@ public class ImportResource extends AbstractResource
 			LOG.warn("Invalid column mapping: {}", e.getMessage());
 			return Response.status(400).entity("Column mapping is invalid").build();
 		}
-		catch (IllegalArgumentException e)
+		catch (CsvImportException e)
 		{
-			// incomplete column mapping, the messages are written for the user
-			LOG.warn("Invalid CSV import request: {}", e.getMessage());
-			return Response.status(400).entity(e.getMessage()).build();
+			// e.g. an incomplete column mapping
+			LOG.warn("Invalid CSV import request: {}", e.getUserMessage());
+			return Response.status(400).entity(e.getUserMessage()).build();
 		}
 		catch (Exception e)
 		{

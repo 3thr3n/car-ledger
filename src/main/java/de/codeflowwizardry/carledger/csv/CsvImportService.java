@@ -9,6 +9,7 @@ import de.codeflowwizardry.carledger.csv.importer.MiscellaneousBillCsvImporter;
 import de.codeflowwizardry.carledger.data.BillType;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
+import de.codeflowwizardry.carledger.exception.CsvImportException;
 
 @RequestScoped
 public class CsvImportService
@@ -40,7 +41,7 @@ public class CsvImportService
 		}
 		if (processor == null)
 		{
-			throw new IllegalArgumentException("Type does not exist!");
+			throw new CsvImportException("Type does not exist!");
 		}
 		return processor.process(csv, mapping, skipLines, vat, carId, name);
 	}
