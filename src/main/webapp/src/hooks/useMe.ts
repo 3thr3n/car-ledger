@@ -17,5 +17,6 @@ export default function useMe() {
     loggedIn: !!data,
     isLoading,
     maxCars: data?.maxCars ?? 0,
+    isAdmin: data?.admin ?? false,
   };
 }

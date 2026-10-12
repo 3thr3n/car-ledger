@@ -7,6 +7,35 @@ export type ClientOptions = {
 export type Account = {
     maxCars?: number;
     name?: string;
+    admin?: boolean;
+    vatCountry?: string;
+    currency?: string;
+    language?: string;
+};
+
+export type AdminAccount = {
+    id?: number;
+    name?: string;
+    maxCars?: number;
+    cars?: number;
+    bills?: number;
+    createdAt?: OffsetDateTime;
+    lastSeen?: OffsetDateTime;
+};
+
+export type AdminAccountPage = {
+    total?: number;
+    page?: number;
+    size?: number;
+    data?: Array<AdminAccount>;
+};
+
+export type AdminStats = {
+    accounts?: number;
+    activeAccounts?: number;
+    cars?: number;
+    bills?: number;
+    recurringBills?: number;
 };
 
 export type AverageStats = {
@@ -189,6 +218,10 @@ export type MaintenanceBillInput = {
     workshop?: string;
 };
 
+export type MaxCarsInput = {
+    maxCars?: number;
+};
+
 export type MiscellaneousBill = {
     id?: number;
     date?: LocalDate;
@@ -204,6 +237,8 @@ export type MiscellaneousBillInput = {
     date?: LocalDate;
     description?: string;
 };
+
+export type OffsetDateTime = string;
 
 export type RecurringBill = {
     id?: number;
@@ -238,6 +273,12 @@ export type Row = {
     message?: string;
 };
 
+export type SettingsInput = {
+    vatCountry?: string;
+    currency?: string;
+    language?: string;
+};
+
 export type TotalStats = {
     unit?: number;
     trackedDistance?: number;
@@ -249,6 +290,102 @@ export type TotalStats = {
     maintenanceBills?: number;
     miscellaneousBills?: number;
 };
+
+export type GetAdminAccountsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        page?: number;
+        search?: string;
+        size?: number;
+    };
+    url: '/api/admin/accounts';
+};
+
+export type GetAdminAccountsResponses = {
+    /**
+     * Accounts found.
+     */
+    200: AdminAccountPage;
+};
+
+export type GetAdminAccountsResponse = GetAdminAccountsResponses[keyof GetAdminAccountsResponses];
+
+export type DeleteAdminAccountData = {
+    body?: never;
+    path: {
+        id: number;
+    };
+    query?: never;
+    url: '/api/admin/accounts/{id}';
+};
+
+export type DeleteAdminAccountErrors = {
+    /**
+     * The own account cannot be deleted.
+     */
+    400: unknown;
+    /**
+     * Account not found.
+     */
+    404: unknown;
+};
+
+export type DeleteAdminAccountResponses = {
+    /**
+     * Account deleted.
+     */
+    204: void;
+};
+
+export type DeleteAdminAccountResponse = DeleteAdminAccountResponses[keyof DeleteAdminAccountResponses];
+
+export type UpdateAdminAccountData = {
+    body: MaxCarsInput;
+    path: {
+        id: number;
+    };
+    query?: never;
+    url: '/api/admin/accounts/{id}';
+};
+
+export type UpdateAdminAccountErrors = {
+    /**
+     * Validation failed, please check the response
+     */
+    400: Array<unknown>;
+    /**
+     * Account not found.
+     */
+    404: unknown;
+};
+
+export type UpdateAdminAccountError = UpdateAdminAccountErrors[keyof UpdateAdminAccountErrors];
+
+export type UpdateAdminAccountResponses = {
+    /**
+     * Account updated.
+     */
+    200: AdminAccount;
+};
+
+export type UpdateAdminAccountResponse = UpdateAdminAccountResponses[keyof UpdateAdminAccountResponses];
+
+export type GetAdminStatsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/admin/stats';
+};
+
+export type GetAdminStatsResponses = {
+    /**
+     * Statistics calculated.
+     */
+    200: AdminStats;
+};
+
+export type GetAdminStatsResponse = GetAdminStatsResponses[keyof GetAdminStatsResponses];
 
 export type CallbackData = {
     body?: never;
@@ -1122,3 +1259,28 @@ export type GetMyselfResponses = {
 };
 
 export type GetMyselfResponse = GetMyselfResponses[keyof GetMyselfResponses];
+
+export type UpdateMySettingsData = {
+    body: SettingsInput;
+    path?: never;
+    query?: never;
+    url: '/api/user/me/settings';
+};
+
+export type UpdateMySettingsErrors = {
+    /**
+     * Validation failed, please check the response
+     */
+    400: Array<unknown>;
+};
+
+export type UpdateMySettingsError = UpdateMySettingsErrors[keyof UpdateMySettingsErrors];
+
+export type UpdateMySettingsResponses = {
+    /**
+     * Settings saved.
+     */
+    200: Account;
+};
+
+export type UpdateMySettingsResponse = UpdateMySettingsResponses[keyof UpdateMySettingsResponses];

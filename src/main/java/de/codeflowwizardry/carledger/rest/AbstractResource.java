@@ -18,12 +18,14 @@ public abstract class AbstractResource
 	 * {@link Principal}, which is bound to the access token.
 	 */
 	protected final Principal context;
+	protected final SecurityIdentity identity;
 	protected final AccountRepository accountRepository;
 
 	@Inject
 	protected AbstractResource(SecurityIdentity identity, AccountRepository accountRepository)
 	{
 		this.context = () -> identity.getPrincipal().getName();
+		this.identity = identity;
 		this.accountRepository = accountRepository;
 	}
 

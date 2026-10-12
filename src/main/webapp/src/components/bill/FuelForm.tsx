@@ -159,9 +159,13 @@ export default function FuelForm({
             label={t('bill.fields.total')}
             value={form.total}
             onChange={(total) => set({ total })}
-            suffix=" €"
+            suffix={` ${format.currencySymbol}`}
             max={MAX}
-            helperText={computed(derived.total, '€')}
+            helperText={
+              derived.total !== undefined
+                ? t('bill.computed', { value: format.money(derived.total) })
+                : undefined
+            }
           />
         </Grid>
         <Grid size={{ xs: 12, sm: 4 }}>

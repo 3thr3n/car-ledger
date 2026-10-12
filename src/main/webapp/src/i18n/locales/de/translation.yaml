@@ -23,6 +23,8 @@ nav:
   dashboard: "Dashboard"
   garage: "Garage"
   yourCars: "Deine Fahrzeuge"
+  settings: "Einstellungen"
+  admin: "Verwaltung"
   signedInAs: "Angemeldet als"
 
 common:
@@ -286,6 +288,54 @@ import:
     errors_one: "{{count}} Fehler"
     errors_other: "{{count}} Fehler"
     row: "Zeile {{row}}"
+
+settings:
+  title: "Einstellungen"
+  subtitle: "Vorgaben deines Kontos, auf allen Geräten."
+  entries: "Einträge"
+  vatHelp: "Vorauswahl für neue Einträge, pro Eintrag änderbar"
+  display: "Anzeige"
+  currency: "Währung"
+  currencyHelp: "Beträge werden wie {{example}} angezeigt. Bestehende Einträge werden nicht umgerechnet."
+  language: "Sprache"
+  languages:
+    browser: "Sprache des Browsers"
+    EN: "English"
+    DE: "Deutsch"
+  saved: "Einstellungen gespeichert"
+
+admin:
+  title: "Verwaltung"
+  subtitle: "Konten und Nutzung dieser Installation."
+  forbidden:
+    title: "Kein Zugriff"
+    text: "Die Verwaltung ist nur für Administratoren verfügbar."
+  stats:
+    accounts: "Konten"
+    activeAccounts: "Aktiv (30 Tage)"
+    cars: "Fahrzeuge"
+    bills: "Einträge"
+    recurringBills: "Laufende Kosten"
+  search: "Konten durchsuchen"
+  you: "Du"
+  never: "Nie"
+  columns:
+    name: "Konto"
+    cars: "Fahrzeuge"
+    bills: "Einträge"
+    createdAt: "Erstellt"
+    lastSeen: "Zuletzt gesehen"
+  edit:
+    button: "Fahrzeuglimit ändern"
+    title: "Fahrzeuglimit von {{name}}"
+    maxCars: "Maximale Fahrzeuge"
+    help: "Aktuell {{cars}} Fahrzeuge. Ein niedrigeres Limit verhindert nur neue Fahrzeuge."
+    done: "Fahrzeuglimit geändert"
+  delete:
+    self: "Das eigene Konto kann nicht gelöscht werden"
+    title: "{{name}} löschen?"
+    text: "Das Konto mit seinen {{cars}} Fahrzeugen und {{bills}} Einträgen wird dauerhaft entfernt. Die Anmeldung selbst wird in Keycloak verwaltet."
+    done: "Konto gelöscht"
 
 errors:
   title: "Etwas ist schiefgelaufen"

@@ -23,6 +23,8 @@ nav:
   dashboard: "Dashboard"
   garage: "Garage"
   yourCars: "Your cars"
+  settings: "Settings"
+  admin: "Administration"
   signedInAs: "Signed in as"
 
 common:
@@ -286,6 +288,54 @@ import:
     errors_one: "{{count}} error"
     errors_other: "{{count}} errors"
     row: "Row {{row}}"
+
+settings:
+  title: "Settings"
+  subtitle: "Preferences of your account, on every device."
+  entries: "Entries"
+  vatHelp: "Preselected for new entries, can be changed per entry"
+  display: "Display"
+  currency: "Currency"
+  currencyHelp: "Amounts are shown like {{example}}. Existing entries are not converted."
+  language: "Language"
+  languages:
+    browser: "Language of the browser"
+    EN: "English"
+    DE: "Deutsch"
+  saved: "Settings saved"
+
+admin:
+  title: "Administration"
+  subtitle: "Accounts and usage of this installation."
+  forbidden:
+    title: "No access"
+    text: "The administration is only available to administrators."
+  stats:
+    accounts: "Accounts"
+    activeAccounts: "Active (30 days)"
+    cars: "Cars"
+    bills: "Entries"
+    recurringBills: "Recurring costs"
+  search: "Search accounts"
+  you: "You"
+  never: "Never"
+  columns:
+    name: "Account"
+    cars: "Cars"
+    bills: "Entries"
+    createdAt: "Created"
+    lastSeen: "Last seen"
+  edit:
+    button: "Change car limit"
+    title: "Car limit of {{name}}"
+    maxCars: "Maximum cars"
+    help: "Currently {{cars}} cars. A lower limit only prevents new cars."
+    done: "Car limit changed"
+  delete:
+    self: "Your own account cannot be deleted"
+    title: "Delete {{name}}?"
+    text: "The account with its {{cars}} cars and {{bills}} entries is removed permanently. The login itself is managed in Keycloak."
+    done: "Account deleted"
 
 errors:
   title: "Something went wrong"

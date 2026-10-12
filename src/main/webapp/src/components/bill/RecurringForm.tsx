@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { BillCategory, BillInterval, BillType } from '@/generated';
 import { addNewRecurringBillMutation } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
-import { toApiDate } from '@/utils/format';
+import { toApiDate, useFormat } from '@/utils/format';
 import NumberField from './NumberField';
 import FormActions from './FormActions';
 import useSaveBill from './useSaveBill';
@@ -33,6 +33,7 @@ const empty = (): RecurringState => ({
 
 export default function RecurringForm({ carId }: { carId: number }) {
   const { t } = useTranslation();
+  const format = useFormat();
   const [form, setForm] = useState<RecurringState>(empty);
   const [touched, setTouched] = useState(false);
 
@@ -103,7 +104,7 @@ export default function RecurringForm({ carId }: { carId: number }) {
             label={t('bill.fields.amount')}
             value={form.amount}
             onChange={(amount) => set({ amount })}
-            suffix=" €"
+            suffix={` ${format.currencySymbol}`}
             max={1_000_000}
             required
             error={touched ? errors.amount : undefined}

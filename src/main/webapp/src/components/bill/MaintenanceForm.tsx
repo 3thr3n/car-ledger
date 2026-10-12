@@ -166,7 +166,7 @@ export default function MaintenanceForm({
             label={t('bill.fields.laborCost')}
             value={form.laborCost}
             onChange={(laborCost) => set({ laborCost })}
-            suffix=" €"
+            suffix={` ${format.currencySymbol}`}
             max={MAX}
           />
         </Grid>
@@ -175,7 +175,7 @@ export default function MaintenanceForm({
             label={t('bill.fields.partsCost')}
             value={form.partsCost}
             onChange={(partsCost) => set({ partsCost })}
-            suffix=" €"
+            suffix={` ${format.currencySymbol}`}
             max={MAX}
           />
         </Grid>
@@ -184,7 +184,7 @@ export default function MaintenanceForm({
             label={t('bill.fields.total')}
             value={form.total}
             onChange={(value) => set({ total: value })}
-            suffix=" €"
+            suffix={` ${format.currencySymbol}`}
             max={MAX}
             required
             error={touched ? errors.total : undefined}

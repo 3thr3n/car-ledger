@@ -1,3 +1,4 @@
+import { ReactNode } from 'react';
 import { Box, MenuItem, TextField } from '@mui/material';
 import countries from 'i18n-iso-countries';
 import ReactCountryFlag from 'react-country-flag';
@@ -8,7 +9,9 @@ import { useFormat } from '@/utils/format';
 export default function VatCountrySelect({
   value,
   onChange,
+  helperText,
 }: {
+  helperText?: ReactNode;
   value: string;
   onChange: (code: string) => void;
 }) {
@@ -33,7 +36,7 @@ export default function VatCountrySelect({
       label={t('bill.fields.vatCountry')}
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      helperText={t('bill.vatHelp')}
+      helperText={helperText ?? t('bill.vatHelp')}
     >
       {options.map(({ code, rate, name }) => (
         <MenuItem key={code} value={code}>
