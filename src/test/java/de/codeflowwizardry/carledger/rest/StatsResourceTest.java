@@ -1,12 +1,14 @@
 package de.codeflowwizardry.carledger.rest;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.time.YearMonth;
+import java.time.temporal.ChronoUnit;
 import java.time.format.DateTimeFormatter;
 
 import org.hibernate.SessionFactory;
@@ -388,5 +390,155 @@ class StatsResourceTest
 				.body("average.distance", is(expected.average().distance().floatValue()))
 				.body("average.fuelCostPerKm", is(expected.average().fuelCostPerKm().floatValue()))
 				.body("average.fuelConsumption", is(expected.average().fuelConsumption().floatValue()));
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldGetCostsPerMonth()
+	{
+		// given: 12 monthly payments of 100 in 2023, a refuel in June
+		RecurringBillInput input = new RecurringBillInput("Insurance", null, BillInterval.MONTHLY,
+				BillCategory.INSURANCE, LocalDate.of(2023, 1, 1), LocalDate.of(2024, 1, 1), BigDecimal.valueOf(100));
+		recurringBillFactory.create(carEntity.getId(), input, "peter");
+
+		// when / then
+		given()
+				.pathParam("carId", carEntity.getId())
+				.queryParam("from", "2023-01-01")
+				.queryParam("to", "2023-12-31")
+				.when()
+				.get("monthly")
+				.then()
+				.statusCode(200)
+				.body("size()", is(12))
+				.body("month", hasItems("2023-01", "2023-12"))
+				// a month with only the recurring payment
+				.body("[0].recurring", is(100.00f))
+				.body("[0].fuel", is(0.00f))
+				.body("[0].total", is(100.00f))
+				.body("[0].consumption", nullValue())
+				.body("[0].costPerKm", nullValue())
+				// the month of the refuel
+				.body("[5].month", is("2023-06"))
+				.body("[5].fuel", is(55.13f))
+				.body("[5].total", is(155.13f))
+				.body("[5].distance", is(480.00f))
+				.body("[5].unit", is(28.00f))
+				.body("[5].pricePerUnit", is(196.9f))
+				.body("[5].consumption", is(5.83f))
+				.body("[5].costPerKm", is(32.32f));
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldGetEveryMonthFromTheFirstToTheLastBill()
+	{
+		long months = ChronoUnit.MONTHS.between(YearMonth.of(2022, 5), YearMonth.now()) + 1;
+
+		for (long carId : new long[] {
+				carEntity.getId(), -1
+		})
+		{
+			given()
+					.pathParam("carId", carId)
+					.when()
+					.get("monthly")
+					.then()
+					.statusCode(200)
+					.body("size()", is((int) months))
+					.body("[0].month", is("2022-05"))
+					.body("[0].fuel", is(37.98f))
+					// months without bills are there, but empty
+					.body("[1].month", is("2022-06"))
+					.body("[1].total", is(0.00f))
+					.body("[1].pricePerUnit", nullValue())
+					.body("[-1].month", is(YearMonth.now().toString()));
+		}
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldUseLiterWeightedPriceAndOnlyRefuelsWithDistanceForConsumption()
+	{
+		// given: a second refuel in June 2023 without distance
+		fuelBillFactory.create(new FuelBillInput(LocalDate.of(2023, 6, 20), null, 19, null,
+				BigDecimal.valueOf(12), BigDecimal.valueOf(180), null), carEntity.getId(), "peter");
+
+		// when / then
+		given()
+				.pathParam("carId", carEntity.getId())
+				.queryParam("from", "2023-06-01")
+				.queryParam("to", "2023-06-30")
+				.when()
+				.get("monthly")
+				.then()
+				.statusCode(200)
+				.body("size()", is(1))
+				.body("[0].unit", is(40.00f))
+				// (28 * 196.9 + 12 * 180) / 40
+				.body("[0].pricePerUnit", is(191.8f))
+				// only the 28 liters of the refuel with distance
+				.body("[0].consumption", is(5.83f));
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldGetNoMonthsWithoutBills()
+	{
+		given()
+				.pathParam("carId", carEntity.getId())
+				.queryParam("from", "2030-01-01")
+				.when()
+				.get("monthly")
+				.then()
+				.statusCode(200)
+				.body("size()", is(0));
+	}
+
+	@Test
+	@TestSecurity(user = "paul", roles = {
+			"user"
+	})
+	void shouldNotGetCostsPerMonthOfOtherUsers()
+	{
+		given()
+				.pathParam("carId", carEntity.getId())
+				.when()
+				.get("monthly")
+				.then()
+				.statusCode(200)
+				.body("size()", is(0));
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldNotQueryPerBillForCostsPerMonth()
+	{
+		Runnable getMonthly = () -> given()
+				.pathParam("carId", carEntity.getId())
+				.when()
+				.get("monthly")
+				.then()
+				.statusCode(200);
+
+		long queriesWithThreeBills = QueryCounter.count(sessionFactory, getMonthly);
+
+		for (int day = 1; day <= 10; day++)
+		{
+			fuelBillFactory.create(new FuelBillInput(LocalDate.of(2022, 8, day), null, 19, BigDecimal.valueOf(400),
+					BigDecimal.valueOf(30), BigDecimal.valueOf(180), null), carEntity.getId(), "peter");
+		}
+
+		assertEquals(queriesWithThreeBills, QueryCounter.count(sessionFactory, getMonthly));
 	}
 }

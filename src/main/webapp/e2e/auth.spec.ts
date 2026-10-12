@@ -15,7 +15,7 @@ test('returns to the requested page after the login', async ({ page }) => {
   await keycloakLogin(page);
 
   await expect(page).toHaveURL(new RegExp(`${deepLink.replace('?', '\\?')}$`));
-  await expect(page.getByText('Cost per km')).toBeVisible();
+  await expect(page.getByText('Cost per km', { exact: true })).toBeVisible();
 });
 
 test('logs out and invalidates the session', async ({ page, request }) => {

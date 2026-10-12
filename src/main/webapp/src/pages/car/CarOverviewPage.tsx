@@ -6,6 +6,7 @@ import ReceiptLongRounded from '@mui/icons-material/ReceiptLongRounded';
 import WaterDropRounded from '@mui/icons-material/WaterDropRounded';
 import ArrowForwardRounded from '@mui/icons-material/ArrowForwardRounded';
 import { useQuery } from '@tanstack/react-query';
+import dayjs from 'dayjs';
 import { Fragment } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
@@ -15,7 +16,7 @@ import {
 } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
 import { BillType } from '@/generated';
-import { useFormat } from '@/utils/format';
+import { toApiDate, useFormat } from '@/utils/format';
 import useBillList from '@/hooks/useBillList';
 import StatTile from '@/components/ui/StatTile';
 import Section from '@/components/ui/Section';
@@ -25,6 +26,13 @@ import { RouterButton } from '@/components/ui/links';
 import BillTable from '@/components/bill/BillTable';
 import { useLedgerColumns } from '@/components/bill/columns';
 import useDeleteBill from '@/components/bill/useDeleteBill';
+import MonthlyChart from '@/components/dashboard/LazyMonthlyChart';
+
+/** the chart of the overview shows the current and the 11 months before */
+const lastTwelveMonths = () => ({
+  from: toApiDate(dayjs().subtract(11, 'month').startOf('month')),
+  to: toApiDate(dayjs().endOf('month')),
+});
 
 export default function CarOverviewPage({ id }: { id: number }) {
   const { t } = useTranslation();
@@ -100,6 +108,12 @@ export default function CarOverviewPage({ id }: { id: number }) {
           </Grid>
         ))}
       </Grid>
+
+      <MonthlyChart
+        carId={id}
+        {...lastTwelveMonths()}
+        subtitle={t('dashboard.filter.period.last12')}
+      />
 
       <Grid container spacing={3}>
         <Grid size={{ xs: 12, lg: 8 }}>

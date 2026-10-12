@@ -96,6 +96,15 @@ dashboard:
     distance: "Strecke pro Tankfüllung"
     fuelCost: "Kosten pro Tankfüllung"
     maintenanceCost: "Kosten pro Wartung"
+  monthly:
+    title: "Kosten pro Monat"
+    costs: "Kosten"
+    fuel: "Kraftstoff"
+    pricePerUnit: "Kraftstoffpreis"
+    consumption: "Verbrauch"
+    empty:
+      costs: "Keine Kosten in diesem Zeitraum"
+      fuel: "Keine Tankfüllungen in diesem Zeitraum"
   empty:
     title: "Noch nichts auszuwerten"
     text: "Erfasse Einträge für eines deiner Fahrzeuge, dann erscheinen hier die Zahlen."
