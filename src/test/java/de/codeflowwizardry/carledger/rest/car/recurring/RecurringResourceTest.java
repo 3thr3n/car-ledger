@@ -3,9 +3,11 @@ package de.codeflowwizardry.carledger.rest.car.recurring;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.contains;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -480,12 +482,14 @@ class RecurringResourceTest
 	@TestSecurity(user = "peter", roles = {
 			"user"
 	})
-	void shouldSortRunningAndNewestFirstOrByNextDue()
+	void shouldSortRunningAndLatestStartFirstOrByNextDue()
 	{
 		LocalDate today = LocalDate.now();
-		addMonthly("finished", LocalDate.of(2025, 1, 1), LocalDate.of(2025, 12, 31));
-		addMonthly("soon", today.plusDays(10), null);
-		addMonthly("later", today.plusDays(30), null);
+		addRecurring("long running", "MONTHLY", today.minusYears(2), null);
+		addRecurring("finished", "MONTHLY", LocalDate.of(2024, 1, 1), LocalDate.of(2024, 12, 31));
+		addRecurring("new", "MONTHLY", today, today.plusYears(1));
+		// created last, but started before "new"
+		addRecurring("yearly", "ANNUALLY", today.minusDays(40), null);
 
 		given()
 				.pathParam("carId", carId)
@@ -494,9 +498,9 @@ class RecurringResourceTest
 				.get()
 				.then()
 				.statusCode(200)
-				.body("data.name", contains("later", "soon", "finished"));
+				.body("data.name", contains("new", "yearly", "long running", "finished"));
 
-		given()
+		List<String> nextDue = given()
 				.pathParam("carId", carId)
 				.queryParam("onlyRunning", true)
 				.queryParam("sort", "NEXT_DUE")
@@ -505,21 +509,27 @@ class RecurringResourceTest
 				.get()
 				.then()
 				.statusCode(200)
-				.body("data.name", contains("soon", "later"));
+				.extract()
+				.jsonPath()
+				.getList("data.nextDueDate", String.class);
+
+		// ISO dates sort like strings
+		assertEquals(3, nextDue.size());
+		assertEquals(nextDue.stream().sorted().toList(), nextDue);
 	}
 
-	private void addMonthly(String name, LocalDate start, LocalDate end)
+	private void addRecurring(String name, String interval, LocalDate start, LocalDate end)
 	{
 		String body = """
 				{
 				    "name": "%s",
-				    "billInterval": "MONTHLY",
+				    "billInterval": "%s",
 				    "category": "FINANCE",
 				    "startDate": "%s",
 				    %s
 				    "amount": 10.00
 				}
-				""".formatted(name, start, end == null ? "" : "\"endDate\": \"" + end + "\",");
+				""".formatted(name, interval, start, end == null ? "" : "\"endDate\": \"" + end + "\",");
 
 		given()
 				.pathParam("carId", carId)

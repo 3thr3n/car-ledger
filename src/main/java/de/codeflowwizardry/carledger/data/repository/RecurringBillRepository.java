@@ -23,8 +23,8 @@ public class RecurringBillRepository implements PanacheRepository<RecurringBillE
 	/**
 	 * @param byNextDue
 	 *            the next due payment first, otherwise running bills before
-	 *            finished ones, the newest (by id, ids are assigned in order of
-	 *            creation) first
+	 *            finished ones, the latest first payment (start date) first, so
+	 *            the longest running is at the bottom
 	 */
 	public PanacheQuery<RecurringBillEntity> getAll(long carId, String name, Page queryPage, boolean running,
 			boolean byNextDue)
@@ -44,7 +44,7 @@ public class RecurringBillRepository implements PanacheRepository<RecurringBillE
 			query += " order by nextDueDate asc, id asc";
 		} else
 		{
-			query += " order by case when " + RUNNING + " then 0 else 1 end, id desc";
+			query += " order by case when " + RUNNING + " then 0 else 1 end, startDate desc, id desc";
 		}
 
 		return find(query, params).page(queryPage);
