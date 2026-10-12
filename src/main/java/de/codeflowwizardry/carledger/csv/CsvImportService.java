@@ -1,7 +1,7 @@
 package de.codeflowwizardry.carledger.csv;
 
-import java.io.File;
 import java.io.IOException;
+import java.io.Reader;
 
 import de.codeflowwizardry.carledger.csv.importer.FuelBillCsvImporter;
 import de.codeflowwizardry.carledger.csv.importer.MaintenanceBillCsvImporter;
@@ -27,7 +27,7 @@ public class CsvImportService
 		this.miscellaneousBillCsvImporter = miscellaneousBillCsvImporter;
 	}
 
-	public CsvImportResult importBills(File csv, CsvColumnMapping mapping, long carId, String name, int skipLines,
+	public CsvImportResult importBills(Reader csv, CsvColumnMapping mapping, long carId, String name, int skipLines,
 			Integer vat, BillType type) throws IOException
 	{
 		CsvProcessor<?> processor = null;

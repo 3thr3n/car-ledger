@@ -1,8 +1,7 @@
 package de.codeflowwizardry.carledger.csv;
 
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.Reader;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +24,7 @@ public class CsvProcessor<T extends AbstractBillInput>
 		this.importer = importer;
 	}
 
-	public CsvImportResult process(File csv, CsvColumnMapping mapping, int skipLines, Integer vat, long carId,
+	public CsvImportResult process(Reader csv, CsvColumnMapping mapping, int skipLines, Integer vat, long carId,
 			String name)
 			throws IOException
 	{
@@ -33,7 +32,7 @@ public class CsvProcessor<T extends AbstractBillInput>
 
 		CsvImportResult result = new CsvImportResult();
 
-		try (CSVReader csvReader = new CSVReaderBuilder(new FileReader(csv))
+		try (CSVReader csvReader = new CSVReaderBuilder(csv)
 				.withSkipLines(skipLines)
 				.build())
 		{
@@ -62,8 +61,9 @@ public class CsvProcessor<T extends AbstractBillInput>
 				}
 				catch (Exception e)
 				{
+					// the details stay in the log, they may contain internals of the database
 					LOG.error("Row {}: Unexpected error", rowNumber, e);
-					result.addError(rowNumber, "Unexpected error: " + e.getMessage());
+					result.addError(rowNumber, "Unexpected error, see the server log");
 				}
 			}
 		}

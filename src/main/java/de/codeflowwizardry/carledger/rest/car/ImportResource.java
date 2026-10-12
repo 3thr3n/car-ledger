@@ -1,6 +1,9 @@
 package de.codeflowwizardry.carledger.rest.car;
 
-import java.io.File;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 import java.io.IOException;
 import io.quarkus.security.identity.SecurityIdentity;
 
@@ -65,7 +68,7 @@ public class ImportResource extends AbstractResource
 	@APIResponse(responseCode = "500", description = "- CSV was not set\n- Something went wrong while importing. Please ask the server admin for help.")
 	public Response importFuelCsv(
 			@PathParam("carId") long carId,
-			@RestForm("file") @PartType("text/csv") File csv,
+			@RestForm("file") @PartType("text/csv") InputStream csv,
 			@RestForm("billType") BillType billType,
 			@RestForm("order") @PartType(MediaType.TEXT_PLAIN) String columnMappingJson,
 			@RestForm("vat") @PartType(MediaType.APPLICATION_JSON) Integer vat,
@@ -130,34 +133,46 @@ public class ImportResource extends AbstractResource
 		};
 	}
 
-	private Response processImport(File csv, String columnMappingJson, ImportFunction importFunction)
+	/**
+	 * The upload is read as stream: no path of the request reaches the file
+	 * system
+	 */
+	private Response processImport(InputStream csv, String columnMappingJson, ImportFunction importFunction)
 	{
-		try
+		try (Reader reader = new InputStreamReader(csv, StandardCharsets.UTF_8))
 		{
 			CsvColumnMapping mapping = CsvColumnMapping.fromJson(columnMappingJson);
 
-			CsvImportResult result = importFunction.apply(csv, mapping);
+			CsvImportResult result = importFunction.apply(reader, mapping);
 
 			return Response.ok().entity(result).build();
 
 		}
-		catch (IllegalArgumentException | JsonProcessingException e)
+		catch (JsonProcessingException e)
 		{
-			// invalid or incomplete column mapping
+			// the message of the parser names its internals
+			LOG.warn("Invalid column mapping: {}", e.getMessage());
+			return Response.status(400).entity("Column mapping is invalid").build();
+		}
+		catch (IllegalArgumentException e)
+		{
+			// incomplete column mapping, the messages are written for the user
 			LOG.warn("Invalid CSV import request: {}", e.getMessage());
 			return Response.status(400).entity(e.getMessage()).build();
 		}
 		catch (Exception e)
 		{
 			LOG.error("Error processing CSV", e);
-			return Response.status(500).entity(e.getMessage()).build();
+			return Response.status(500)
+					.entity("Something went wrong while importing. Please ask the server admin for help.")
+					.build();
 		}
 	}
 
 	@FunctionalInterface
 	private interface ImportFunction
 	{
-		CsvImportResult apply(File file, CsvColumnMapping mapping) throws IOException;
+		CsvImportResult apply(Reader csv, CsvColumnMapping mapping) throws IOException;
 	}
 
 }
