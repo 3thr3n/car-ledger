@@ -74,29 +74,21 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.carLedger.postgres.auth.secret }}
                   key: {{ .Values.carLedger.postgres.auth.secretPasswordKey }}
+          # liveness and readiness start after the startup probe succeeded
+          startupProbe:
+            httpGet:
+              port: management
+              path: /q/health/started
+            {{- toYaml .Values.carLedger.startupProbe | nindent 12 }}
           livenessProbe:
             httpGet:
               port: management
               path: /q/health/live
-            failureThreshold: 3
-            periodSeconds: 20
-            successThreshold: 1
-            timeoutSeconds: 2
+            {{- toYaml .Values.carLedger.livenessProbe | nindent 12 }}
           readinessProbe:
             httpGet:
               port: management
               path: /q/health
-            failureThreshold: 10
-            periodSeconds: 5
-            initialDelaySeconds: 15
-            successThreshold: 1
-            timeoutSeconds: 1
+            {{- toYaml .Values.carLedger.readinessProbe | nindent 12 }}
           resources:
-            requests:
-              cpu: 100m
-              memory: 256Mi
-              ephemeral-storage: 100Mi
-            limits:
-              cpu: 350m
-              memory: 768Mi
-              ephemeral-storage: 500Mi
+            {{- toYaml .Values.carLedger.resources | nindent 12 }}

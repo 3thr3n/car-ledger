@@ -33,6 +33,29 @@ carLedger:
     secretKeys:
       clientSecret: "secret"
       stateSecret: "state-secret"
+  # probes of the app, the paths are fixed. The startup probe gives a slow start (small CPU limit,
+  # database migrations) failureThreshold * periodSeconds, 150 s by default, before the pod is restarted
+  startupProbe:
+    failureThreshold: 30
+    periodSeconds: 5
+    timeoutSeconds: 2
+  livenessProbe:
+    failureThreshold: 3
+    periodSeconds: 20
+    timeoutSeconds: 2
+  readinessProbe:
+    failureThreshold: 3
+    periodSeconds: 5
+    timeoutSeconds: 1
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+      ephemeral-storage: 100Mi
+    limits:
+      cpu: 350m
+      memory: 768Mi
+      ephemeral-storage: 500Mi
   infinispan:
     hosts: "car-ledger-infinispan"
   postgres:
