@@ -218,6 +218,24 @@ class ImportResourceTest
 	@TestSecurity(user = "peter", roles = {
 			"user"
 	})
+	void shouldNotExposeTheParserMessageOfAnInvalidMapping()
+	{
+		given().contentType(ContentType.MULTIPART)
+				.multiPart("file", "import.csv", getFile("csv/maintenance_import_1.csv"), "text/csv")
+				.multiPart("order", "{ \"date\": ")
+				.multiPart("billType", "MAINTENANCE")
+				.multiPart("vat", 19)
+				.when()
+				.post("/api/import/" + carEntity.getId())
+				.then()
+				.statusCode(400)
+				.body(is("Column mapping is invalid"));
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
 	void shouldImportCsvInvalidDate()
 	{
 		String order = """
