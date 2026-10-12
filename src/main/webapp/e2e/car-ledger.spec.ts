@@ -217,6 +217,11 @@ test.describe.serial('car ledger', () => {
     const chart = page.locator('.MuiCard-root', { hasText: 'Costs per month' });
     await expect(chart.locator('.MuiBarChart-element').first()).toBeVisible();
     await expect(chart.getByText('Jan 26')).toBeVisible();
+    // the tooltip names the total of the month above the split by type
+    await chart.locator('.MuiBarChart-element').first().hover();
+    await expect(
+      page.getByText(`January 2026 · Total ${money(71.75)}`),
+    ).toBeVisible();
     await chart.getByRole('button', { name: 'Fuel', exact: true }).click();
     await expect(chart.getByText('Fuel price')).toBeVisible();
     await expect(chart.getByText('No refuels in this period')).toHaveCount(0);

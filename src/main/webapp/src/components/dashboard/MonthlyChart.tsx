@@ -79,6 +79,21 @@ export default function MonthlyChart({
     tickLabelInterval: (_: unknown, index: number) => index % step === 0,
   };
 
+  // the tooltip of the costs shows the total of the month above the split
+  const totals = new Map(
+    months.map((month) => [month.month, num(month.total) ?? 0]),
+  );
+  const costsXAxis = {
+    ...xAxis,
+    valueFormatter: (month: string, context: { location: string }) =>
+      context.location === 'tooltip'
+        ? t('dashboard.monthly.tooltipTotal', {
+            month: label(month, true),
+            total: format.money(totals.get(month)),
+          })
+        : label(month),
+  };
+
   const hasCosts = months.some((month) => (num(month.total) ?? 0) > 0);
   const hasFuel = months.some((month) => num(month.pricePerUnit) !== undefined);
   const isEmpty = view === 'costs' ? !hasCosts : !hasFuel;
@@ -129,7 +144,7 @@ export default function MonthlyChart({
           height={HEIGHT}
           loading={isLoading}
           dataset={months.map(costRow)}
-          xAxis={[xAxis]}
+          xAxis={[costsXAxis]}
           yAxis={[
             {
               width: 64,
