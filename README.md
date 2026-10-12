@@ -88,6 +88,15 @@ To start using CarLedger, follow these steps:
 - End recurring costs (e.g. a cancelled insurance), payments from the end date on are removed.
 - Delete a car together with all its receipts.
 
+### Settings
+
+- The default VAT country, the currency of the amounts and the language are stored with your account.
+
+### Administration
+
+- Users with the Keycloak role `admin` see the administration: usage statistics, all accounts with their cars and
+  entries, the car limit per account and deleting accounts.
+
 ### Importing Receipts via CSV
 
 - Use the CSV import feature to upload multiple receipts at once. Ensure your file follows the specified format below.

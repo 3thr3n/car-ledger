@@ -2,6 +2,7 @@ package de.codeflowwizardry.carledger.rest;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -21,6 +22,9 @@ import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.security.runtime.QuarkusSecurityIdentity;
 import io.quarkus.test.security.TestSecurity;
+import java.time.OffsetDateTime;
+
+import io.restassured.http.ContentType;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.BadRequestException;
@@ -138,4 +142,90 @@ class AccountResourceTest
 		accountRepository.deleteAll();
 	}
 
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldReturnDefaultSettingsAndNoAdmin()
+	{
+		given()
+				.when()
+				.get("/api/user/me")
+				.then()
+				.statusCode(200)
+				.body("admin", Matchers.is(false))
+				.body("vatCountry", Matchers.is("DE"))
+				.body("currency", Matchers.is("EUR"))
+				.body("language", Matchers.nullValue());
+
+		assertNotNull(lastSeen("peter"));
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user", "admin"
+	})
+	void shouldReturnAdminFlag()
+	{
+		given()
+				.when()
+				.get("/api/user/me")
+				.then()
+				.statusCode(200)
+				.body("admin", Matchers.is(true));
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldUpdateSettings()
+	{
+		given().when().get("/api/user/me").then().statusCode(200);
+
+		given()
+				.contentType(ContentType.JSON)
+				.body("""
+						{ "vatCountry": "AT", "currency": "CHF", "language": "DE" }
+						""")
+				.when()
+				.put("/api/user/me/settings")
+				.then()
+				.statusCode(200)
+				.body("vatCountry", Matchers.is("AT"))
+				.body("currency", Matchers.is("CHF"))
+				.body("language", Matchers.is("DE"));
+
+		given()
+				.when()
+				.get("/api/user/me")
+				.then()
+				.body("currency", Matchers.is("CHF"));
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldRejectInvalidSettings()
+	{
+		given().when().get("/api/user/me").then().statusCode(200);
+
+		given()
+				.contentType(ContentType.JSON)
+				.body("""
+						{ "vatCountry": "XX", "currency": "EURO", "language": "FR" }
+						""")
+				.when()
+				.put("/api/user/me/settings")
+				.then()
+				.statusCode(400)
+				.body("size()", Matchers.is(3));
+	}
+
+	@Transactional
+	OffsetDateTime lastSeen(String user)
+	{
+		return accountRepository.findByIdentifier(user).getLastSeen();
+	}
 }

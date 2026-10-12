@@ -18,7 +18,9 @@ import { Route as CarIdBillImportRouteImport } from './routes/car/$id/bill/impor
 import { Route as CarIdBillAddRouteImport } from './routes/car/$id/bill/add'
 import { Route as CarIdBillBillIdEditRouteImport } from './routes/car/$id/bill/$billId/edit'
 
+const SettingsLazyRouteImport = createFileRoute('/settings')()
 const ErrorLazyRouteImport = createFileRoute('/error')()
+const AdminLazyRouteImport = createFileRoute('/admin')()
 const IndexLazyRouteImport = createFileRoute('/')()
 const CarIndexLazyRouteImport = createFileRoute('/car/')()
 const Dev404LazyRouteImport = createFileRoute('/dev/404')()
@@ -38,11 +40,21 @@ const CarIdBillFuelIndexLazyRouteImport = createFileRoute(
   '/car/$id/bill/fuel/',
 )()
 
+const SettingsLazyRoute = SettingsLazyRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/settings.lazy').then((d) => d.Route))
 const ErrorLazyRoute = ErrorLazyRouteImport.update({
   id: '/error',
   path: '/error',
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/error.lazy').then((d) => d.Route))
+const AdminLazyRoute = AdminLazyRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/admin.lazy').then((d) => d.Route))
 const IndexLazyRoute = IndexLazyRouteImport.update({
   id: '/',
   path: '/',
@@ -139,7 +151,9 @@ const CarIdBillBillIdEditRoute = CarIdBillBillIdEditRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexLazyRoute
+  '/admin': typeof AdminLazyRoute
   '/error': typeof ErrorLazyRoute
+  '/settings': typeof SettingsLazyRoute
   '/car/$id': typeof CarIdRouteRouteWithChildren
   '/dev/i18n': typeof DevI18nRoute
   '/car/new': typeof CarNewLazyRoute
@@ -158,7 +172,9 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexLazyRoute
+  '/admin': typeof AdminLazyRoute
   '/error': typeof ErrorLazyRoute
+  '/settings': typeof SettingsLazyRoute
   '/dev/i18n': typeof DevI18nRoute
   '/car/new': typeof CarNewLazyRoute
   '/dev/404': typeof Dev404LazyRoute
@@ -177,7 +193,9 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexLazyRoute
+  '/admin': typeof AdminLazyRoute
   '/error': typeof ErrorLazyRoute
+  '/settings': typeof SettingsLazyRoute
   '/car/$id': typeof CarIdRouteRouteWithChildren
   '/dev/i18n': typeof DevI18nRoute
   '/car/new': typeof CarNewLazyRoute
@@ -198,7 +216,9 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/error'
+    | '/settings'
     | '/car/$id'
     | '/dev/i18n'
     | '/car/new'
@@ -217,7 +237,9 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/admin'
     | '/error'
+    | '/settings'
     | '/dev/i18n'
     | '/car/new'
     | '/dev/404'
@@ -235,7 +257,9 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/admin'
     | '/error'
+    | '/settings'
     | '/car/$id'
     | '/dev/i18n'
     | '/car/new'
@@ -255,7 +279,9 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexLazyRoute: typeof IndexLazyRoute
+  AdminLazyRoute: typeof AdminLazyRoute
   ErrorLazyRoute: typeof ErrorLazyRoute
+  SettingsLazyRoute: typeof SettingsLazyRoute
   CarIdRouteRoute: typeof CarIdRouteRouteWithChildren
   DevI18nRoute: typeof DevI18nRoute
   CarNewLazyRoute: typeof CarNewLazyRoute
@@ -266,11 +292,25 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsLazyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/error': {
       id: '/error'
       path: '/error'
       fullPath: '/error'
       preLoaderRoute: typeof ErrorLazyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminLazyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -418,7 +458,9 @@ const CarIdRouteRouteWithChildren = CarIdRouteRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexLazyRoute: IndexLazyRoute,
+  AdminLazyRoute: AdminLazyRoute,
   ErrorLazyRoute: ErrorLazyRoute,
+  SettingsLazyRoute: SettingsLazyRoute,
   CarIdRouteRoute: CarIdRouteRouteWithChildren,
   DevI18nRoute: DevI18nRoute,
   CarNewLazyRoute: CarNewLazyRoute,

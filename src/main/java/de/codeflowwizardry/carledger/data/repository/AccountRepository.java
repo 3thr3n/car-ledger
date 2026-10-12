@@ -1,5 +1,7 @@
 package de.codeflowwizardry.carledger.data.repository;
 
+import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -43,5 +45,65 @@ public class AccountRepository implements PanacheRepository<AccountEntity>
 		accountEntity.setMaxCars(maxCars);
 		persistAndFlush(accountEntity);
 		return accountEntity;
+	}
+
+	/**
+	 * @param search
+	 *            part of the user name, case insensitive, <code>null</code> for all
+	 * @return accounts with the amount of their cars and bills, ordered by user
+	 *         name
+	 */
+	public List<AccountUsage> listUsage(String search, int page, int size)
+	{
+		return getEntityManager()
+				.createQuery("select a,"
+						+ " (select count(c) from Car c where c.user = a),"
+						+ " (select count(b) from bill b where b.car.user = a)"
+						+ " from Account a where " + SEARCH + " order by a.userId", Object[].class)
+				.setParameter("search", searchPattern(search))
+				.setFirstResult(page * size)
+				.setMaxResults(size)
+				.getResultList()
+				.stream()
+				.map(row -> new AccountUsage((AccountEntity) row[0], (Long) row[1], (Long) row[2]))
+				.toList();
+	}
+
+	public long countMatching(String search)
+	{
+		return getEntityManager()
+				.createQuery("select count(a) from Account a where " + SEARCH, Long.class)
+				.setParameter("search", searchPattern(search))
+				.getSingleResult();
+	}
+
+	/**
+	 * @return amount of accounts seen since the given time
+	 */
+	public long countSeenSince(OffsetDateTime since)
+	{
+		return count("lastSeen >= ?1", since);
+	}
+
+	/**
+	 * Deletes the account, the database removes its cars and their bills as well
+	 *
+	 * @return whether the account existed
+	 */
+	@Transactional
+	public boolean deleteAccount(long id)
+	{
+		return delete("id", id) == 1;
+	}
+
+	private static final String SEARCH = "lower(a.userId) like :search";
+
+	private static String searchPattern(String search)
+	{
+		return "%" + (search == null ? "" : search.toLowerCase().replace("%", "").replace("_", "")) + "%";
+	}
+
+	public record AccountUsage(AccountEntity account, long cars, long bills)
+	{
 	}
 }

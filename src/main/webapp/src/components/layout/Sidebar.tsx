@@ -18,15 +18,19 @@ import SpaceDashboardRounded from '@mui/icons-material/SpaceDashboardRounded';
 import GarageRounded from '@mui/icons-material/GarageRounded';
 import AddRounded from '@mui/icons-material/AddRounded';
 import LogoutRounded from '@mui/icons-material/LogoutRounded';
+import SettingsRounded from '@mui/icons-material/SettingsRounded';
+import AdminPanelSettingsRounded from '@mui/icons-material/AdminPanelSettingsRounded';
 import LightModeRounded from '@mui/icons-material/LightModeRounded';
 import DarkModeRounded from '@mui/icons-material/DarkModeRounded';
 import SettingsBrightnessRounded from '@mui/icons-material/SettingsBrightnessRounded';
 import { useQuery } from '@tanstack/react-query';
 import { useLocation } from '@tanstack/react-router';
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getMyCarsOptions } from '@/generated/@tanstack/react-query.gen';
 import { baseUrl, localClient } from '@/utils/QueryClient';
 import useMe from '@/hooks/useMe';
+import useSaveSettings from '@/hooks/useSaveSettings';
 import { RouterListItemButton } from '@/components/ui/links';
 import CarAvatar from '@/components/layout/CarAvatar';
 import productLogo from '@/assets/car-ledger.svg';
@@ -36,7 +40,28 @@ const languages = ['EN', 'DE'];
 export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const { t, i18n } = useTranslation();
   const { pathname } = useLocation();
-  const { account, loggedIn, maxCars } = useMe();
+  const { account, loggedIn, maxCars, isAdmin } = useMe();
+  const settings = useSaveSettings();
+
+  // the language of the settings wins over the one of the browser
+  useEffect(() => {
+    if (account?.language && account.language !== i18n.language) {
+      i18n.changeLanguage(account.language);
+    }
+    // only when the saved language changes, not when the user switches
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [account?.language]);
+
+  const changeLanguage = (language: string) => {
+    i18n.changeLanguage(language);
+    if (account) {
+      settings.save({
+        vatCountry: account.vatCountry,
+        currency: account.currency,
+        language,
+      });
+    }
+  };
   const { mode, setMode } = useColorScheme();
 
   const { data: cars } = useQuery({
@@ -100,6 +125,30 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
                 </ListItemIcon>
                 <ListItemText primary={t('nav.garage')} />
               </RouterListItemButton>
+              <RouterListItemButton
+                to="/settings"
+                selected={pathname.startsWith('/settings')}
+                onClick={onNavigate}
+                sx={{ borderRadius: 2, mt: 0.5 }}
+              >
+                <ListItemIcon sx={{ minWidth: 36 }}>
+                  <SettingsRounded fontSize="small" />
+                </ListItemIcon>
+                <ListItemText primary={t('nav.settings')} />
+              </RouterListItemButton>
+              {isAdmin && (
+                <RouterListItemButton
+                  to="/admin"
+                  selected={pathname.startsWith('/admin')}
+                  onClick={onNavigate}
+                  sx={{ borderRadius: 2, mt: 0.5 }}
+                >
+                  <ListItemIcon sx={{ minWidth: 36 }}>
+                    <AdminPanelSettingsRounded fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText primary={t('nav.admin')} />
+                </RouterListItemButton>
+              )}
             </List>
 
             <List
@@ -168,7 +217,7 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
             size="small"
             exclusive
             value={i18n.language}
-            onChange={(_, value) => value && i18n.changeLanguage(value)}
+            onChange={(_, value) => value && changeLanguage(value)}
             aria-label={t('app.language')}
           >
             {languages.map((lang) => (

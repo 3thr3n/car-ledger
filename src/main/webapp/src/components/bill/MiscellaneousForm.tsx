@@ -10,7 +10,7 @@ import {
   updateMiscellaneousBillMutation,
 } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
-import { toApiDate } from '@/utils/format';
+import { toApiDate, useFormat } from '@/utils/format';
 import useVatCountry from '@/hooks/useVatCountry';
 import NumberField from './NumberField';
 import VatCountrySelect from './VatCountrySelect';
@@ -40,6 +40,7 @@ export default function MiscellaneousForm({
   bill?: MiscellaneousBill;
 }) {
   const { t } = useTranslation();
+  const format = useFormat();
   const vat = useVatCountry(bill?.vatRate);
   const [form, setForm] = useState<MiscellaneousState>(() =>
     bill ? fromBill(bill) : empty(),
@@ -121,7 +122,7 @@ export default function MiscellaneousForm({
             label={t('bill.fields.total')}
             value={form.total}
             onChange={(total) => set({ total })}
-            suffix=" €"
+            suffix={` ${format.currencySymbol}`}
             max={1_000_000}
             required
             error={touched ? errors.total : undefined}

@@ -2,7 +2,7 @@
 
 import { type Client, formDataBodySerializer, type Options as Options2, type TDataShape } from './client';
 import { client } from './client.gen';
-import type { AddNewFuelBillData, AddNewFuelBillErrors, AddNewFuelBillResponses, AddNewMaintenanceBillData, AddNewMaintenanceBillErrors, AddNewMaintenanceBillResponses, AddNewMiscellaneousBillData, AddNewMiscellaneousBillErrors, AddNewMiscellaneousBillResponses, AddNewRecurringBillData, AddNewRecurringBillErrors, AddNewRecurringBillResponses, CallbackData, CallbackResponses, CreateCarData, CreateCarErrors, CreateCarResponses, DeleteBillData, DeleteBillErrors, DeleteBillResponses, DeleteMyCarData, DeleteMyCarErrors, DeleteMyCarResponses, DeleteRecurringBillData, DeleteRecurringBillErrors, DeleteRecurringBillResponses, EndRecurringBillData, EndRecurringBillErrors, EndRecurringBillResponses, GetAllBillsData, GetAllBillsResponses, GetAllBillYearsData, GetAllBillYearsResponses, GetAllFuelBillsData, GetAllFuelBillsResponses, GetAllFuelBillYearsData, GetAllFuelBillYearsResponses, GetAllMaintenanceBillsData, GetAllMaintenanceBillsResponses, GetAllMaintenanceBillYearsData, GetAllMaintenanceBillYearsResponses, GetAllMiscellaneousBillsData, GetAllMiscellaneousBillsResponses, GetAllMiscellaneousBillYearsData, GetAllMiscellaneousBillYearsResponses, GetAllRecurringBillsData, GetAllRecurringBillsResponses, GetCsvFieldsData, GetCsvFieldsResponses, GetDashboardStatsData, GetDashboardStatsResponses, GetFuelBillData, GetFuelBillErrors, GetFuelBillResponses, GetMaintenanceBillData, GetMaintenanceBillErrors, GetMaintenanceBillResponses, GetMiscellaneousBillData, GetMiscellaneousBillErrors, GetMiscellaneousBillResponses, GetMyCarData, GetMyCarErrors, GetMyCarOverviewData, GetMyCarOverviewErrors, GetMyCarOverviewResponses, GetMyCarResponses, GetMyCarsData, GetMyCarsResponses, GetMyselfData, GetMyselfResponses, ImportCsvData, ImportCsvErrors, ImportCsvResponses, LoginData, LoginResponses, LogoutCallbackData, LogoutCallbackResponses, LogoutData, LogoutResponses, UpdateFuelBillData, UpdateFuelBillErrors, UpdateFuelBillResponses, UpdateMaintenanceBillData, UpdateMaintenanceBillErrors, UpdateMaintenanceBillResponses, UpdateMiscellaneousBillData, UpdateMiscellaneousBillErrors, UpdateMiscellaneousBillResponses, UpdateMyCarData, UpdateMyCarErrors, UpdateMyCarResponses } from './types.gen';
+import type { AddNewFuelBillData, AddNewFuelBillErrors, AddNewFuelBillResponses, AddNewMaintenanceBillData, AddNewMaintenanceBillErrors, AddNewMaintenanceBillResponses, AddNewMiscellaneousBillData, AddNewMiscellaneousBillErrors, AddNewMiscellaneousBillResponses, AddNewRecurringBillData, AddNewRecurringBillErrors, AddNewRecurringBillResponses, CallbackData, CallbackResponses, CreateCarData, CreateCarErrors, CreateCarResponses, DeleteAdminAccountData, DeleteAdminAccountErrors, DeleteAdminAccountResponses, DeleteBillData, DeleteBillErrors, DeleteBillResponses, DeleteMyCarData, DeleteMyCarErrors, DeleteMyCarResponses, DeleteRecurringBillData, DeleteRecurringBillErrors, DeleteRecurringBillResponses, EndRecurringBillData, EndRecurringBillErrors, EndRecurringBillResponses, GetAdminAccountsData, GetAdminAccountsResponses, GetAdminStatsData, GetAdminStatsResponses, GetAllBillsData, GetAllBillsResponses, GetAllBillYearsData, GetAllBillYearsResponses, GetAllFuelBillsData, GetAllFuelBillsResponses, GetAllFuelBillYearsData, GetAllFuelBillYearsResponses, GetAllMaintenanceBillsData, GetAllMaintenanceBillsResponses, GetAllMaintenanceBillYearsData, GetAllMaintenanceBillYearsResponses, GetAllMiscellaneousBillsData, GetAllMiscellaneousBillsResponses, GetAllMiscellaneousBillYearsData, GetAllMiscellaneousBillYearsResponses, GetAllRecurringBillsData, GetAllRecurringBillsResponses, GetCsvFieldsData, GetCsvFieldsResponses, GetDashboardStatsData, GetDashboardStatsResponses, GetFuelBillData, GetFuelBillErrors, GetFuelBillResponses, GetMaintenanceBillData, GetMaintenanceBillErrors, GetMaintenanceBillResponses, GetMiscellaneousBillData, GetMiscellaneousBillErrors, GetMiscellaneousBillResponses, GetMyCarData, GetMyCarErrors, GetMyCarOverviewData, GetMyCarOverviewErrors, GetMyCarOverviewResponses, GetMyCarResponses, GetMyCarsData, GetMyCarsResponses, GetMyselfData, GetMyselfResponses, ImportCsvData, ImportCsvErrors, ImportCsvResponses, LoginData, LoginResponses, LogoutCallbackData, LogoutCallbackResponses, LogoutData, LogoutResponses, UpdateAdminAccountData, UpdateAdminAccountErrors, UpdateAdminAccountResponses, UpdateFuelBillData, UpdateFuelBillErrors, UpdateFuelBillResponses, UpdateMaintenanceBillData, UpdateMaintenanceBillErrors, UpdateMaintenanceBillResponses, UpdateMiscellaneousBillData, UpdateMiscellaneousBillErrors, UpdateMiscellaneousBillResponses, UpdateMyCarData, UpdateMyCarErrors, UpdateMyCarResponses, UpdateMySettingsData, UpdateMySettingsErrors, UpdateMySettingsResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -17,6 +17,41 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
      */
     meta?: Record<string, unknown>;
 };
+
+/**
+ * Get Accounts
+ *
+ * All accounts with their usage, pages starting at 1
+ */
+export const getAdminAccounts = <ThrowOnError extends boolean = false>(options?: Options<GetAdminAccountsData, ThrowOnError>) => (options?.client ?? client).get<GetAdminAccountsResponses, unknown, ThrowOnError>({ url: '/api/admin/accounts', ...options });
+
+/**
+ * Delete Account
+ *
+ * Deletes the account with all its cars and bills
+ */
+export const deleteAdminAccount = <ThrowOnError extends boolean = false>(options: Options<DeleteAdminAccountData, ThrowOnError>) => (options.client ?? client).delete<DeleteAdminAccountResponses, DeleteAdminAccountErrors, ThrowOnError>({ url: '/api/admin/accounts/{id}', ...options });
+
+/**
+ * Update Account
+ *
+ * Changes how many cars the account may have
+ */
+export const updateAdminAccount = <ThrowOnError extends boolean = false>(options: Options<UpdateAdminAccountData, ThrowOnError>) => (options.client ?? client).post<UpdateAdminAccountResponses, UpdateAdminAccountErrors, ThrowOnError>({
+    url: '/api/admin/accounts/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Get Stats
+ *
+ * Usage of the whole installation
+ */
+export const getAdminStats = <ThrowOnError extends boolean = false>(options?: Options<GetAdminStatsData, ThrowOnError>) => (options?.client ?? client).get<GetAdminStatsResponses, unknown, ThrowOnError>({ url: '/api/admin/stats', ...options });
 
 /**
  * Callback
@@ -327,3 +362,17 @@ export const getDashboardStats = <ThrowOnError extends boolean = false>(options:
  * Get Me
  */
 export const getMyself = <ThrowOnError extends boolean = false>(options?: Options<GetMyselfData, ThrowOnError>) => (options?.client ?? client).get<GetMyselfResponses, unknown, ThrowOnError>({ url: '/api/user/me', ...options });
+
+/**
+ * Update Settings
+ *
+ * Updates the settings of the own account
+ */
+export const updateMySettings = <ThrowOnError extends boolean = false>(options: Options<UpdateMySettingsData, ThrowOnError>) => (options.client ?? client).put<UpdateMySettingsResponses, UpdateMySettingsErrors, ThrowOnError>({
+    url: '/api/user/me/settings',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});

@@ -3,8 +3,8 @@
 import { type DefaultError, type InfiniteData, infiniteQueryOptions, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen';
-import { addNewFuelBill, addNewMaintenanceBill, addNewMiscellaneousBill, addNewRecurringBill, callback, createCar, deleteBill, deleteMyCar, deleteRecurringBill, endRecurringBill, getAllBills, getAllBillYears, getAllFuelBills, getAllFuelBillYears, getAllMaintenanceBills, getAllMaintenanceBillYears, getAllMiscellaneousBills, getAllMiscellaneousBillYears, getAllRecurringBills, getCsvFields, getDashboardStats, getFuelBill, getMaintenanceBill, getMiscellaneousBill, getMyCar, getMyCarOverview, getMyCars, getMyself, importCsv, login, logout, logoutCallback, type Options, updateFuelBill, updateMaintenanceBill, updateMiscellaneousBill, updateMyCar } from '../sdk.gen';
-import type { AddNewFuelBillData, AddNewFuelBillError, AddNewMaintenanceBillData, AddNewMaintenanceBillError, AddNewMiscellaneousBillData, AddNewMiscellaneousBillError, AddNewRecurringBillData, AddNewRecurringBillError, AddNewRecurringBillResponse, CallbackData, CreateCarData, DeleteBillData, DeleteBillResponse, DeleteMyCarData, DeleteMyCarResponse, DeleteRecurringBillData, EndRecurringBillData, EndRecurringBillError, EndRecurringBillResponse, GetAllBillsData, GetAllBillsResponse, GetAllBillYearsData, GetAllBillYearsResponse, GetAllFuelBillsData, GetAllFuelBillsResponse, GetAllFuelBillYearsData, GetAllFuelBillYearsResponse, GetAllMaintenanceBillsData, GetAllMaintenanceBillsResponse, GetAllMaintenanceBillYearsData, GetAllMaintenanceBillYearsResponse, GetAllMiscellaneousBillsData, GetAllMiscellaneousBillsResponse, GetAllMiscellaneousBillYearsData, GetAllMiscellaneousBillYearsResponse, GetAllRecurringBillsData, GetAllRecurringBillsResponse, GetCsvFieldsData, GetCsvFieldsResponse, GetDashboardStatsData, GetDashboardStatsResponse, GetFuelBillData, GetFuelBillResponse, GetMaintenanceBillData, GetMaintenanceBillResponse, GetMiscellaneousBillData, GetMiscellaneousBillResponse, GetMyCarData, GetMyCarOverviewData, GetMyCarOverviewResponse, GetMyCarResponse, GetMyCarsData, GetMyCarsResponse, GetMyselfData, GetMyselfResponse, ImportCsvData, LoginData, LogoutCallbackData, LogoutData, UpdateFuelBillData, UpdateFuelBillError, UpdateFuelBillResponse, UpdateMaintenanceBillData, UpdateMaintenanceBillError, UpdateMaintenanceBillResponse, UpdateMiscellaneousBillData, UpdateMiscellaneousBillError, UpdateMiscellaneousBillResponse, UpdateMyCarData } from '../types.gen';
+import { addNewFuelBill, addNewMaintenanceBill, addNewMiscellaneousBill, addNewRecurringBill, callback, createCar, deleteAdminAccount, deleteBill, deleteMyCar, deleteRecurringBill, endRecurringBill, getAdminAccounts, getAdminStats, getAllBills, getAllBillYears, getAllFuelBills, getAllFuelBillYears, getAllMaintenanceBills, getAllMaintenanceBillYears, getAllMiscellaneousBills, getAllMiscellaneousBillYears, getAllRecurringBills, getCsvFields, getDashboardStats, getFuelBill, getMaintenanceBill, getMiscellaneousBill, getMyCar, getMyCarOverview, getMyCars, getMyself, importCsv, login, logout, logoutCallback, type Options, updateAdminAccount, updateFuelBill, updateMaintenanceBill, updateMiscellaneousBill, updateMyCar, updateMySettings } from '../sdk.gen';
+import type { AddNewFuelBillData, AddNewFuelBillError, AddNewMaintenanceBillData, AddNewMaintenanceBillError, AddNewMiscellaneousBillData, AddNewMiscellaneousBillError, AddNewRecurringBillData, AddNewRecurringBillError, AddNewRecurringBillResponse, CallbackData, CreateCarData, DeleteAdminAccountData, DeleteAdminAccountResponse, DeleteBillData, DeleteBillResponse, DeleteMyCarData, DeleteMyCarResponse, DeleteRecurringBillData, EndRecurringBillData, EndRecurringBillError, EndRecurringBillResponse, GetAdminAccountsData, GetAdminAccountsResponse, GetAdminStatsData, GetAdminStatsResponse, GetAllBillsData, GetAllBillsResponse, GetAllBillYearsData, GetAllBillYearsResponse, GetAllFuelBillsData, GetAllFuelBillsResponse, GetAllFuelBillYearsData, GetAllFuelBillYearsResponse, GetAllMaintenanceBillsData, GetAllMaintenanceBillsResponse, GetAllMaintenanceBillYearsData, GetAllMaintenanceBillYearsResponse, GetAllMiscellaneousBillsData, GetAllMiscellaneousBillsResponse, GetAllMiscellaneousBillYearsData, GetAllMiscellaneousBillYearsResponse, GetAllRecurringBillsData, GetAllRecurringBillsResponse, GetCsvFieldsData, GetCsvFieldsResponse, GetDashboardStatsData, GetDashboardStatsResponse, GetFuelBillData, GetFuelBillResponse, GetMaintenanceBillData, GetMaintenanceBillResponse, GetMiscellaneousBillData, GetMiscellaneousBillResponse, GetMyCarData, GetMyCarOverviewData, GetMyCarOverviewResponse, GetMyCarResponse, GetMyCarsData, GetMyCarsResponse, GetMyselfData, GetMyselfResponse, ImportCsvData, LoginData, LogoutCallbackData, LogoutData, UpdateAdminAccountData, UpdateAdminAccountError, UpdateAdminAccountResponse, UpdateFuelBillData, UpdateFuelBillError, UpdateFuelBillResponse, UpdateMaintenanceBillData, UpdateMaintenanceBillError, UpdateMaintenanceBillResponse, UpdateMiscellaneousBillData, UpdateMiscellaneousBillError, UpdateMiscellaneousBillResponse, UpdateMyCarData, UpdateMySettingsData, UpdateMySettingsError, UpdateMySettingsResponse } from '../types.gen';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -38,6 +38,142 @@ const createQueryKey = <TOptions extends Options>(id: string, options?: TOptions
     }
     return [params];
 };
+
+export const getAdminAccountsQueryKey = (options?: Options<GetAdminAccountsData>) => createQueryKey('getAdminAccounts', options);
+
+/**
+ * Get Accounts
+ *
+ * All accounts with their usage, pages starting at 1
+ */
+export const getAdminAccountsOptions = (options?: Options<GetAdminAccountsData>) => queryOptions<GetAdminAccountsResponse, DefaultError, GetAdminAccountsResponse, ReturnType<typeof getAdminAccountsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getAdminAccounts({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getAdminAccountsQueryKey(options)
+});
+
+const createInfiniteParams = <K extends Pick<QueryKey<Options>[0], 'body' | 'headers' | 'path' | 'query'>>(queryKey: QueryKey<Options>, page: K) => {
+    const params = { ...queryKey[0] };
+    if (page.body) {
+        params.body = {
+            ...queryKey[0].body as any,
+            ...page.body as any
+        };
+    }
+    if (page.headers) {
+        params.headers = {
+            ...queryKey[0].headers,
+            ...page.headers
+        };
+    }
+    if (page.path) {
+        params.path = {
+            ...queryKey[0].path as any,
+            ...page.path as any
+        };
+    }
+    if (page.query) {
+        params.query = {
+            ...queryKey[0].query as any,
+            ...page.query as any
+        };
+    }
+    return params as unknown as typeof page;
+};
+
+export const getAdminAccountsInfiniteQueryKey = (options?: Options<GetAdminAccountsData>): QueryKey<Options<GetAdminAccountsData>> => createQueryKey('getAdminAccounts', options, true);
+
+/**
+ * Get Accounts
+ *
+ * All accounts with their usage, pages starting at 1
+ */
+export const getAdminAccountsInfiniteOptions = (options?: Options<GetAdminAccountsData>) => infiniteQueryOptions<GetAdminAccountsResponse, DefaultError, InfiniteData<GetAdminAccountsResponse>, QueryKey<Options<GetAdminAccountsData>>, number | Pick<QueryKey<Options<GetAdminAccountsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+// @ts-ignore
+{
+    queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<QueryKey<Options<GetAdminAccountsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+            query: {
+                page: pageParam
+            }
+        };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await getAdminAccounts({
+            ...options,
+            ...params,
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getAdminAccountsInfiniteQueryKey(options)
+});
+
+/**
+ * Delete Account
+ *
+ * Deletes the account with all its cars and bills
+ */
+export const deleteAdminAccountMutation = (options?: Partial<Options<DeleteAdminAccountData>>): UseMutationOptions<DeleteAdminAccountResponse, DefaultError, Options<DeleteAdminAccountData>> => {
+    const mutationOptions: UseMutationOptions<DeleteAdminAccountResponse, DefaultError, Options<DeleteAdminAccountData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await deleteAdminAccount({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Update Account
+ *
+ * Changes how many cars the account may have
+ */
+export const updateAdminAccountMutation = (options?: Partial<Options<UpdateAdminAccountData>>): UseMutationOptions<UpdateAdminAccountResponse, UpdateAdminAccountError, Options<UpdateAdminAccountData>> => {
+    const mutationOptions: UseMutationOptions<UpdateAdminAccountResponse, UpdateAdminAccountError, Options<UpdateAdminAccountData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await updateAdminAccount({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const getAdminStatsQueryKey = (options?: Options<GetAdminStatsData>) => createQueryKey('getAdminStats', options);
+
+/**
+ * Get Stats
+ *
+ * Usage of the whole installation
+ */
+export const getAdminStatsOptions = (options?: Options<GetAdminStatsData>) => queryOptions<GetAdminStatsResponse, DefaultError, GetAdminStatsResponse, ReturnType<typeof getAdminStatsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getAdminStats({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getAdminStatsQueryKey(options)
+});
 
 export const callbackQueryKey = (options?: Options<CallbackData>) => createQueryKey('callback', options);
 
@@ -138,35 +274,6 @@ export const getAllBillsOptions = (options: Options<GetAllBillsData>) => queryOp
     },
     queryKey: getAllBillsQueryKey(options)
 });
-
-const createInfiniteParams = <K extends Pick<QueryKey<Options>[0], 'body' | 'headers' | 'path' | 'query'>>(queryKey: QueryKey<Options>, page: K) => {
-    const params = { ...queryKey[0] };
-    if (page.body) {
-        params.body = {
-            ...queryKey[0].body as any,
-            ...page.body as any
-        };
-    }
-    if (page.headers) {
-        params.headers = {
-            ...queryKey[0].headers,
-            ...page.headers
-        };
-    }
-    if (page.path) {
-        params.path = {
-            ...queryKey[0].path as any,
-            ...page.path as any
-        };
-    }
-    if (page.query) {
-        params.query = {
-            ...queryKey[0].query as any,
-            ...page.query as any
-        };
-    }
-    return params as unknown as typeof page;
-};
 
 export const getAllBillsInfiniteQueryKey = (options: Options<GetAllBillsData>): QueryKey<Options<GetAllBillsData>> => createQueryKey('getAllBills', options, true);
 
@@ -898,3 +1005,22 @@ export const getMyselfOptions = (options?: Options<GetMyselfData>) => queryOptio
     },
     queryKey: getMyselfQueryKey(options)
 });
+
+/**
+ * Update Settings
+ *
+ * Updates the settings of the own account
+ */
+export const updateMySettingsMutation = (options?: Partial<Options<UpdateMySettingsData>>): UseMutationOptions<UpdateMySettingsResponse, UpdateMySettingsError, Options<UpdateMySettingsData>> => {
+    const mutationOptions: UseMutationOptions<UpdateMySettingsResponse, UpdateMySettingsError, Options<UpdateMySettingsData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await updateMySettings({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
