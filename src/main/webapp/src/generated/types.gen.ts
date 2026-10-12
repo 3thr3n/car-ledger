@@ -282,6 +282,42 @@ export type RecurringBillInput = {
     amount?: number;
 };
 
+export type Reminder = {
+    id: number;
+    carId: number;
+    carName: string;
+    title: string;
+    note?: string;
+    dueDate?: LocalDate;
+    dueOdometer?: number;
+    intervalMonths?: number;
+    intervalKm?: number;
+    status: ReminderStatus;
+    odometer: number;
+    daysLeft?: number;
+    kmLeft?: number;
+};
+
+export type ReminderDoneInput = {
+    date?: LocalDate;
+    odometer?: number;
+};
+
+export type ReminderInput = {
+    title?: string;
+    note?: string;
+    dueDate?: LocalDate;
+    dueOdometer?: number;
+    intervalMonths?: number;
+    intervalKm?: number;
+};
+
+export enum ReminderStatus {
+    OVERDUE = 'OVERDUE',
+    DUE_SOON = 'DUE_SOON',
+    UPCOMING = 'UPCOMING'
+}
+
 export type Row = {
     rowNumber?: number;
     message?: string;
@@ -1236,6 +1272,148 @@ export type GetCsvFieldsResponses = {
 };
 
 export type GetCsvFieldsResponse = GetCsvFieldsResponses[keyof GetCsvFieldsResponses];
+
+export type GetRemindersData = {
+    body?: never;
+    path: {
+        carId: number;
+    };
+    query?: {
+        onlyDue?: boolean;
+    };
+    url: '/api/reminder/{carId}';
+};
+
+export type GetRemindersResponses = {
+    /**
+     * OK
+     */
+    200: Array<Reminder>;
+};
+
+export type GetRemindersResponse = GetRemindersResponses[keyof GetRemindersResponses];
+
+export type AddReminderData = {
+    body: ReminderInput;
+    path: {
+        carId: number;
+    };
+    query?: never;
+    url: '/api/reminder/{carId}';
+};
+
+export type AddReminderErrors = {
+    /**
+     * Validation failed, please check the response
+     */
+    400: Array<unknown>;
+    /**
+     * Car is not for your user.
+     */
+    404: unknown;
+};
+
+export type AddReminderError = AddReminderErrors[keyof AddReminderErrors];
+
+export type AddReminderResponses = {
+    202: Reminder;
+};
+
+export type AddReminderResponse = AddReminderResponses[keyof AddReminderResponses];
+
+export type DeleteReminderData = {
+    body?: never;
+    path: {
+        carId: number;
+        id: number;
+    };
+    query?: never;
+    url: '/api/reminder/{carId}/{id}';
+};
+
+export type DeleteReminderErrors = {
+    /**
+     * Reminder not found for the car of your user.
+     */
+    404: unknown;
+};
+
+export type DeleteReminderResponses = {
+    /**
+     * Deleted
+     */
+    204: void;
+};
+
+export type DeleteReminderResponse = DeleteReminderResponses[keyof DeleteReminderResponses];
+
+export type UpdateReminderData = {
+    body: ReminderInput;
+    path: {
+        carId: number;
+        id: number;
+    };
+    query?: never;
+    url: '/api/reminder/{carId}/{id}';
+};
+
+export type UpdateReminderErrors = {
+    /**
+     * Validation failed, please check the response
+     */
+    400: Array<unknown>;
+    /**
+     * Reminder not found for the car of your user.
+     */
+    404: unknown;
+};
+
+export type UpdateReminderError = UpdateReminderErrors[keyof UpdateReminderErrors];
+
+export type UpdateReminderResponses = {
+    /**
+     * OK
+     */
+    200: Reminder;
+};
+
+export type UpdateReminderResponse = UpdateReminderResponses[keyof UpdateReminderResponses];
+
+export type CompleteReminderData = {
+    body: ReminderDoneInput;
+    path: {
+        carId: number;
+        id: number;
+    };
+    query?: never;
+    url: '/api/reminder/{carId}/{id}/done';
+};
+
+export type CompleteReminderErrors = {
+    /**
+     * Validation failed, please check the response
+     */
+    400: Array<unknown>;
+    /**
+     * Reminder not found for the car of your user.
+     */
+    404: unknown;
+};
+
+export type CompleteReminderError = CompleteReminderErrors[keyof CompleteReminderErrors];
+
+export type CompleteReminderResponses = {
+    /**
+     * The next due reminder
+     */
+    200: Reminder;
+    /**
+     * Done and deleted, it does not repeat
+     */
+    204: void;
+};
+
+export type CompleteReminderResponse = CompleteReminderResponses[keyof CompleteReminderResponses];
 
 export type GetDashboardStatsData = {
     body?: never;

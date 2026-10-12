@@ -36,6 +36,7 @@ const tabs = [
     BillType.MISCELLANEOUS,
     BillType.RECURRING,
   ].map((type) => ({ key: type, to: billTypes[type].listRoute })),
+  { key: 'reminders', to: '/car/$id/reminders' },
 ] as const;
 
 export default function CarLayout({ id }: { id: number }) {
@@ -62,14 +63,18 @@ export default function CarLayout({ id }: { id: number }) {
   const activeTab =
     rest === ''
       ? 'overview'
-      : (Object.values(BillType).find(
-          (type) => rest === `/bill/${type.toLowerCase()}`,
-        ) ?? false);
+      : rest === '/reminders'
+        ? 'reminders'
+        : (Object.values(BillType).find(
+            (type) => rest === `/bill/${type.toLowerCase()}`,
+          ) ?? false);
   const isSubPage = activeTab === false;
 
   // preselect the type of the current tab when adding an entry
   const addType =
-    activeTab !== false && activeTab !== 'overview' ? activeTab : undefined;
+    activeTab !== false && activeTab !== 'overview' && activeTab !== 'reminders'
+      ? activeTab
+      : undefined;
   const importType =
     addType && billTypes[addType].importable ? addType : undefined;
   const params = { id: `${id}` };
@@ -162,8 +167,8 @@ export default function CarLayout({ id }: { id: number }) {
                   key={tab.key}
                   value={tab.key}
                   label={
-                    tab.key === 'overview'
-                      ? t('car.tabs.overview')
+                    tab.key === 'overview' || tab.key === 'reminders'
+                      ? t(`car.tabs.${tab.key}`)
                       : t(`bill.types.${tab.key}`)
                   }
                   to={tab.to}

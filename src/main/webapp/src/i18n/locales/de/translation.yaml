@@ -96,6 +96,9 @@ dashboard:
     distance: "Strecke pro Tankfüllung"
     fuelCost: "Kosten pro Tankfüllung"
     maintenanceCost: "Kosten pro Wartung"
+  reminders:
+    title: "Bald fällig"
+    subtitle: "Überfällige Erinnerungen und die in den nächsten 30 Tagen oder 1.000 km fälligen"
   monthly:
     title: "Kosten pro Monat"
     costs: "Kosten"
@@ -126,6 +129,7 @@ car:
   odometer: "Kilometerstand"
   tabs:
     overview: "Übersicht"
+    reminders: "Erinnerungen"
   overview:
     totalCost: "Gesamtkosten"
     avgConsumption: "Ø Verbrauch"
@@ -138,6 +142,8 @@ car:
     emptyTitle: "Noch keine Einträge"
     emptyText: "Erfasse deinen ersten Beleg oder importiere einen CSV-Export."
     running: "Laufende Kosten"
+    reminders: "Erinnerungen"
+    remindersEmpty: "Noch keine Erinnerungen"
     runningEmpty: "Keine laufenden Kosten"
     addRecurring: "Laufende Kosten anlegen"
     nextDue: "Nächste Fälligkeit {{date}}"
@@ -367,3 +373,69 @@ notFound:
   redLight:
     title: "Rote Ampel"
     text: "Halt — unter dieser Adresse gibt es nichts."
+
+reminder:
+  title: "Erinnerungen"
+  subtitle: "HU, Inspektion, Reifen und alles andere, das an einem Datum oder bei einem Kilometerstand fällig ist."
+  add:
+    button: "Erinnerung hinzufügen"
+    title: "Erinnerung hinzufügen"
+  edit:
+    title: "Erinnerung bearbeiten"
+  added: "Erinnerung hinzugefügt"
+  updated: "Erinnerung gespeichert"
+  deleted: "Erinnerung gelöscht"
+  delete:
+    title: "{{title}} löschen?"
+  empty:
+    title: "Noch keine Erinnerungen"
+    text: "Lege eine für die nächste HU oder Inspektion an, sie erscheint auf dem Dashboard, wenn sie fällig ist."
+  fields:
+    title: "Titel"
+    due: "Fällig"
+    dueDate: "Datum"
+    dueOdometer: "Kilometerstand"
+    repeat: "Wiederholen"
+    intervalMonths: "Alle … Monate"
+    intervalKm: "Alle … km"
+    note: "Notiz"
+  dueHint: "Ein Datum, ein Kilometerstand oder beides, was zuerst eintritt."
+  repeatHint: "Optional. Wenn erledigt, ist sie nach diesem Intervall wieder fällig."
+  currentOdometer: "Aktuell {{km}}"
+  odometerInfo: "Der Kilometerstand ist der des Autos oder der letzten Wartung, je nachdem, welcher höher ist."
+  errors:
+    due: "Gib ein Datum oder einen Kilometerstand an."
+    intervalMonths: "Braucht ein Fälligkeitsdatum."
+    intervalKm: "Braucht einen fälligen Kilometerstand."
+  presets:
+    inspection: "Hauptuntersuchung"
+    service: "Inspektion"
+    tires: "Reifenwechsel"
+    vignette: "Vignette"
+  status:
+    OVERDUE: "Überfällig"
+    DUE_SOON: "Bald fällig"
+    UPCOMING: "Geplant"
+  due:
+    today: "heute"
+    inDays_one: "in {{count}} Tag"
+    inDays_other: "in {{count}} Tagen"
+    daysOverdue_one: "{{count}} Tag überfällig"
+    daysOverdue_other: "{{count}} Tage überfällig"
+    at: "bei {{km}}"
+    kmLeft: "noch {{km}}"
+    kmOverdue: "{{km}} überfällig"
+  repeat:
+    every: "Alle {{interval}}"
+    months_one: "Monat"
+    months_other: "{{count}} Monate"
+  or: " oder "
+  done:
+    button: "Erledigt"
+    title: "{{title}} erledigt?"
+    repeating: "Die nächste Fälligkeit wird ab dem Zeitpunkt der Erledigung gerechnet."
+    oneOff: "Sie wiederholt sich nicht und wird entfernt."
+    date: "Erledigt am"
+    odometer: "Kilometerstand bei Erledigung"
+    confirm: "Als erledigt markieren"
+    success: "Als erledigt markiert"

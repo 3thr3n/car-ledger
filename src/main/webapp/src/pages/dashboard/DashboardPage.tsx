@@ -6,7 +6,10 @@ import RouteRounded from '@mui/icons-material/RouteRounded';
 import InsightsRounded from '@mui/icons-material/InsightsRounded';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { getDashboardStatsOptions } from '@/generated/@tanstack/react-query.gen';
+import {
+  getDashboardStatsOptions,
+  getRemindersOptions,
+} from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
 import { hasValue, useFormat } from '@/utils/format';
 import Page from '@/components/layout/Page';
@@ -21,6 +24,8 @@ import CostSplit from '@/components/dashboard/CostSplit';
 import AverageList from '@/components/dashboard/AverageList';
 import RangeList from '@/components/dashboard/RangeList';
 import MonthlyChart from '@/components/dashboard/LazyMonthlyChart';
+import Section from '@/components/ui/Section';
+import ReminderList from '@/components/reminder/ReminderList';
 import ErrorPage from '@/pages/ErrorPage';
 
 export interface DashboardPageProps {
@@ -46,6 +51,15 @@ export default function DashboardPage({
     }),
   );
 
+  // due reminders are shown independent of the period
+  const { data: dueReminders } = useQuery(
+    getRemindersOptions({
+      client: localClient,
+      path: { carId: search.car ?? ALL_CARS },
+      query: { onlyDue: true },
+    }),
+  );
+
   if (isError) {
     return <ErrorPage error={error} />;
   }
@@ -61,6 +75,16 @@ export default function DashboardPage({
         subtitle={t('dashboard.subtitle')}
       />
       <DashboardFilter search={search} onChange={onSearchChange} />
+
+      {!!dueReminders?.length && (
+        <Section
+          title={t('dashboard.reminders.title')}
+          subtitle={t('dashboard.reminders.subtitle')}
+          sx={{ mb: 2 }}
+        >
+          <ReminderList compact showCar reminders={dueReminders} />
+        </Section>
+      )}
 
       <Grid container spacing={2} sx={{ mb: 2 }}>
         <Grid size={{ xs: 12, sm: 6, lg: 3 }}>

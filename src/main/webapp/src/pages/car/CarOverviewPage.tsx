@@ -13,6 +13,7 @@ import { useTranslation } from 'react-i18next';
 import {
   getAllRecurringBillsOptions,
   getMyCarOverviewOptions,
+  getRemindersOptions,
 } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
 import { BillType } from '@/generated';
@@ -27,6 +28,7 @@ import BillTable from '@/components/bill/BillTable';
 import { useLedgerColumns } from '@/components/bill/columns';
 import useDeleteBill from '@/components/bill/useDeleteBill';
 import MonthlyChart from '@/components/dashboard/LazyMonthlyChart';
+import ReminderList from '@/components/reminder/ReminderList';
 
 /** the chart of the overview shows the current and the 11 months before */
 const lastTwelveMonths = () => ({
@@ -54,6 +56,10 @@ export default function CarOverviewPage({ id }: { id: number }) {
       path: { carId: id },
       query: { onlyRunning: true, page: 1, size: 5 },
     }),
+  );
+
+  const { data: reminders } = useQuery(
+    getRemindersOptions({ client: localClient, path: { carId: id } }),
   );
 
   const tiles = [
@@ -173,64 +179,97 @@ export default function CarOverviewPage({ id }: { id: number }) {
         </Grid>
 
         <Grid size={{ xs: 12, lg: 4 }}>
-          <Section
-            title={t('car.overview.running')}
-            action={
-              <RouterButton
-                to="/car/$id/bill/recurring"
-                params={params}
-                size="small"
-              >
-                {t('common.all')}
-              </RouterButton>
-            }
-          >
-            {running?.data?.length ? (
-              <Stack>
-                {running.data.map((bill, index) => (
-                  <Fragment key={bill.id}>
-                    {index > 0 && <Divider />}
-                    <Stack
-                      direction="row"
-                      spacing={2}
-                      alignItems="center"
-                      sx={{ py: 1.25 }}
+          <Stack spacing={3}>
+            <Section
+              title={t('car.overview.reminders')}
+              action={
+                <RouterButton
+                  to="/car/$id/reminders"
+                  params={params}
+                  size="small"
+                >
+                  {t('common.all')}
+                </RouterButton>
+              }
+            >
+              {reminders?.length ? (
+                <ReminderList compact reminders={reminders.slice(0, 3)} />
+              ) : (
+                <EmptyState
+                  compact
+                  title={t('car.overview.remindersEmpty')}
+                  action={
+                    <RouterButton
+                      to="/car/$id/reminders"
+                      params={params}
+                      size="small"
+                      variant="outlined"
                     >
-                      <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-                        <Typography fontWeight={600} noWrap>
-                          {bill.name}
+                      {t('reminder.add.button')}
+                    </RouterButton>
+                  }
+                />
+              )}
+            </Section>
+            <Section
+              title={t('car.overview.running')}
+              action={
+                <RouterButton
+                  to="/car/$id/bill/recurring"
+                  params={params}
+                  size="small"
+                >
+                  {t('common.all')}
+                </RouterButton>
+              }
+            >
+              {running?.data?.length ? (
+                <Stack>
+                  {running.data.map((bill, index) => (
+                    <Fragment key={bill.id}>
+                      {index > 0 && <Divider />}
+                      <Stack
+                        direction="row"
+                        spacing={2}
+                        alignItems="center"
+                        sx={{ py: 1.25 }}
+                      >
+                        <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                          <Typography fontWeight={600} noWrap>
+                            {bill.name}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            {t('car.overview.nextDue', {
+                              date: format.date(bill.nextDueDate),
+                            })}
+                          </Typography>
+                        </Box>
+                        <Typography fontWeight={600} className="tabular">
+                          {format.money(bill.amount)}
                         </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {t('car.overview.nextDue', {
-                            date: format.date(bill.nextDueDate),
-                          })}
-                        </Typography>
-                      </Box>
-                      <Typography fontWeight={600} className="tabular">
-                        {format.money(bill.amount)}
-                      </Typography>
-                    </Stack>
-                  </Fragment>
-                ))}
-              </Stack>
-            ) : (
-              <EmptyState
-                compact
-                title={t('car.overview.runningEmpty')}
-                action={
-                  <RouterButton
-                    to="/car/$id/bill/add"
-                    params={params}
-                    search={{ type: BillType.RECURRING }}
-                    size="small"
-                    variant="outlined"
-                  >
-                    {t('car.overview.addRecurring')}
-                  </RouterButton>
-                }
-              />
-            )}
-          </Section>
+                      </Stack>
+                    </Fragment>
+                  ))}
+                </Stack>
+              ) : (
+                <EmptyState
+                  compact
+                  title={t('car.overview.runningEmpty')}
+                  action={
+                    <RouterButton
+                      to="/car/$id/bill/add"
+                      params={params}
+                      search={{ type: BillType.RECURRING }}
+                      size="small"
+                      variant="outlined"
+                    >
+                      {t('car.overview.addRecurring')}
+                    </RouterButton>
+                  }
+                />
+              )}
+            </Section>
+          </Stack>
         </Grid>
       </Grid>
     </Stack>

@@ -82,14 +82,20 @@ interface GeneratedKey {
 }
 
 /**
- * Invalidates every query belonging to a car, plus the car list and dashboard stats
+ * Invalidates every query belonging to a car, plus the car list, the stats and the reminders
  */
 export function invalidateCar(carId: number) {
   return queryClient.invalidateQueries({
     predicate: (query) => {
       const key = (query.queryKey as QueryKey)[0] as GeneratedKey | undefined;
       if (!key) return false;
-      if (key._id === 'getMyCars' || key._id === 'getDashboardStats') {
+      // queries over all cars (-1), reminders also depend on the odometer of bills
+      if (
+        key._id === 'getMyCars' ||
+        key._id === 'getDashboardStats' ||
+        key._id === 'getMonthlyStats' ||
+        key._id === 'getReminders'
+      ) {
         return true;
       }
       return key.path?.carId === carId || key.path?.id === carId;
