@@ -40,8 +40,7 @@ export default function RemindersPage({ carId }: { carId: number }) {
   const { data: car } = useQuery(
     getMyCarOptions({ client: localClient, path: { id: carId } }),
   );
-  // the reminders know the odometer including the maintenance bills
-  const odometer = reminders[0]?.odometer ?? car?.odometer;
+  const odometer = car?.currentOdometer.value;
 
   const remove = useMutation({
     ...deleteReminderMutation({ client: localClient }),

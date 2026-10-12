@@ -2,6 +2,7 @@ package de.codeflowwizardry.carledger.rest;
 
 import java.net.URI;
 import io.quarkus.security.identity.SecurityIdentity;
+import java.time.LocalDate;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
@@ -10,6 +11,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
+import de.codeflowwizardry.carledger.OdometerService;
 import de.codeflowwizardry.carledger.data.AccountEntity;
 import de.codeflowwizardry.carledger.data.CarEntity;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
@@ -19,6 +21,7 @@ import de.codeflowwizardry.carledger.exception.WrongUserException;
 import de.codeflowwizardry.carledger.rest.records.Car;
 import de.codeflowwizardry.carledger.rest.records.CarInput;
 import de.codeflowwizardry.carledger.rest.records.CarOverview;
+import de.codeflowwizardry.carledger.rest.records.Odometer;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
@@ -30,14 +33,16 @@ public class CarResource extends AbstractResource
 {
 	private final CarRepository carRepository;
 	private final BillRepository billRepository;
+	private final OdometerService odometerService;
 
 	@Inject
 	public CarResource(SecurityIdentity identity, AccountRepository accountRepository, CarRepository carRepository,
-			BillRepository billRepository)
+			BillRepository billRepository, OdometerService odometerService)
 	{
 		super(identity, accountRepository);
 		this.carRepository = carRepository;
 		this.billRepository = billRepository;
+		this.odometerService = odometerService;
 	}
 
 	@GET
@@ -47,10 +52,11 @@ public class CarResource extends AbstractResource
 	public List<Car> getMyCars()
 	{
 		Map<Long, Long> billsPerCar = billRepository.countBillsPerCar(context.getName());
+		Map<Long, Odometer> odometers = odometerService.current(CarRepository.ALL_CARS, context.getName());
 
 		return carRepository.listForUser(context.getName())
 				.stream()
-				.map(car -> Car.convert(car, billsPerCar.getOrDefault(car.getId(), 0L)))
+				.map(car -> Car.convert(car, billsPerCar.getOrDefault(car.getId(), 0L), odometers.get(car.getId())))
 				.toList();
 	}
 
@@ -98,7 +104,12 @@ public class CarResource extends AbstractResource
 
 		CarEntity carEntity = findCar(id);
 		carEntity.setName(carpojo.name());
-		carEntity.setOdometer(carpojo.odometer());
+		if (carEntity.getOdometer() != carpojo.odometer())
+		{
+			// a new reading
+			carEntity.setOdometer(carpojo.odometer());
+			carEntity.setOdometerDate(LocalDate.now());
+		}
 		carEntity.setManufactureYear(carpojo.year());
 
 		carRepository.persist(carEntity);
@@ -160,7 +171,9 @@ public class CarResource extends AbstractResource
 
 	private Car convert(CarEntity carEntity)
 	{
-		return Car.convert(carEntity, billRepository.count("car.id", carEntity.getId()));
+		// the pending update is flushed before the odometer queries
+		return Car.convert(carEntity, billRepository.count("car.id", carEntity.getId()),
+				odometerService.current(carEntity.getId(), context.getName()).get(carEntity.getId()));
 	}
 
 	private boolean isInputInvalid(CarInput carInput)

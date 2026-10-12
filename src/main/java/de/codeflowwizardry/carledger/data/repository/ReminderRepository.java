@@ -40,40 +40,4 @@ public class ReminderRepository implements PanacheRepository<ReminderEntity>
 				Parameters.with("id", id).and("carId", carId).and("userId", username))
 				.firstResultOptional();
 	}
-
-	/**
-	 * The odometer of a car is the one entered for the car, or the highest one of
-	 * its maintenance bills if that is higher.
-	 *
-	 * @param carId
-	 *            or {@link CarRepository#ALL_CARS}
-	 * @return car id -> odometer in km
-	 */
-	public Map<Long, Integer> currentOdometers(long carId, String username)
-	{
-		Map<String, Object> params = new HashMap<>();
-		String query = "select c.id, c.odometer, max(m.odometer) from Car c"
-				+ " left join bill b on b.car = c"
-				+ " left join b.maintenanceBill m"
-				+ " where c.user.userId = :userId";
-		params.put("userId", username);
-
-		if (carId != ALL_CARS)
-		{
-			query += " and c.id = :carId";
-			params.put("carId", carId);
-		}
-
-		var typedQuery = getEntityManager().createQuery(query + " group by c.id, c.odometer", Object[].class);
-		params.forEach(typedQuery::setParameter);
-
-		Map<Long, Integer> odometers = new HashMap<>();
-		for (Object[] row : typedQuery.getResultList())
-		{
-			Integer maintenance = (Integer) row[2];
-			int car = (Integer) row[1];
-			odometers.put((Long) row[0], maintenance == null ? car : Math.max(car, maintenance));
-		}
-		return odometers;
-	}
 }

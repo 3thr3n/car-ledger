@@ -16,6 +16,7 @@ import de.codeflowwizardry.carledger.rest.car.reminder.Reminder;
 import de.codeflowwizardry.carledger.rest.car.reminder.ReminderDoneInput;
 import de.codeflowwizardry.carledger.rest.car.reminder.ReminderInput;
 import de.codeflowwizardry.carledger.rest.car.reminder.ReminderStatus;
+import de.codeflowwizardry.carledger.rest.records.Odometer;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -37,12 +38,15 @@ public class ReminderService
 
 	private final ReminderRepository reminderRepository;
 	private final CarRepository carRepository;
+	private final OdometerService odometerService;
 
 	@Inject
-	public ReminderService(ReminderRepository reminderRepository, CarRepository carRepository)
+	public ReminderService(ReminderRepository reminderRepository, CarRepository carRepository,
+			OdometerService odometerService)
 	{
 		this.reminderRepository = reminderRepository;
 		this.carRepository = carRepository;
+		this.odometerService = odometerService;
 	}
 
 	/**
@@ -54,12 +58,12 @@ public class ReminderService
 	 */
 	public List<Reminder> list(long carId, String username, boolean onlyDue)
 	{
-		Map<Long, Integer> odometers = reminderRepository.currentOdometers(carId, username);
+		Map<Long, Odometer> odometers = odometerService.current(carId, username);
 		LocalDate today = LocalDate.now();
 
 		return reminderRepository.list(carId, username)
 				.stream()
-				.map(entity -> convert(entity, odometers.getOrDefault(entity.getCar().getId(), 0), today))
+				.map(entity -> convert(entity, odometers.get(entity.getCar().getId()).value(), today))
 				.filter(reminder -> !onlyDue || reminder.status() != ReminderStatus.UPCOMING)
 				.sorted(BY_URGENCY)
 				.toList();
@@ -150,7 +154,7 @@ public class ReminderService
 	private int currentOdometer(ReminderEntity entity, String username)
 	{
 		long carId = entity.getCar().getId();
-		return reminderRepository.currentOdometers(carId, username).getOrDefault(carId, 0);
+		return odometerService.current(carId, username).get(carId).value();
 	}
 
 	private Reminder convert(ReminderEntity entity, String username)

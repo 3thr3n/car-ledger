@@ -119,6 +119,8 @@ export type Car = {
     name?: string;
     year?: number;
     odometer?: number;
+    odometerDate?: LocalDate;
+    currentOdometer: Odometer;
     amountBills?: number;
 };
 
@@ -250,6 +252,13 @@ export type MonthStats = {
     pricePerUnit?: number;
     consumption?: number;
     costPerKm?: number;
+};
+
+export type Odometer = {
+    value: number;
+    reading: number;
+    readingDate: LocalDate;
+    driven: number;
 };
 
 export type OffsetDateTime = string;

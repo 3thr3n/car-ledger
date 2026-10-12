@@ -16,10 +16,10 @@ import { useTranslation } from 'react-i18next';
 import { getMyCarOptions } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
 import { BackendError } from '@/utils/BackendError';
-import { useFormat } from '@/utils/format';
 import { BillType } from '@/generated';
 import { billTypes } from '@/utils/billTypes';
 import CarAvatar from '@/components/layout/CarAvatar';
+import OdometerValue from '@/components/ui/OdometerValue';
 import {
   RouterButton,
   RouterIconButton,
@@ -41,7 +41,6 @@ const tabs = [
 
 export default function CarLayout({ id }: { id: number }) {
   const { t } = useTranslation();
-  const format = useFormat();
   const { pathname } = useLocation();
 
   const {
@@ -116,12 +115,11 @@ export default function CarLayout({ id }: { id: number }) {
                     {isLoading ? (
                       <Skeleton width={160} />
                     ) : (
-                      [
-                        car?.year && t('car.built', { year: car.year }),
-                        format.unit(car?.odometer, 'km', 0),
-                      ]
-                        .filter(Boolean)
-                        .join(' · ')
+                      <>
+                        {car?.year &&
+                          `${t('car.built', { year: car.year })} · `}
+                        <OdometerValue odometer={car?.currentOdometer} />
+                      </>
                     )}
                   </Typography>
                 </Box>

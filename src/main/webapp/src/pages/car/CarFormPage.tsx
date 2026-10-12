@@ -42,7 +42,12 @@ export default function CarFormPage({ id }: CarFormPageProps) {
         subtitle={id ? t('car.form.editSubtitle') : t('car.form.newSubtitle')}
       />
       {/* keyed, so the form state is initialized from the loaded car */}
-      <CarForm key={car?.id ?? 'new'} id={id} initial={car ?? {}} />
+      <CarForm
+        key={car?.id ?? 'new'}
+        id={id}
+        initial={car ?? {}}
+        current={car?.currentOdometer.value}
+      />
       {id !== undefined && car && (
         <DeleteCar
           id={id}
@@ -54,7 +59,19 @@ export default function CarFormPage({ id }: CarFormPageProps) {
   );
 }
 
-function CarForm({ id, initial }: { id?: number; initial: CarInput }) {
+/**
+ * @param current odometer of an existing car including the refuels since its
+ *   last reading, the form starts with it
+ */
+function CarForm({
+  id,
+  initial,
+  current,
+}: {
+  id?: number;
+  initial: CarInput;
+  current?: number;
+}) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const router = useRouter();
@@ -64,7 +81,7 @@ function CarForm({ id, initial }: { id?: number; initial: CarInput }) {
     initial.year ?? currentYear,
   );
   const [odometer, setOdometer] = useState<number | undefined>(
-    initial.odometer ?? 0,
+    current ?? initial.odometer ?? 0,
   );
   const [touched, setTouched] = useState(false);
 
@@ -131,7 +148,15 @@ function CarForm({ id, initial }: { id?: number; initial: CarInput }) {
     setTouched(true);
     if (!valid) return;
 
-    const body = { name: name.trim(), year, odometer };
+    // an untouched estimate keeps the last reading, a changed one is a new reading
+    const body = {
+      name: name.trim(),
+      year,
+      odometer:
+        current !== undefined && odometer === current
+          ? initial.odometer
+          : odometer,
+    };
     if (id) {
       update.mutate({ path: { id }, body });
     } else {
@@ -167,7 +192,11 @@ function CarForm({ id, initial }: { id?: number; initial: CarInput }) {
           onChange={setOdometer}
           decimalScale={0}
           suffix=" km"
-          helperText={t('car.form.odometerHelp')}
+          helperText={t(
+            id === undefined
+              ? 'car.form.odometerHelp'
+              : 'car.form.odometerHelpEdit',
+          )}
           error={touched ? errors.odometer : undefined}
           required
         />
