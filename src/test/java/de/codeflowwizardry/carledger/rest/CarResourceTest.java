@@ -14,11 +14,17 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import de.codeflowwizardry.carledger.data.AccountEntity;
+import de.codeflowwizardry.carledger.data.BillCategory;
+import de.codeflowwizardry.carledger.data.BillInterval;
 import de.codeflowwizardry.carledger.data.CarEntity;
+import de.codeflowwizardry.carledger.data.RecurringBillEntity;
+import de.codeflowwizardry.carledger.data.RecurringBillPaymentEntity;
 import de.codeflowwizardry.carledger.data.factory.FuelBillFactory;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.BillRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
+import de.codeflowwizardry.carledger.data.repository.RecurringBillPaymentRepository;
+import de.codeflowwizardry.carledger.data.repository.RecurringBillRepository;
 import de.codeflowwizardry.carledger.rest.car.fuel.FuelBillInput;
 import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
@@ -43,6 +49,12 @@ class CarResourceTest
 
 	@Inject
 	BillRepository billRepository;
+
+	@Inject
+	RecurringBillRepository recurringBillRepository;
+
+	@Inject
+	RecurringBillPaymentRepository recurringBillPaymentRepository;
 
 	long carId = 0;
 
@@ -102,6 +114,44 @@ class CarResourceTest
 				.body("totalRefuels", is(1))
 				.body("totalCost", is(79.96F))
 				.body("avgConsumption", is(8.0F));
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldAddRecurringPaymentsToTheTotalCostOfTheOverview()
+	{
+		QuarkusTransaction.requiringNew().run(() -> {
+			RecurringBillEntity insurance = new RecurringBillEntity(carRepository.findById(carId, "peter"));
+			insurance.setName("Insurance");
+			insurance.setCategory(BillCategory.FINANCE);
+			insurance.setInterval(BillInterval.MONTHLY);
+			insurance.setAmount(BigDecimal.valueOf(40));
+			insurance.setStartDate(LocalDate.now().minusMonths(1));
+			insurance.setNextDueDate(LocalDate.now().plusMonths(1));
+			insurance.setTotal(BigDecimal.valueOf(80));
+			recurringBillRepository.persist(insurance);
+
+			for (int month = 0; month < 2; month++)
+			{
+				RecurringBillPaymentEntity payment = new RecurringBillPaymentEntity(insurance);
+				payment.setDueDate(LocalDate.now().minusMonths(month));
+				payment.setPaidDate(payment.getDueDate());
+				payment.setAmount(BigDecimal.valueOf(40));
+				recurringBillPaymentRepository.persist(payment);
+			}
+		});
+
+		given()
+				.when()
+				.pathParam("id", carId)
+				.get("{id}/overview")
+				.then()
+				.statusCode(200)
+				.body("totalRefuels", is(1))
+				// 79.96 refuel + 2 * 40 insurance
+				.body("totalCost", is(159.96F));
 	}
 
 	@Test

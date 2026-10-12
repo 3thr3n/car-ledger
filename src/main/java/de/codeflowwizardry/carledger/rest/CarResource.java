@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -17,6 +18,7 @@ import de.codeflowwizardry.carledger.data.CarEntity;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.BillRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
+import de.codeflowwizardry.carledger.data.repository.RecurringBillPaymentRepository;
 import de.codeflowwizardry.carledger.exception.WrongUserException;
 import de.codeflowwizardry.carledger.rest.records.Car;
 import de.codeflowwizardry.carledger.rest.records.CarInput;
@@ -33,15 +35,18 @@ public class CarResource extends AbstractResource
 {
 	private final CarRepository carRepository;
 	private final BillRepository billRepository;
+	private final RecurringBillPaymentRepository recurringBillPaymentRepository;
 	private final OdometerService odometerService;
 
 	@Inject
 	public CarResource(SecurityIdentity identity, AccountRepository accountRepository, CarRepository carRepository,
-			BillRepository billRepository, OdometerService odometerService)
+			BillRepository billRepository, RecurringBillPaymentRepository recurringBillPaymentRepository,
+			OdometerService odometerService)
 	{
 		super(identity, accountRepository);
 		this.carRepository = carRepository;
 		this.billRepository = billRepository;
+		this.recurringBillPaymentRepository = recurringBillPaymentRepository;
 		this.odometerService = odometerService;
 	}
 
@@ -80,7 +85,9 @@ public class CarResource extends AbstractResource
 	public CarOverview getMyCarOverview(@PathParam("id") Long id)
 	{
 		findCar(id);
+		// the total contains the payments of the recurring costs, like the dashboard
 		return CarOverview.convert(billRepository.summarizeByType(id, context.getName()),
+				recurringBillPaymentRepository.sumAmount(id, context.getName(), Optional.empty(), Optional.empty()),
 				billRepository.averageConsumption(id, context.getName()));
 	}
 

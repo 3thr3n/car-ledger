@@ -9,11 +9,17 @@ import de.codeflowwizardry.carledger.data.repository.BillRepository.BillTypeSumm
 public record CarOverview(long totalRefuels, long totalMaintenanceEvents, long totalMiscellaneousEvents,
 		BigDecimal totalCost, BigDecimal avgConsumption)
 {
-	public static CarOverview convert(List<BillTypeSummary> summaries, BigDecimal avgConsumption)
+	/**
+	 * @param recurringTotal
+	 *            sum of the payments of the recurring costs, they are not part of
+	 *            the summaries
+	 */
+	public static CarOverview convert(List<BillTypeSummary> summaries, BigDecimal recurringTotal,
+			BigDecimal avgConsumption)
 	{
 		BigDecimal totalCost = summaries.stream()
 				.map(BillTypeSummary::total)
-				.reduce(BigDecimal.ZERO, BigDecimal::add);
+				.reduce(recurringTotal, BigDecimal::add);
 
 		return new CarOverview(count(summaries, BillType.FUEL), count(summaries, BillType.MAINTENANCE),
 				count(summaries, BillType.MISCELLANEOUS), totalCost, avgConsumption);
