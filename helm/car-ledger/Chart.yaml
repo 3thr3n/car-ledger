@@ -3,8 +3,11 @@ name: helm
 description: A Helm chart for Kubernetes
 type: application
 
+# The CI publishes the chart for every build of main as <major>.<minor>.<run number> with the
+# image of that build as appVersion. Raise major/minor here for incompatible changes of the values.
 version: 0.3.0
-appVersion: "1.16.0"
+# image tag used when carLedger.image.tag is empty, "main" is the latest build of main
+appVersion: "main"
 
 dependencies:
   - name: infinispan

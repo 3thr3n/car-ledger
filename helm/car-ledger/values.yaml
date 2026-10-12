@@ -17,7 +17,8 @@ carLedger:
   replicas: 1
   image:
     repository: ghcr.io/3thr3n/car-ledger
-    tag: 97
+    # defaults to the appVersion of the chart: the image of the same build for published charts
+    tag: ""
   securityContext:
     runAsNonRoot: true
   # OpenID Connect provider, Keycloak of the keycloak chart by default, any other works as well

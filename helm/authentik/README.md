@@ -23,9 +23,8 @@ helm install authentik helm/authentik \
   --set hostname=authentik.example.com \
   --set carLedger.hostname=car-ledger.example.com
 
-helm install car-ledger helm/car-ledger \
+helm install car-ledger oci://ghcr.io/3thr3n/car-ledger/helm \
   --set ingress.host=example.com \
-  --set carLedger.image.tag=<image tag> \
   --set carLedger.auth.url=https://authentik.example.com/application/o/car-ledger/ \
   --set carLedger.auth.clientId=car-ledger \
   --set carLedger.auth.existingSecret=car-ledger-oidc

@@ -91,14 +91,16 @@ shorter ones), 32 or more are recommended, and all replicas need the same one.
 ### 4. CarLedger
 
 ```bash
-helm dependency update helm/car-ledger
-helm install car-ledger helm/car-ledger \
-  --set ingress.host=example.com \
-  --set carLedger.image.tag=<image tag>
+helm install car-ledger oci://ghcr.io/3thr3n/car-ledger/helm --set ingress.host=example.com
 ```
 
-Images are published to `ghcr.io/3thr3n/car-ledger`, tagged with the GitHub run number of the build, the branch name
-and git tags. The default tag in `values.yaml` is old, always set the one you want to run.
+Every build of `main` publishes the image `ghcr.io/3thr3n/car-ledger:<run number>` and the chart
+`oci://ghcr.io/3thr3n/car-ledger/helm` in version `0.3.<run number>`, which runs the image of the same build. Without
+`--version` the latest one is installed, `--version 0.3.123` installs build 123. Leave `carLedger.image.tag` empty,
+it would override the image of the chart.
+
+From the repository (`helm dependency update helm/car-ledger`, `helm install car-ledger helm/car-ledger ...`) the chart
+runs the image `main`, the latest build of `main`.
 
 With another release name than `car-ledger`, set `carLedger.postgres.host` to `<release>-postgresql`. Passwords of
 PostgreSQL and Infinispan are generated on the first install and kept on upgrades.
@@ -143,12 +145,12 @@ Checklist for installations running an older image of the app.
 ### Upgrade
 
 ```bash
-helm dependency update helm/car-ledger
-helm upgrade car-ledger helm/car-ledger -f my-values.yaml --set carLedger.image.tag=<image tag>
+helm upgrade car-ledger oci://ghcr.io/3thr3n/car-ledger/helm -f my-values.yaml
 ```
 
 Pass your values file instead of `--reuse-values`, which keeps the old values and drops new defaults of the chart (e.g.
-the Infinispan 15.2 image).
+the Infinispan 15.2 image). Remove `carLedger.image.tag` from your values: the chart runs the image of its own build
+now, a tag set before would keep the old image.
 
 Use an image built from the current `main` (or a git tag of it). On the first start, Flyway migrates the database:
 
