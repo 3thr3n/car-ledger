@@ -1110,6 +1110,37 @@
         "tags" : [ "Auth Resource" ]
       }
     },
+    "/api/auth/error" : {
+      "get" : {
+        "description" : "The provider redirects here when the login failed, shows the error in the frontend",
+        "operationId" : "loginError",
+        "parameters" : [ {
+          "name" : "error",
+          "in" : "query",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "error_description",
+          "in" : "query",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : { }
+              }
+            }
+          }
+        },
+        "summary" : "Error",
+        "tags" : [ "Auth Resource" ]
+      }
+    },
     "/api/auth/login" : {
       "get" : {
         "description" : "Here should the browser redirect, when 'login' is pressed",

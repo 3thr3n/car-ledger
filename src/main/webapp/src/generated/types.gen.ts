@@ -460,6 +460,23 @@ export type CallbackResponses = {
     200: unknown;
 };
 
+export type LoginErrorData = {
+    body?: never;
+    path?: never;
+    query?: {
+        error?: string;
+        error_description?: string;
+    };
+    url: '/api/auth/error';
+};
+
+export type LoginErrorResponses = {
+    /**
+     * OK
+     */
+    200: unknown;
+};
+
 export type LoginData = {
     body?: never;
     path?: never;

@@ -3,8 +3,8 @@
 import { type DefaultError, type InfiniteData, infiniteQueryOptions, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen';
-import { addNewFuelBill, addNewMaintenanceBill, addNewMiscellaneousBill, addNewRecurringBill, addReminder, callback, completeReminder, createCar, deleteAdminAccount, deleteBill, deleteMyCar, deleteRecurringBill, deleteReminder, endRecurringBill, getAdminAccounts, getAdminStats, getAllBills, getAllBillYears, getAllFuelBills, getAllFuelBillYears, getAllMaintenanceBills, getAllMaintenanceBillYears, getAllMiscellaneousBills, getAllMiscellaneousBillYears, getAllRecurringBills, getCsvFields, getDashboardStats, getFuelBill, getMaintenanceBill, getMiscellaneousBill, getMonthlyStats, getMyCar, getMyCarOverview, getMyCars, getMyself, getReminders, importCsv, login, logout, logoutCallback, type Options, updateAdminAccount, updateFuelBill, updateMaintenanceBill, updateMiscellaneousBill, updateMyCar, updateMySettings, updateReminder } from '../sdk.gen';
-import type { AddNewFuelBillData, AddNewFuelBillError, AddNewMaintenanceBillData, AddNewMaintenanceBillError, AddNewMiscellaneousBillData, AddNewMiscellaneousBillError, AddNewRecurringBillData, AddNewRecurringBillError, AddNewRecurringBillResponse, AddReminderData, AddReminderError, AddReminderResponse, CallbackData, CompleteReminderData, CompleteReminderError, CompleteReminderResponse, CreateCarData, DeleteAdminAccountData, DeleteAdminAccountResponse, DeleteBillData, DeleteBillResponse, DeleteMyCarData, DeleteMyCarResponse, DeleteRecurringBillData, DeleteReminderData, DeleteReminderResponse, EndRecurringBillData, EndRecurringBillError, EndRecurringBillResponse, GetAdminAccountsData, GetAdminAccountsResponse, GetAdminStatsData, GetAdminStatsResponse, GetAllBillsData, GetAllBillsResponse, GetAllBillYearsData, GetAllBillYearsResponse, GetAllFuelBillsData, GetAllFuelBillsResponse, GetAllFuelBillYearsData, GetAllFuelBillYearsResponse, GetAllMaintenanceBillsData, GetAllMaintenanceBillsResponse, GetAllMaintenanceBillYearsData, GetAllMaintenanceBillYearsResponse, GetAllMiscellaneousBillsData, GetAllMiscellaneousBillsResponse, GetAllMiscellaneousBillYearsData, GetAllMiscellaneousBillYearsResponse, GetAllRecurringBillsData, GetAllRecurringBillsResponse, GetCsvFieldsData, GetCsvFieldsResponse, GetDashboardStatsData, GetDashboardStatsResponse, GetFuelBillData, GetFuelBillResponse, GetMaintenanceBillData, GetMaintenanceBillResponse, GetMiscellaneousBillData, GetMiscellaneousBillResponse, GetMonthlyStatsData, GetMonthlyStatsResponse, GetMyCarData, GetMyCarOverviewData, GetMyCarOverviewResponse, GetMyCarResponse, GetMyCarsData, GetMyCarsResponse, GetMyselfData, GetMyselfResponse, GetRemindersData, GetRemindersResponse, ImportCsvData, LoginData, LogoutCallbackData, LogoutData, UpdateAdminAccountData, UpdateAdminAccountError, UpdateAdminAccountResponse, UpdateFuelBillData, UpdateFuelBillError, UpdateFuelBillResponse, UpdateMaintenanceBillData, UpdateMaintenanceBillError, UpdateMaintenanceBillResponse, UpdateMiscellaneousBillData, UpdateMiscellaneousBillError, UpdateMiscellaneousBillResponse, UpdateMyCarData, UpdateMySettingsData, UpdateMySettingsError, UpdateMySettingsResponse, UpdateReminderData, UpdateReminderError, UpdateReminderResponse } from '../types.gen';
+import { addNewFuelBill, addNewMaintenanceBill, addNewMiscellaneousBill, addNewRecurringBill, addReminder, callback, completeReminder, createCar, deleteAdminAccount, deleteBill, deleteMyCar, deleteRecurringBill, deleteReminder, endRecurringBill, getAdminAccounts, getAdminStats, getAllBills, getAllBillYears, getAllFuelBills, getAllFuelBillYears, getAllMaintenanceBills, getAllMaintenanceBillYears, getAllMiscellaneousBills, getAllMiscellaneousBillYears, getAllRecurringBills, getCsvFields, getDashboardStats, getFuelBill, getMaintenanceBill, getMiscellaneousBill, getMonthlyStats, getMyCar, getMyCarOverview, getMyCars, getMyself, getReminders, importCsv, login, loginError, logout, logoutCallback, type Options, updateAdminAccount, updateFuelBill, updateMaintenanceBill, updateMiscellaneousBill, updateMyCar, updateMySettings, updateReminder } from '../sdk.gen';
+import type { AddNewFuelBillData, AddNewFuelBillError, AddNewMaintenanceBillData, AddNewMaintenanceBillError, AddNewMiscellaneousBillData, AddNewMiscellaneousBillError, AddNewRecurringBillData, AddNewRecurringBillError, AddNewRecurringBillResponse, AddReminderData, AddReminderError, AddReminderResponse, CallbackData, CompleteReminderData, CompleteReminderError, CompleteReminderResponse, CreateCarData, DeleteAdminAccountData, DeleteAdminAccountResponse, DeleteBillData, DeleteBillResponse, DeleteMyCarData, DeleteMyCarResponse, DeleteRecurringBillData, DeleteReminderData, DeleteReminderResponse, EndRecurringBillData, EndRecurringBillError, EndRecurringBillResponse, GetAdminAccountsData, GetAdminAccountsResponse, GetAdminStatsData, GetAdminStatsResponse, GetAllBillsData, GetAllBillsResponse, GetAllBillYearsData, GetAllBillYearsResponse, GetAllFuelBillsData, GetAllFuelBillsResponse, GetAllFuelBillYearsData, GetAllFuelBillYearsResponse, GetAllMaintenanceBillsData, GetAllMaintenanceBillsResponse, GetAllMaintenanceBillYearsData, GetAllMaintenanceBillYearsResponse, GetAllMiscellaneousBillsData, GetAllMiscellaneousBillsResponse, GetAllMiscellaneousBillYearsData, GetAllMiscellaneousBillYearsResponse, GetAllRecurringBillsData, GetAllRecurringBillsResponse, GetCsvFieldsData, GetCsvFieldsResponse, GetDashboardStatsData, GetDashboardStatsResponse, GetFuelBillData, GetFuelBillResponse, GetMaintenanceBillData, GetMaintenanceBillResponse, GetMiscellaneousBillData, GetMiscellaneousBillResponse, GetMonthlyStatsData, GetMonthlyStatsResponse, GetMyCarData, GetMyCarOverviewData, GetMyCarOverviewResponse, GetMyCarResponse, GetMyCarsData, GetMyCarsResponse, GetMyselfData, GetMyselfResponse, GetRemindersData, GetRemindersResponse, ImportCsvData, LoginData, LoginErrorData, LogoutCallbackData, LogoutData, UpdateAdminAccountData, UpdateAdminAccountError, UpdateAdminAccountResponse, UpdateFuelBillData, UpdateFuelBillError, UpdateFuelBillResponse, UpdateMaintenanceBillData, UpdateMaintenanceBillError, UpdateMaintenanceBillResponse, UpdateMiscellaneousBillData, UpdateMiscellaneousBillError, UpdateMiscellaneousBillResponse, UpdateMyCarData, UpdateMySettingsData, UpdateMySettingsError, UpdateMySettingsResponse, UpdateReminderData, UpdateReminderError, UpdateReminderResponse } from '../types.gen';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -193,6 +193,26 @@ export const callbackOptions = (options?: Options<CallbackData>) => queryOptions
         return data;
     },
     queryKey: callbackQueryKey(options)
+});
+
+export const loginErrorQueryKey = (options?: Options<LoginErrorData>) => createQueryKey('loginError', options);
+
+/**
+ * Error
+ *
+ * The provider redirects here when the login failed, shows the error in the frontend
+ */
+export const loginErrorOptions = (options?: Options<LoginErrorData>) => queryOptions<unknown, DefaultError, unknown, ReturnType<typeof loginErrorQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await loginError({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: loginErrorQueryKey(options)
 });
 
 export const loginQueryKey = (options?: Options<LoginData>) => createQueryKey('login', options);

@@ -361,6 +361,7 @@ errors:
   generic: "An unexpected error occurred."
   backend: "The server did not respond as expected. Please try again later."
   loginRequired: "Please log in to see this page."
+  loginFailed: "The login failed: {{reason}}"
   goHome: "Back to start"
 
 notFound:
