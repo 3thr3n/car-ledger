@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [ "main" ]
 
+# only reads the repository, the token gets no write access
+permissions:
+  contents: read
+
 jobs:
   e2e:
     if: ${{ github.actor != 'dependabot[bot]' }}
