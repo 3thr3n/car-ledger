@@ -100,6 +100,17 @@ export function loadMapping(type: string): SavedMapping | undefined {
   }
 }
 
+/** Forgets the mappings of all entry types, e.g. when the account is deleted. */
+export function clearMappings() {
+  try {
+    Object.keys(localStorage)
+      .filter((key) => key.startsWith(storageKey('')))
+      .forEach((key) => localStorage.removeItem(key));
+  } catch {
+    // nothing stored without storage
+  }
+}
+
 export function saveMapping(type: string, mapping: SavedMapping) {
   try {
     localStorage.setItem(storageKey(type), JSON.stringify(mapping));

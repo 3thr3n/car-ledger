@@ -3123,6 +3123,17 @@
         },
         "summary" : "Get Me",
         "tags" : [ "Account Resource" ]
+      },
+      "delete" : {
+        "description" : "Deletes the own account with all its cars, entries, recurring costs and reminders. The account at the identity provider stays.",
+        "operationId" : "deleteMyself",
+        "responses" : {
+          "204" : {
+            "description" : "Account deleted."
+          }
+        },
+        "summary" : "Delete Me",
+        "tags" : [ "Account Resource" ]
       }
     },
     "/api/user/me/settings" : {

@@ -324,6 +324,15 @@ settings:
     EN: "English"
     DE: "Deutsch"
   saved: "Settings saved"
+  deleteAccount:
+    title: "Delete account"
+    text: "Removes your account with all cars, entries, recurring costs and reminders."
+    button: "Delete account"
+    confirmTitle: "Delete your account?"
+    confirmText: "All your cars, entries, recurring costs and reminders are removed permanently. This cannot be undone."
+    identityProvider: "Only your data in CarLedger is deleted. Your login at the identity provider stays; signing in again starts with an empty account."
+    typeName: "Type {{name}} to confirm"
+    done: "Your account was deleted"
 
 admin:
   title: "Administration"

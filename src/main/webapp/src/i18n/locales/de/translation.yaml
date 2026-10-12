@@ -324,6 +324,15 @@ settings:
     EN: "English"
     DE: "Deutsch"
   saved: "Einstellungen gespeichert"
+  deleteAccount:
+    title: "Konto löschen"
+    text: "Entfernt dein Konto mit allen Autos, Einträgen, laufenden Kosten und Erinnerungen."
+    button: "Konto löschen"
+    confirmTitle: "Dein Konto löschen?"
+    confirmText: "Alle deine Autos, Einträge, laufenden Kosten und Erinnerungen werden endgültig entfernt. Das kann nicht rückgängig gemacht werden."
+    identityProvider: "Gelöscht werden nur deine Daten in CarLedger. Dein Login beim Identitätsanbieter bleibt; eine neue Anmeldung beginnt mit einem leeren Konto."
+    typeName: "Gib {{name}} zur Bestätigung ein"
+    done: "Dein Konto wurde gelöscht"
 
 admin:
   title: "Verwaltung"

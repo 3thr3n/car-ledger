@@ -18,7 +18,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import de.codeflowwizardry.carledger.data.AccountEntity;
+import de.codeflowwizardry.carledger.data.CarEntity;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
+import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.security.runtime.QuarkusSecurityIdentity;
 import io.quarkus.test.security.TestSecurity;
@@ -34,6 +36,9 @@ class AccountResourceTest
 {
 	@Inject
 	AccountRepository accountRepository;
+
+	@Inject
+	CarRepository carRepository;
 
 	@Test
 	@TestSecurity(user = "peter", roles = {
@@ -221,6 +226,56 @@ class AccountResourceTest
 				.then()
 				.statusCode(400)
 				.body("size()", Matchers.is(3));
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldDeleteOwnAccountWithItsCars()
+	{
+		given().when().get("/api/user/me").then().statusCode(200);
+		createCar("peter");
+		createOtherAccount("paul");
+
+		given()
+				.when()
+				.delete("/api/user/me")
+				.then()
+				.statusCode(204);
+
+		assertEquals(1, accountRepository.count());
+		assertEquals(0, carRepository.count());
+		assertEquals("paul", accountRepository.findAll().firstResult().getUserId());
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldAcceptDeletingMissingAccount()
+	{
+		given()
+				.when()
+				.delete("/api/user/me")
+				.then()
+				.statusCode(204);
+
+		assertEquals(0, accountRepository.count());
+	}
+
+	@Transactional
+	void createCar(String user)
+	{
+		CarEntity car = new CarEntity();
+		car.setUser(accountRepository.findByIdentifier(user));
+		car.setName("Peters car");
+		carRepository.persist(car);
+	}
+
+	void createOtherAccount(String user)
+	{
+		accountRepository.createAccount(user, 1);
 	}
 
 	@Transactional
