@@ -119,23 +119,40 @@ test.describe.serial('car ledger', () => {
     await expect(row.getByRole('button', { name: 'End' })).toHaveCount(0);
   });
 
+  const uploadCsv = (name: string, lines: string[]) =>
+    page.locator('input[type=file]').setInputFiles({
+      name,
+      mimeType: 'text/csv',
+      buffer: Buffer.from(lines.join('\n')),
+    });
+  const column = (field: RegExp) =>
+    page.getByRole('combobox', { name: field }).filter({ visible: true });
+
   test('imports a CSV and reports the failed rows', async () => {
     await page.goto(`${carUrl}/bill/import?type=FUEL`);
     await visibleButton('Continue').click();
 
-    const csv = [
-      'date,unit,pricePerUnit,distance',
+    // names the automatic assignment does not recognize
+    await uploadCsv('refuels.csv', [
+      'Tag,Liter,Cent,Strecke',
       '2026-01-10,41.5,172.9,610',
       '2026-02-07,39.2,169.9,598',
       'not-a-date,40,170,600',
-    ].join('\n');
-    await page.locator('input[type=file]').setInputFiles({
-      name: 'refuels.csv',
-      mimeType: 'text/csv',
-      buffer: Buffer.from(csv),
-    });
+    ]);
 
     await expect(page.getByText('4 columns found')).toBeVisible();
+    await expect(page.getByText('Assignment of your last import')).toHaveCount(
+      0,
+    );
+    for (const [field, name] of [
+      [/^Date/, 'Tag'],
+      [/^Liters/, 'Liter'],
+      [/^Price per liter/, 'Cent'],
+      [/^Distance/, 'Strecke'],
+    ] as const) {
+      await column(field).click();
+      await page.getByRole('option', { name, exact: true }).click();
+    }
     await visibleButton('Continue').click();
     await visibleButton('Start import').click();
 
@@ -144,6 +161,26 @@ test.describe.serial('car ledger', () => {
     await expect(
       page.getByText("Could not parse date 'not-a-date'"),
     ).toBeVisible();
+  });
+
+  test('remembers the column assignment of the last import', async () => {
+    await page.goto(`${carUrl}/bill/import?type=FUEL`);
+    await visibleButton('Continue').click();
+
+    // same export, other column order and an additional column
+    await uploadCsv('more-refuels.csv', [
+      'Strecke,Notiz,Cent,Tag,Liter',
+      '590,Highway,171.9,2026-03-05,38.0',
+    ]);
+
+    await expect(
+      page.getByText('Assignment of your last import restored'),
+    ).toBeVisible();
+    await expect(column(/^Date/)).toHaveText('Tag');
+    await expect(column(/^Liters/)).toHaveText('Liter');
+    await expect(column(/^Price per liter/)).toHaveText('Cent');
+    await expect(column(/^Distance/)).toHaveText('Strecke');
+    await expect(visibleButton('Continue')).toBeEnabled();
   });
 
   test('shows the costs on the dashboard', async () => {

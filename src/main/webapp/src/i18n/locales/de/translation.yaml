@@ -275,6 +275,7 @@ import:
   noHeader: "Die Datei hat keine Kopfzeile."
   mappingHint_one: "{{count}} Spalte gefunden. Ordne sie dem passenden Feld zu."
   mappingHint_other: "{{count}} Spalten gefunden. Ordne sie den passenden Feldern zu."
+  mappingRestored: "Zuordnung deines letzten Imports übernommen. Prüfe sie, bevor du fortfährst."
   notMapped: "Nicht importieren"
   missingRequired: "Pflichtfelder ohne Spalte: {{fields}}"
   start: "Import starten"

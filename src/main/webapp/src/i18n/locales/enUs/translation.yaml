@@ -275,6 +275,7 @@ import:
   noHeader: "The file has no header row."
   mappingHint_one: "{{count}} column found. Assign it to the matching field."
   mappingHint_other: "{{count}} columns found. Assign them to the matching fields."
+  mappingRestored: "Assignment of your last import restored. Check it before you continue."
   notMapped: "Not imported"
   missingRequired: "Required fields without column: {{fields}}"
   start: "Start import"
