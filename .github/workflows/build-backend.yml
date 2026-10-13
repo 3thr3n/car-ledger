@@ -20,8 +20,36 @@ jobs:
       contents: read
       packages: write
 
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      image-tag: ${{ steps.version.outputs.image-tag }}
+
     steps:
       - uses: actions/checkout@v4
+
+      # One version for the app, the image and the chart: a tag (e.g. 0.2.0) has to match the version of
+      # Chart.yaml and is used as it is, every other build is <version of Chart.yaml>-dev.<run number>.
+      # Checked before anything is published.
+      - name: Version
+        id: version
+        env:
+          RUN_NUMBER: ${{ github.run_number }}
+        run: |
+          BASE=$(sed -n 's/^version: *//p' helm/car-ledger/Chart.yaml)
+          if [ "$GITHUB_REF_TYPE" = tag ]; then
+            if [ "$GITHUB_REF_NAME" != "$BASE" ]; then
+              echo "::error::The tag $GITHUB_REF_NAME differs from the version $BASE of helm/car-ledger/Chart.yaml"
+              exit 1
+            fi
+            VERSION="$BASE"
+            IMAGE_TAG="$GITHUB_REF_NAME"
+          else
+            VERSION="$BASE-dev.$RUN_NUMBER"
+            IMAGE_TAG="$RUN_NUMBER"
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "image-tag=$IMAGE_TAG" >> "$GITHUB_OUTPUT"
+
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
@@ -35,8 +63,11 @@ jobs:
         with:
           node-version: 24
 
+      # the version is shown at the start of the app
       - name: Build with Maven
-        run: mvn -B verify
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: mvn -B verify -Drevision="$VERSION"
 
       # the build writes the OpenAPI spec of the backend to the frontend, the client is generated from it
       - name: Check the API spec and client are up to date
@@ -104,23 +135,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # the version of the build job, checked there against the tag
       - name: Package the chart
         id: package
         env:
-          RUN_NUMBER: ${{ github.run_number }}
+          VERSION: ${{ needs.build.outputs.version }}
+          IMAGE_TAG: ${{ needs.build.outputs.image-tag }}
         run: |
-          BASE=$(sed -n 's/^version: *//p' helm/car-ledger/Chart.yaml)
-          if [ "$GITHUB_REF_TYPE" = tag ]; then
-            if [ "$GITHUB_REF_NAME" != "$BASE" ]; then
-              echo "::error::The tag $GITHUB_REF_NAME differs from the version $BASE of helm/car-ledger/Chart.yaml"
-              exit 1
-            fi
-            VERSION="$BASE"
-            IMAGE_TAG="$GITHUB_REF_NAME"
-          else
-            VERSION="$BASE-dev.$RUN_NUMBER"
-            IMAGE_TAG="$RUN_NUMBER"
-          fi
           helm dependency update helm/car-ledger
           helm package helm/car-ledger --version "$VERSION" --app-version "$IMAGE_TAG" --destination chart-dist
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
