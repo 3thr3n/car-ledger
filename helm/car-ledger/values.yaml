@@ -33,6 +33,16 @@ carLedger:
     secretKeys:
       clientSecret: "secret"
       stateSecret: "state-secret"
+  # receipts and other files attached to the entries, stored in PostgreSQL. Photos are scaled down
+  # by the browser (about 0.5 MB), PDFs are uploaded as they are
+  attachments:
+    # largest file
+    maxSize: 10M
+    maxPerBill: 10
+    # largest request, a bit more than maxSize for the multipart envelope. With className nginx the
+    # ingress gets the annotation nginx.ingress.kubernetes.io/proxy-body-size with this value (unless
+    # set in ingress.annotations); other proxies in front of the app need a similar limit
+    maxRequestSize: 12M
   # probes of the app, the paths are fixed. The startup probe gives a slow start (small CPU limit,
   # database migrations) failureThreshold * periodSeconds, 150 s by default, before the pod is restarted
   startupProbe:

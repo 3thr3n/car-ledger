@@ -16,6 +16,7 @@ import useVatCountry from '@/hooks/useVatCountry';
 import NumberField from './NumberField';
 import VatCountrySelect from './VatCountrySelect';
 import FormActions from './FormActions';
+import BillAttachments from './BillAttachments';
 import useSaveBill from './useSaveBill';
 
 const MAX = 100_000;
@@ -60,10 +61,15 @@ export default function FuelForm({
   );
   const [touched, setTouched] = useState(false);
 
-  const save = useSaveBill(carId, BillType.FUEL, () => {
-    setForm(empty());
-    setTouched(false);
-  });
+  const save = useSaveBill(
+    carId,
+    BillType.FUEL,
+    () => {
+      setForm(empty());
+      setTouched(false);
+    },
+    bill?.id,
+  );
   const create = useMutation({
     ...addNewFuelBillMutation({ client: localClient }),
     onSuccess: save.onSuccess,
@@ -218,6 +224,8 @@ export default function FuelForm({
           />
         </Grid>
       </Grid>
+
+      <BillAttachments {...save.attachments} />
 
       <FormActions
         pending={create.isPending || update.isPending}

@@ -15,6 +15,7 @@ import useVatCountry from '@/hooks/useVatCountry';
 import NumberField from './NumberField';
 import VatCountrySelect from './VatCountrySelect';
 import FormActions from './FormActions';
+import BillAttachments from './BillAttachments';
 import useSaveBill from './useSaveBill';
 
 interface MiscellaneousState {
@@ -47,10 +48,15 @@ export default function MiscellaneousForm({
   );
   const [touched, setTouched] = useState(false);
 
-  const save = useSaveBill(carId, BillType.MISCELLANEOUS, () => {
-    setForm(empty());
-    setTouched(false);
-  });
+  const save = useSaveBill(
+    carId,
+    BillType.MISCELLANEOUS,
+    () => {
+      setForm(empty());
+      setTouched(false);
+    },
+    bill?.id,
+  );
   const create = useMutation({
     ...addNewMiscellaneousBillMutation({ client: localClient }),
     onSuccess: save.onSuccess,
@@ -129,6 +135,8 @@ export default function MiscellaneousForm({
           />
         </Grid>
       </Grid>
+
+      <BillAttachments {...save.attachments} />
 
       <FormActions
         pending={create.isPending || update.isPending}

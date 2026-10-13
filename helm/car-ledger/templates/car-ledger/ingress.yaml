@@ -3,10 +3,16 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: car-ledger-ingress
-  {{- if or .Values.ingress.certManager .Values.ingress.annotations }}
+  {{- $bodySize := "nginx.ingress.kubernetes.io/proxy-body-size" }}
+  {{- $nginxBodySize := and (eq .Values.ingress.className "nginx") (not (hasKey (.Values.ingress.annotations | default dict) $bodySize)) }}
+  {{- if or .Values.ingress.certManager .Values.ingress.annotations $nginxBodySize }}
   annotations:
     {{- if .Values.ingress.certManager }}
     cert-manager.io/cluster-issuer: {{ .Values.ingress.certManager }}
+    {{- end }}
+    {{- if $nginxBodySize }}
+    # uploads of attachments, nginx allows 1 MB by default
+    {{ $bodySize }}: {{ .Values.carLedger.attachments.maxRequestSize | lower | quote }}
     {{- end }}
     {{- with .Values.ingress.annotations }}
     {{- toYaml . | nindent 4 }}
