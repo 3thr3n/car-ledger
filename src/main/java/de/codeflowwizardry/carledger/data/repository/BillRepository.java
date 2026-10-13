@@ -12,7 +12,6 @@ import java.util.stream.Collectors;
 import de.codeflowwizardry.carledger.data.BillEntity;
 import de.codeflowwizardry.carledger.data.BillType;
 import de.codeflowwizardry.carledger.exception.DbDeletionException;
-import io.quarkus.panache.common.Parameters;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 
@@ -52,26 +51,7 @@ public class BillRepository extends AbstractBillRepository<BillEntity>
 				+ " left join fetch b.fuelBill"
 				+ " left join fetch b.maintenanceBill"
 				+ " left join fetch b.miscellaneousBill"
-				+ " where b.car.user.userId = :userId";
-		params.put("userId", username);
-
-		if (carId != ALL_CARS)
-		{
-			query += " and b.car.id = :carId";
-			params.put("carId", carId);
-		}
-
-		if (from.isPresent())
-		{
-			query += " and b.date >= :from";
-			params.put("from", from.get());
-		}
-
-		if (to.isPresent())
-		{
-			query += " and b.date <= :to";
-			params.put("to", to.get());
-		}
+				+ where(carId, username, from, to, params);
 
 		return find(query + " order by b.date desc", params).list();
 	}
@@ -177,27 +157,7 @@ public class BillRepository extends AbstractBillRepository<BillEntity>
 	private static String where(long carId, String username, Optional<LocalDate> from, Optional<LocalDate> to,
 			Map<String, Object> params)
 	{
-		String where = " where b.car.user.userId = :userId";
-		params.put("userId", username);
-
-		if (carId != ALL_CARS)
-		{
-			where += " and b.car.id = :carId";
-			params.put("carId", carId);
-		}
-
-		if (from.isPresent())
-		{
-			where += " and b.date >= :from";
-			params.put("from", from.get());
-		}
-
-		if (to.isPresent())
-		{
-			where += " and b.date <= :to";
-			params.put("to", to.get());
-		}
-		return where;
+		return PeriodFilter.where("b.car", "b.date", carId, username, from, to, params);
 	}
 
 	private List<Object[]> rows(String query, Map<String, Object> params)
@@ -216,7 +176,7 @@ public class BillRepository extends AbstractBillRepository<BillEntity>
 	public void delete(long carId, long billId, String username)
 	{
 		Optional<BillEntity> any = find("id = :billId and car.id = :carId and car.user.userId = :userId",
-				Parameters.with("carId", carId).and("userId", username).and("billId", billId))
+				Map.of("carId", carId, "userId", username, "billId", billId))
 				.firstResultOptional();
 
 		if (any.isEmpty())

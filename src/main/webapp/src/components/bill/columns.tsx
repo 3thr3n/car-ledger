@@ -1,4 +1,3 @@
-import { Chip } from '@mui/material';
 import { GridColDef, GridValidRowModel } from '@mui/x-data-grid';
 import { useTranslation } from 'react-i18next';
 import {
@@ -10,6 +9,7 @@ import {
 } from '@/generated';
 import { hasValue, useFormat } from '@/utils/format';
 import TypeChip from '@/components/ui/TypeChip';
+import RecurringStatusChip from './RecurringStatusChip';
 import { MobileRow } from './BillTable';
 
 interface Columns<R extends GridValidRowModel> {
@@ -241,18 +241,6 @@ export function useMiscellaneousColumns(): Columns<MiscellaneousBill> {
   };
 }
 
-function StatusChip({ finished }: { finished?: boolean }) {
-  const { t } = useTranslation();
-  return (
-    <Chip
-      size="small"
-      variant="outlined"
-      color={finished ? 'default' : 'success'}
-      label={finished ? t('bill.status.finished') : t('bill.status.running')}
-    />
-  );
-}
-
 export function useRecurringColumns(): Columns<RecurringBill> {
   const { t } = useTranslation();
   const f = useFormat();
@@ -276,7 +264,9 @@ export function useRecurringColumns(): Columns<RecurringBill> {
         field: 'finished',
         headerName: t('bill.fields.status'),
         minWidth: 120,
-        renderCell: ({ row }) => <StatusChip finished={row.finished} />,
+        renderCell: ({ row }) => (
+          <RecurringStatusChip finished={row.finished} />
+        ),
       },
       {
         field: 'startDate',
@@ -313,7 +303,7 @@ export function useRecurringColumns(): Columns<RecurringBill> {
     ],
     mobileRow: (row) => ({
       primary: row.name,
-      badge: <StatusChip finished={row.finished} />,
+      badge: <RecurringStatusChip finished={row.finished} />,
       secondary: row.finished
         ? `${t('bill.fields.amount')} ${f.money(row.amount)}`
         : `${t('bill.fields.nextDueDate')} ${f.date(row.nextDueDate)} · ${f.money(row.amount)}`,

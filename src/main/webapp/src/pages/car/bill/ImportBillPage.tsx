@@ -29,7 +29,7 @@ import { toast } from 'react-toastify';
 import { BillType, CsvImportResult, importCsv } from '@/generated';
 import { getCsvFieldsOptions } from '@/generated/@tanstack/react-query.gen';
 import { invalidateCar, localClient } from '@/utils/QueryClient';
-import { BackendError } from '@/utils/BackendError';
+import { errorMessage } from '@/utils/BackendError';
 import { billTypeList, billTypes } from '@/utils/billTypes';
 import useVatCountry from '@/hooks/useVatCountry';
 import {
@@ -105,11 +105,7 @@ export default function ImportBillPage({
       await invalidateCar(carId);
     },
     onError: (error) => {
-      toast.error(
-        error instanceof BackendError && error.message
-          ? error.message
-          : t('import.failed'),
-      );
+      toast.error(errorMessage(error, t('import.failed')));
     },
   });
 

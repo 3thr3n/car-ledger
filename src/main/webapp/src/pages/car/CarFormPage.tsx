@@ -23,7 +23,7 @@ import {
   updateMyCarMutation,
 } from '@/generated/@tanstack/react-query.gen';
 import queryClient, { invalidateCar, localClient } from '@/utils/QueryClient';
-import { BackendError } from '@/utils/BackendError';
+import { errorMessage } from '@/utils/BackendError';
 import NumberField from '@/components/bill/NumberField';
 import Page from '@/components/layout/Page';
 import PageHeader from '@/components/ui/PageHeader';
@@ -125,8 +125,8 @@ function CarForm({
   };
   const valid = Object.values(errors).every((error) => !error);
 
-  const onError = (error: BackendError) => {
-    toast.error(error.message || t('errors.backend'));
+  const onError = (error: Error) => {
+    toast.error(errorMessage(error, t('errors.backend')));
   };
 
   const create = useMutation({

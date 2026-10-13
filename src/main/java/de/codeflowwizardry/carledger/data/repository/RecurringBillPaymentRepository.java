@@ -31,26 +31,8 @@ public class RecurringBillPaymentRepository implements PanacheRepository<Recurri
 	{
 		Map<String, Object> params = new HashMap<>();
 
-		String query = "select sum(amount) from recurring_bill_payment where bill.car.user.userId = :userId";
-		params.put("userId", username);
-
-		if (carId != CarRepository.ALL_CARS)
-		{
-			query += " and bill.car.id = :carId";
-			params.put("carId", carId);
-		}
-
-		if (from.isPresent())
-		{
-			query += " and dueDate >= :from";
-			params.put("from", from.get());
-		}
-
-		if (to.isPresent())
-		{
-			query += " and dueDate <= :to";
-			params.put("to", to.get());
-		}
+		String query = "select sum(amount) from recurring_bill_payment"
+				+ PeriodFilter.where("bill.car", "dueDate", carId, username, from, to, params);
 
 		TypedQuery<BigDecimal> typedQuery = getEntityManager().createQuery(query, BigDecimal.class);
 		params.forEach(typedQuery::setParameter);
@@ -69,26 +51,7 @@ public class RecurringBillPaymentRepository implements PanacheRepository<Recurri
 		Map<String, Object> params = new HashMap<>();
 
 		String query = "select year(dueDate), month(dueDate), sum(amount) from recurring_bill_payment"
-				+ " where bill.car.user.userId = :userId";
-		params.put("userId", username);
-
-		if (carId != CarRepository.ALL_CARS)
-		{
-			query += " and bill.car.id = :carId";
-			params.put("carId", carId);
-		}
-
-		if (from.isPresent())
-		{
-			query += " and dueDate >= :from";
-			params.put("from", from.get());
-		}
-
-		if (to.isPresent())
-		{
-			query += " and dueDate <= :to";
-			params.put("to", to.get());
-		}
+				+ PeriodFilter.where("bill.car", "dueDate", carId, username, from, to, params);
 
 		TypedQuery<Object[]> typedQuery = getEntityManager()
 				.createQuery(query + " group by year(dueDate), month(dueDate)", Object[].class);

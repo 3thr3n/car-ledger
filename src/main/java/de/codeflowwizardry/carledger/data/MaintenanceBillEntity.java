@@ -45,12 +45,6 @@ public class MaintenanceBillEntity extends AbstractBillEntity
 		return bill;
 	}
 
-	@Override
-	public BillType getType()
-	{
-		return bill.getType();
-	}
-
 	public String getDescription()
 	{
 		return description;

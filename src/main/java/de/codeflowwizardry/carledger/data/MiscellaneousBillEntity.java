@@ -32,12 +32,6 @@ public class MiscellaneousBillEntity extends AbstractBillEntity
 		return bill;
 	}
 
-	@Override
-	public BillType getType()
-	{
-		return bill.getType();
-	}
-
 	public String getDescription()
 	{
 		return description;

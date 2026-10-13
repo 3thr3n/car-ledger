@@ -20,7 +20,7 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
  *            all costs of the month per km in cent
  */
 public record MonthStats(
-		@Schema(example = "2026-03", required = true) String month,
+		@Schema(examples = "2026-03", required = true) String month,
 		@Schema(required = true) BigDecimal fuel,
 		@Schema(required = true) BigDecimal maintenance,
 		@Schema(required = true) BigDecimal miscellaneous,

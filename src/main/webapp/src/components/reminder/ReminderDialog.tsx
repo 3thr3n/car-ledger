@@ -22,7 +22,7 @@ import {
   updateReminderMutation,
 } from '@/generated/@tanstack/react-query.gen';
 import { invalidateCar, localClient } from '@/utils/QueryClient';
-import { BackendError } from '@/utils/BackendError';
+import { errorMessage } from '@/utils/BackendError';
 import { toApiDate, useFormat } from '@/utils/format';
 import NumberField from '@/components/bill/NumberField';
 
@@ -93,11 +93,7 @@ function ReminderForm({
     await invalidateCar(carId);
   };
   const onError = (error: Error) =>
-    toast.error(
-      error instanceof BackendError && error.message
-        ? error.message
-        : t('errors.backend'),
-    );
+    toast.error(errorMessage(error, t('errors.backend')));
   const add = useMutation({
     ...addReminderMutation({ client: localClient }),
     onSuccess,

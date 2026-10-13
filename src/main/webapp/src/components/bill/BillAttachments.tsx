@@ -19,7 +19,7 @@ import {
   getBillAttachmentsOptions,
 } from '@/generated/@tanstack/react-query.gen';
 import { invalidateCar, localClient } from '@/utils/QueryClient';
-import { BackendError } from '@/utils/BackendError';
+import { errorMessage } from '@/utils/BackendError';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import { ACCEPT, contentUrl, uploadAttachment } from './attachments';
 
@@ -64,11 +64,7 @@ export default function BillAttachments({
     },
     onSettled: () => invalidateCar(carId),
     onError: (error) =>
-      toast.error(
-        error instanceof BackendError && error.message
-          ? error.message
-          : t('attachments.failed'),
-      ),
+      toast.error(errorMessage(error, t('attachments.failed'))),
   });
 
   const remove = useMutation({

@@ -8,7 +8,6 @@ import java.util.stream.Collectors;
 
 import de.codeflowwizardry.carledger.data.AttachmentEntity;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
-import io.quarkus.panache.common.Parameters;
 import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
 
@@ -23,7 +22,7 @@ public class AttachmentRepository implements PanacheRepository<AttachmentEntity>
 	{
 		return list("bill.id = :billId and car.id = :carId and car.user.userId = :userId",
 				Sort.by("createdAt").and("id"),
-				Parameters.with("billId", billId).and("carId", carId).and("userId", userId));
+				Map.of("billId", billId, "carId", carId, "userId", userId));
 	}
 
 	public long countForBill(long billId)
@@ -34,7 +33,7 @@ public class AttachmentRepository implements PanacheRepository<AttachmentEntity>
 	public Optional<AttachmentEntity> findForUser(long carId, long id, String userId)
 	{
 		return find("id = :id and car.id = :carId and car.user.userId = :userId",
-				Parameters.with("id", id).and("carId", carId).and("userId", userId))
+				Map.of("id", id, "carId", carId, "userId", userId))
 				.firstResultOptional();
 	}
 
