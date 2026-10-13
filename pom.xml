@@ -317,7 +317,8 @@
                 <executions>
                     <execution>
                         <id>copy-openapi</id>
-                        <phase>prepare-package</phase>
+                        <!-- after the build of quarkus-maven-plugin (declared before), which writes the spec -->
+                        <phase>package</phase>
                         <goals>
                             <goal>copy-resources</goal>
                         </goals>
