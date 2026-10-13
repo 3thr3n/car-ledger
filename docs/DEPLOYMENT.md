@@ -95,13 +95,13 @@ shorter ones), 32 or more are recommended, and all replicas need the same one.
 helm install car-ledger oci://ghcr.io/3thr3n/car-ledger/helm --set ingress.host=example.com
 ```
 
-Without `--version` the latest release is installed. A release (e.g. `0.2.0`, see the
-[releases](https://github.com/3thr3n/car-ledger/releases)) publishes the image `ghcr.io/3thr3n/car-ledger:0.2.0` and the
-chart `oci://ghcr.io/3thr3n/car-ledger/helm` in version `0.2.0`, which runs that image.
+Without `--version` the latest release is installed. A release (e.g. `0.3.0`, see the
+[releases](https://github.com/3thr3n/car-ledger/releases)) publishes the image `ghcr.io/3thr3n/car-ledger:0.3.0` and the
+chart `oci://ghcr.io/3thr3n/car-ledger/helm` in version `0.3.0`, which runs that image.
 
 Every build of `main` publishes the image `ghcr.io/3thr3n/car-ledger:<run number>` and the chart as the prerelease
-`<next release>-dev.<run number>`, e.g. `0.2.0-dev.123`, which runs the image of the same build: `--version
-0.2.0-dev.123` installs build 123, `--devel` the latest build. Leave `carLedger.image.tag` empty, it would override
+`<next release>-dev.<run number>`, e.g. `0.4.0-dev.123`, which runs the image of the same build: `--version
+0.4.0-dev.123` installs build 123, `--devel` the latest build. Leave `carLedger.image.tag` empty, it would override
 the image of the chart.
 
 From the repository (`helm dependency update helm/car-ledger`, `helm install car-ledger helm/car-ledger ...`) the chart
@@ -169,6 +169,9 @@ Use an image built from the current `main` (or a git tag of it). On the first st
 | 1.1.0     | Settings per account (VAT country `DE`, currency `EUR`, language of the browser), created and last seen date        |
 | 1.2.0     | Table for the reminders                                                                                              |
 | 1.3.0     | Date of the odometer reading of the cars, see below                                                                  |
+| 1.4.0     | Optional plate, VIN, purchase date and price of the cars (0.3.0)                                                     |
+| 1.5.0     | Tables for the attachments of the entries and their content (0.3.0)                                                  |
+| 1.6.0     | Picture of the cars (0.3.0)                                                                                          |
 
 An older image refuses to start on the migrated database, as Flyway finds migrations it does not know. To go back,
 restore the backup. Without the backup, the older image runs on the migrated database (the new columns have defaults)
@@ -186,6 +189,9 @@ kubectl set env deployment/car-ledger QUARKUS_FLYWAY_IGNORE_FUTURE_MIGRATIONS=tr
   the actual mileage in *Edit car*, it becomes a new reading as of today.
 - **Settings**: all accounts start with VAT country Germany and the currency Euro. Users with another currency change
   it in *Settings*, existing amounts are not converted.
+- **Uploads** (0.3.0): receipts and car pictures need requests up to `carLedger.attachments.maxRequestSize` (12 MB). The
+  nginx ingress of the chart gets the annotation automatically; a Gateway or a proxy in front needs the same limit,
+  otherwise uploads fail with 413. The files are stored in PostgreSQL, the backup above includes them.
 
 ## Upgrading from the bitnami based charts (0.1.x)
 
