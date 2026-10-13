@@ -351,6 +351,10 @@
           },
           "purchasePrice" : {
             "type" : "number"
+          },
+          "pictureId" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         },
         "required" : [ "currentOdometer" ]
@@ -2862,6 +2866,116 @@
         },
         "summary" : "Get My Car Overview",
         "tags" : [ "Car Resource" ]
+      }
+    },
+    "/api/car/my/{id}/picture" : {
+      "put" : {
+        "description" : "Replaces the picture of the car with a JPEG, PNG or WebP image",
+        "operationId" : "setCarPicture",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "multipart/form-data" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "file" : {
+                    "type" : "string",
+                    "format" : "binary"
+                  }
+                }
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Picture saved.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Attachment"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "File empty, too large or no image",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Car not found."
+          }
+        },
+        "summary" : "Set Picture",
+        "tags" : [ "Car Picture Resource" ]
+      },
+      "get" : {
+        "description" : "The picture; its URL carries the pictureId of the car, so it can be cached",
+        "operationId" : "getCarPicture",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Picture found.",
+            "content" : {
+              "image/jpeg" : { },
+              "image/png" : { },
+              "image/webp" : { }
+            }
+          },
+          "404" : {
+            "description" : "Car not found or without picture."
+          }
+        },
+        "summary" : "Get Picture",
+        "tags" : [ "Car Picture Resource" ]
+      },
+      "delete" : {
+        "description" : "Removes the picture, the generated avatar is shown again",
+        "operationId" : "deleteCarPicture",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "Picture removed."
+          },
+          "404" : {
+            "description" : "Car not found."
+          }
+        },
+        "summary" : "Delete Picture",
+        "tags" : [ "Car Picture Resource" ]
       }
     },
     "/api/export/{carId}" : {

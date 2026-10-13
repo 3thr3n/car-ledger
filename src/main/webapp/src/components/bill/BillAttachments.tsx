@@ -11,7 +11,7 @@ import AttachFileRounded from '@mui/icons-material/AttachFileRounded';
 import CloseRounded from '@mui/icons-material/CloseRounded';
 import PictureAsPdfRounded from '@mui/icons-material/PictureAsPdfRounded';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
+import { ChangeEvent, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
 import {
@@ -21,6 +21,7 @@ import {
 import { invalidateCar, localClient } from '@/utils/QueryClient';
 import { errorMessage } from '@/utils/BackendError';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
+import useObjectUrl from '@/hooks/useObjectUrl';
 import { ACCEPT, contentUrl, uploadAttachment } from './attachments';
 
 export interface BillAttachmentsProps {
@@ -170,8 +171,7 @@ export default function BillAttachments({
 
 function PendingTile({ file, onRemove }: { file: File; onRemove: () => void }) {
   const pdf = file.type === 'application/pdf';
-  const url = useMemo(() => URL.createObjectURL(file), [file]);
-  useEffect(() => () => URL.revokeObjectURL(url), [url]);
+  const url = useObjectUrl(file);
 
   return <Tile name={file.name} pdf={pdf} url={url} onRemove={onRemove} />;
 }
@@ -184,7 +184,8 @@ function Tile({
 }: {
   name: string;
   pdf: boolean;
-  url: string;
+  /** undefined while the preview of a picked file is prepared */
+  url?: string;
   onRemove: () => void;
 }) {
   const { t } = useTranslation();

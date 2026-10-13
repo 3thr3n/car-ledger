@@ -89,15 +89,22 @@ public class AttachmentResource extends AbstractResource
 	@APIResponse(responseCode = "404", description = "Attachment not found.")
 	public Response getAttachmentContent(@PathParam("carId") long carId, @PathParam("id") long id)
 	{
-		AttachmentService.Content content = attachmentService.load(carId, id, context.getName());
+		return inline(attachmentService.load(carId, id, context.getName()), "private, max-age=86400");
+	}
+
+	/**
+	 * The file as response the browser shows inline, but never runs as a page of
+	 * this origin
+	 */
+	static Response inline(AttachmentService.Content content, String cacheControl)
+	{
 		AttachmentEntity attachment = content.attachment();
 		String name = URLEncoder.encode(attachment.getFileName(), StandardCharsets.UTF_8).replace("+", "%20");
 
 		return Response.ok(content.data(), attachment.getContentType())
 				.header("Content-Disposition", "inline; filename*=UTF-8''" + name)
 				.header("Content-Length", content.data().length)
-				.header("Cache-Control", "private, max-age=86400")
-				// uploaded by users: never sniffed or run as a page of this origin
+				.header("Cache-Control", cacheControl)
 				.header("X-Content-Type-Options", "nosniff")
 				.header("Content-Security-Policy",
 						"sandbox; default-src 'none'; img-src 'self'; style-src 'unsafe-inline'")
@@ -114,7 +121,7 @@ public class AttachmentResource extends AbstractResource
 		attachmentService.delete(carId, id, context.getName());
 	}
 
-	private static byte[] read(FileUpload file)
+	static byte[] read(FileUpload file)
 	{
 		try
 		{
