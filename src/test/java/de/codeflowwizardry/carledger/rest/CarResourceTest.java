@@ -214,6 +214,99 @@ class CarResourceTest
 	@TestSecurity(user = "peter", roles = {
 			"user"
 	})
+	void shouldSaveAndClearTheDetails()
+	{
+		given()
+				.body("""
+						{ "name": "Normal car", "year": 2019, "odometer": 0, "licensePlate": " M-AB 123 ",
+						  "vin": "wvw zzz1kz-6w000001", "purchaseDate": "2020-03-01", "purchasePrice": 18500.5 }
+						""")
+				.contentType(ContentType.JSON)
+				.when()
+				.post("{id}", carId)
+				.then()
+				.statusCode(200)
+				.body("licensePlate", is("M-AB 123"))
+				.body("vin", is("WVWZZZ1KZ6W000001"))
+				.body("purchaseDate", is("2020-03-01"))
+				.body("purchasePrice", is(18500.5F));
+
+		given()
+				.body("""
+						{ "name": "Normal car", "year": 2019, "odometer": 0, "licensePlate": " ", "vin": "" }
+						""")
+				.contentType(ContentType.JSON)
+				.when()
+				.post("{id}", carId)
+				.then()
+				.statusCode(200)
+				.body("licensePlate", Matchers.nullValue())
+				.body("vin", Matchers.nullValue())
+				.body("purchaseDate", Matchers.nullValue())
+				.body("purchasePrice", Matchers.nullValue());
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldCreateACarWithAShortVinBefore1981()
+	{
+		given()
+				.body("""
+						{ "name": "Second car", "year": 1975, "odometer": 0, "vin": "1180012345" }
+						""")
+				.contentType(ContentType.JSON)
+				.when()
+				.put()
+				.then()
+				.statusCode(201);
+
+		assertEquals("1180012345", vinOf("Second car"));
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldRejectInvalidDetails()
+	{
+		String future = LocalDate.now().plusDays(1).toString();
+		given()
+				.body("""
+						{ "name": "Normal car", "year": 2019, "odometer": 0, "licensePlate": "ABCDEFGHIJKLMNOPQRSTU",
+						  "vin": "WVWZZZ1KZ6W00000I", "purchaseDate": "%s", "purchasePrice": -1 }
+						""".formatted(future))
+				.contentType(ContentType.JSON)
+				.when()
+				.post("{id}", carId)
+				.then()
+				.statusCode(400)
+				.body("size()", is(4));
+
+		// a VIN of 17 characters is required since 1981
+		given()
+				.body("""
+						{ "name": "Second car", "year": 2019, "odometer": 0, "vin": "1180012345" }
+						""")
+				.contentType(ContentType.JSON)
+				.when()
+				.put()
+				.then()
+				.statusCode(400)
+				.body("[0]", Matchers.containsString("17"));
+	}
+
+	@Transactional
+	String vinOf(String name)
+	{
+		return carRepository.find("name", name).firstResult().getVin();
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
 	void shouldFailCreateCarIfAlreadyAtMaxCapacity()
 	{
 		String body = "{\"name\": \"Hansi\", \"year\": \"2000\"}";

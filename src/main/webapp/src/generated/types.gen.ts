@@ -122,12 +122,20 @@ export type Car = {
     odometerDate?: LocalDate;
     currentOdometer: Odometer;
     amountBills?: number;
+    licensePlate?: string;
+    vin?: string;
+    purchaseDate?: LocalDate;
+    purchasePrice?: number;
 };
 
 export type CarInput = {
     name?: string;
     year?: number;
     odometer?: number;
+    licensePlate?: string;
+    vin?: string;
+    purchaseDate?: LocalDate;
+    purchasePrice?: number;
 };
 
 export type CarOverview = {
