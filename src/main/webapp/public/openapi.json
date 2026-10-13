@@ -3539,7 +3539,7 @@
   },
   "info" : {
     "title" : "car-ledger API",
-    "version" : "0.1.0-SNAPSHOT"
+    "version" : "1"
   },
   "servers" : [ {
     "url" : "http://localhost:8080",
