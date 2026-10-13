@@ -18,7 +18,7 @@ import { toast } from 'react-toastify';
 import { Reminder } from '@/generated';
 import { completeReminderMutation } from '@/generated/@tanstack/react-query.gen';
 import { invalidateCar, localClient } from '@/utils/QueryClient';
-import { BackendError } from '@/utils/BackendError';
+import { errorMessage } from '@/utils/BackendError';
 import { toApiDate } from '@/utils/format';
 import NumberField from '@/components/bill/NumberField';
 import useReminderText from './useReminderText';
@@ -67,12 +67,7 @@ function DoneForm({
       onClose();
       await invalidateCar(reminder.carId);
     },
-    onError: (error) =>
-      toast.error(
-        error instanceof BackendError && error.message
-          ? error.message
-          : t('errors.backend'),
-      ),
+    onError: (error) => toast.error(errorMessage(error, t('errors.backend'))),
   });
 
   return (

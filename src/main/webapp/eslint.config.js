@@ -55,6 +55,16 @@ export default tseslint.config(
     },
   },
   // -------------------------
+  // Routes: TanStack Router defines the component next to the exported Route
+  // and keeps them refreshable itself
+  // -------------------------
+  {
+    files: ['src/routes/**/*.{ts,tsx}'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
+    },
+  },
+  // -------------------------
   // Generated code (deprecation allowed)
   // -------------------------
   {

@@ -1,5 +1,4 @@
 import { Grid, Stack, TextField } from '@mui/material';
-import { DatePicker } from '@mui/x-date-pickers';
 import { useMutation } from '@tanstack/react-query';
 import dayjs, { Dayjs } from 'dayjs';
 import { SubmitEvent, useState } from 'react';
@@ -13,7 +12,7 @@ import { localClient } from '@/utils/QueryClient';
 import { toApiDate, useFormat } from '@/utils/format';
 import useVatCountry from '@/hooks/useVatCountry';
 import NumberField from './NumberField';
-import VatCountrySelect from './VatCountrySelect';
+import DateVatFields from './DateVatFields';
 import FormActions from './FormActions';
 import BillAttachments from './BillAttachments';
 import useSaveBill from './useSaveBill';
@@ -97,24 +96,12 @@ export default function MiscellaneousForm({
   return (
     <Stack component="form" onSubmit={submit} noValidate spacing={2.5}>
       <Grid container spacing={2}>
-        <Grid size={{ xs: 12, sm: 6 }}>
-          <DatePicker
-            label={t('bill.fields.date')}
-            value={form.date}
-            onChange={(date) => set({ date })}
-            disableFuture
-            slotProps={{
-              textField: {
-                required: true,
-                error: touched && !!errors.date,
-                helperText: touched && errors.date,
-              },
-            }}
-          />
-        </Grid>
-        <Grid size={{ xs: 12, sm: 6 }}>
-          <VatCountrySelect value={vat.country} onChange={vat.setCountry} />
-        </Grid>
+        <DateVatFields
+          date={form.date}
+          onDateChange={(date) => set({ date })}
+          vat={vat}
+          error={touched ? errors.date : undefined}
+        />
         <Grid size={{ xs: 12, sm: 8 }}>
           <TextField
             label={t('bill.fields.description')}

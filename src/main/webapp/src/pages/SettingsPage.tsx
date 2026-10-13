@@ -20,7 +20,7 @@ import { Account } from '@/generated';
 import { deleteMyselfMutation } from '@/generated/@tanstack/react-query.gen';
 import useMe from '@/hooks/useMe';
 import useSaveSettings from '@/hooks/useSaveSettings';
-import { BackendError } from '@/utils/BackendError';
+import { errorMessage } from '@/utils/BackendError';
 import queryClient, { baseUrl, localClient } from '@/utils/QueryClient';
 import { clearMappings } from '@/utils/csv';
 import { markAccountDeleted } from '@/utils/accountDeleted';
@@ -81,12 +81,7 @@ function SettingsForm({ account }: { account: Account }) {
       if (language !== BROWSER) i18n.changeLanguage(language);
       toast.success(t('settings.saved'));
     },
-    onError: (error) =>
-      toast.error(
-        error instanceof BackendError && error.message
-          ? error.message
-          : t('errors.backend'),
-      ),
+    onError: (error) => toast.error(errorMessage(error, t('errors.backend'))),
   });
 
   const currencyName = (code: string) => {

@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
 import { BillType } from '@/generated';
 import { invalidateCar } from '@/utils/QueryClient';
-import { BackendError } from '@/utils/BackendError';
+import { errorMessage } from '@/utils/BackendError';
 import { billTypes } from '@/utils/billTypes';
 import { uploadAttachment } from './attachments';
 import { BillAttachmentsProps } from './BillAttachments';
@@ -37,10 +37,7 @@ export default function useSaveBill(
         toast.error(
           t('attachments.notAttached', {
             name: file.name,
-            reason:
-              error instanceof BackendError && error.message
-                ? error.message
-                : t('errors.backend'),
+            reason: errorMessage(error, t('errors.backend')),
           }),
         );
       }
@@ -75,11 +72,7 @@ export default function useSaveBill(
       }
     },
     onError: (error: Error) => {
-      toast.error(
-        error instanceof BackendError && error.message
-          ? error.message
-          : t('errors.backend'),
-      );
+      toast.error(errorMessage(error, t('errors.backend')));
     },
   };
 }

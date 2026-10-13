@@ -9,7 +9,6 @@ import java.util.Optional;
 
 import de.codeflowwizardry.carledger.data.ReminderEntity;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
-import io.quarkus.panache.common.Parameters;
 import jakarta.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
@@ -37,7 +36,7 @@ public class ReminderRepository implements PanacheRepository<ReminderEntity>
 	public Optional<ReminderEntity> find(long carId, long id, String username)
 	{
 		return find("from reminder r join fetch r.car c where r.id = :id and c.id = :carId and c.user.userId = :userId",
-				Parameters.with("id", id).and("carId", carId).and("userId", username))
+				Map.of("id", id, "carId", carId, "userId", username))
 				.firstResultOptional();
 	}
 }

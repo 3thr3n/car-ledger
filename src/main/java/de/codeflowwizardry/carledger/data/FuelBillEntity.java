@@ -51,12 +51,6 @@ public class FuelBillEntity extends AbstractBillEntity
 		return bill;
 	}
 
-	@Override
-	public BillType getType()
-	{
-		return bill.getType();
-	}
-
 	/**
 	 * @return in liter
 	 */

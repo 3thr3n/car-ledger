@@ -8,3 +8,13 @@ export class BackendError extends Error {
     this.message = message ?? '';
   }
 }
+
+/**
+ * @return the message of the backend, e.g. a validation error, otherwise the
+ *   fallback: other errors may contain technical details
+ */
+export function errorMessage(error: unknown, fallback: string): string {
+  return error instanceof BackendError && error.message
+    ? error.message
+    : fallback;
+}

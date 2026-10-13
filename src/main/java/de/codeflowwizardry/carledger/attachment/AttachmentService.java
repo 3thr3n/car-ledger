@@ -2,6 +2,7 @@ package de.codeflowwizardry.carledger.attachment;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
@@ -12,7 +13,6 @@ import de.codeflowwizardry.carledger.data.AttachmentEntity;
 import de.codeflowwizardry.carledger.data.BillEntity;
 import de.codeflowwizardry.carledger.data.repository.AttachmentRepository;
 import de.codeflowwizardry.carledger.data.repository.BillRepository;
-import io.quarkus.panache.common.Parameters;
 import io.quarkus.runtime.configuration.MemorySize;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -147,7 +147,7 @@ public class AttachmentService
 	private BillEntity findBill(long carId, long billId, String userId)
 	{
 		return billRepository.find("id = :billId and car.id = :carId and car.user.userId = :userId",
-				Parameters.with("billId", billId).and("carId", carId).and("userId", userId))
+				Map.of("billId", billId, "carId", carId, "userId", userId))
 				.firstResultOptional()
 				.orElseThrow(() -> new NotFoundException("Bill not found"));
 	}

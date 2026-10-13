@@ -1,4 +1,5 @@
 declare module '*.yaml' {
-  const value: Record<string, any>;
+  // nested objects of strings, the keys are not typed
+  const value: Record<string, unknown>;
   export default value;
 }
