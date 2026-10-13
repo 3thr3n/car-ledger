@@ -28,6 +28,9 @@ public class CarEntity
 	private LocalDate purchaseDate;
 	@Column(name = "c_purchase_price")
 	private BigDecimal purchasePrice;
+	/** attachment with the picture, the generated avatar is shown without */
+	@Column(name = "c_picture_id")
+	private Long pictureId;
 
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "c_user_id", nullable = false)
@@ -126,5 +129,15 @@ public class CarEntity
 	public void setPurchasePrice(BigDecimal purchasePrice)
 	{
 		this.purchasePrice = purchasePrice;
+	}
+
+	public Long getPictureId()
+	{
+		return pictureId;
+	}
+
+	public void setPictureId(Long pictureId)
+	{
+		this.pictureId = pictureId;
 	}
 }

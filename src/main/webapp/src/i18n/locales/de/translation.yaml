@@ -150,6 +150,14 @@ car:
     runningEmpty: "Keine laufenden Kosten"
     addRecurring: "Laufende Kosten anlegen"
     nextDue: "Nächste Fälligkeit {{date}}"
+  picture:
+    choose: "Bild auswählen"
+    change: "Bild ändern"
+    remove: "Entfernen"
+    help: "Erscheint in der Garage und der Fahrzeugliste, quadratisch zugeschnitten."
+    saved: "Bild gespeichert"
+    removed: "Bild entfernt"
+    failed: "Das Bild konnte nicht gespeichert werden"
   details:
     title: "Details"
     licensePlate: "Kennzeichen"

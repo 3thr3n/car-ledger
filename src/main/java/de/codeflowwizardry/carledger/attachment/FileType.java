@@ -32,6 +32,11 @@ public enum FileType {
 		return contentType;
 	}
 
+	public boolean isImage()
+	{
+		return this != PDF;
+	}
+
 	public static Optional<FileType> detect(byte[] content)
 	{
 		return Arrays.stream(values())

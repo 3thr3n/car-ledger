@@ -23,16 +23,18 @@ import de.codeflowwizardry.carledger.data.CarEntity;
  *            optional
  * @param purchasePrice
  *            optional
+ * @param pictureId
+ *            id of the own picture, changes with every new picture
  */
 public record Car(Long id, String name, int year, int odometer, LocalDate odometerDate,
 		@Schema(required = true) Odometer currentOdometer, long amountBills, String licensePlate, String vin,
-		LocalDate purchaseDate, BigDecimal purchasePrice)
+		LocalDate purchaseDate, BigDecimal purchasePrice, Long pictureId)
 {
 	public static Car convert(CarEntity carEntity, long amountBills, Odometer currentOdometer)
 	{
 		return new Car(carEntity.getId(), carEntity.getName(), carEntity.getManufactureYear(), carEntity.getOdometer(),
 				carEntity.getOdometerDate(), currentOdometer, amountBills, carEntity.getLicensePlate(),
 				carEntity.getVin(),
-				carEntity.getPurchaseDate(), carEntity.getPurchasePrice());
+				carEntity.getPurchaseDate(), carEntity.getPurchasePrice(), carEntity.getPictureId());
 	}
 }

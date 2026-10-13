@@ -66,7 +66,12 @@ export default function GaragePage() {
                     mb: 2.5,
                   }}
                 >
-                  <CarAvatar id={car.id} name={car.name} size={48} />
+                  <CarAvatar
+                    id={car.id}
+                    name={car.name}
+                    pictureId={car.pictureId}
+                    size={48}
+                  />
                   <Box sx={{ minWidth: 0 }}>
                     <Typography variant="h6" noWrap>
                       {car.name}

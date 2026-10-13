@@ -14,9 +14,11 @@ import { useNavigate, useRouter } from '@tanstack/react-router';
 import { SubmitEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
-import { createCar, CarInput } from '@/generated';
+import { Car, createCar, CarInput } from '@/generated';
 import { toApiDate, useFormat } from '@/utils/format';
 import { normalizeVin, vinError } from '@/utils/vin';
+import CarPictureField from '@/components/car/CarPictureField';
+import { uploadCarPicture } from '@/components/car/carPicture';
 import {
   deleteMyCarMutation,
   getMyCarOptions,
@@ -81,7 +83,8 @@ function CarForm({
   current,
 }: {
   id?: number;
-  initial: CarInput;
+  /** the loaded car, its picture follows the saved one */
+  initial: CarInput & Pick<Car, 'pictureId'>;
   current?: number;
 }) {
   const { t } = useTranslation();
@@ -103,6 +106,7 @@ function CarForm({
   const [purchasePrice, setPurchasePrice] = useState<number | undefined>(
     initial.purchasePrice,
   );
+  const [picture, setPicture] = useState<File>();
   const [touched, setTouched] = useState(false);
   const format = useFormat();
 
@@ -143,6 +147,15 @@ function CarForm({
       await queryClient.invalidateQueries();
       // the API answers with the location of the new car
       const newId = response.headers.get('Location')?.split('/').pop();
+      if (newId && picture) {
+        // the car is created even if its picture fails, it can be added later
+        try {
+          await uploadCarPicture(Number(newId), picture);
+          await queryClient.invalidateQueries();
+        } catch (error) {
+          toast.error(errorMessage(error, t('car.picture.failed')));
+        }
+      }
       if (newId) {
         await navigate({
           to: '/car/$id',
@@ -198,6 +211,13 @@ function CarForm({
   return (
     <Card component="form" onSubmit={submit} noValidate sx={{ p: 3 }}>
       <Stack spacing={2.5}>
+        <CarPictureField
+          carId={id}
+          name={name}
+          pictureId={initial.pictureId}
+          pending={picture}
+          onPendingChange={setPicture}
+        />
         <TextField
           autoFocus
           label={t('car.form.name')}

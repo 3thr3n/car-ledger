@@ -11,8 +11,10 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import de.codeflowwizardry.carledger.Utils;
 import de.codeflowwizardry.carledger.data.AttachmentEntity;
 import de.codeflowwizardry.carledger.data.BillEntity;
+import de.codeflowwizardry.carledger.data.CarEntity;
 import de.codeflowwizardry.carledger.data.repository.AttachmentRepository;
 import de.codeflowwizardry.carledger.data.repository.BillRepository;
+import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import io.quarkus.runtime.configuration.MemorySize;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -26,18 +28,20 @@ public class AttachmentService
 
 	private final AttachmentRepository attachmentRepository;
 	private final BillRepository billRepository;
+	private final CarRepository carRepository;
 	private final AttachmentStorage storage;
 	private final long maxSize;
 	private final int maxPerBill;
 
 	@Inject
 	public AttachmentService(AttachmentRepository attachmentRepository, BillRepository billRepository,
-			AttachmentStorage storage,
+			CarRepository carRepository, AttachmentStorage storage,
 			@ConfigProperty(name = "carledger.attachments.max-size", defaultValue = "10M") MemorySize maxSize,
 			@ConfigProperty(name = "carledger.attachments.max-per-bill", defaultValue = "10") int maxPerBill)
 	{
 		this.attachmentRepository = attachmentRepository;
 		this.billRepository = billRepository;
+		this.carRepository = carRepository;
 		this.storage = storage;
 		this.maxSize = maxSize.asLongValue();
 		this.maxPerBill = maxPerBill;
@@ -69,7 +73,82 @@ public class AttachmentService
 		BillEntity bill = findBill(carId, billId, userId);
 
 		List<String> errors = new ArrayList<>();
-		Optional<FileType> type = FileType.detect(content);
+		if (attachmentRepository.countForBill(billId) >= maxPerBill)
+		{
+			errors.add("An entry can have at most " + maxPerBill + " attachments!");
+		}
+		FileType type = requireValid(content, false, errors);
+
+		return save(bill.getCar(), bill, fileName, type, content);
+	}
+
+	/**
+	 * Replaces the picture of the car, only images are allowed
+	 *
+	 * @throws NotFoundException
+	 *             if the car does not belong to the user
+	 * @throws jakarta.ws.rs.BadRequestException
+	 *             with the reasons, if the file cannot be used
+	 */
+	@Transactional
+	public AttachmentEntity setCarPicture(long carId, String userId, String fileName, byte[] content)
+	{
+		CarEntity car = findCar(carId, userId);
+		FileType type = requireValid(content, true, new ArrayList<>());
+
+		Long previous = car.getPictureId();
+		AttachmentEntity picture = save(car, null, fileName, type, content);
+		car.setPictureId(picture.getId());
+		if (previous != null)
+		{
+			attachmentRepository.findByIdOptional(previous).ifPresent(this::remove);
+		}
+		return picture;
+	}
+
+	/**
+	 * @throws NotFoundException
+	 *             if the car does not belong to the user or has no picture
+	 */
+	@Transactional
+	public Content loadCarPicture(long carId, String userId)
+	{
+		CarEntity car = findCar(carId, userId);
+		if (car.getPictureId() == null)
+		{
+			throw new NotFoundException("The car has no picture");
+		}
+		return load(carId, car.getPictureId(), userId);
+	}
+
+	/**
+	 * Removes the picture, the car shows the generated avatar again
+	 *
+	 * @throws NotFoundException
+	 *             if the car does not belong to the user
+	 */
+	@Transactional
+	public void removeCarPicture(long carId, String userId)
+	{
+		CarEntity car = findCar(carId, userId);
+		Long picture = car.getPictureId();
+		car.setPictureId(null);
+		if (picture != null)
+		{
+			attachmentRepository.findByIdOptional(picture).ifPresent(this::remove);
+		}
+	}
+
+	/**
+	 * @param onlyImages
+	 *            whether PDFs are rejected
+	 * @param errors
+	 *            further errors, all are reported together
+	 * @return the detected type
+	 */
+	private FileType requireValid(byte[] content, boolean onlyImages, List<String> errors)
+	{
+		Optional<FileType> type = FileType.detect(content).filter(t -> !onlyImages || t.isImage());
 		if (content.length == 0)
 		{
 			errors.add("The file is empty!");
@@ -78,25 +157,37 @@ public class AttachmentService
 			errors.add("The file is larger than " + maxSize / 1024 / 1024 + " MB!");
 		} else if (type.isEmpty())
 		{
-			errors.add("Only JPEG, PNG, WebP and PDF files can be attached!");
-		}
-		if (attachmentRepository.countForBill(billId) >= maxPerBill)
-		{
-			errors.add("An entry can have at most " + maxPerBill + " attachments!");
+			errors.add(onlyImages
+					? "Only JPEG, PNG and WebP pictures can be used!"
+					: "Only JPEG, PNG, WebP and PDF files can be attached!");
 		}
 		Utils.requireValid(errors);
+		return type.orElseThrow();
+	}
 
+	/**
+	 * @param bill
+	 *            <code>null</code> for a file of the car, like its picture
+	 */
+	private AttachmentEntity save(CarEntity car, BillEntity bill, String fileName, FileType type, byte[] content)
+	{
 		AttachmentEntity attachment = new AttachmentEntity();
-		attachment.setCar(bill.getCar());
+		attachment.setCar(car);
 		attachment.setBill(bill);
 		attachment.setFileName(cleanFileName(fileName));
-		attachment.setContentType(type.orElseThrow().contentType());
+		attachment.setContentType(type.contentType());
 		attachment.setSize(content.length);
 		attachment.setStorage(storage.name());
 		attachmentRepository.persistAndFlush(attachment);
 
 		storage.store(attachment, content);
 		return attachment;
+	}
+
+	private void remove(AttachmentEntity attachment)
+	{
+		storageOf(attachment).delete(attachment);
+		attachmentRepository.delete(attachment);
 	}
 
 	/**
@@ -117,9 +208,7 @@ public class AttachmentService
 	@Transactional
 	public void delete(long carId, long id, String userId)
 	{
-		AttachmentEntity attachment = find(carId, id, userId);
-		storageOf(attachment).delete(attachment);
-		attachmentRepository.delete(attachment);
+		remove(find(carId, id, userId));
 	}
 
 	/**
@@ -150,6 +239,16 @@ public class AttachmentService
 				Map.of("billId", billId, "carId", carId, "userId", userId))
 				.firstResultOptional()
 				.orElseThrow(() -> new NotFoundException("Bill not found"));
+	}
+
+	private CarEntity findCar(long carId, String userId)
+	{
+		CarEntity car = carRepository.findById(carId, userId);
+		if (car == null)
+		{
+			throw new NotFoundException("Car not found");
+		}
+		return car;
 	}
 
 	private AttachmentStorage storageOf(AttachmentEntity attachment)

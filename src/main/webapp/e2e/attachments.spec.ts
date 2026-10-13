@@ -46,6 +46,10 @@ test.describe.serial('attachments', () => {
     await expect(
       page.getByRole('link', { name: 'Open receipt.png' }),
     ).toBeVisible();
+    // the preview of the picked file is loaded
+    await expect(
+      page.getByRole('link', { name: 'Open receipt.png' }).locator('img'),
+    ).toHaveJSProperty('naturalWidth', 1);
     // picked by mistake and removed again before saving
     await input().setInputFiles({
       name: 'wrong.png',

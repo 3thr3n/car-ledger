@@ -182,7 +182,12 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
                   sx={{ borderRadius: 2, mb: 0.25, py: 0.75 }}
                 >
                   <ListItemIcon sx={{ minWidth: 42 }}>
-                    <CarAvatar id={car.id} name={car.name} size={28} />
+                    <CarAvatar
+                      id={car.id}
+                      name={car.name}
+                      pictureId={car.pictureId}
+                      size={28}
+                    />
                   </ListItemIcon>
                   <ListItemText
                     primary={car.name}

@@ -135,6 +135,7 @@ export type Car = {
     vin?: string;
     purchaseDate?: LocalDate;
     purchasePrice?: number;
+    pictureId?: number;
 };
 
 export type CarInput = {
@@ -1431,6 +1432,87 @@ export type GetMyCarOverviewResponses = {
 };
 
 export type GetMyCarOverviewResponse = GetMyCarOverviewResponses[keyof GetMyCarOverviewResponses];
+
+export type DeleteCarPictureData = {
+    body?: never;
+    path: {
+        id: number;
+    };
+    query?: never;
+    url: '/api/car/my/{id}/picture';
+};
+
+export type DeleteCarPictureErrors = {
+    /**
+     * Car not found.
+     */
+    404: unknown;
+};
+
+export type DeleteCarPictureResponses = {
+    /**
+     * Picture removed.
+     */
+    204: void;
+};
+
+export type DeleteCarPictureResponse = DeleteCarPictureResponses[keyof DeleteCarPictureResponses];
+
+export type GetCarPictureData = {
+    body?: never;
+    path: {
+        id: number;
+    };
+    query?: never;
+    url: '/api/car/my/{id}/picture';
+};
+
+export type GetCarPictureErrors = {
+    /**
+     * Car not found or without picture.
+     */
+    404: unknown;
+};
+
+export type GetCarPictureResponses = {
+    /**
+     * Picture found.
+     */
+    200: unknown;
+};
+
+export type SetCarPictureData = {
+    body: {
+        file?: Blob | File;
+    };
+    path: {
+        id: number;
+    };
+    query?: never;
+    url: '/api/car/my/{id}/picture';
+};
+
+export type SetCarPictureErrors = {
+    /**
+     * File empty, too large or no image
+     */
+    400: Array<unknown>;
+    /**
+     * Car not found.
+     */
+    404: unknown;
+};
+
+export type SetCarPictureError = SetCarPictureErrors[keyof SetCarPictureErrors];
+
+export type SetCarPictureResponses = {
+    /**
+     * Picture saved.
+     */
+    200: Attachment;
+};
+
+export type SetCarPictureResponse = SetCarPictureResponses[keyof SetCarPictureResponses];
 
 export type ExportCsvData = {
     body?: never;

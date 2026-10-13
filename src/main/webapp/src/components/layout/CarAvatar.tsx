@@ -1,17 +1,25 @@
 import { Avatar } from '@mui/material';
+import { baseUrl } from '@/utils/QueryClient';
 
 const hues = [172, 28, 217, 271, 330, 145, 45, 195];
 
+/** address of the picture, a new picture has a new id and so a new URL */
+const pictureUrl = (carId: number, pictureId: number) =>
+  `${baseUrl}/api/car/my/${carId}/picture?v=${pictureId}`;
+
 /**
- * Stable colored monogram for a car
+ * The own picture of a car, without one (or if it cannot be loaded) a stable
+ * colored monogram
  */
 export default function CarAvatar({
   id,
   name,
+  pictureId,
   size = 32,
 }: {
   id?: number;
   name?: string;
+  pictureId?: number;
   size?: number;
 }) {
   const hue = hues[(id ?? 0) % hues.length];
@@ -26,6 +34,11 @@ export default function CarAvatar({
   return (
     <Avatar
       variant="rounded"
+      src={
+        // the API sends null without a picture
+        id != null && pictureId != null ? pictureUrl(id, pictureId) : undefined
+      }
+      alt={pictureId != null ? name : undefined}
       sx={{
         width: size,
         height: size,

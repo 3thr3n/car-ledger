@@ -111,7 +111,12 @@ export default function CarLayout({ id }: { id: number }) {
                   minWidth: 0,
                 }}
               >
-                <CarAvatar id={car?.id} name={car?.name} size={52} />
+                <CarAvatar
+                  id={car?.id}
+                  name={car?.name}
+                  pictureId={car?.pictureId}
+                  size={52}
+                />
                 <Box sx={{ minWidth: 0 }}>
                   <Typography variant="h4" component="h1" noWrap>
                     {isLoading ? <Skeleton width={220} /> : car?.name}

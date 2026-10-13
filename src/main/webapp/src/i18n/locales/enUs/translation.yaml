@@ -150,6 +150,14 @@ car:
     runningEmpty: "No running recurring costs"
     addRecurring: "Add recurring cost"
     nextDue: "Next due {{date}}"
+  picture:
+    choose: "Choose picture"
+    change: "Change picture"
+    remove: "Remove"
+    help: "Shown in the garage and the car list, cropped to a square."
+    saved: "Picture saved"
+    removed: "Picture removed"
+    failed: "The picture could not be saved"
   details:
     title: "Details"
     licensePlate: "License plate"
