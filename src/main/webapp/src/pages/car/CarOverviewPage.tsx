@@ -12,6 +12,7 @@ import { useNavigate } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 import {
   getAllRecurringBillsOptions,
+  getMyCarOptions,
   getMyCarOverviewOptions,
   getRemindersOptions,
 } from '@/generated/@tanstack/react-query.gen';
@@ -29,6 +30,7 @@ import { useLedgerColumns } from '@/components/bill/columns';
 import useDeleteBill from '@/components/bill/useDeleteBill';
 import MonthlyChart from '@/components/dashboard/LazyMonthlyChart';
 import ReminderList from '@/components/reminder/ReminderList';
+import CarDetails from '@/components/car/CarDetails';
 
 /** the chart of the overview shows the current and the 11 months before */
 const lastTwelveMonths = () => ({
@@ -43,6 +45,11 @@ export default function CarOverviewPage({ id }: { id: number }) {
 
   const { data: overview, isLoading } = useQuery(
     getMyCarOverviewOptions({ client: localClient, path: { id } }),
+  );
+
+  // loaded by the layout of the car already
+  const { data: car } = useQuery(
+    getMyCarOptions({ client: localClient, path: { id } }),
   );
 
   const ledger = useBillList('all', id, 10);
@@ -294,6 +301,7 @@ export default function CarOverviewPage({ id }: { id: number }) {
                 />
               )}
             </Section>
+            {car && <CarDetails car={car} totalCost={overview?.totalCost} />}
           </Stack>
         </Grid>
       </Grid>

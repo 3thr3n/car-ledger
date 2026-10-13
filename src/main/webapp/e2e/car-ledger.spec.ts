@@ -41,6 +41,32 @@ test.describe.serial('car ledger', () => {
     await expect(page.getByText('42,000 km')).toBeVisible();
   });
 
+  test('adds plate, VIN and purchase price to the car', async () => {
+    await page.goto(`${carUrl}/edit`);
+
+    await field(/^License plate/).fill('M-E2E 42');
+    await field(/^VIN/).fill('wvw zzz1kz 6w00000i');
+    await page.getByRole('button', { name: 'Save' }).click();
+    await expect(
+      page.getByText('17 letters and digits, without I, O and Q'),
+    ).toBeVisible();
+
+    await field(/^VIN/).fill('wvw zzz1kz 6w000001');
+    await expect(page.getByText('17 of 17 characters')).toBeVisible();
+    await field(/^Purchase price/).fill('18500');
+    await page.getByRole('button', { name: 'Save' }).click();
+
+    await expect(page).toHaveURL(/\/car\/\d+$/);
+    await expect(page.getByText(/^M-E2E 42 · Built/)).toBeVisible();
+    const details = page.locator('.MuiCard-root', {
+      hasText: 'Purchase price',
+    });
+    await expect(details).toContainText('WVWZZZ1KZ6W000001');
+    await expect(details).toContainText(money(18500));
+    // no entries yet, the cost of ownership is the purchase
+    await expect(details).toContainText(`Purchase and costs${money(18500)}`);
+  });
+
   test('adds a refuel and calculates the price', async () => {
     await page.goto(`${carUrl}/bill/add?type=FUEL`);
 

@@ -1,5 +1,6 @@
 package de.codeflowwizardry.carledger.data;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import jakarta.persistence.*;
@@ -19,6 +20,14 @@ public class CarEntity
 	/** day of the odometer reading, refuels after it are added to it */
 	@Column(name = "c_odometer_date", nullable = false)
 	private LocalDate odometerDate = LocalDate.now();
+	@Column(name = "c_license_plate")
+	private String licensePlate;
+	@Column(name = "c_vin")
+	private String vin;
+	@Column(name = "c_purchase_date")
+	private LocalDate purchaseDate;
+	@Column(name = "c_purchase_price")
+	private BigDecimal purchasePrice;
 
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "c_user_id", nullable = false)
@@ -77,5 +86,45 @@ public class CarEntity
 	public void setOdometerDate(LocalDate odometerDate)
 	{
 		this.odometerDate = odometerDate;
+	}
+
+	public String getLicensePlate()
+	{
+		return licensePlate;
+	}
+
+	public void setLicensePlate(String licensePlate)
+	{
+		this.licensePlate = licensePlate;
+	}
+
+	public String getVin()
+	{
+		return vin;
+	}
+
+	public void setVin(String vin)
+	{
+		this.vin = vin;
+	}
+
+	public LocalDate getPurchaseDate()
+	{
+		return purchaseDate;
+	}
+
+	public void setPurchaseDate(LocalDate purchaseDate)
+	{
+		this.purchaseDate = purchaseDate;
+	}
+
+	public BigDecimal getPurchasePrice()
+	{
+		return purchasePrice;
+	}
+
+	public void setPurchasePrice(BigDecimal purchasePrice)
+	{
+		this.purchasePrice = purchasePrice;
 	}
 }

@@ -1,10 +1,22 @@
-import { Box, Button, Card, Stack, TextField, Typography } from '@mui/material';
+import {
+  Box,
+  Button,
+  Card,
+  Grid,
+  Stack,
+  TextField,
+  Typography,
+} from '@mui/material';
+import { DatePicker } from '@mui/x-date-pickers';
+import dayjs, { Dayjs } from 'dayjs';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useNavigate, useRouter } from '@tanstack/react-router';
 import { SubmitEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
 import { createCar, CarInput } from '@/generated';
+import { toApiDate, useFormat } from '@/utils/format';
+import { normalizeVin, vinError } from '@/utils/vin';
 import {
   deleteMyCarMutation,
   getMyCarOptions,
@@ -83,7 +95,16 @@ function CarForm({
   const [odometer, setOdometer] = useState<number | undefined>(
     current ?? initial.odometer ?? 0,
   );
+  const [licensePlate, setLicensePlate] = useState(initial.licensePlate ?? '');
+  const [vin, setVin] = useState(initial.vin ?? '');
+  const [purchaseDate, setPurchaseDate] = useState<Dayjs | null>(
+    initial.purchaseDate ? dayjs(initial.purchaseDate) : null,
+  );
+  const [purchasePrice, setPurchasePrice] = useState<number | undefined>(
+    initial.purchasePrice,
+  );
   const [touched, setTouched] = useState(false);
+  const format = useFormat();
 
   const errors = {
     name: !name.trim() ? t('car.form.errors.name') : undefined,
@@ -95,8 +116,14 @@ function CarForm({
       odometer === undefined || odometer < 0
         ? t('car.form.errors.odometer')
         : undefined,
+    vin: vinError(vin, year) && t(`car.form.errors.${vinError(vin, year)}`),
+    purchaseDate:
+      purchaseDate &&
+      (!purchaseDate.isValid() || purchaseDate.isAfter(dayjs(), 'day'))
+        ? t('car.form.errors.purchaseDate')
+        : undefined,
   };
-  const valid = !errors.name && !errors.year && !errors.odometer;
+  const valid = Object.values(errors).every((error) => !error);
 
   const onError = (error: BackendError) => {
     toast.error(error.message || t('errors.backend'));
@@ -156,6 +183,10 @@ function CarForm({
         current !== undefined && odometer === current
           ? initial.odometer
           : odometer,
+      licensePlate: licensePlate.trim() || undefined,
+      vin: normalizeVin(vin) || undefined,
+      purchaseDate: toApiDate(purchaseDate),
+      purchasePrice,
     };
     if (id) {
       update.mutate({ path: { id }, body });
@@ -200,6 +231,79 @@ function CarForm({
           error={touched ? errors.odometer : undefined}
           required
         />
+        <Box>
+          <Typography
+            variant="subtitle1"
+            sx={{
+              fontWeight: 650,
+            }}
+          >
+            {t('car.form.details')}
+          </Typography>
+          <Typography
+            variant="body2"
+            sx={{
+              color: 'text.secondary',
+              mb: 2,
+            }}
+          >
+            {t('car.form.detailsHelp')}
+          </Typography>
+          <Grid container spacing={2}>
+            <Grid size={{ xs: 12, sm: 5 }}>
+              <TextField
+                label={t('car.form.licensePlate')}
+                placeholder={t('car.form.licensePlatePlaceholder')}
+                value={licensePlate}
+                onChange={(e) => setLicensePlate(e.target.value)}
+                slotProps={{ htmlInput: { maxLength: 20 } }}
+              />
+            </Grid>
+            <Grid size={{ xs: 12, sm: 7 }}>
+              <TextField
+                label={t('car.form.vin')}
+                value={vin}
+                onChange={(e) => setVin(e.target.value.toUpperCase())}
+                error={touched && !!errors.vin}
+                helperText={
+                  (touched && errors.vin) ||
+                  t('car.form.vinHelp', { count: normalizeVin(vin).length })
+                }
+                slotProps={{
+                  htmlInput: {
+                    maxLength: 21,
+                    autoCapitalize: 'characters',
+                    spellCheck: false,
+                  },
+                }}
+              />
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <DatePicker
+                label={t('car.form.purchaseDate')}
+                value={purchaseDate}
+                onChange={setPurchaseDate}
+                disableFuture
+                slotProps={{
+                  field: { clearable: true },
+                  textField: {
+                    error: touched && !!errors.purchaseDate,
+                    helperText: touched && errors.purchaseDate,
+                  },
+                }}
+              />
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <NumberField
+                label={t('car.form.purchasePrice')}
+                value={purchasePrice}
+                onChange={setPurchasePrice}
+                suffix={` ${format.currencySymbol}`}
+                max={9_999_999_999}
+              />
+            </Grid>
+          </Grid>
+        </Box>
         <Stack
           direction="row"
           spacing={1}

@@ -125,6 +125,7 @@ export default function CarLayout({ id }: { id: number }) {
                       <Skeleton width={160} />
                     ) : (
                       <>
+                        {car?.licensePlate && `${car.licensePlate} · `}
                         {car?.year &&
                           `${t('car.built', { year: car.year })} · `}
                         <OdometerValue odometer={car?.currentOdometer} />

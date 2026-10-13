@@ -21,6 +21,7 @@ import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import de.codeflowwizardry.carledger.data.repository.RecurringBillPaymentRepository;
 import de.codeflowwizardry.carledger.exception.WrongUserException;
 import de.codeflowwizardry.carledger.rest.records.Car;
+import de.codeflowwizardry.carledger.Utils;
 import de.codeflowwizardry.carledger.rest.records.CarInput;
 import de.codeflowwizardry.carledger.rest.records.CarOverview;
 import de.codeflowwizardry.carledger.rest.records.Odometer;
@@ -109,6 +110,8 @@ public class CarResource extends AbstractResource
 					.build();
 		}
 
+		Utils.requireValid(carpojo.validateDetails());
+
 		CarEntity carEntity = findCar(id);
 		carEntity.setName(carpojo.name());
 		if (carEntity.getOdometer() != carpojo.odometer())
@@ -118,6 +121,7 @@ public class CarResource extends AbstractResource
 			carEntity.setOdometerDate(LocalDate.now());
 		}
 		carEntity.setManufactureYear(carpojo.year());
+		setDetails(carEntity, carpojo);
 
 		carRepository.persist(carEntity);
 
@@ -151,10 +155,13 @@ public class CarResource extends AbstractResource
 					.build();
 		}
 
+		Utils.requireValid(carpojo.validateDetails());
+
 		CarEntity carEntity = new CarEntity();
 		carEntity.setName(carpojo.name());
 		carEntity.setManufactureYear(carpojo.year());
 		carEntity.setOdometer(carpojo.odometer());
+		setDetails(carEntity, carpojo);
 		carEntity.setUser(accountEntity);
 
 		carRepository.persist(carEntity);
@@ -181,6 +188,14 @@ public class CarResource extends AbstractResource
 		// the pending update is flushed before the odometer queries
 		return Car.convert(carEntity, billRepository.count("car.id", carEntity.getId()),
 				odometerService.current(carEntity.getId(), context.getName()).get(carEntity.getId()));
+	}
+
+	private static void setDetails(CarEntity carEntity, CarInput input)
+	{
+		carEntity.setLicensePlate(input.normalizedLicensePlate());
+		carEntity.setVin(input.normalizedVin());
+		carEntity.setPurchaseDate(input.purchaseDate());
+		carEntity.setPurchasePrice(input.purchasePrice());
 	}
 
 	private boolean isInputInvalid(CarInput carInput)

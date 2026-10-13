@@ -313,6 +313,18 @@
           "amountBills" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "licensePlate" : {
+            "type" : "string"
+          },
+          "vin" : {
+            "type" : "string"
+          },
+          "purchaseDate" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          },
+          "purchasePrice" : {
+            "type" : "number"
           }
         },
         "required" : [ "currentOdometer" ]
@@ -330,6 +342,18 @@
           "odometer" : {
             "type" : "integer",
             "format" : "int32"
+          },
+          "licensePlate" : {
+            "type" : "string"
+          },
+          "vin" : {
+            "type" : "string"
+          },
+          "purchaseDate" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          },
+          "purchasePrice" : {
+            "type" : "number"
           }
         }
       },
