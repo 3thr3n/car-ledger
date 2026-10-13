@@ -16,6 +16,7 @@ import useVatCountry from '@/hooks/useVatCountry';
 import NumberField from './NumberField';
 import VatCountrySelect from './VatCountrySelect';
 import FormActions from './FormActions';
+import BillAttachments from './BillAttachments';
 import useSaveBill from './useSaveBill';
 
 const MAX = 1_000_000;
@@ -65,10 +66,15 @@ export default function MaintenanceForm({
   );
   const [touched, setTouched] = useState(false);
 
-  const save = useSaveBill(carId, BillType.MAINTENANCE, () => {
-    setForm(empty());
-    setTouched(false);
-  });
+  const save = useSaveBill(
+    carId,
+    BillType.MAINTENANCE,
+    () => {
+      setForm(empty());
+      setTouched(false);
+    },
+    bill?.id,
+  );
   const create = useMutation({
     ...addNewMaintenanceBillMutation({ client: localClient }),
     onSuccess: save.onSuccess,
@@ -206,6 +212,8 @@ export default function MaintenanceForm({
           />
         </Grid>
       </Grid>
+
+      <BillAttachments {...save.attachments} />
 
       <FormActions
         pending={create.isPending || update.isPending}

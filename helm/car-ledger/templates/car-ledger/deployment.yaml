@@ -74,6 +74,12 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.carLedger.postgres.auth.secret }}
                   key: {{ .Values.carLedger.postgres.auth.secretPasswordKey }}
+            - name: CARLEDGER_ATTACHMENTS_MAX_SIZE
+              value: {{ .Values.carLedger.attachments.maxSize | quote }}
+            - name: CARLEDGER_ATTACHMENTS_MAX_PER_BILL
+              value: {{ .Values.carLedger.attachments.maxPerBill | quote }}
+            - name: QUARKUS_HTTP_LIMITS_MAX_BODY_SIZE
+              value: {{ .Values.carLedger.attachments.maxRequestSize | quote }}
           # liveness and readiness start after the startup probe succeeded
           startupProbe:
             httpGet:

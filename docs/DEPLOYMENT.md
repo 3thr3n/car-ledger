@@ -122,6 +122,11 @@ with the role `user`, the roles are missing in the tokens of the client.
   by VMs with the default QEMU CPU model). Set `infinispan.images.server=quay.io/infinispan/server:16.2` if your nodes
   support it.
 - **External PostgreSQL**: `carledgerpostgres.enabled=false` and `carLedger.postgres.*` (or `carLedger.postgres.jdbc`).
+- **Attachments**: receipts are stored in PostgreSQL, up to `carLedger.attachments.maxSize` (10 MB) per file and
+  `carLedger.attachments.maxPerBill` (10) per entry. Uploads need requests up to `carLedger.attachments.maxRequestSize`
+  (12 MB): the nginx ingress gets the annotation `nginx.ingress.kubernetes.io/proxy-body-size` automatically, other
+  proxies (e.g. a Gateway or a reverse proxy in front of the cluster) need the same limit, otherwise uploads fail with
+  413.
 
 ## Upgrading to the current version
 

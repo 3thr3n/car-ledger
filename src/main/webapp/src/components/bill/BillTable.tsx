@@ -12,6 +12,7 @@ import {
 } from '@mui/material';
 import DeleteOutlineRounded from '@mui/icons-material/DeleteOutlineRounded';
 import EditOutlined from '@mui/icons-material/EditOutlined';
+import AttachFileRounded from '@mui/icons-material/AttachFileRounded';
 import { DataGrid, GridColDef, GridValidRowModel } from '@mui/x-data-grid';
 import { deDE } from '@mui/x-data-grid/locales';
 import { Fragment, ReactNode, useMemo, useState } from 'react';
@@ -27,7 +28,9 @@ export interface MobileRow {
   badge?: ReactNode;
 }
 
-export interface BillTableProps<R extends GridValidRowModel & { id?: number }> {
+export interface BillTableProps<
+  R extends GridValidRowModel & { id?: number; attachments?: number },
+> {
   rows: R[];
   total: number;
   columns: GridColDef<R>[];
@@ -49,7 +52,7 @@ export interface BillTableProps<R extends GridValidRowModel & { id?: number }> {
 }
 
 export default function BillTable<
-  R extends GridValidRowModel & { id?: number },
+  R extends GridValidRowModel & { id?: number; attachments?: number },
 >({
   rows,
   total,
@@ -172,6 +175,7 @@ export default function BillTable<
                     }}
                   >
                     {item.primary}
+                    <AttachmentHint count={row.attachments} />
                   </Typography>
                   <Stack
                     direction="row"
@@ -231,10 +235,25 @@ export default function BillTable<
     );
   }
 
+  // the date shows whether files are attached
+  const withHint = columns.map((column) =>
+    column.field === 'date'
+      ? {
+          ...column,
+          renderCell: ({ formattedValue, row }) => (
+            <>
+              {formattedValue}
+              <AttachmentHint count={row.attachments} />
+            </>
+          ),
+        }
+      : column,
+  ) as GridColDef<R>[];
+
   const allColumns: GridColDef<R>[] =
     actionCount > 0
       ? [
-          ...columns,
+          ...withHint,
           {
             field: '__actions',
             headerName: '',
@@ -246,7 +265,7 @@ export default function BillTable<
             renderCell: ({ row }) => actions(row),
           },
         ]
-      : columns;
+      : withHint;
 
   return (
     <>
@@ -281,5 +300,31 @@ export default function BillTable<
       />
       {confirm}
     </>
+  );
+}
+
+/** paperclip with the amount of attached files, nothing without */
+function AttachmentHint({ count }: { count?: number }) {
+  const { t } = useTranslation();
+  if (!count) return null;
+  return (
+    <Tooltip title={t('attachments.count', { count })}>
+      <Box
+        component="span"
+        aria-label={t('attachments.count', { count })}
+        sx={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          verticalAlign: 'middle',
+          ml: 0.75,
+          color: 'text.secondary',
+          fontSize: '0.75rem',
+          fontWeight: 500,
+        }}
+      >
+        <AttachFileRounded sx={{ fontSize: 16, transform: 'rotate(45deg)' }} />
+        {count > 1 && count}
+      </Box>
+    </Tooltip>
   );
 }

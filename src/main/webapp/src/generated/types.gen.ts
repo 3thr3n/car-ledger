@@ -38,6 +38,14 @@ export type AdminStats = {
     recurringBills?: number;
 };
 
+export type Attachment = {
+    id?: number;
+    fileName?: string;
+    contentType?: string;
+    size?: number;
+    createdAt?: OffsetDateTime;
+};
+
 export type AverageStats = {
     pricePerUnit?: number;
     distance?: number;
@@ -48,6 +56,7 @@ export type AverageStats = {
 };
 
 export type Bill = {
+    attachments?: number;
     id?: number;
     date?: LocalDate;
     year?: number;
@@ -166,6 +175,7 @@ export type DashboardStats = {
 };
 
 export type FuelBill = {
+    attachments?: number;
     id?: number;
     date?: LocalDate;
     year?: number;
@@ -205,6 +215,7 @@ export type HiLoStats = {
 export type LocalDate = string;
 
 export type MaintenanceBill = {
+    attachments?: number;
     id?: number;
     date?: LocalDate;
     year?: number;
@@ -233,6 +244,7 @@ export type MaxCarsInput = {
 };
 
 export type MiscellaneousBill = {
+    attachments?: number;
     id?: number;
     date?: LocalDate;
     year?: number;
@@ -463,6 +475,120 @@ export type GetAdminStatsResponses = {
 };
 
 export type GetAdminStatsResponse = GetAdminStatsResponses[keyof GetAdminStatsResponses];
+
+export type GetBillAttachmentsData = {
+    body?: never;
+    path: {
+        billId: number;
+        carId: number;
+    };
+    query?: never;
+    url: '/api/attachment/{carId}/bill/{billId}';
+};
+
+export type GetBillAttachmentsErrors = {
+    /**
+     * Bill not found.
+     */
+    404: unknown;
+};
+
+export type GetBillAttachmentsResponses = {
+    /**
+     * Attachments found.
+     */
+    200: Array<Attachment>;
+};
+
+export type GetBillAttachmentsResponse = GetBillAttachmentsResponses[keyof GetBillAttachmentsResponses];
+
+export type AddBillAttachmentData = {
+    body: {
+        file?: Blob | File;
+    };
+    path: {
+        billId: number;
+        carId: number;
+    };
+    query?: never;
+    url: '/api/attachment/{carId}/bill/{billId}';
+};
+
+export type AddBillAttachmentErrors = {
+    /**
+     * File empty, too large, of another type or too many attachments
+     */
+    400: Array<unknown>;
+    /**
+     * Bill not found.
+     */
+    404: unknown;
+    /**
+     * Request larger than allowed by the server.
+     */
+    413: unknown;
+};
+
+export type AddBillAttachmentError = AddBillAttachmentErrors[keyof AddBillAttachmentErrors];
+
+export type AddBillAttachmentResponses = {
+    /**
+     * File attached.
+     */
+    201: Attachment;
+};
+
+export type AddBillAttachmentResponse = AddBillAttachmentResponses[keyof AddBillAttachmentResponses];
+
+export type DeleteAttachmentData = {
+    body?: never;
+    path: {
+        carId: number;
+        id: number;
+    };
+    query?: never;
+    url: '/api/attachment/{carId}/{id}';
+};
+
+export type DeleteAttachmentErrors = {
+    /**
+     * Attachment not found.
+     */
+    404: unknown;
+};
+
+export type DeleteAttachmentResponses = {
+    /**
+     * Attachment deleted.
+     */
+    204: void;
+};
+
+export type DeleteAttachmentResponse = DeleteAttachmentResponses[keyof DeleteAttachmentResponses];
+
+export type GetAttachmentContentData = {
+    body?: never;
+    path: {
+        carId: number;
+        id: number;
+    };
+    query?: never;
+    url: '/api/attachment/{carId}/{id}/content';
+};
+
+export type GetAttachmentContentErrors = {
+    /**
+     * Attachment not found.
+     */
+    404: unknown;
+};
+
+export type GetAttachmentContentResponses = {
+    /**
+     * File found.
+     */
+    200: unknown;
+};
 
 export type CallbackData = {
     body?: never;

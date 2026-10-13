@@ -197,6 +197,20 @@ car:
       vinOld: "At most 17 letters and digits"
       purchaseDate: "Please enter a date that is not in the future"
 
+attachments:
+  title: "Receipts and files"
+  add: "Add"
+  help: "Photos or PDFs, up to 10 MB. Photos are scaled down before the upload."
+  open: "Open {{name}}"
+  remove: "Remove {{name}}"
+  deleteTitle: "Remove this file?"
+  deleteText: "The file is deleted permanently, the entry stays."
+  deleted: "File removed"
+  failed: "The file could not be attached"
+  notAttached: "{{name}} was not attached: {{reason}}"
+  count_one: "{{count}} file attached"
+  count_other: "{{count}} files attached"
+
 bill:
   currentOdometer: "Currently about {{km}}"
   types:

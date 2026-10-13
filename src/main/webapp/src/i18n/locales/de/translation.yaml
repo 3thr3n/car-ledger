@@ -197,6 +197,20 @@ car:
       vinOld: "Höchstens 17 Buchstaben und Ziffern"
       purchaseDate: "Bitte ein Datum eingeben, das nicht in der Zukunft liegt"
 
+attachments:
+  title: "Belege und Dateien"
+  add: "Hinzufügen"
+  help: "Fotos oder PDFs, bis 10 MB. Fotos werden vor dem Hochladen verkleinert."
+  open: "{{name}} öffnen"
+  remove: "{{name}} entfernen"
+  deleteTitle: "Diese Datei entfernen?"
+  deleteText: "Die Datei wird endgültig gelöscht, der Eintrag bleibt."
+  deleted: "Datei entfernt"
+  failed: "Die Datei konnte nicht angehängt werden"
+  notAttached: "{{name}} wurde nicht angehängt: {{reason}}"
+  count_one: "{{count}} Datei angehängt"
+  count_other: "{{count}} Dateien angehängt"
+
 bill:
   currentOdometer: "Aktuell etwa {{km}}"
   types:

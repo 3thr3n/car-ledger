@@ -104,6 +104,28 @@
           }
         }
       },
+      "Attachment" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "fileName" : {
+            "type" : "string"
+          },
+          "contentType" : {
+            "type" : "string"
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "createdAt" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          }
+        }
+      },
       "AverageStats" : {
         "type" : "object",
         "properties" : {
@@ -130,6 +152,10 @@
       "Bill" : {
         "type" : "object",
         "properties" : {
+          "attachments" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "id" : {
             "type" : "integer",
             "format" : "int64"
@@ -445,6 +471,10 @@
       "FuelBill" : {
         "type" : "object",
         "properties" : {
+          "attachments" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "id" : {
             "type" : "integer",
             "format" : "int64"
@@ -549,6 +579,10 @@
       "MaintenanceBill" : {
         "type" : "object",
         "properties" : {
+          "attachments" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "id" : {
             "type" : "integer",
             "format" : "int64"
@@ -628,6 +662,10 @@
       "MiscellaneousBill" : {
         "type" : "object",
         "properties" : {
+          "attachments" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "id" : {
             "type" : "integer",
             "format" : "int64"
@@ -1122,6 +1160,189 @@
         },
         "summary" : "Get Stats",
         "tags" : [ "Admin Resource" ]
+      }
+    },
+    "/api/attachment/{carId}/bill/{billId}" : {
+      "get" : {
+        "description" : "Attachments of the bill, oldest first",
+        "operationId" : "getBillAttachments",
+        "parameters" : [ {
+          "name" : "billId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Attachments found.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/Attachment"
+                  }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Bill not found."
+          }
+        },
+        "summary" : "Get Bill Attachments",
+        "tags" : [ "Attachment Resource" ]
+      },
+      "post" : {
+        "description" : "Attaches a JPEG, PNG, WebP or PDF file to the bill",
+        "operationId" : "addBillAttachment",
+        "parameters" : [ {
+          "name" : "billId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "multipart/form-data" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "file" : {
+                    "type" : "string",
+                    "format" : "binary"
+                  }
+                }
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "File attached.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Attachment"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "File empty, too large, of another type or too many attachments",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Bill not found."
+          },
+          "413" : {
+            "description" : "Request larger than allowed by the server."
+          }
+        },
+        "summary" : "Add Bill Attachment",
+        "tags" : [ "Attachment Resource" ]
+      }
+    },
+    "/api/attachment/{carId}/{id}" : {
+      "delete" : {
+        "description" : "Removes the attachment with its file",
+        "operationId" : "deleteAttachment",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "Attachment deleted."
+          },
+          "404" : {
+            "description" : "Attachment not found."
+          }
+        },
+        "summary" : "Delete Attachment",
+        "tags" : [ "Attachment Resource" ]
+      }
+    },
+    "/api/attachment/{carId}/{id}/content" : {
+      "get" : {
+        "description" : "The file, shown inline by the browser",
+        "operationId" : "getAttachmentContent",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "File found.",
+            "content" : {
+              "image/jpeg" : { },
+              "image/png" : { },
+              "image/webp" : { },
+              "application/pdf" : { }
+            }
+          },
+          "404" : {
+            "description" : "Attachment not found."
+          }
+        },
+        "summary" : "Get Attachment Content",
+        "tags" : [ "Attachment Resource" ]
       }
     },
     "/api/auth/callback" : {
