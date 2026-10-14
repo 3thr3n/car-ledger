@@ -24,6 +24,7 @@ import DirectionsCarRounded from '@mui/icons-material/DirectionsCarRounded';
 import ReceiptLongRounded from '@mui/icons-material/ReceiptLongRounded';
 import EventRepeatRounded from '@mui/icons-material/EventRepeatRounded';
 import LockRounded from '@mui/icons-material/LockRounded';
+import MarkEmailUnreadRounded from '@mui/icons-material/MarkEmailUnreadRounded';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { deDE } from '@mui/x-data-grid/locales';
 import { keepPreviousData, useMutation, useQuery } from '@tanstack/react-query';
@@ -47,6 +48,7 @@ import StatTile from '@/components/ui/StatTile';
 import EmptyState from '@/components/ui/EmptyState';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import NumberField from '@/components/bill/NumberField';
+import CarRequestList from '@/components/admin/CarRequestList';
 
 /** refreshes everything shown on the page, and the own account */
 const refresh = () =>
@@ -83,6 +85,7 @@ export default function AdminPage() {
     <Page id="AdminPage">
       <PageHeader title={t('admin.title')} subtitle={t('admin.subtitle')} />
       <AdminStats />
+      <CarRequestList />
       <AccountTable />
     </Page>
   );
@@ -107,6 +110,11 @@ function AdminStats() {
       key: 'recurringBills',
       icon: <EventRepeatRounded />,
       value: data?.recurringBills,
+    },
+    {
+      key: 'openRequests',
+      icon: <MarkEmailUnreadRounded />,
+      value: data?.openRequests,
     },
   ];
 

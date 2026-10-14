@@ -31,6 +31,8 @@ spending and usage patterns.
   mpg), set per account. They are stored in km and liters, the API always uses those.
 - **Backup:** Every user downloads all of their data (settings, cars, entries, recurring costs, reminders, receipts
   and pictures) as one ZIP and restores it into an account without cars, e.g. on another installation.
+- **Car Requests:** Users who reached their car limit request more cars in the app, administrators approve or reject
+  them on the administration page.
 - **CSV Import:** Import multiple receipts at once using a CSV file, making it quick to upload historical or bulk data.
 - **CSV Export:** Export the receipts of a type as CSV, in the format of the import, or all expenses of a car
   including the payments of the recurring costs in one CSV for spreadsheets.

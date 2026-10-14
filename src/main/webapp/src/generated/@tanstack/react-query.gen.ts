@@ -3,8 +3,8 @@
 import { type DefaultError, type InfiniteData, infiniteQueryOptions, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen';
-import { addBillAttachment, addNewChargingBill, addNewFuelBill, addNewMaintenanceBill, addNewMiscellaneousBill, addNewRecurringBill, addReminder, callback, completeReminder, createCar, deleteAdminAccount, deleteAttachment, deleteBill, deleteCarPicture, deleteMyCar, deleteMyself, deleteRecurringBill, deleteReminder, downloadBackup, endRecurringBill, exportAllExpensesCsv, exportCsv, getAdminAccounts, getAdminStats, getAllBills, getAllBillYears, getAllChargingBills, getAllChargingBillYears, getAllFuelBills, getAllFuelBillYears, getAllMaintenanceBills, getAllMaintenanceBillYears, getAllMiscellaneousBills, getAllMiscellaneousBillYears, getAllRecurringBills, getAttachmentContent, getBillAttachments, getCarPicture, getChargingBill, getCsvFields, getDashboardStats, getFuelBill, getMaintenanceBill, getMiscellaneousBill, getMonthlyStats, getMyCar, getMyCarOverview, getMyCars, getMyself, getRecurringBill, getReminders, importCsv, login, loginError, logout, logoutCallback, type Options, restoreBackup, setCarPicture, updateAdminAccount, updateChargingBill, updateFuelBill, updateMaintenanceBill, updateMiscellaneousBill, updateMyCar, updateMySettings, updateRecurringBill, updateReminder } from '../sdk.gen';
-import type { AddBillAttachmentData, AddBillAttachmentError, AddBillAttachmentResponse, AddNewChargingBillData, AddNewChargingBillError, AddNewFuelBillData, AddNewFuelBillError, AddNewMaintenanceBillData, AddNewMaintenanceBillError, AddNewMiscellaneousBillData, AddNewMiscellaneousBillError, AddNewRecurringBillData, AddNewRecurringBillError, AddNewRecurringBillResponse, AddReminderData, AddReminderError, AddReminderResponse, CallbackData, CompleteReminderData, CompleteReminderError, CompleteReminderResponse, CreateCarData, DeleteAdminAccountData, DeleteAdminAccountResponse, DeleteAttachmentData, DeleteAttachmentResponse, DeleteBillData, DeleteBillResponse, DeleteCarPictureData, DeleteCarPictureResponse, DeleteMyCarData, DeleteMyCarResponse, DeleteMyselfData, DeleteMyselfResponse, DeleteRecurringBillData, DeleteReminderData, DeleteReminderResponse, DownloadBackupData, DownloadBackupResponse, EndRecurringBillData, EndRecurringBillError, EndRecurringBillResponse, ExportAllExpensesCsvData, ExportAllExpensesCsvResponse, ExportCsvData, ExportCsvResponse, GetAdminAccountsData, GetAdminAccountsResponse, GetAdminStatsData, GetAdminStatsResponse, GetAllBillsData, GetAllBillsResponse, GetAllBillYearsData, GetAllBillYearsResponse, GetAllChargingBillsData, GetAllChargingBillsResponse, GetAllChargingBillYearsData, GetAllChargingBillYearsResponse, GetAllFuelBillsData, GetAllFuelBillsResponse, GetAllFuelBillYearsData, GetAllFuelBillYearsResponse, GetAllMaintenanceBillsData, GetAllMaintenanceBillsResponse, GetAllMaintenanceBillYearsData, GetAllMaintenanceBillYearsResponse, GetAllMiscellaneousBillsData, GetAllMiscellaneousBillsResponse, GetAllMiscellaneousBillYearsData, GetAllMiscellaneousBillYearsResponse, GetAllRecurringBillsData, GetAllRecurringBillsResponse, GetAttachmentContentData, GetBillAttachmentsData, GetBillAttachmentsResponse, GetCarPictureData, GetChargingBillData, GetChargingBillResponse, GetCsvFieldsData, GetCsvFieldsResponse, GetDashboardStatsData, GetDashboardStatsResponse, GetFuelBillData, GetFuelBillResponse, GetMaintenanceBillData, GetMaintenanceBillResponse, GetMiscellaneousBillData, GetMiscellaneousBillResponse, GetMonthlyStatsData, GetMonthlyStatsResponse, GetMyCarData, GetMyCarOverviewData, GetMyCarOverviewResponse, GetMyCarResponse, GetMyCarsData, GetMyCarsResponse, GetMyselfData, GetMyselfResponse, GetRecurringBillData, GetRecurringBillResponse, GetRemindersData, GetRemindersResponse, ImportCsvData, LoginData, LoginErrorData, LogoutCallbackData, LogoutData, RestoreBackupData, RestoreBackupError, RestoreBackupResponse, SetCarPictureData, SetCarPictureError, SetCarPictureResponse, UpdateAdminAccountData, UpdateAdminAccountError, UpdateAdminAccountResponse, UpdateChargingBillData, UpdateChargingBillError, UpdateChargingBillResponse, UpdateFuelBillData, UpdateFuelBillError, UpdateFuelBillResponse, UpdateMaintenanceBillData, UpdateMaintenanceBillError, UpdateMaintenanceBillResponse, UpdateMiscellaneousBillData, UpdateMiscellaneousBillError, UpdateMiscellaneousBillResponse, UpdateMyCarData, UpdateMySettingsData, UpdateMySettingsError, UpdateMySettingsResponse, UpdateRecurringBillData, UpdateRecurringBillError, UpdateRecurringBillResponse, UpdateReminderData, UpdateReminderError, UpdateReminderResponse } from '../types.gen';
+import { addBillAttachment, addNewChargingBill, addNewFuelBill, addNewMaintenanceBill, addNewMiscellaneousBill, addNewRecurringBill, addReminder, approveCarRequest, callback, completeReminder, createCar, deleteAdminAccount, deleteAttachment, deleteBill, deleteCarPicture, deleteMyCar, deleteMyself, deleteRecurringBill, deleteReminder, downloadBackup, endRecurringBill, exportAllExpensesCsv, exportCsv, getAdminAccounts, getAdminCarRequests, getAdminStats, getAllBills, getAllBillYears, getAllChargingBills, getAllChargingBillYears, getAllFuelBills, getAllFuelBillYears, getAllMaintenanceBills, getAllMaintenanceBillYears, getAllMiscellaneousBills, getAllMiscellaneousBillYears, getAllRecurringBills, getAttachmentContent, getBillAttachments, getCarPicture, getChargingBill, getCsvFields, getDashboardStats, getFuelBill, getMaintenanceBill, getMiscellaneousBill, getMonthlyStats, getMyCar, getMyCarOverview, getMyCars, getMyLatestCarRequest, getMyself, getRecurringBill, getReminders, importCsv, login, loginError, logout, logoutCallback, markCarRequestSeen, type Options, rejectCarRequest, requestMoreCars, restoreBackup, setCarPicture, updateAdminAccount, updateChargingBill, updateFuelBill, updateMaintenanceBill, updateMiscellaneousBill, updateMyCar, updateMySettings, updateRecurringBill, updateReminder } from '../sdk.gen';
+import type { AddBillAttachmentData, AddBillAttachmentError, AddBillAttachmentResponse, AddNewChargingBillData, AddNewChargingBillError, AddNewFuelBillData, AddNewFuelBillError, AddNewMaintenanceBillData, AddNewMaintenanceBillError, AddNewMiscellaneousBillData, AddNewMiscellaneousBillError, AddNewRecurringBillData, AddNewRecurringBillError, AddNewRecurringBillResponse, AddReminderData, AddReminderError, AddReminderResponse, ApproveCarRequestData, ApproveCarRequestError, ApproveCarRequestResponse, CallbackData, CompleteReminderData, CompleteReminderError, CompleteReminderResponse, CreateCarData, DeleteAdminAccountData, DeleteAdminAccountResponse, DeleteAttachmentData, DeleteAttachmentResponse, DeleteBillData, DeleteBillResponse, DeleteCarPictureData, DeleteCarPictureResponse, DeleteMyCarData, DeleteMyCarResponse, DeleteMyselfData, DeleteMyselfResponse, DeleteRecurringBillData, DeleteReminderData, DeleteReminderResponse, DownloadBackupData, DownloadBackupResponse, EndRecurringBillData, EndRecurringBillError, EndRecurringBillResponse, ExportAllExpensesCsvData, ExportAllExpensesCsvResponse, ExportCsvData, ExportCsvResponse, GetAdminAccountsData, GetAdminAccountsResponse, GetAdminCarRequestsData, GetAdminCarRequestsResponse, GetAdminStatsData, GetAdminStatsResponse, GetAllBillsData, GetAllBillsResponse, GetAllBillYearsData, GetAllBillYearsResponse, GetAllChargingBillsData, GetAllChargingBillsResponse, GetAllChargingBillYearsData, GetAllChargingBillYearsResponse, GetAllFuelBillsData, GetAllFuelBillsResponse, GetAllFuelBillYearsData, GetAllFuelBillYearsResponse, GetAllMaintenanceBillsData, GetAllMaintenanceBillsResponse, GetAllMaintenanceBillYearsData, GetAllMaintenanceBillYearsResponse, GetAllMiscellaneousBillsData, GetAllMiscellaneousBillsResponse, GetAllMiscellaneousBillYearsData, GetAllMiscellaneousBillYearsResponse, GetAllRecurringBillsData, GetAllRecurringBillsResponse, GetAttachmentContentData, GetBillAttachmentsData, GetBillAttachmentsResponse, GetCarPictureData, GetChargingBillData, GetChargingBillResponse, GetCsvFieldsData, GetCsvFieldsResponse, GetDashboardStatsData, GetDashboardStatsResponse, GetFuelBillData, GetFuelBillResponse, GetMaintenanceBillData, GetMaintenanceBillResponse, GetMiscellaneousBillData, GetMiscellaneousBillResponse, GetMonthlyStatsData, GetMonthlyStatsResponse, GetMyCarData, GetMyCarOverviewData, GetMyCarOverviewResponse, GetMyCarResponse, GetMyCarsData, GetMyCarsResponse, GetMyLatestCarRequestData, GetMyLatestCarRequestResponse, GetMyselfData, GetMyselfResponse, GetRecurringBillData, GetRecurringBillResponse, GetRemindersData, GetRemindersResponse, ImportCsvData, LoginData, LoginErrorData, LogoutCallbackData, LogoutData, MarkCarRequestSeenData, MarkCarRequestSeenResponse, RejectCarRequestData, RejectCarRequestError, RejectCarRequestResponse, RequestMoreCarsData, RequestMoreCarsError, RequestMoreCarsResponse, RestoreBackupData, RestoreBackupError, RestoreBackupResponse, SetCarPictureData, SetCarPictureError, SetCarPictureResponse, UpdateAdminAccountData, UpdateAdminAccountError, UpdateAdminAccountResponse, UpdateChargingBillData, UpdateChargingBillError, UpdateChargingBillResponse, UpdateFuelBillData, UpdateFuelBillError, UpdateFuelBillResponse, UpdateMaintenanceBillData, UpdateMaintenanceBillError, UpdateMaintenanceBillResponse, UpdateMiscellaneousBillData, UpdateMiscellaneousBillError, UpdateMiscellaneousBillResponse, UpdateMyCarData, UpdateMySettingsData, UpdateMySettingsError, UpdateMySettingsResponse, UpdateRecurringBillData, UpdateRecurringBillError, UpdateRecurringBillResponse, UpdateReminderData, UpdateReminderError, UpdateReminderResponse } from '../types.gen';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -148,6 +148,96 @@ export const updateAdminAccountMutation = (options?: Partial<Options<UpdateAdmin
     const mutationOptions: UseMutationOptions<UpdateAdminAccountResponse, UpdateAdminAccountError, Options<UpdateAdminAccountData>> = {
         mutationFn: async (fnOptions) => {
             const { data } = await updateAdminAccount({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const getAdminCarRequestsQueryKey = (options?: Options<GetAdminCarRequestsData>) => createQueryKey('getAdminCarRequests', options);
+
+/**
+ * Get Car Requests
+ *
+ * Requests for more cars, the open ones by age, the decided ones newest first; pages starting at 1
+ */
+export const getAdminCarRequestsOptions = (options?: Options<GetAdminCarRequestsData>) => queryOptions<GetAdminCarRequestsResponse, DefaultError, GetAdminCarRequestsResponse, ReturnType<typeof getAdminCarRequestsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getAdminCarRequests({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getAdminCarRequestsQueryKey(options)
+});
+
+export const getAdminCarRequestsInfiniteQueryKey = (options?: Options<GetAdminCarRequestsData>): QueryKey<Options<GetAdminCarRequestsData>> => createQueryKey('getAdminCarRequests', options, true);
+
+/**
+ * Get Car Requests
+ *
+ * Requests for more cars, the open ones by age, the decided ones newest first; pages starting at 1
+ */
+export const getAdminCarRequestsInfiniteOptions = (options?: Options<GetAdminCarRequestsData>) => {
+    const opts = infiniteQueryOptions<GetAdminCarRequestsResponse, DefaultError, InfiniteData<GetAdminCarRequestsResponse>, QueryKey<Options<GetAdminCarRequestsData>>, number | Pick<QueryKey<Options<GetAdminCarRequestsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<GetAdminCarRequestsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    page: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await getAdminCarRequests({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: getAdminCarRequestsInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
+
+/**
+ * Approve
+ *
+ * Approves the request and raises the car limit of the account
+ */
+export const approveCarRequestMutation = (options?: Partial<Options<ApproveCarRequestData>>): UseMutationOptions<ApproveCarRequestResponse, ApproveCarRequestError, Options<ApproveCarRequestData>> => {
+    const mutationOptions: UseMutationOptions<ApproveCarRequestResponse, ApproveCarRequestError, Options<ApproveCarRequestData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await approveCarRequest({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Reject
+ *
+ * Rejects the request, the comment is shown to the user
+ */
+export const rejectCarRequestMutation = (options?: Partial<Options<RejectCarRequestData>>): UseMutationOptions<RejectCarRequestResponse, RejectCarRequestError, Options<RejectCarRequestData>> => {
+    const mutationOptions: UseMutationOptions<RejectCarRequestResponse, RejectCarRequestError, Options<RejectCarRequestData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await rejectCarRequest({
                 ...options,
                 ...fnOptions,
                 throwOnError: true
@@ -1545,6 +1635,64 @@ export const restoreBackupMutation = (options?: Partial<Options<RestoreBackupDat
     const mutationOptions: UseMutationOptions<RestoreBackupResponse, RestoreBackupError, Options<RestoreBackupData>> = {
         mutationFn: async (fnOptions) => {
             const { data } = await restoreBackup({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Request More Cars
+ *
+ * Requests more cars than the limit of the account allows
+ */
+export const requestMoreCarsMutation = (options?: Partial<Options<RequestMoreCarsData>>): UseMutationOptions<RequestMoreCarsResponse, RequestMoreCarsError, Options<RequestMoreCarsData>> => {
+    const mutationOptions: UseMutationOptions<RequestMoreCarsResponse, RequestMoreCarsError, Options<RequestMoreCarsData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await requestMoreCars({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const getMyLatestCarRequestQueryKey = (options?: Options<GetMyLatestCarRequestData>) => createQueryKey('getMyLatestCarRequest', options);
+
+/**
+ * Get Latest
+ *
+ * The newest own request for more cars
+ */
+export const getMyLatestCarRequestOptions = (options?: Options<GetMyLatestCarRequestData>) => queryOptions<GetMyLatestCarRequestResponse, DefaultError, GetMyLatestCarRequestResponse, ReturnType<typeof getMyLatestCarRequestQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getMyLatestCarRequest({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getMyLatestCarRequestQueryKey(options)
+});
+
+/**
+ * Mark Seen
+ *
+ * The decision was shown to the user, it is not shown again
+ */
+export const markCarRequestSeenMutation = (options?: Partial<Options<MarkCarRequestSeenData>>): UseMutationOptions<MarkCarRequestSeenResponse, DefaultError, Options<MarkCarRequestSeenData>> => {
+    const mutationOptions: UseMutationOptions<MarkCarRequestSeenResponse, DefaultError, Options<MarkCarRequestSeenData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await markCarRequestSeen({
                 ...options,
                 ...fnOptions,
                 throwOnError: true
