@@ -17,12 +17,12 @@ export default function AverageList({ average }: { average: AverageStats }) {
       ? [
           {
             key: 'pricePerUnit',
-            value: format.unit(average.pricePerUnit, 'ct/l', 1),
+            value: format.fuelPrice(average.pricePerUnit),
           },
-          { key: 'distance', value: format.unit(average.distance, 'km', 0) },
+          { key: 'distance', value: format.distance(average.distance) },
           {
             key: 'fuelCostPerKm',
-            value: format.unit(average.fuelCostPerKm, 'ct/km'),
+            value: format.costPerDistance(average.fuelCostPerKm),
           },
         ]
       : []),
@@ -34,7 +34,7 @@ export default function AverageList({ average }: { average: AverageStats }) {
           },
           {
             key: 'chargingCostPerKm',
-            value: format.unit(average.chargingCostPerKm, 'ct/km'),
+            value: format.costPerDistance(average.chargingCostPerKm),
           },
         ]
       : []),
@@ -60,7 +60,9 @@ export default function AverageList({ average }: { average: AverageStats }) {
                   color: 'text.secondary',
                 }}
               >
-                {t(`dashboard.average.${row.key}`)}
+                {t(`dashboard.average.${row.key}`, {
+                  context: format.units.distance.context,
+                })}
               </Typography>
               <Typography
                 variant="body2"

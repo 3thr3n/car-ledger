@@ -16,7 +16,7 @@ import { useMutation } from '@tanstack/react-query';
 import { SubmitEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
-import { Account } from '@/generated';
+import { Account, UnitSystem } from '@/generated';
 import { deleteMyselfMutation } from '@/generated/@tanstack/react-query.gen';
 import useMe from '@/hooks/useMe';
 import useSaveSettings from '@/hooks/useSaveSettings';
@@ -74,6 +74,9 @@ function SettingsForm({ account }: { account: Account }) {
     account.currency ?? DEFAULT_CURRENCY,
   );
   const [language, setLanguage] = useState(account.language ?? BROWSER);
+  const [unitSystem, setUnitSystem] = useState(
+    account.unitSystem ?? UnitSystem.METRIC,
+  );
 
   const settings = useSaveSettings({
     onSuccess: () => {
@@ -101,6 +104,7 @@ function SettingsForm({ account }: { account: Account }) {
       vatCountry,
       currency,
       language: language === BROWSER ? undefined : language,
+      unitSystem,
     });
   };
 
@@ -170,6 +174,19 @@ function SettingsForm({ account }: { account: Account }) {
                       {currencySymbol(format.locale, code)}
                     </Box>
                   </Box>
+                </MenuItem>
+              ))}
+            </TextField>
+            <TextField
+              select
+              label={t('settings.units')}
+              value={unitSystem}
+              onChange={(e) => setUnitSystem(e.target.value as UnitSystem)}
+              helperText={t('settings.unitsHelp')}
+            >
+              {Object.values(UnitSystem).map((system) => (
+                <MenuItem key={system} value={system}>
+                  {t(`settings.unitSystems.${system}`)}
                 </MenuItem>
               ))}
             </TextField>

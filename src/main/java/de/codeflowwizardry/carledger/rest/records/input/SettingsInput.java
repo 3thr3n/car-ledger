@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+import de.codeflowwizardry.carledger.data.UnitSystem;
+
 /**
  * Settings of the own account
  *
@@ -16,9 +18,13 @@ import java.util.Set;
  * @param language
  *            language of the UI, <code>null</code> for the language of the
  *            browser
+ * @param unitSystem
+ *            units the values are shown and entered in, unchanged without one
+ *            (e.g. a client of an older version)
  */
-public record SettingsInput(String vatCountry, String currency, String language)
+public record SettingsInput(String vatCountry, String currency, String language, UnitSystem unitSystem)
 {
+
 	public static final Set<String> LANGUAGES = Set.of("EN", "DE");
 
 	public List<String> validate()

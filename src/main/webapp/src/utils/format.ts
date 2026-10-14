@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import { getMyselfOptions } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
+import { convert, Units, unitsOf } from '@/utils/units';
 
 export const DEFAULT_CURRENCY = 'EUR';
 
@@ -30,6 +31,20 @@ export interface Formatter {
   ) => string;
   /** Date from the API (yyyy-MM-dd) */
   date: (value?: string | null) => string;
+  /** units of the account, the API always uses km, liters and ct/l */
+  units: Units;
+  /** km of the API, e.g. "12,400 km" or "7,705 mi" */
+  distance: (km?: number | null, digits?: number) => string;
+  /** liters of the API, e.g. "41.02 l" or "10.84 gal" */
+  volume: (liters?: number | null, digits?: number) => string;
+  /** cent per liter of the API, e.g. "172.9 ct/l" or "$3.459/gal" */
+  fuelPrice: (centsPerLiter?: number | null) => string;
+  /** l/100km of the API, e.g. "6.40 l/100km" or "36.8 mpg" */
+  consumption: (litersPer100Km?: number | null) => string;
+  /** kWh/100km of the API, e.g. "17.40 kWh/100km" or "28.00 kWh/100mi" */
+  chargingConsumption: (kwhPer100Km?: number | null) => string;
+  /** cent per km of the API, e.g. "9.50 ct/km" or "15.29 ct/mi" */
+  costPerDistance: (centsPerKm?: number | null) => string;
 }
 
 export const EMPTY = '—';
@@ -76,6 +91,7 @@ export function useFormat(): Formatter {
     enabled: false,
   });
   const currency = me?.currency ?? DEFAULT_CURRENCY;
+  const unitSystem = me?.unitSystem;
 
   return useMemo(() => {
     const number = (value?: number | null, digits = 2) =>
@@ -86,22 +102,71 @@ export function useFormat(): Formatter {
             maximumFractionDigits: digits,
           }).format(num(value)!);
 
+    const money = (value?: number | null, digits = 2) =>
+      isMissing(value)
+        ? EMPTY
+        : new Intl.NumberFormat(locale, {
+            style: 'currency',
+            currency,
+            minimumFractionDigits: digits,
+            maximumFractionDigits: digits,
+          }).format(num(value)!);
+    const unit = (
+      value: number | null | undefined,
+      label: string,
+      digits = 2,
+    ) => (isMissing(value) ? EMPTY : `${number(value, digits)} ${label}`);
+    const units = unitsOf(unitSystem);
+    // the API sends the numbers as numbers, the strings of older values too
+    const api = (value?: number | null) => num(value);
+
     return {
       locale,
       currency,
       currencySymbol: currencySymbol(locale, currency),
       number,
-      money: (value, digits = 2) =>
-        isMissing(value)
-          ? EMPTY
-          : new Intl.NumberFormat(locale, {
-              style: 'currency',
-              currency,
-              minimumFractionDigits: digits,
-              maximumFractionDigits: digits,
-            }).format(num(value)!),
-      unit: (value, unit, digits = 2) =>
-        isMissing(value) ? EMPTY : `${number(value, digits)} ${unit}`,
+      money,
+      unit,
+      units,
+      distance: (km, digits = 0) =>
+        unit(
+          convert(api(km), units.distance.fromKm),
+          units.distance.label,
+          digits,
+        ),
+      volume: (liters, digits = 2) =>
+        unit(
+          convert(api(liters), units.volume.fromLiters),
+          units.volume.label,
+          digits,
+        ),
+      fuelPrice: (centsPerLiter) => {
+        const value = convert(
+          api(centsPerLiter),
+          units.fuelPrice.fromCentsPerLiter,
+        );
+        return units.fuelPrice.inCurrency
+          ? isMissing(value)
+            ? EMPTY
+            : `${money(value, units.fuelPrice.digits)}/${units.volume.label}`
+          : unit(value, `ct/${units.volume.label}`, units.fuelPrice.digits);
+      },
+      consumption: (litersPer100Km) =>
+        unit(
+          convert(api(litersPer100Km), units.consumption.fromLitersPer100Km),
+          units.consumption.label,
+          units.consumption.digits,
+        ),
+      chargingConsumption: (kwhPer100Km) =>
+        unit(
+          convert(api(kwhPer100Km), units.chargingConsumption.fromKwhPer100Km),
+          units.chargingConsumption.label,
+        ),
+      costPerDistance: (centsPerKm) =>
+        unit(
+          convert(api(centsPerKm), units.costPerDistance.fromCentsPerKm),
+          units.costPerDistance.label,
+        ),
       date: (value) =>
         value
           ? new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }).format(
@@ -109,7 +174,7 @@ export function useFormat(): Formatter {
             )
           : EMPTY,
     };
-  }, [locale, currency]);
+  }, [locale, currency, unitSystem]);
 }
 
 export function toApiDate(value: dayjs.Dayjs | null | undefined) {

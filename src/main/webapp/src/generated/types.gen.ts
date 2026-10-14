@@ -11,6 +11,7 @@ export type Account = {
     vatCountry?: string;
     currency?: string;
     language?: string;
+    unitSystem: UnitSystem;
 };
 
 export type AdminAccount = {
@@ -428,6 +429,7 @@ export type SettingsInput = {
     vatCountry?: string;
     currency?: string;
     language?: string;
+    unitSystem?: UnitSystem;
 };
 
 export enum SortOrder {
@@ -449,6 +451,12 @@ export type TotalStats = {
     maintenanceBills?: number;
     miscellaneousBills?: number;
 };
+
+export enum UnitSystem {
+    METRIC = 'METRIC',
+    US = 'US',
+    UK = 'UK'
+}
 
 export type GetAdminAccountsData = {
     body?: never;

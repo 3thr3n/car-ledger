@@ -91,23 +91,27 @@ export function useFuelColumns(): Columns<FuelBill> {
       },
       {
         field: 'unit',
-        headerName: t('bill.fields.unit'),
+        headerName: t('bill.fields.unit', {
+          context: f.units.volume.context,
+        }),
         ...money,
-        valueFormatter: (value: number) => f.unit(value, 'l'),
+        valueFormatter: (value: number) => f.volume(value),
       },
       {
         field: 'pricePerUnit',
-        headerName: t('bill.fields.pricePerUnit'),
+        headerName: t('bill.fields.pricePerUnit', {
+          context: f.units.volume.context,
+        }),
         ...money,
         minWidth: 120,
-        valueFormatter: (value: number) => f.unit(value, 'ct/l', 1),
+        valueFormatter: (value: number) => f.fuelPrice(value),
       },
       {
         field: 'distance',
         headerName: t('bill.fields.distance'),
         ...money,
         valueFormatter: (value: number) =>
-          hasValue(value) ? f.unit(value, 'km', 1) : '—',
+          hasValue(value) ? f.distance(value, 1) : '—',
       },
       {
         field: 'avgConsumption',
@@ -115,7 +119,7 @@ export function useFuelColumns(): Columns<FuelBill> {
         ...money,
         minWidth: 140,
         valueFormatter: (value: number) =>
-          hasValue(value) ? f.unit(value, 'l/100km') : '—',
+          hasValue(value) ? f.consumption(value) : '—',
       },
       {
         field: 'estimateConsumption',
@@ -123,7 +127,7 @@ export function useFuelColumns(): Columns<FuelBill> {
         ...money,
         minWidth: 140,
         valueFormatter: (value: number) =>
-          hasValue(value) ? f.unit(value, 'l/100km', 1) : '—',
+          hasValue(value) ? f.consumption(value) : '—',
       },
       {
         field: 'total',
@@ -136,10 +140,10 @@ export function useFuelColumns(): Columns<FuelBill> {
     mobileRow: (row) => ({
       primary: f.date(row.date),
       secondary: [
-        f.unit(row.unit, 'l'),
-        f.unit(row.pricePerUnit, 'ct/l', 1),
+        f.volume(row.unit),
+        f.fuelPrice(row.pricePerUnit),
         hasValue(row.avgConsumption)
-          ? f.unit(row.avgConsumption, 'l/100km')
+          ? f.consumption(row.avgConsumption)
           : undefined,
       ]
         .filter(Boolean)
@@ -180,7 +184,7 @@ export function useChargingColumns(): Columns<ChargingBill> {
         headerName: t('bill.fields.distance'),
         ...money,
         valueFormatter: (value: number) =>
-          hasValue(value) ? f.unit(value, 'km', 1) : '—',
+          hasValue(value) ? f.distance(value, 1) : '—',
       },
       {
         field: 'avgConsumption',
@@ -188,7 +192,7 @@ export function useChargingColumns(): Columns<ChargingBill> {
         ...money,
         minWidth: 140,
         valueFormatter: (value: number) =>
-          hasValue(value) ? f.unit(value, 'kWh/100km') : '—',
+          hasValue(value) ? f.chargingConsumption(value) : '—',
       },
       {
         field: 'location',
@@ -211,7 +215,7 @@ export function useChargingColumns(): Columns<ChargingBill> {
         f.unit(row.unit, 'kWh'),
         f.unit(row.pricePerUnit, 'ct/kWh', 1),
         hasValue(row.avgConsumption)
-          ? f.unit(row.avgConsumption, 'kWh/100km')
+          ? f.chargingConsumption(row.avgConsumption)
           : undefined,
         row.location ? t(`bill.locations.${row.location}`) : undefined,
       ]
@@ -251,7 +255,7 @@ export function useMaintenanceColumns(): Columns<MaintenanceBill> {
         headerName: t('bill.fields.odometer'),
         ...money,
         valueFormatter: (value: number) =>
-          hasValue(value) ? f.unit(value, 'km', 0) : '—',
+          hasValue(value) ? f.distance(value) : '—',
       },
       {
         field: 'laborCost',

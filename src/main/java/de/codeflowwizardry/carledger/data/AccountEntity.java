@@ -33,6 +33,13 @@ public class AccountEntity
 	@Column(name = "language", length = 2)
 	private String language;
 
+	/**
+	 * Units the values are shown and entered in, stored are always km and liters
+	 */
+	@Enumerated(EnumType.STRING)
+	@Column(name = "unit_system", nullable = false, length = 10)
+	private UnitSystem unitSystem = UnitSystem.METRIC;
+
 	@Column(name = "created_at", nullable = false, updatable = false)
 	private OffsetDateTime createdAt = OffsetDateTime.now();
 
@@ -107,5 +114,15 @@ public class AccountEntity
 	public void setLastSeen(OffsetDateTime lastSeen)
 	{
 		this.lastSeen = lastSeen;
+	}
+
+	public UnitSystem getUnitSystem()
+	{
+		return unitSystem;
+	}
+
+	public void setUnitSystem(UnitSystem unitSystem)
+	{
+		this.unitSystem = unitSystem;
 	}
 }

@@ -27,6 +27,8 @@ spending and usage patterns.
 - **Add/Delete Receipts:** Easily add or delete individual refueling receipts to keep your records up-to-date.
 - **Electric and Hybrid Cars:** Record the charges of electric cars and plug-in hybrids in kWh, with the consumption in
   kWh/100km next to the refuels in liters.
+- **Units:** Show and enter the values in metric units, US units (miles, gallons, mpg) or UK units (miles, liters,
+  mpg), set per account. They are stored in km and liters, the API always uses those.
 - **CSV Import:** Import multiple receipts at once using a CSV file, making it quick to upload historical or bulk data.
 - **CSV Export:** Export the receipts of a type as CSV, in the format of the import.
 - **Data Aggregation & Summarization:** Get insights on your fuel expenses, including:

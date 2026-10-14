@@ -39,7 +39,7 @@ export default function CarDetails({
     });
   }
   if (car.tankSize) {
-    rows.push({ key: 'tankSize', value: format.unit(car.tankSize, 'l', 1) });
+    rows.push({ key: 'tankSize', value: format.volume(car.tankSize, 1) });
   }
   if (car.batteryCapacity) {
     rows.push({

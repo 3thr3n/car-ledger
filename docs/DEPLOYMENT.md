@@ -175,6 +175,7 @@ Use the image of a release (a git tag of `main`) or a dev build of `develop`. On
 | 1.6.0     | Picture of the cars (0.3.0)                                                                                          |
 | 1.7.0     | Energy type of the cars (existing cars become petrol), optional tank size and battery capacity (0.4.0)               |
 | 1.8.0     | Table for the charges of electric cars and plug-in hybrids (0.4.0)                                                   |
+| 1.9.0     | Unit system of the accounts (metric, US, UK), existing accounts stay metric (0.4.0)                                  |
 
 An older image refuses to start on the migrated database, as Flyway finds migrations it does not know. To go back,
 restore the backup. Without the backup, the older image runs on the migrated database (the new columns have defaults)
