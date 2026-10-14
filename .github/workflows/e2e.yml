@@ -2,9 +2,9 @@ name: End-to-end tests
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "develop", "main" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "develop", "main" ]
 
 # only reads the repository, the token gets no write access
 permissions:
