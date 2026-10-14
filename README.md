@@ -187,7 +187,8 @@ Contributions are welcome! Please follow these steps to contribute:
 - `main` only holds released states. A release is a pull request from `develop` to `main`, merged with a merge
   commit (not squashed, so both branches keep the same history), then the tag of the version in
   `helm/car-ledger/Chart.yaml` on `main`. Afterwards the next version is set in `Chart.yaml` on `develop`.
-- A hotfix branches from `main`, goes to `main` like a release and is merged back into `develop`.
+- A hotfix branches from `main` and goes to `main` like a release. `develop` keeps a linear history, so the fix comes
+  to `develop` as a cherry-pick in a pull request of its own.
 
 ## Helm
 
