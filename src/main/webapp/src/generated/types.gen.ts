@@ -1214,6 +1214,64 @@ export type DeleteRecurringBillResponses = {
     202: unknown;
 };
 
+export type GetRecurringBillData = {
+    body?: never;
+    path: {
+        billId: number;
+        carId: number;
+    };
+    query?: never;
+    url: '/api/bill/{carId}/recurring/{billId}';
+};
+
+export type GetRecurringBillErrors = {
+    /**
+     * Bill not found for the car of your user.
+     */
+    404: unknown;
+};
+
+export type GetRecurringBillResponses = {
+    /**
+     * Bill found.
+     */
+    200: RecurringBill;
+};
+
+export type GetRecurringBillResponse = GetRecurringBillResponses[keyof GetRecurringBillResponses];
+
+export type UpdateRecurringBillData = {
+    body: RecurringBillInput;
+    path: {
+        billId: number;
+        carId: number;
+    };
+    query?: never;
+    url: '/api/bill/{carId}/recurring/{billId}';
+};
+
+export type UpdateRecurringBillErrors = {
+    /**
+     * Validation failed, please check the response
+     */
+    400: Array<unknown>;
+    /**
+     * Bill not found for the car of your user.
+     */
+    404: unknown;
+};
+
+export type UpdateRecurringBillError = UpdateRecurringBillErrors[keyof UpdateRecurringBillErrors];
+
+export type UpdateRecurringBillResponses = {
+    /**
+     * Bill updated.
+     */
+    200: RecurringBill;
+};
+
+export type UpdateRecurringBillResponse = UpdateRecurringBillResponses[keyof UpdateRecurringBillResponses];
+
 export type EndRecurringBillData = {
     body: RecurringBillEndInput;
     path: {

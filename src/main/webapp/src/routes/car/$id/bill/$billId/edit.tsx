@@ -6,6 +6,7 @@ const editableTypes: string[] = [
   BillType.FUEL,
   BillType.MAINTENANCE,
   BillType.MISCELLANEOUS,
+  BillType.RECURRING,
 ];
 
 export const Route = createFileRoute('/car/$id/bill/$billId/edit')({
