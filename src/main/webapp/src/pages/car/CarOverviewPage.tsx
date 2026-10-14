@@ -159,6 +159,7 @@ export default function CarOverviewPage({ id }: { id: number }) {
               />
             </Box>
             <BillTable
+              carId={id}
               rows={ledger.rows}
               total={ledger.total}
               columns={columns}

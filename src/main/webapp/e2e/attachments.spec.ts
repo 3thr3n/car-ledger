@@ -64,6 +64,24 @@ test.describe.serial('attachments', () => {
     await expect(row.getByLabel('2 files attached')).toBeVisible();
   });
 
+  test('shows the files from the list without the form', async () => {
+    await page
+      .getByRole('row', { name: /Car wash/ })
+      .getByRole('button', { name: '2 files attached' })
+      .click();
+
+    const dialog = page.getByRole('dialog', { name: 'Receipts and files' });
+    const image = dialog.getByRole('link', { name: 'Open receipt.png' });
+    await expect(image.locator('img')).toHaveJSProperty('naturalWidth', 1);
+    await expect(
+      dialog.getByRole('link', { name: 'Open invoice.pdf' }),
+    ).toBeVisible();
+
+    await dialog.getByRole('button', { name: 'Close' }).click();
+    await expect(dialog).toBeHidden();
+    await expect(page).toHaveURL(/\/bill\/miscellaneous$/);
+  });
+
   test('shows, opens and removes the files when editing', async () => {
     await page
       .getByRole('row', { name: /Car wash/ })
