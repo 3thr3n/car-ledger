@@ -4,11 +4,14 @@
 # - cooldown: only versions released at least 14 days ago are proposed, a compromised release is usually found by
 #   then. Security updates are not delayed by it.
 # - groups: minor and patch updates come in one pull request per ecosystem, major updates one by one
+# - target-branch: like every pull request, the updates go to develop; security updates still target the default
+#   branch, which is develop as well
 
 version: 2
 updates:
   - package-ecosystem: "maven"
     directory: "/"
+    target-branch: "develop"
     schedule:
       interval: "weekly"
     cooldown:
@@ -19,6 +22,7 @@ updates:
 
   - package-ecosystem: "npm"
     directory: "/src/main/webapp"
+    target-branch: "develop"
     schedule:
       interval: "weekly"
     cooldown:
@@ -30,6 +34,7 @@ updates:
   # base images of src/main/docker/Dockerfile.*
   - package-ecosystem: "docker"
     directory: "/src/main/docker"
+    target-branch: "develop"
     schedule:
       interval: "weekly"
     cooldown:
@@ -40,6 +45,7 @@ updates:
 
   - package-ecosystem: "github-actions"
     directory: "/"
+    target-branch: "develop"
     schedule:
       interval: "weekly"
     cooldown:
@@ -54,6 +60,7 @@ updates:
       - "/helm/car-ledger"
       - "/helm/keycloak"
       - "/helm/authentik"
+    target-branch: "develop"
     schedule:
       interval: "weekly"
     cooldown:

@@ -3,11 +3,11 @@ name: helm
 description: A Helm chart for Kubernetes
 type: application
 
-# Version of the next release: the tag of the release has to match. Builds of main are published
+# Version of the next release: the tag of the release has to match. Builds of develop are published
 # as the prerelease <version>-dev.<run number> with the image of that build as appVersion. Raise it
-# after a release (the minor version for incompatible changes of the values).
+# on develop after a release (the minor version for incompatible changes of the values).
 version: 0.4.0
-# image tag used when carLedger.image.tag is empty, "main" is the latest build of main
+# image tag used when carLedger.image.tag is empty, "main" is the latest build of main: the released state
 appVersion: "main"
 
 dependencies:

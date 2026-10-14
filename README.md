@@ -176,10 +176,18 @@ generated from it with `yarn openapi-ts`. Commit both, the CI fails if they are 
 Contributions are welcome! Please follow these steps to contribute:
 
 1. Fork the repository.
-2. Create a new branch (`git checkout -b feature/YourFeature`).
+2. Create a new branch from `develop` (`git checkout -b feature/YourFeature develop`).
 3. Commit your changes (`git commit -m 'Add YourFeature'`).
 4. Push to the branch (`git push origin feature/YourFeature`).
-5. Open a Pull Request.
+5. Open a Pull Request against `develop`.
+
+### Branches and releases
+
+- `develop` gets all pull requests, its builds are published as prereleases (`<next release>-dev.<run number>`).
+- `main` only holds released states. A release is a pull request from `develop` to `main`, merged with a merge
+  commit (not squashed, so both branches keep the same history), then the tag of the version in
+  `helm/car-ledger/Chart.yaml` on `main`. Afterwards the next version is set in `Chart.yaml` on `develop`.
+- A hotfix branches from `main`, goes to `main` like a release and is merged back into `develop`.
 
 ## Helm
 
@@ -193,8 +201,8 @@ dependencies:
 ```
 
 Every [release](https://github.com/3thr3n/car-ledger/releases) publishes the chart and the image in its version (e.g.
-`0.3.0`), the release notes name both. Builds of `main` are published as prereleases (`0.4.0-dev.<run number>`, chart
-and image of the same build), a range takes them only with a prerelease suffix (e.g. `>=0.4.0-0`).
+`0.3.0`), the release notes name both. Builds of `develop` are published as prereleases (`0.4.0-dev.<run number>`,
+chart and image of the same build), a range takes them only with a prerelease suffix (e.g. `>=0.4.0-0`).
 
 The login uses OpenID Connect: `helm/keycloak` deploys Keycloak, `helm/authentik` deploys authentik with CarLedger
 already set up, any other provider works as well.

@@ -99,13 +99,14 @@ Without `--version` the latest release is installed. A release (e.g. `0.3.0`, se
 [releases](https://github.com/3thr3n/car-ledger/releases)) publishes the image `ghcr.io/3thr3n/car-ledger:0.3.0` and the
 chart `oci://ghcr.io/3thr3n/car-ledger/helm` in version `0.3.0`, which runs that image.
 
-Every build of `main` publishes the image `ghcr.io/3thr3n/car-ledger:<run number>` and the chart as the prerelease
+Every build of `develop` publishes the image `ghcr.io/3thr3n/car-ledger:<run number>` and the chart as the prerelease
 `<next release>-dev.<run number>`, e.g. `0.4.0-dev.123`, which runs the image of the same build: `--version
 0.4.0-dev.123` installs build 123, `--devel` the latest build. Leave `carLedger.image.tag` empty, it would override
 the image of the chart.
 
 From the repository (`helm dependency update helm/car-ledger`, `helm install car-ledger helm/car-ledger ...`) the chart
-runs the image `main`, the latest build of `main`.
+runs the image `main`, the latest build of `main`, which holds the released states. The image `develop` is the latest
+dev build.
 
 With another release name than `car-ledger`, set `carLedger.postgres.host` to `<release>-postgresql`. Passwords of
 PostgreSQL and Infinispan are generated on the first install and kept on upgrades.
@@ -162,7 +163,7 @@ Pass your values file instead of `--reuse-values`, which keeps the old values an
 the Infinispan 15.2 image). Remove `carLedger.image.tag` from your values: the chart runs the image of its own build
 now, a tag set before would keep the old image.
 
-Use an image built from the current `main` (or a git tag of it). On the first start, Flyway migrates the database:
+Use the image of a release (a git tag of `main`) or a dev build of `develop`. On the first start, Flyway migrates the database:
 
 | Migration | Change                                                                                                               |
 |-----------|----------------------------------------------------------------------------------------------------------------------|
