@@ -133,6 +133,9 @@ with the role `user`, the roles are missing in the tokens of the client.
   can be larger, raise the limit (and the one of the proxies) for the restore.
 - **Webhooks**: `carLedger.webhook.url` sends events like a new car request as signed HTTP requests, e.g. to n8n; the
   key of the signature comes from `carLedger.webhook.existingSecret`. See [WEBHOOKS.md](WEBHOOKS.md).
+- **Service accounts**: besides the login of the browser, the API accepts access tokens of the identity provider
+  (`Authorization: Bearer …`), e.g. of a client with a service account and the role `admin` for n8n. See
+  [N8N.md](N8N.md).
 
 ## Upgrading to the current version
 
