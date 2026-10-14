@@ -529,6 +529,42 @@ class ImportResourceTest
 	@TestSecurity(user = "peter", roles = {
 			"user"
 	})
+	void shouldConvertAFileInUsUnits()
+	{
+		given().contentType(ContentType.MULTIPART)
+				.multiPart("file", "import.csv", """
+						2026-03-01,10,3.459,300,30
+						""".getBytes(java.nio.charset.StandardCharsets.UTF_8), "text/csv")
+				.multiPart("order", """
+						{ "date": 0, "unit": 1, "pricePerUnit": 2, "distance": 3, "estimateConsumption": 4 }
+						""")
+				.multiPart("billType", "FUEL")
+				.multiPart("vat", 19)
+				.multiPart("unitSystem", "US")
+				.when()
+				.post("/api/import/" + carEntity.getId())
+				.then()
+				.statusCode(200)
+				.body("successCount", is(1));
+
+		// 10 gallons for $3.459, 300 miles, 30 mpg: stored in liters, cent per liter,
+		// km and l/100km
+		given()
+				.when()
+				.get("/api/bill/" + carEntity.getId() + "/fuel/all")
+				.then()
+				.statusCode(200)
+				.body("data[0].unit", is(37.85F))
+				.body("data[0].pricePerUnit", is(91.38F))
+				.body("data[0].distance", is(482.8F))
+				.body("data[0].estimateConsumption", is(7.84F))
+				.body("data[0].total", is(34.59F));
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
 	void shouldReportAnUnknownChargingLocation()
 	{
 		given().contentType(ContentType.MULTIPART)

@@ -8,6 +8,7 @@ import de.codeflowwizardry.carledger.csv.importer.FuelBillCsvImporter;
 import de.codeflowwizardry.carledger.csv.importer.MaintenanceBillCsvImporter;
 import de.codeflowwizardry.carledger.csv.importer.MiscellaneousBillCsvImporter;
 import de.codeflowwizardry.carledger.data.BillType;
+import de.codeflowwizardry.carledger.data.UnitSystem;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import de.codeflowwizardry.carledger.exception.CsvImportException;
@@ -32,8 +33,12 @@ public class CsvImportService
 		this.miscellaneousBillCsvImporter = miscellaneousBillCsvImporter;
 	}
 
+	/**
+	 * @param units
+	 *            units of the file, metric without one
+	 */
 	public CsvImportResult importBills(Reader csv, CsvColumnMapping mapping, long carId, String name, int skipLines,
-			Integer vat, BillType type) throws IOException
+			Integer vat, UnitSystem units, BillType type) throws IOException
 	{
 		CsvProcessor<?> processor = switch (type)
 		{
@@ -43,7 +48,7 @@ public class CsvImportService
 			case MISCELLANEOUS -> new CsvProcessor<>(miscellaneousBillCsvImporter);
 			case RECURRING -> throw new CsvImportException(notImportable(type));
 		};
-		return processor.process(csv, mapping, skipLines, vat, carId, name);
+		return processor.process(csv, mapping, skipLines, vat, ImportUnits.of(units), carId, name);
 	}
 
 	/**

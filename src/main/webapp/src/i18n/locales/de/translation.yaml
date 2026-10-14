@@ -393,6 +393,8 @@ import:
     vat: "MwSt.-Land"
     result: "Fertig"
   typeHint: "Laufende Kosten können nicht importiert werden."
+  units: "Einheiten der Datei"
+  unitsHelp: "Die Werte werden in km und Liter umgerechnet. Ein Export von CarLedger ist immer metrisch."
   fileHint: "Eine kommagetrennte Datei mit Kopfzeile. Diese Felder können importiert werden (* Pflicht):"
   chooseFile: "CSV-Datei wählen"
   noHeader: "Die Datei hat keine Kopfzeile."

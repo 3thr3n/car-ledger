@@ -25,7 +25,8 @@ class CsvProcessorTest
 		}
 
 		@Override
-		public AbstractBillInput parseRow(String[] line, CsvColumnMapping mapping, Integer vat)
+		public AbstractBillInput parseRow(String[] line, CsvColumnMapping mapping, Integer vat,
+				ImportUnits units)
 		{
 			if ("invalid".equals(line[0]))
 			{
@@ -50,7 +51,7 @@ class CsvProcessorTest
 	{
 		CsvImportResult result = new CsvProcessor<>(new FailingImporter())
 				.process(new StringReader("2024-01-01\ninvalid\nlibrary\n"), new CsvColumnMapping(Map.of("date", 0)), 0,
-						19, 1, "peter");
+						19, ImportUnits.of(null), 1, "peter");
 
 		assertEquals(3, result.getErrorCount());
 		// unexpected errors only point to the log, the database details stay on the

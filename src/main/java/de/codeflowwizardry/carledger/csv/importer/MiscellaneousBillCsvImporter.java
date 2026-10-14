@@ -5,6 +5,7 @@ import java.util.Set;
 import de.codeflowwizardry.carledger.csv.CsvColumnMapping;
 import de.codeflowwizardry.carledger.csv.CsvFieldExtractors;
 import de.codeflowwizardry.carledger.csv.CsvImporter;
+import de.codeflowwizardry.carledger.csv.ImportUnits;
 import de.codeflowwizardry.carledger.data.factory.MiscellaneousBillFactory;
 import de.codeflowwizardry.carledger.rest.car.miscellaneous.MiscellaneousBillInput;
 import jakarta.enterprise.context.RequestScoped;
@@ -22,7 +23,8 @@ public class MiscellaneousBillCsvImporter implements CsvImporter<MiscellaneousBi
 	}
 
 	@Override
-	public MiscellaneousBillInput parseRow(String[] line, CsvColumnMapping mapping, Integer vat)
+	public MiscellaneousBillInput parseRow(String[] line, CsvColumnMapping mapping, Integer vat,
+			ImportUnits units)
 	{
 		return new MiscellaneousBillInput(
 				CsvFieldExtractors.getBigDecimal(line, mapping, "total"),
