@@ -30,7 +30,8 @@ spending and usage patterns.
 - **Units:** Show and enter the values in metric units, US units (miles, gallons, mpg) or UK units (miles, liters,
   mpg), set per account. They are stored in km and liters, the API always uses those.
 - **CSV Import:** Import multiple receipts at once using a CSV file, making it quick to upload historical or bulk data.
-- **CSV Export:** Export the receipts of a type as CSV, in the format of the import.
+- **CSV Export:** Export the receipts of a type as CSV, in the format of the import, or all expenses of a car
+  including the payments of the recurring costs in one CSV for spreadsheets.
 - **Data Aggregation & Summarization:** Get insights on your fuel expenses, including:
     - Total money spent on fuel
     - Total fuel volume purchased
@@ -110,6 +111,8 @@ To start using CarLedger, follow these steps:
 ### Exporting Receipts as CSV
 
 - The lists of refuels, maintenance and other costs export their entries as CSV, all of them or of the selected year.
+- The ledger on the overview of a car exports all expenses as one CSV (every entry and the payments of the recurring
+  costs, oldest first), for spreadsheets; it cannot be imported again.
 - The file uses the field names of the import as header, ISO dates and a dot as decimal separator, so it can be
   imported again without assigning the columns. Entries that exist already are skipped by the import.
 

@@ -168,6 +168,7 @@ car:
     ledger: "Kassenbuch"
     ledgerSubtitle: "Alle Einträge dieses Fahrzeugs, neueste zuerst"
     toDashboard: "Statistik"
+    exportAll: "Alles exportieren"
     emptyTitle: "Noch keine Einträge"
     emptyText: "Erfasse deinen ersten Beleg oder importiere einen CSV-Export."
     running: "Laufende Kosten"

@@ -3599,6 +3599,45 @@
         "tags" : [ "Export Resource" ]
       }
     },
+    "/api/export/{carId}/all" : {
+      "get" : {
+        "description" : "Exports all expenses of the car as one CSV, for spreadsheets: every bill and the payments of the recurring costs, the oldest first, ISO dates and a dot as decimal separator. Not meant to be imported again.",
+        "operationId" : "exportAllExpensesCsv",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "year",
+          "in" : "query",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "The expenses as CSV.",
+            "content" : {
+              "text/csv" : {
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Car not found."
+          }
+        },
+        "summary" : "Export All Expenses",
+        "tags" : [ "Export Resource" ]
+      }
+    },
     "/api/import/{carId}" : {
       "post" : {
         "description" : "This is the description for the import of an csv of your fuel entities.<br />\n<br />\nYou need to add the csv and the order in the csv (starts with 0).<br />\nseparator between columns is ',' (comma)\n",
