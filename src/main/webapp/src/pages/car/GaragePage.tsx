@@ -82,7 +82,12 @@ export default function GaragePage() {
                         color: 'text.secondary',
                       }}
                     >
-                      {car.year && t('car.built', { year: car.year })}
+                      {[
+                        car.year && t('car.built', { year: car.year }),
+                        t(`car.energyTypes.${car.energyType}`),
+                      ]
+                        .filter(Boolean)
+                        .join(' · ')}
                     </Typography>
                   </Box>
                 </Stack>

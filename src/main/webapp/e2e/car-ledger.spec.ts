@@ -67,11 +67,42 @@ test.describe.serial('car ledger', () => {
     await expect(details).toContainText(`Purchase and costs${money(18500)}`);
   });
 
+  test('sets the energy type with tank and battery', async () => {
+    await page.goto(`${carUrl}/edit`);
+    await expect(field(/^Tank size/)).toBeVisible();
+    await expect(field(/^Battery capacity/)).toHaveCount(0);
+
+    // an electric car has no tank
+    await page.getByRole('combobox', { name: /^Energy/ }).click();
+    await page.getByRole('option', { name: 'Electric' }).click();
+    await expect(field(/^Tank size/)).toHaveCount(0);
+    await expect(field(/^Battery capacity/)).toBeVisible();
+
+    await page.getByRole('combobox', { name: /^Energy/ }).click();
+    await page.getByRole('option', { name: 'Plug-in hybrid' }).click();
+    await field(/^Tank size/).fill('50');
+    await field(/^Battery capacity/).fill('10.4');
+    await page.getByRole('button', { name: 'Save' }).click();
+
+    await expect(page).toHaveURL(/\/car\/\d+$/);
+    await expect(page.getByText(/· Plug-in hybrid ·/)).toBeVisible();
+    const details = page.locator('.MuiCard-root', { hasText: 'Battery' });
+    await expect(details).toContainText('Tank50.0 l');
+    await expect(details).toContainText('Battery10.4 kWh');
+  });
+
   test('adds a refuel and calculates the price', async () => {
     await page.goto(`${carUrl}/bill/add?type=FUEL`);
 
+    // a typo, more than the tank of 50 l holds
+    await field(/^Liters/).fill('400');
+    await expect(
+      page.getByText('400.00 l is more than the tank holds (50.0 l)'),
+    ).toBeVisible();
+    await field(/^Liters/).fill('');
     await field(/^Total/).fill('70');
     await field(/^Liters/).fill('40');
+    await expect(page.getByText(/more than the tank holds/)).toHaveCount(0);
     await expect(page.getByText('Calculated: 175.0 ct/l')).toBeVisible();
     await field(/^Distance/).fill('640');
     await expect(page.getByText('Consumption: 6.25 l/100km')).toBeVisible();

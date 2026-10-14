@@ -352,12 +352,21 @@
           "purchasePrice" : {
             "type" : "number"
           },
+          "energyType" : {
+            "$ref" : "#/components/schemas/EnergyType"
+          },
+          "tankSize" : {
+            "type" : "number"
+          },
+          "batteryCapacity" : {
+            "type" : "number"
+          },
           "pictureId" : {
             "type" : "integer",
             "format" : "int64"
           }
         },
-        "required" : [ "currentOdometer" ]
+        "required" : [ "currentOdometer", "energyType" ]
       },
       "CarInput" : {
         "type" : "object",
@@ -383,6 +392,15 @@
             "$ref" : "#/components/schemas/LocalDate"
           },
           "purchasePrice" : {
+            "type" : "number"
+          },
+          "energyType" : {
+            "$ref" : "#/components/schemas/EnergyType"
+          },
+          "tankSize" : {
+            "type" : "number"
+          },
+          "batteryCapacity" : {
             "type" : "number"
           }
         }
@@ -471,6 +489,10 @@
             "$ref" : "#/components/schemas/HiLoStats"
           }
         }
+      },
+      "EnergyType" : {
+        "type" : "string",
+        "enum" : [ "PETROL", "DIESEL", "LPG", "CNG", "ELECTRIC", "PLUG_IN_HYBRID" ]
       },
       "FuelBill" : {
         "type" : "object",

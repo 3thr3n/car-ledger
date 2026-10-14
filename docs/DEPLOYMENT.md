@@ -172,6 +172,7 @@ Use an image built from the current `main` (or a git tag of it). On the first st
 | 1.4.0     | Optional plate, VIN, purchase date and price of the cars (0.3.0)                                                     |
 | 1.5.0     | Tables for the attachments of the entries and their content (0.3.0)                                                  |
 | 1.6.0     | Picture of the cars (0.3.0)                                                                                          |
+| 1.7.0     | Energy type of the cars (existing cars become petrol), optional tank size and battery capacity (0.4.0)               |
 
 An older image refuses to start on the migrated database, as Flyway finds migrations it does not know. To go back,
 restore the backup. Without the backup, the older image runs on the migrated database (the new columns have defaults)

@@ -196,6 +196,9 @@ public class CarResource extends AbstractResource
 		carEntity.setVin(input.normalizedVin());
 		carEntity.setPurchaseDate(input.purchaseDate());
 		carEntity.setPurchasePrice(input.purchasePrice());
+		carEntity.setEnergyType(input.energyTypeOrDefault());
+		carEntity.setTankSize(input.normalizedTankSize());
+		carEntity.setBatteryCapacity(input.normalizedBatteryCapacity());
 	}
 
 	private boolean isInputInvalid(CarInput carInput)
