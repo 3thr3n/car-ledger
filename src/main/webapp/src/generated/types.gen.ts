@@ -1828,6 +1828,33 @@ export type ExportCsvResponses = {
 
 export type ExportCsvResponse = ExportCsvResponses[keyof ExportCsvResponses];
 
+export type ExportAllExpensesCsvData = {
+    body?: never;
+    path: {
+        carId: number;
+    };
+    query?: {
+        year?: number;
+    };
+    url: '/api/export/{carId}/all';
+};
+
+export type ExportAllExpensesCsvErrors = {
+    /**
+     * Car not found.
+     */
+    404: unknown;
+};
+
+export type ExportAllExpensesCsvResponses = {
+    /**
+     * The expenses as CSV.
+     */
+    200: string;
+};
+
+export type ExportAllExpensesCsvResponse = ExportAllExpensesCsvResponses[keyof ExportAllExpensesCsvResponses];
+
 export type ImportCsvData = {
     body: {
         file?: Blob | File;

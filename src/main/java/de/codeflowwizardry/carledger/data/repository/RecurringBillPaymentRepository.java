@@ -23,6 +23,20 @@ public class RecurringBillPaymentRepository implements PanacheRepository<Recurri
 	}
 
 	/**
+	 * @return the payments due in the range with their recurring bill, the oldest
+	 *         first
+	 */
+	public List<RecurringBillPaymentEntity> listPayments(long carId, String username, Optional<LocalDate> from,
+			Optional<LocalDate> to)
+	{
+		Map<String, Object> params = new HashMap<>();
+		String query = "from recurring_bill_payment p join fetch p.bill"
+				+ PeriodFilter.where("p.bill.car", "p.dueDate", carId, username, from, to, params)
+				+ " order by p.dueDate, p.id";
+		return find(query, params).list();
+	}
+
+	/**
 	 * Sums all payments due in the given range. {@link CarRepository#ALL_CARS} sums
 	 * over all cars
 	 * of the user.

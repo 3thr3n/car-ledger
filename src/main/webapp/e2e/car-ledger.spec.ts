@@ -348,6 +348,27 @@ test.describe.serial('car ledger', () => {
     await expect(page.getByText('1 entry imported')).toBeVisible();
   });
 
+  test('exports all expenses of the car for spreadsheets', async () => {
+    await page.goto(carUrl);
+
+    const download = page.waitForEvent('download');
+    await page.getByRole('link', { name: 'Export all' }).click();
+    const file = await download;
+
+    expect(file.suggestedFilename()).toBe('e2e-golf-all.csv');
+    const lines = (await readFile(await file.path(), 'utf8'))
+      .trim()
+      .split('\n');
+    expect(lines[0]).toBe(
+      'date,type,description,category,total,netAmount,vatAmount,vatRate,quantity,unit,distance',
+    );
+    const types = new Set(lines.slice(1).map((line) => line.split(',')[1]));
+    expect([...types].sort()).toEqual(['CHARGING', 'FUEL', 'MAINTENANCE']);
+    // the oldest first
+    const dates = lines.slice(1).map((line) => line.split(',')[0]);
+    expect([...dates].sort()).toEqual(dates);
+  });
+
   test('shows the costs on the dashboard', async () => {
     await page.goto('/dashboard');
 

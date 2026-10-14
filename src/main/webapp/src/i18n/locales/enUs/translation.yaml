@@ -168,6 +168,7 @@ car:
     ledger: "Ledger"
     ledgerSubtitle: "All entries of this car, newest first"
     toDashboard: "Statistics"
+    exportAll: "Export all"
     emptyTitle: "No entries yet"
     emptyText: "Add your first receipt or import a CSV export."
     running: "Running recurring costs"
