@@ -16,8 +16,8 @@ import { useTranslation } from 'react-i18next';
 import { getMyCarOptions } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
 import { BackendError } from '@/utils/BackendError';
-import { BillType } from '@/generated';
-import { billTypes } from '@/utils/billTypes';
+import { BillType, EnergyType } from '@/generated';
+import { billTypes, billTypesFor } from '@/utils/billTypes';
 import CarAvatar from '@/components/layout/CarAvatar';
 import OdometerValue from '@/components/ui/OdometerValue';
 import {
@@ -28,16 +28,15 @@ import {
 import NotFoundPage from '@/pages/NotFoundPage';
 import ErrorPage from '@/pages/ErrorPage';
 
-const tabs = [
-  { key: 'overview', to: '/car/$id' },
-  ...[
-    BillType.FUEL,
-    BillType.MAINTENANCE,
-    BillType.MISCELLANEOUS,
-    BillType.RECURRING,
-  ].map((type) => ({ key: type, to: billTypes[type].listRoute })),
-  { key: 'reminders', to: '/car/$id/reminders' },
-] as const;
+/** the entry types of the car between the overview and the reminders */
+const tabsFor = (energyType?: EnergyType) => [
+  { key: 'overview', to: '/car/$id' } as const,
+  ...billTypesFor(energyType).map((meta) => ({
+    key: meta.type,
+    to: meta.listRoute,
+  })),
+  { key: 'reminders', to: '/car/$id/reminders' } as const,
+];
 
 export default function CarLayout({ id }: { id: number }) {
   const { t } = useTranslation();
@@ -177,7 +176,7 @@ export default function CarLayout({ id }: { id: number }) {
               allowScrollButtonsMobile
               sx={{ mb: 3, borderBottom: 1, borderColor: 'divider' }}
             >
-              {tabs.map((tab) => (
+              {tabsFor(car?.energyType).map((tab) => (
                 <RouterTab
                   key={tab.key}
                   value={tab.key}

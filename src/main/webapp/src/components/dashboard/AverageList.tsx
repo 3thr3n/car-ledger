@@ -2,23 +2,42 @@ import { Divider, Stack, Typography } from '@mui/material';
 import { Fragment } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AverageStats } from '@/generated';
-import { useFormat } from '@/utils/format';
+import { hasValue, useFormat } from '@/utils/format';
 import Section from '@/components/ui/Section';
 
 export default function AverageList({ average }: { average: AverageStats }) {
   const { t } = useTranslation();
   const format = useFormat();
 
+  const charged = hasValue(average.chargingPricePerUnit);
+  // without any charges the fuel rows stay, also when they are still empty
+  const refueled = hasValue(average.pricePerUnit) || !charged;
   const rows = [
-    {
-      key: 'pricePerUnit',
-      value: format.unit(average.pricePerUnit, 'ct/l', 1),
-    },
-    { key: 'distance', value: format.unit(average.distance, 'km', 0) },
-    {
-      key: 'fuelCostPerKm',
-      value: format.unit(average.fuelCostPerKm, 'ct/km'),
-    },
+    ...(refueled
+      ? [
+          {
+            key: 'pricePerUnit',
+            value: format.unit(average.pricePerUnit, 'ct/l', 1),
+          },
+          { key: 'distance', value: format.unit(average.distance, 'km', 0) },
+          {
+            key: 'fuelCostPerKm',
+            value: format.unit(average.fuelCostPerKm, 'ct/km'),
+          },
+        ]
+      : []),
+    ...(charged
+      ? [
+          {
+            key: 'chargingPricePerUnit',
+            value: format.unit(average.chargingPricePerUnit, 'ct/kWh', 1),
+          },
+          {
+            key: 'chargingCostPerKm',
+            value: format.unit(average.chargingCostPerKm, 'ct/km'),
+          },
+        ]
+      : []),
     { key: 'maintenanceCost', value: format.money(average.maintenanceCost) },
   ];
 

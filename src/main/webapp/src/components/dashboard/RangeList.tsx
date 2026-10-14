@@ -9,14 +9,35 @@ interface Row {
   unit: string;
   digits: number;
   money?: boolean;
+  /** only shown with refuels or with charges */
+  energy?: 'fuel' | 'charging';
 }
 
 const rows: Row[] = [
-  { key: 'pricePerUnit', unit: 'ct/l', digits: 1 },
-  { key: 'consumption', unit: 'l/100km', digits: 2 },
-  { key: 'fuelCostPerKm', unit: 'ct/km', digits: 2 },
-  { key: 'distance', unit: 'km', digits: 0 },
-  { key: 'fuelCost', unit: '€', digits: 2, money: true },
+  { key: 'pricePerUnit', unit: 'ct/l', digits: 1, energy: 'fuel' },
+  { key: 'consumption', unit: 'l/100km', digits: 2, energy: 'fuel' },
+  { key: 'fuelCostPerKm', unit: 'ct/km', digits: 2, energy: 'fuel' },
+  { key: 'distance', unit: 'km', digits: 0, energy: 'fuel' },
+  { key: 'fuelCost', unit: '€', digits: 2, money: true, energy: 'fuel' },
+  {
+    key: 'chargingPricePerUnit',
+    unit: 'ct/kWh',
+    digits: 1,
+    energy: 'charging',
+  },
+  {
+    key: 'chargingConsumption',
+    unit: 'kWh/100km',
+    digits: 2,
+    energy: 'charging',
+  },
+  {
+    key: 'chargingCost',
+    unit: '€',
+    digits: 2,
+    money: true,
+    energy: 'charging',
+  },
   { key: 'maintenanceCost', unit: '€', digits: 2, money: true },
 ];
 
@@ -26,6 +47,15 @@ const rows: Row[] = [
 export default function RangeList({ hiLo }: { hiLo: HiLoStats }) {
   const { t } = useTranslation();
   const format = useFormat();
+  const charged = hasValue(hiLo.chargingPricePerUnit?.max);
+  // without any charges the fuel rows stay, also when they are still empty
+  const refueled = hasValue(hiLo.pricePerUnit?.max) || !charged;
+  const shown = rows.filter(
+    (row) =>
+      !row.energy ||
+      (row.energy === 'fuel' && refueled) ||
+      (row.energy === 'charging' && charged),
+  );
 
   const value = (range: HiLo | undefined, side: 'min' | 'max', row: Row) => {
     const number = range?.[side];
@@ -41,7 +71,7 @@ export default function RangeList({ hiLo }: { hiLo: HiLoStats }) {
       subtitle={t('dashboard.range.subtitle')}
     >
       <Stack spacing={2}>
-        {rows.map((row) => {
+        {shown.map((row) => {
           const { key } = row;
           const range = hiLo[key];
           const hasRange = range?.min !== undefined && hasValue(range?.max);

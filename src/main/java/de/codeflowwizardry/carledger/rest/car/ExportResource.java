@@ -67,7 +67,7 @@ public class ExportResource extends AbstractResource
 			throw new WrongUserException();
 		}
 
-		if (type == null || type == BillType.RECURRING)
+		if (type == null || type == BillType.RECURRING || type == BillType.CHARGING)
 		{
 			throw new BadRequestException(Response.status(400)
 					.entity("Type has to be one of FUEL, MAINTENANCE, MISCELLANEOUS")
@@ -79,7 +79,7 @@ public class ExportResource extends AbstractResource
 			case FUEL -> export(CsvExporter.FUEL, fuelBillRepository, carId, year);
 			case MAINTENANCE -> export(CsvExporter.MAINTENANCE, maintenanceBillRepository, carId, year);
 			case MISCELLANEOUS -> export(CsvExporter.MISCELLANEOUS, miscellaneousBillRepository, carId, year);
-			case RECURRING -> throw new IllegalStateException("checked above");
+			case CHARGING, RECURRING -> throw new IllegalStateException("checked above");
 		};
 
 		return Response.ok(csv, TEXT_CSV + "; charset=UTF-8")

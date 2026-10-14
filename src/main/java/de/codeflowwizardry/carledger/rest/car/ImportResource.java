@@ -130,7 +130,7 @@ public class ImportResource extends AbstractResource
 						.ok(new CsvFields(MiscellaneousBillCsvImporter.getAllFields(),
 								MiscellaneousBillCsvImporter.getRequiredFields()))
 						.build();
-			case RECURRING -> throw new BadRequestException("Nothing here to do!");
+			case CHARGING, RECURRING -> throw new BadRequestException("Nothing here to do!");
 		};
 	}
 

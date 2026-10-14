@@ -10,17 +10,24 @@ import YearFilter from '@/components/ui/YearFilter';
 import { RouterButton } from '@/components/ui/links';
 import BillTable, { MobileRow } from '@/components/bill/BillTable';
 import {
+  useChargingColumns,
   useFuelColumns,
   useMaintenanceColumns,
   useMiscellaneousColumns,
 } from '@/components/bill/columns';
 import useDeleteBill from '@/components/bill/useDeleteBill';
 import { baseUrl } from '@/utils/QueryClient';
+import { billTypes } from '@/utils/billTypes';
 
-type ListType = BillType.FUEL | BillType.MAINTENANCE | BillType.MISCELLANEOUS;
+type ListType =
+  | BillType.FUEL
+  | BillType.CHARGING
+  | BillType.MAINTENANCE
+  | BillType.MISCELLANEOUS;
 
 const kinds = {
   [BillType.FUEL]: 'fuel',
+  [BillType.CHARGING]: 'charging',
   [BillType.MAINTENANCE]: 'maintenance',
   [BillType.MISCELLANEOUS]: 'miscellaneous',
 } as const;
@@ -34,10 +41,12 @@ function exportUrl(carId: number, type: ListType, year?: number) {
 
 function useColumns(type: ListType) {
   const fuel = useFuelColumns();
+  const charging = useChargingColumns();
   const maintenance = useMaintenanceColumns();
   const miscellaneous = useMiscellaneousColumns();
   const all = {
     [BillType.FUEL]: fuel,
+    [BillType.CHARGING]: charging,
     [BillType.MAINTENANCE]: maintenance,
     [BillType.MISCELLANEOUS]: miscellaneous,
   };
@@ -75,7 +84,8 @@ export default function BillListPage({
             onChange={list.setYear}
           />
         </Box>
-        {list.total > 0 && (
+        {/* the export has the format of the import */}
+        {list.total > 0 && billTypes[type].importable && (
           <Button
             href={exportUrl(carId, type, list.year)}
             variant="outlined"

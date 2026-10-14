@@ -75,7 +75,7 @@ class FuelBillFactoryTest
 				BigDecimal.valueOf(181.9),
 				null);
 		// when
-		BigDecimal calculatedUnit = FuelBillFactory.calculateUnit(missingUnit);
+		BigDecimal calculatedUnit = EnergyBills.calculateUnit(missingUnit);
 
 		// then
 		assertEquals(BigDecimal.valueOf(3781, 2), calculatedUnit);

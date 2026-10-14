@@ -1,25 +1,39 @@
 import { Box, ButtonBase, Card, Grid, Stack, Typography } from '@mui/material';
+import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { BillType } from '@/generated';
-import { billTypeList } from '@/utils/billTypes';
+import { getMyCarOptions } from '@/generated/@tanstack/react-query.gen';
+import { localClient } from '@/utils/QueryClient';
+import { billTypesFor } from '@/utils/billTypes';
 import PageHeader from '@/components/ui/PageHeader';
 import FuelForm from '@/components/bill/FuelForm';
+import ChargingForm from '@/components/bill/ChargingForm';
 import MaintenanceForm from '@/components/bill/MaintenanceForm';
 import MiscellaneousForm from '@/components/bill/MiscellaneousForm';
 import RecurringForm from '@/components/bill/RecurringForm';
 
 export interface AddBillPageProps {
   carId: number;
-  type: BillType;
+  /** the first type of the car without one */
+  type?: BillType;
   onTypeChange: (type: BillType) => void;
 }
 
 export default function AddBillPage({
   carId,
-  type,
+  type: requestedType,
   onTypeChange,
 }: AddBillPageProps) {
   const { t } = useTranslation();
+  // loaded by the layout of the car already
+  const { data: car } = useQuery(
+    getMyCarOptions({ client: localClient, path: { id: carId } }),
+  );
+  // an electric car is not refueled, a petrol car not charged
+  const types = billTypesFor(car?.energyType);
+  const type = types.some((meta) => meta.type === requestedType)
+    ? requestedType!
+    : types[0].type;
 
   return (
     <Box id="AddBillPage" sx={{ maxWidth: 860 }}>
@@ -29,10 +43,13 @@ export default function AddBillPage({
       />
 
       <Grid container spacing={1.5} sx={{ mb: 3 }} role="radiogroup">
-        {billTypeList.map((meta) => {
+        {types.map((meta) => {
           const selected = meta.type === type;
           return (
-            <Grid key={meta.type} size={{ xs: 6, sm: 3 }}>
+            <Grid
+              key={meta.type}
+              size={{ xs: 6, sm: types.length > 4 ? 12 / 5 : 3 }}
+            >
               <ButtonBase
                 role="radio"
                 aria-checked={selected}
@@ -98,6 +115,9 @@ export default function AddBillPage({
         </Typography>
         {/* keyed, so switching the type starts with a fresh form */}
         {type === BillType.FUEL && <FuelForm key={type} carId={carId} />}
+        {type === BillType.CHARGING && (
+          <ChargingForm key={type} carId={carId} />
+        )}
         {type === BillType.MAINTENANCE && (
           <MaintenanceForm key={type} carId={carId} />
         )}

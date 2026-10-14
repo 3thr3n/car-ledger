@@ -16,10 +16,12 @@ import org.junit.jupiter.api.Test;
 import de.codeflowwizardry.carledger.QueryCounter;
 import de.codeflowwizardry.carledger.data.AccountEntity;
 import de.codeflowwizardry.carledger.data.CarEntity;
+import de.codeflowwizardry.carledger.data.factory.ChargingBillFactory;
 import de.codeflowwizardry.carledger.data.factory.FuelBillFactory;
 import de.codeflowwizardry.carledger.data.factory.MaintenanceBillFactory;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
+import de.codeflowwizardry.carledger.rest.car.charging.ChargingBillInput;
 import de.codeflowwizardry.carledger.rest.car.fuel.FuelBillInput;
 import de.codeflowwizardry.carledger.rest.car.maintenance.MaintenanceBillInput;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
@@ -50,6 +52,9 @@ class OdometerTest
 
 	@Inject
 	MaintenanceBillFactory maintenanceBillFactory;
+
+	@Inject
+	ChargingBillFactory chargingBillFactory;
 
 	@Inject
 	SessionFactory sessionFactory;
@@ -88,6 +93,29 @@ class OdometerTest
 	{
 		fuelBillFactory.create(new FuelBillInput(date, null, 19, distance == null ? null : BigDecimal.valueOf(distance),
 				BigDecimal.valueOf(30), BigDecimal.valueOf(180), null), carId, "peter");
+	}
+
+	private void charge(LocalDate date, int distance)
+	{
+		chargingBillFactory.create(new ChargingBillInput(date, null, 19, BigDecimal.valueOf(distance),
+				BigDecimal.valueOf(10), BigDecimal.valueOf(30), null, null), carId, "peter");
+	}
+
+	@Test
+	void shouldCountTheDistanceOfAPluginHybridOnce()
+	{
+		// both are the km since the last refuel or charge, the larger one counts
+		refuel(LocalDate.of(2026, 2, 1), 600);
+		charge(LocalDate.of(2026, 2, 10), 300);
+		charge(LocalDate.of(2026, 3, 1), 400);
+
+		given()
+				.when()
+				.get("{id}", carId)
+				.then()
+				.statusCode(200)
+				.body("currentOdometer.value", is(50_700))
+				.body("currentOdometer.driven", is(700));
 	}
 
 	private void maintenance(LocalDate date, int odometer)

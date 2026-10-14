@@ -11,6 +11,7 @@ declare module '@mui/material/styles' {
   // channels are generated for every color, they are used for tinted backgrounds
   interface Palette {
     fuel: PaletteColor & PaletteColorChannel;
+    charging: PaletteColor & PaletteColorChannel;
     maintenance: PaletteColor & PaletteColorChannel;
     miscellaneous: PaletteColor & PaletteColorChannel;
     recurring: PaletteColor & PaletteColorChannel;
@@ -18,6 +19,7 @@ declare module '@mui/material/styles' {
 
   interface PaletteOptions {
     fuel?: PaletteOptions['primary'];
+    charging?: PaletteOptions['primary'];
     maintenance?: PaletteOptions['primary'];
     miscellaneous?: PaletteOptions['primary'];
     recurring?: PaletteOptions['primary'];
@@ -39,6 +41,7 @@ export const theme = createTheme({
         text: { primary: '#111827', secondary: '#5b6472' },
         divider: '#e4e7ec',
         fuel: { main: '#d97706' },
+        charging: { main: '#16a34a' },
         maintenance: { main: '#2563eb' },
         miscellaneous: { main: '#9333ea' },
         recurring: { main: '#db2777' },
@@ -52,6 +55,7 @@ export const theme = createTheme({
         text: { primary: '#e6e9ee', secondary: '#9aa3af' },
         divider: '#252c35',
         fuel: { main: '#fbbf24' },
+        charging: { main: '#4ade80' },
         maintenance: { main: '#60a5fa' },
         miscellaneous: { main: '#c084fc' },
         recurring: { main: '#f472b6' },

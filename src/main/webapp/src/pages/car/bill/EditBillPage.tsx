@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { BillType } from '@/generated';
 import {
+  getChargingBillOptions,
   getFuelBillOptions,
   getMaintenanceBillOptions,
   getMiscellaneousBillOptions,
@@ -12,6 +13,7 @@ import { localClient } from '@/utils/QueryClient';
 import PageHeader from '@/components/ui/PageHeader';
 import TypeChip from '@/components/ui/TypeChip';
 import FuelForm from '@/components/bill/FuelForm';
+import ChargingForm from '@/components/bill/ChargingForm';
 import MaintenanceForm from '@/components/bill/MaintenanceForm';
 import MiscellaneousForm from '@/components/bill/MiscellaneousForm';
 import RecurringForm from '@/components/bill/RecurringForm';
@@ -19,6 +21,7 @@ import ErrorPage from '@/pages/ErrorPage';
 
 export type EditableBillType =
   | BillType.FUEL
+  | BillType.CHARGING
   | BillType.MAINTENANCE
   | BillType.MISCELLANEOUS
   | BillType.RECURRING;
@@ -41,6 +44,10 @@ export default function EditBillPage({
     ...getFuelBillOptions({ client: localClient, path }),
     enabled: type === BillType.FUEL,
   });
+  const charging = useQuery({
+    ...getChargingBillOptions({ client: localClient, path }),
+    enabled: type === BillType.CHARGING,
+  });
   const maintenance = useQuery({
     ...getMaintenanceBillOptions({ client: localClient, path }),
     enabled: type === BillType.MAINTENANCE,
@@ -56,6 +63,7 @@ export default function EditBillPage({
 
   const query = {
     FUEL: fuel,
+    CHARGING: charging,
     MAINTENANCE: maintenance,
     MISCELLANEOUS: miscellaneous,
     RECURRING: recurring,
@@ -84,6 +92,9 @@ export default function EditBillPage({
             {/* keyed, so the form is initialized with the loaded bill */}
             {fuel.data && (
               <FuelForm key={billId} carId={carId} bill={fuel.data} />
+            )}
+            {charging.data && (
+              <ChargingForm key={billId} carId={carId} bill={charging.data} />
             )}
             {maintenance.data && (
               <MaintenanceForm
