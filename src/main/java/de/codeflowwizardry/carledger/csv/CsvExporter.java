@@ -13,6 +13,7 @@ import com.opencsv.CSVWriter;
 import com.opencsv.ICSVWriter;
 
 import de.codeflowwizardry.carledger.data.AbstractBillEntity;
+import de.codeflowwizardry.carledger.data.ChargingBillEntity;
 import de.codeflowwizardry.carledger.data.FuelBillEntity;
 import de.codeflowwizardry.carledger.data.MaintenanceBillEntity;
 import de.codeflowwizardry.carledger.data.MiscellaneousBillEntity;
@@ -30,6 +31,13 @@ public class CsvExporter<E extends AbstractBillEntity>
 			.column("pricePerUnit", FuelBillEntity::getPricePerUnit)
 			.column("distance", FuelBillEntity::getDistance)
 			.column("estimateConsumption", FuelBillEntity::getEstimate);
+
+	public static final CsvExporter<ChargingBillEntity> CHARGING = new CsvExporter<ChargingBillEntity>()
+			.column("unit", ChargingBillEntity::getUnit)
+			.column("pricePerUnit", ChargingBillEntity::getPricePerUnit)
+			.column("distance", ChargingBillEntity::getDistance)
+			.column("location", ChargingBillEntity::getLocation)
+			.column("stateOfCharge", ChargingBillEntity::getStateOfCharge);
 
 	public static final CsvExporter<MaintenanceBillEntity> MAINTENANCE = new CsvExporter<MaintenanceBillEntity>()
 			.column("workshop", MaintenanceBillEntity::getWorkshop)

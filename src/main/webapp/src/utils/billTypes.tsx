@@ -38,7 +38,7 @@ export const billTypes: Record<BillType, BillTypeMeta> = {
     color: 'charging',
     listRoute: '/car/$id/bill/charging',
     icon: <EvStationRounded fontSize="small" />,
-    importable: false,
+    importable: true,
   },
   [BillType.MAINTENANCE]: {
     type: BillType.MAINTENANCE,

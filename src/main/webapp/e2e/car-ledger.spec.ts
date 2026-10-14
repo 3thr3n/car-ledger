@@ -314,12 +314,47 @@ test.describe.serial('car ledger', () => {
     expect([...dates].sort()).toEqual(dates);
   });
 
+  test('exports and imports the charges as CSV', async () => {
+    await page.goto(`${carUrl}/bill/charging`);
+
+    const download = page.waitForEvent('download');
+    await page.getByRole('link', { name: 'Export CSV' }).click();
+    const file = await download;
+
+    expect(file.suggestedFilename()).toBe('e2e-golf-charging.csv');
+    const lines = (await readFile(await file.path(), 'utf8'))
+      .trim()
+      .split('\n');
+    expect(lines).toEqual([
+      'date,total,vatRate,unit,pricePerUnit,distance,location,stateOfCharge',
+      expect.stringMatching(
+        /^\d{4}-\d{2}-\d{2},2\.70,19,9\.00,30\.00,50\.00,HOME,$/,
+      ),
+    ]);
+
+    await page.goto(`${carUrl}/bill/import?type=CHARGING`);
+    await visibleButton('Continue').click();
+    await uploadCsv('charges.csv', [
+      'date,unit,pricePerUnit,distance,location',
+      '2026-03-15,18,35,100,public',
+    ]);
+    // the header names the fields, they are assigned at once
+    await expect(column(/^kWh/)).toHaveText('unit');
+    await expect(column(/^Price per kWh/)).toHaveText('pricePerUnit');
+    await expect(column(/^Location/)).toHaveText('location');
+    await visibleButton('Continue').click();
+    await visibleButton('Start import').click();
+
+    await expect(page.getByText('1 entry imported')).toBeVisible();
+  });
+
   test('shows the costs on the dashboard', async () => {
     await page.goto('/dashboard');
 
     await expect(page.getByText('Cost breakdown')).toBeVisible();
-    // 70 + 2 imported refuels (71.75 + 66.60) + 125.50 maintenance + 2.70 charging
-    await expect(page.getByText(money(336.55)).first()).toBeVisible();
+    // 70 + 2 imported refuels (71.75 + 66.60) + 125.50 maintenance
+    // + 2.70 + 6.30 imported charging
+    await expect(page.getByText(money(342.85)).first()).toBeVisible();
     await expect(page.getByText('3 entries')).toBeVisible();
     // the consumption in kWh is the hint of the one in liters
     await expect(page.getByText('18.00 kWh/100km electric')).toBeVisible();

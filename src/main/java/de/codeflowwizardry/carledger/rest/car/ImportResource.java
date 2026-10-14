@@ -22,6 +22,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import de.codeflowwizardry.carledger.csv.CsvColumnMapping;
 import de.codeflowwizardry.carledger.csv.CsvImportResult;
 import de.codeflowwizardry.carledger.csv.CsvImportService;
+import de.codeflowwizardry.carledger.csv.importer.ChargingBillCsvImporter;
 import de.codeflowwizardry.carledger.csv.importer.FuelBillCsvImporter;
 import de.codeflowwizardry.carledger.csv.importer.MaintenanceBillCsvImporter;
 import de.codeflowwizardry.carledger.csv.importer.MiscellaneousBillCsvImporter;
@@ -120,6 +121,11 @@ public class ImportResource extends AbstractResource
 				Response
 						.ok(new CsvFields(FuelBillCsvImporter.getAllFields(), FuelBillCsvImporter.getRequiredFields()))
 						.build();
+			case CHARGING ->
+				Response
+						.ok(new CsvFields(ChargingBillCsvImporter.getAllFields(),
+								ChargingBillCsvImporter.getRequiredFields()))
+						.build();
 			case MAINTENANCE ->
 				Response
 						.ok(new CsvFields(MaintenanceBillCsvImporter.getAllFields(),
@@ -130,7 +136,7 @@ public class ImportResource extends AbstractResource
 						.ok(new CsvFields(MiscellaneousBillCsvImporter.getAllFields(),
 								MiscellaneousBillCsvImporter.getRequiredFields()))
 						.build();
-			case CHARGING, RECURRING -> throw new BadRequestException(
+			case RECURRING -> throw new BadRequestException(
 					Response.status(400).entity(CsvImportService.notImportable(importType)).build());
 		};
 	}

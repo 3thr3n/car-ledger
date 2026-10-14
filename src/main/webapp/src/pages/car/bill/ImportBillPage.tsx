@@ -27,10 +27,13 @@ import { ChangeEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
 import { BillType, CsvImportResult, importCsv } from '@/generated';
-import { getCsvFieldsOptions } from '@/generated/@tanstack/react-query.gen';
+import {
+  getCsvFieldsOptions,
+  getMyCarOptions,
+} from '@/generated/@tanstack/react-query.gen';
 import { invalidateCar, localClient } from '@/utils/QueryClient';
 import { errorMessage } from '@/utils/BackendError';
-import { billTypeList, billTypes } from '@/utils/billTypes';
+import { billTypes, billTypesFor } from '@/utils/billTypes';
 import useVatCountry from '@/hooks/useVatCountry';
 import {
   loadMapping,
@@ -42,9 +45,17 @@ import PageHeader from '@/components/ui/PageHeader';
 import VatCountrySelect from '@/components/bill/VatCountrySelect';
 import { RouterButton } from '@/components/ui/links';
 
-type ImportType = BillType.FUEL | BillType.MAINTENANCE | BillType.MISCELLANEOUS;
+type ImportType =
+  | BillType.FUEL
+  | BillType.CHARGING
+  | BillType.MAINTENANCE
+  | BillType.MISCELLANEOUS;
 
-const importTypes = billTypeList.filter((meta) => meta.importable);
+/** the fields of a charge are in kWh, not in liters */
+const chargingLabels: Record<string, string> = {
+  unit: 'chargedUnit',
+  pricePerUnit: 'chargingPricePerUnit',
+};
 
 export interface ImportBillPageProps {
   carId: number;
@@ -59,11 +70,25 @@ export default function ImportBillPage({
   const vat = useVatCountry();
 
   const [step, setStep] = useState(0);
-  const [type, setType] = useState<ImportType>(
-    initialType && billTypes[initialType].importable
-      ? (initialType as ImportType)
-      : BillType.FUEL,
+  // loaded by the layout of the car already
+  const { data: car } = useQuery(
+    getMyCarOptions({ client: localClient, path: { id: carId } }),
   );
+  // an electric car is not refueled, a petrol car not charged
+  const importTypes = billTypesFor(car?.energyType).filter(
+    (meta) => meta.importable,
+  );
+  const [selectedType, setType] = useState<BillType | undefined>(initialType);
+  const type = (
+    importTypes.some((meta) => meta.type === selectedType)
+      ? selectedType
+      : importTypes[0].type
+  ) as ImportType;
+  const fieldLabel = (field: string) =>
+    t(
+      `bill.fields.${(type === BillType.CHARGING && chargingLabels[field]) || field}`,
+      { defaultValue: field },
+    );
   const [file, setFile] = useState<File>();
   const [headers, setHeaders] = useState<string[]>([]);
   const [mapping, setMapping] = useState<Record<string, number>>({});
@@ -225,7 +250,7 @@ export default function ImportBillPage({
                       key={field}
                       size="small"
                       variant="outlined"
-                      label={`${t(`bill.fields.${field}`, { defaultValue: field })}${required.includes(field) ? ' *' : ''}`}
+                      label={`${fieldLabel(field)}${required.includes(field) ? ' *' : ''}`}
                     />
                   ))}
                 </Stack>
@@ -272,7 +297,7 @@ export default function ImportBillPage({
                     key={field}
                     select
                     size="small"
-                    label={t(`bill.fields.${field}`, { defaultValue: field })}
+                    label={fieldLabel(field)}
                     required={required.includes(field)}
                     value={mapping[field] ?? -1}
                     onChange={(e) => {
@@ -299,11 +324,7 @@ export default function ImportBillPage({
               {missing.length > 0 && (
                 <Alert severity="warning" variant="outlined" sx={{ mb: 2 }}>
                   {t('import.missingRequired', {
-                    fields: missing
-                      .map((field) =>
-                        t(`bill.fields.${field}`, { defaultValue: field }),
-                      )
-                      .join(', '),
+                    fields: missing.map(fieldLabel).join(', '),
                   })}
                 </Alert>
               )}
