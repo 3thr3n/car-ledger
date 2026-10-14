@@ -1,11 +1,12 @@
 import { Alert, Grid, Stack } from '@mui/material';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import dayjs, { Dayjs } from 'dayjs';
 import { SubmitEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BillType, FuelBill } from '@/generated';
 import {
   addNewFuelBillMutation,
+  getMyCarOptions,
   updateFuelBillMutation,
 } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
@@ -19,6 +20,8 @@ import BillAttachments from './BillAttachments';
 import useSaveBill from './useSaveBill';
 
 const MAX = 100_000;
+/** refuels up to 5 % above the tank size are no warning */
+const TANK_TOLERANCE = 1.05;
 
 interface FuelState {
   date: Dayjs | null;
@@ -80,6 +83,11 @@ export default function FuelForm({
     onError: save.onError,
   });
 
+  // loaded by the layout of the car already
+  const { data: car } = useQuery(
+    getMyCarOptions({ client: localClient, path: { id: carId } }),
+  );
+
   const set = (patch: Partial<FuelState>) =>
     setForm((f) => ({ ...f, ...patch }));
   const derived = derive(form);
@@ -93,6 +101,11 @@ export default function FuelForm({
   };
 
   const unit = form.unit ?? derived.unit;
+  // the nominal size is not exact, a little more often fits: catches typos like 450 l
+  const overTank =
+    isSet(unit) && car?.tankSize
+      ? unit! > car.tankSize * TANK_TOLERANCE
+      : false;
   const consumption =
     isSet(unit) && isSet(form.distance)
       ? (unit! / form.distance!) * 100
@@ -211,6 +224,15 @@ export default function FuelForm({
           />
         </Grid>
       </Grid>
+
+      {overTank && (
+        <Alert severity="warning" variant="outlined">
+          {t('bill.overTank', {
+            unit: format.unit(unit, 'l'),
+            size: format.unit(car?.tankSize, 'l', 1),
+          })}
+        </Alert>
+      )}
 
       <BillAttachments {...save.attachments} />
 

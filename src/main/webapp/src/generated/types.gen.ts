@@ -135,6 +135,9 @@ export type Car = {
     vin?: string;
     purchaseDate?: LocalDate;
     purchasePrice?: number;
+    energyType: EnergyType;
+    tankSize?: number;
+    batteryCapacity?: number;
     pictureId?: number;
 };
 
@@ -146,6 +149,9 @@ export type CarInput = {
     vin?: string;
     purchaseDate?: LocalDate;
     purchasePrice?: number;
+    energyType?: EnergyType;
+    tankSize?: number;
+    batteryCapacity?: number;
 };
 
 export type CarOverview = {
@@ -174,6 +180,15 @@ export type DashboardStats = {
     average?: AverageStats;
     hiLo?: HiLoStats;
 };
+
+export enum EnergyType {
+    PETROL = 'PETROL',
+    DIESEL = 'DIESEL',
+    LPG = 'LPG',
+    CNG = 'CNG',
+    ELECTRIC = 'ELECTRIC',
+    PLUG_IN_HYBRID = 'PLUG_IN_HYBRID'
+}
 
 export type FuelBill = {
     attachments?: number;

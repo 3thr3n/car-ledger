@@ -297,6 +297,91 @@ class CarResourceTest
 				.body("[0]", Matchers.containsString("17"));
 	}
 
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldBeAPetrolCarWithoutAnEnergyType()
+	{
+		given()
+				.when()
+				.get("{id}", carId)
+				.then()
+				.statusCode(200)
+				.body("energyType", is("PETROL"))
+				.body("tankSize", Matchers.nullValue())
+				.body("batteryCapacity", Matchers.nullValue());
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldKeepOnlyTheSizesTheEnergyTypeHas()
+	{
+		// a plug-in hybrid has both
+		given()
+				.body("""
+						{ "name": "Normal car", "year": 2022, "odometer": 0, "energyType": "PLUG_IN_HYBRID",
+						  "tankSize": 42.5, "batteryCapacity": 19.7 }
+						""")
+				.contentType(ContentType.JSON)
+				.when()
+				.post("{id}", carId)
+				.then()
+				.statusCode(200)
+				.body("energyType", is("PLUG_IN_HYBRID"))
+				.body("tankSize", is(42.5F))
+				.body("batteryCapacity", is(19.7F));
+
+		// an electric car has no tank, a diesel no battery
+		given()
+				.body("""
+						{ "name": "Normal car", "year": 2022, "odometer": 0, "energyType": "ELECTRIC",
+						  "tankSize": 42.5, "batteryCapacity": 77.4 }
+						""")
+				.contentType(ContentType.JSON)
+				.when()
+				.post("{id}", carId)
+				.then()
+				.statusCode(200)
+				.body("tankSize", Matchers.nullValue())
+				.body("batteryCapacity", is(77.4F));
+
+		given()
+				.body("""
+						{ "name": "Normal car", "year": 2022, "odometer": 0, "energyType": "DIESEL",
+						  "tankSize": 50.5, "batteryCapacity": 77.4 }
+						""")
+				.contentType(ContentType.JSON)
+				.when()
+				.post("{id}", carId)
+				.then()
+				.statusCode(200)
+				.body("energyType", is("DIESEL"))
+				.body("tankSize", is(50.5F))
+				.body("batteryCapacity", Matchers.nullValue());
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldRejectImpossibleSizes()
+	{
+		given()
+				.body("""
+						{ "name": "Normal car", "year": 2022, "odometer": 0, "energyType": "PLUG_IN_HYBRID",
+						  "tankSize": 0, "batteryCapacity": 501 }
+						""")
+				.contentType(ContentType.JSON)
+				.when()
+				.post("{id}", carId)
+				.then()
+				.statusCode(400)
+				.body("size()", is(2));
+	}
+
 	@Transactional
 	String vinOf(String name)
 	{

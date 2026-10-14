@@ -8,7 +8,7 @@ import EmptyState from '@/components/ui/EmptyState';
 import { RouterButton } from '@/components/ui/links';
 
 /**
- * Plate, VIN and purchase of the car; with a purchase price also the cost of
+ * Plate, VIN, tank and battery and purchase of the car; with a purchase price also the cost of
  * ownership, the purchase plus all costs of the ledger.
  *
  * @param totalCost costs of all entries and recurring payments of the car
@@ -36,6 +36,15 @@ export default function CarDetails({
           {car.vin}
         </Box>
       ),
+    });
+  }
+  if (car.tankSize) {
+    rows.push({ key: 'tankSize', value: format.unit(car.tankSize, 'l', 1) });
+  }
+  if (car.batteryCapacity) {
+    rows.push({
+      key: 'batteryCapacity',
+      value: format.unit(car.batteryCapacity, 'kWh', 1),
     });
   }
   if (car.purchaseDate) {

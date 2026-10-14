@@ -3,6 +3,7 @@ import {
   Button,
   Card,
   Grid,
+  MenuItem,
   Stack,
   TextField,
   Typography,
@@ -14,9 +15,15 @@ import { useNavigate, useRouter } from '@tanstack/react-router';
 import { SubmitEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
-import { Car, createCar, CarInput } from '@/generated';
+import { Car, createCar, CarInput, EnergyType } from '@/generated';
 import { toApiDate, useFormat } from '@/utils/format';
 import { normalizeVin, vinError } from '@/utils/vin';
+import {
+  hasBattery,
+  hasTank,
+  MAX_BATTERY_CAPACITY,
+  MAX_TANK_SIZE,
+} from '@/utils/energy';
 import CarPictureField from '@/components/car/CarPictureField';
 import { uploadCarPicture } from '@/components/car/carPicture';
 import {
@@ -98,6 +105,13 @@ function CarForm({
   const [odometer, setOdometer] = useState<number | undefined>(
     current ?? initial.odometer ?? 0,
   );
+  const [energyType, setEnergyType] = useState(
+    initial.energyType ?? EnergyType.PETROL,
+  );
+  const [tankSize, setTankSize] = useState(initial.tankSize);
+  const [batteryCapacity, setBatteryCapacity] = useState(
+    initial.batteryCapacity,
+  );
   const [licensePlate, setLicensePlate] = useState(initial.licensePlate ?? '');
   const [vin, setVin] = useState(initial.vin ?? '');
   const [purchaseDate, setPurchaseDate] = useState<Dayjs | null>(
@@ -119,6 +133,15 @@ function CarForm({
     odometer:
       odometer === undefined || odometer < 0
         ? t('car.form.errors.odometer')
+        : undefined,
+    // the upper limit is kept by the fields
+    tankSize:
+      hasTank(energyType) && tankSize === 0
+        ? t('car.form.errors.size')
+        : undefined,
+    batteryCapacity:
+      hasBattery(energyType) && batteryCapacity === 0
+        ? t('car.form.errors.size')
         : undefined,
     vin: vinError(vin, year) && t(`car.form.errors.${vinError(vin, year)}`),
     purchaseDate:
@@ -200,6 +223,9 @@ function CarForm({
       vin: normalizeVin(vin) || undefined,
       purchaseDate: toApiDate(purchaseDate),
       purchasePrice,
+      energyType,
+      tankSize: hasTank(energyType) ? tankSize : undefined,
+      batteryCapacity: hasBattery(energyType) ? batteryCapacity : undefined,
     };
     if (id) {
       update.mutate({ path: { id }, body });
@@ -237,6 +263,56 @@ function CarForm({
           error={touched ? errors.year : undefined}
           required
         />
+        <Grid container spacing={2}>
+          <Grid
+            size={{
+              xs: 12,
+              sm: hasTank(energyType) && hasBattery(energyType) ? 4 : 6,
+            }}
+          >
+            <TextField
+              select
+              label={t('car.form.energyType')}
+              value={energyType}
+              onChange={(e) => setEnergyType(e.target.value as EnergyType)}
+              required
+            >
+              {Object.values(EnergyType).map((type) => (
+                <MenuItem key={type} value={type}>
+                  {t(`car.energyTypes.${type}`)}
+                </MenuItem>
+              ))}
+            </TextField>
+          </Grid>
+          {hasTank(energyType) && (
+            <Grid size={{ xs: 12, sm: hasBattery(energyType) ? 4 : 6 }}>
+              <NumberField
+                label={t('car.form.tankSize')}
+                value={tankSize}
+                onChange={setTankSize}
+                suffix=" l"
+                decimalScale={1}
+                max={MAX_TANK_SIZE}
+                error={touched ? errors.tankSize : undefined}
+                helperText={t('car.form.sizeHelp')}
+              />
+            </Grid>
+          )}
+          {hasBattery(energyType) && (
+            <Grid size={{ xs: 12, sm: hasTank(energyType) ? 4 : 6 }}>
+              <NumberField
+                label={t('car.form.batteryCapacity')}
+                value={batteryCapacity}
+                onChange={setBatteryCapacity}
+                suffix=" kWh"
+                decimalScale={1}
+                max={MAX_BATTERY_CAPACITY}
+                error={touched ? errors.batteryCapacity : undefined}
+                helperText={t('car.form.batteryHelp')}
+              />
+            </Grid>
+          )}
+        </Grid>
         <NumberField
           label={t('car.form.odometer')}
           value={odometer}

@@ -133,6 +133,8 @@ export default function CarLayout({ id }: { id: number }) {
                         {car?.licensePlate && `${car.licensePlate} · `}
                         {car?.year &&
                           `${t('car.built', { year: car.year })} · `}
+                        {car?.energyType &&
+                          `${t(`car.energyTypes.${car.energyType}`)} · `}
                         <OdometerValue odometer={car?.currentOdometer} />
                       </>
                     )}

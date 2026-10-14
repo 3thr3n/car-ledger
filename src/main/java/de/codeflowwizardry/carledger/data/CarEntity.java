@@ -28,6 +28,18 @@ public class CarEntity
 	private LocalDate purchaseDate;
 	@Column(name = "c_purchase_price")
 	private BigDecimal purchasePrice;
+	@Enumerated(EnumType.STRING)
+	@Column(name = "c_energy_type", nullable = false)
+	private EnergyType energyType = EnergyType.PETROL;
+
+	/** in liters, only for cars with a tank */
+	@Column(name = "c_tank_size")
+	private BigDecimal tankSize;
+
+	/** in kWh, only for cars with a battery */
+	@Column(name = "c_battery_capacity")
+	private BigDecimal batteryCapacity;
+
 	/** attachment with the picture, the generated avatar is shown without */
 	@Column(name = "c_picture_id")
 	private Long pictureId;
@@ -129,6 +141,36 @@ public class CarEntity
 	public void setPurchasePrice(BigDecimal purchasePrice)
 	{
 		this.purchasePrice = purchasePrice;
+	}
+
+	public EnergyType getEnergyType()
+	{
+		return energyType;
+	}
+
+	public void setEnergyType(EnergyType energyType)
+	{
+		this.energyType = energyType;
+	}
+
+	public BigDecimal getTankSize()
+	{
+		return tankSize;
+	}
+
+	public void setTankSize(BigDecimal tankSize)
+	{
+		this.tankSize = tankSize;
+	}
+
+	public BigDecimal getBatteryCapacity()
+	{
+		return batteryCapacity;
+	}
+
+	public void setBatteryCapacity(BigDecimal batteryCapacity)
+	{
+		this.batteryCapacity = batteryCapacity;
 	}
 
 	public Long getPictureId()
