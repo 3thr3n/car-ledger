@@ -15,6 +15,7 @@ button:
   save: "Save"
   delete: "Delete"
   edit: "Edit"
+  close: "Close"
   import: "Import CSV"
   export: "Export CSV"
   login: "Log in"

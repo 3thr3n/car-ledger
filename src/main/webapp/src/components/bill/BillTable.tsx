@@ -1,5 +1,6 @@
 import {
   Box,
+  ButtonBase,
   Divider,
   IconButton,
   LinearProgress,
@@ -18,6 +19,7 @@ import { deDE } from '@mui/x-data-grid/locales';
 import { Fragment, ReactNode, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
+import AttachmentsDialog from './AttachmentsDialog';
 import EmptyState from '@/components/ui/EmptyState';
 import { PageModel, SortModel } from '@/hooks/useBillList';
 
@@ -31,6 +33,7 @@ export interface MobileRow {
 export interface BillTableProps<
   R extends GridValidRowModel & { id?: number; attachments?: number },
 > {
+  carId: number;
   rows: R[];
   total: number;
   columns: GridColDef<R>[];
@@ -54,6 +57,7 @@ export interface BillTableProps<
 export default function BillTable<
   R extends GridValidRowModel & { id?: number; attachments?: number },
 >({
+  carId,
   rows,
   total,
   columns,
@@ -74,6 +78,7 @@ export default function BillTable<
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [toDelete, setToDelete] = useState<number>();
+  const [shown, setShown] = useState<R>();
   // the grid compares the sort model by reference: a new array on every render
   // counts as a new order and sends the grid back to the first page
   const gridSortModel = useMemo(
@@ -81,14 +86,26 @@ export default function BillTable<
     [sortModel],
   );
 
-  const confirm = (
-    <ConfirmDialog
-      open={toDelete !== undefined}
-      title={t('bill.delete.title')}
-      text={t('bill.delete.text')}
-      onClose={() => setToDelete(undefined)}
-      onConfirm={() => toDelete !== undefined && onDelete?.(toDelete)}
-    />
+  const dialogs = (
+    <>
+      <ConfirmDialog
+        open={toDelete !== undefined}
+        title={t('bill.delete.title')}
+        text={t('bill.delete.text')}
+        onClose={() => setToDelete(undefined)}
+        onConfirm={() => toDelete !== undefined && onDelete?.(toDelete)}
+      />
+      <AttachmentsDialog
+        carId={carId}
+        billId={shown?.id}
+        onClose={() => setShown(undefined)}
+        onEdit={shown && onEdit && (() => onEdit(shown))}
+      />
+    </>
+  );
+
+  const hint = (row: R) => (
+    <AttachmentHint count={row.attachments} onClick={() => setShown(row)} />
   );
 
   const actions = (row: R) => (
@@ -175,7 +192,7 @@ export default function BillTable<
                     }}
                   >
                     {item.primary}
-                    <AttachmentHint count={row.attachments} />
+                    {hint(row)}
                   </Typography>
                   <Stack
                     direction="row"
@@ -230,7 +247,7 @@ export default function BillTable<
             />
           </Stack>
         )}
-        {confirm}
+        {dialogs}
       </Box>
     );
   }
@@ -243,7 +260,7 @@ export default function BillTable<
           renderCell: ({ formattedValue, row }) => (
             <>
               {formattedValue}
-              <AttachmentHint count={row.attachments} />
+              {hint(row)}
             </>
           ),
         }
@@ -298,33 +315,46 @@ export default function BillTable<
             : undefined
         }
       />
-      {confirm}
+      {dialogs}
     </>
   );
 }
 
-/** paperclip with the amount of attached files, nothing without */
-function AttachmentHint({ count }: { count?: number }) {
+/** paperclip with the amount of attached files that shows them, nothing without */
+function AttachmentHint({
+  count,
+  onClick,
+}: {
+  count?: number;
+  onClick: () => void;
+}) {
   const { t } = useTranslation();
   if (!count) return null;
   return (
     <Tooltip title={t('attachments.count', { count })}>
-      <Box
-        component="span"
+      <ButtonBase
         aria-label={t('attachments.count', { count })}
+        onClick={(event) => {
+          event.stopPropagation();
+          onClick();
+        }}
         sx={{
           display: 'inline-flex',
           alignItems: 'center',
           verticalAlign: 'middle',
           ml: 0.75,
+          px: 0.5,
+          py: 0.25,
+          borderRadius: 1,
           color: 'text.secondary',
           fontSize: '0.75rem',
           fontWeight: 500,
+          '&:hover': { color: 'primary.main', bgcolor: 'action.hover' },
         }}
       >
         <AttachFileRounded sx={{ fontSize: 16, transform: 'rotate(45deg)' }} />
         {count > 1 && count}
-      </Box>
+      </ButtonBase>
     </Tooltip>
   );
 }
