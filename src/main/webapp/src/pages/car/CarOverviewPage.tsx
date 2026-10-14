@@ -83,7 +83,7 @@ export default function CarOverviewPage({ id }: { id: number }) {
       key: 'avgConsumption',
       icon: <WaterDropRounded />,
       color: 'fuel',
-      value: format.unit(overview?.avgConsumption, 'l/100km'),
+      value: format.consumption(overview?.avgConsumption),
     },
     {
       key: 'refuels',
@@ -97,7 +97,7 @@ export default function CarOverviewPage({ id }: { id: number }) {
       key: 'avgChargingConsumption',
       icon: <BoltRounded />,
       color: 'charging',
-      value: format.unit(overview?.avgChargingConsumption, 'kWh/100km'),
+      value: format.chargingConsumption(overview?.avgChargingConsumption),
     },
     {
       key: 'charges',

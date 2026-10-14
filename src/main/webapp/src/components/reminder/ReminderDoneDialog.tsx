@@ -14,12 +14,13 @@ import { useMutation } from '@tanstack/react-query';
 import dayjs, { Dayjs } from 'dayjs';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { odometerToApi, odometerToField } from '@/utils/units';
 import { toast } from 'react-toastify';
 import { Reminder } from '@/generated';
 import { completeReminderMutation } from '@/generated/@tanstack/react-query.gen';
 import { invalidateCar, localClient } from '@/utils/QueryClient';
 import { errorMessage } from '@/utils/BackendError';
-import { toApiDate } from '@/utils/format';
+import { toApiDate, useFormat } from '@/utils/format';
 import NumberField from '@/components/bill/NumberField';
 import useReminderText from './useReminderText';
 
@@ -55,8 +56,9 @@ function DoneForm({
   const { t } = useTranslation();
   const text = useReminderText();
   const [date, setDate] = useState<Dayjs | null>(dayjs());
+  const { units } = useFormat();
   const [odometer, setOdometer] = useState<number | undefined>(
-    reminder.odometer,
+    odometerToField(units, reminder.odometer),
   );
   const repeat = text.repeatText(reminder);
 
@@ -114,7 +116,7 @@ function DoneForm({
                 value={odometer}
                 onChange={setOdometer}
                 decimalScale={0}
-                suffix=" km"
+                suffix={` ${units.distance.label}`}
                 max={10_000_000}
               />
             )}
@@ -133,7 +135,7 @@ function DoneForm({
               path: { carId: reminder.carId, id: reminder.id },
               body: {
                 date: repeat ? toApiDate(date) : undefined,
-                odometer: repeat ? odometer : undefined,
+                odometer: repeat ? odometerToApi(units, odometer) : undefined,
               },
             })
           }

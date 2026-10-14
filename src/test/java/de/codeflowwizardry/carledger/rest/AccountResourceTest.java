@@ -161,7 +161,8 @@ class AccountResourceTest
 				.body("admin", Matchers.is(false))
 				.body("vatCountry", Matchers.is("DE"))
 				.body("currency", Matchers.is("EUR"))
-				.body("language", Matchers.nullValue());
+				.body("language", Matchers.nullValue())
+				.body("unitSystem", Matchers.is("METRIC"));
 
 		assertNotNull(lastSeen("peter"));
 	}
@@ -206,6 +207,38 @@ class AccountResourceTest
 				.get("/api/user/me")
 				.then()
 				.body("currency", Matchers.is("CHF"));
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldKeepTheUnitSystemWithoutOne()
+	{
+		given().when().get("/api/user/me").then().statusCode(200);
+
+		given()
+				.contentType(ContentType.JSON)
+				.body("""
+						{ "vatCountry": "US", "currency": "USD", "language": "EN", "unitSystem": "US" }
+						""")
+				.when()
+				.put("/api/user/me/settings")
+				.then()
+				.statusCode(200)
+				.body("unitSystem", Matchers.is("US"));
+
+		// a client of an older version does not know the units
+		given()
+				.contentType(ContentType.JSON)
+				.body("""
+						{ "vatCountry": "US", "currency": "USD", "language": "EN" }
+						""")
+				.when()
+				.put("/api/user/me/settings")
+				.then()
+				.statusCode(200)
+				.body("unitSystem", Matchers.is("US"));
 	}
 
 	@Test

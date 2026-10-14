@@ -23,8 +23,12 @@
           },
           "language" : {
             "type" : "string"
+          },
+          "unitSystem" : {
+            "$ref" : "#/components/schemas/UnitSystem"
           }
-        }
+        },
+        "required" : [ "unitSystem" ]
       },
       "AdminAccount" : {
         "type" : "object",
@@ -1136,6 +1140,9 @@
           },
           "language" : {
             "type" : "string"
+          },
+          "unitSystem" : {
+            "$ref" : "#/components/schemas/UnitSystem"
           }
         }
       },
@@ -1187,6 +1194,10 @@
             "format" : "int32"
           }
         }
+      },
+      "UnitSystem" : {
+        "type" : "string",
+        "enum" : [ "METRIC", "US", "UK" ]
       }
     },
     "securitySchemes" : {

@@ -59,6 +59,7 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
         vatCountry: account.vatCountry,
         currency: account.currency,
         language,
+        unitSystem: account.unitSystem,
       });
     }
   };

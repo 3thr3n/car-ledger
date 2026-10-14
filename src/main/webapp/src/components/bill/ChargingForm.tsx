@@ -12,6 +12,7 @@ import {
 import { localClient } from '@/utils/QueryClient';
 import { hasValue, toApiDate, useFormat } from '@/utils/format';
 import { derive, isSet } from '@/utils/fuel';
+import { convert, toField, Units } from '@/utils/units';
 import useVatCountry from '@/hooks/useVatCountry';
 import NumberField from './NumberField';
 import DateVatFields from './DateVatFields';
@@ -42,11 +43,13 @@ const empty = (): ChargingState => ({ date: dayjs(), location: '' });
 /**
  * Starts with total and kWh only, so changing one of them calculates the price again
  */
-const fromBill = (bill: ChargingBill): ChargingState => ({
+const fromBill = (bill: ChargingBill, units: Units): ChargingState => ({
   date: dayjs(bill.date),
   total: bill.total,
   unit: bill.unit,
-  distance: hasValue(bill.distance) ? bill.distance : undefined,
+  distance: hasValue(bill.distance)
+    ? toField(bill.distance, units.distance.fromKm, 1)
+    : undefined,
   location: bill.location ?? '',
   stateOfCharge: bill.stateOfCharge,
 });
@@ -61,9 +64,10 @@ export default function ChargingForm({
 }) {
   const { t } = useTranslation();
   const format = useFormat();
+  const { units } = format;
   const vat = useVatCountry(bill?.vatRate);
   const [form, setForm] = useState<ChargingState>(() =>
-    bill ? fromBill(bill) : empty(),
+    bill ? fromBill(bill, units) : empty(),
   );
   const [touched, setTouched] = useState(false);
 
@@ -109,9 +113,10 @@ export default function ChargingForm({
     isSet(unit) && car?.batteryCapacity
       ? unit! > car.batteryCapacity * BATTERY_TOLERANCE
       : false;
+  // kWh/100km like the API, shown in the units of the account
   const consumption =
     isSet(unit) && isSet(form.distance)
-      ? (unit! / form.distance!) * 100
+      ? (unit! / units.distance.toKm(form.distance!)) * 100
       : undefined;
 
   const submit = (event: SubmitEvent) => {
@@ -125,7 +130,8 @@ export default function ChargingForm({
       total: form.total,
       unit: form.unit,
       pricePerUnit: form.pricePerUnit,
-      distance: form.distance,
+      // the API takes km
+      distance: convert(form.distance, units.distance.toKm),
       location: form.location || undefined,
       stateOfCharge: form.stateOfCharge,
     };
@@ -204,15 +210,17 @@ export default function ChargingForm({
             label={t('bill.fields.distance')}
             value={form.distance}
             onChange={(distance) => set({ distance })}
-            suffix=" km"
+            suffix={` ${units.distance.label}`}
             decimalScale={1}
             max={MAX}
             helperText={
               consumption !== undefined
                 ? t('bill.consumption', {
-                    value: format.unit(consumption, 'kWh/100km'),
+                    value: format.chargingConsumption(consumption),
                   })
-                : t('bill.chargingDistanceHelp')
+                : t('bill.chargingDistanceHelp', {
+                    context: units.distance.context,
+                  })
             }
           />
         </Grid>

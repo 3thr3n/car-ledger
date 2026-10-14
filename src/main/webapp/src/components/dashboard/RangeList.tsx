@@ -1,44 +1,52 @@
 import { Box, Stack, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { HiLo, HiLoStats } from '@/generated';
-import { EMPTY, hasValue, useFormat } from '@/utils/format';
+import { EMPTY, Formatter, hasValue, useFormat } from '@/utils/format';
 import Section from '@/components/ui/Section';
 
 interface Row {
   key: keyof HiLoStats;
-  unit: string;
-  digits: number;
-  money?: boolean;
+  /** a value of the API in the units of the account */
+  format: (format: Formatter, value: number) => string;
   /** only shown with refuels or with charges */
   energy?: 'fuel' | 'charging';
+  /** the lowest value of the API is the highest one shown, e.g. mpg */
+  inverse?: (format: Formatter) => boolean;
 }
 
+const money = (format: Formatter, value: number) => format.money(value);
+
 const rows: Row[] = [
-  { key: 'pricePerUnit', unit: 'ct/l', digits: 1, energy: 'fuel' },
-  { key: 'consumption', unit: 'l/100km', digits: 2, energy: 'fuel' },
-  { key: 'fuelCostPerKm', unit: 'ct/km', digits: 2, energy: 'fuel' },
-  { key: 'distance', unit: 'km', digits: 0, energy: 'fuel' },
-  { key: 'fuelCost', unit: '€', digits: 2, money: true, energy: 'fuel' },
+  {
+    key: 'pricePerUnit',
+    format: (f, value) => f.fuelPrice(value),
+    energy: 'fuel',
+  },
+  {
+    key: 'consumption',
+    format: (f, value) => f.consumption(value),
+    energy: 'fuel',
+    inverse: (f) => f.units.consumption.label === 'mpg',
+  },
+  {
+    key: 'fuelCostPerKm',
+    format: (f, value) => f.costPerDistance(value),
+    energy: 'fuel',
+  },
+  { key: 'distance', format: (f, value) => f.distance(value), energy: 'fuel' },
+  { key: 'fuelCost', format: money, energy: 'fuel' },
   {
     key: 'chargingPricePerUnit',
-    unit: 'ct/kWh',
-    digits: 1,
+    format: (f, value) => f.unit(value, 'ct/kWh', 1),
     energy: 'charging',
   },
   {
     key: 'chargingConsumption',
-    unit: 'kWh/100km',
-    digits: 2,
+    format: (f, value) => f.chargingConsumption(value),
     energy: 'charging',
   },
-  {
-    key: 'chargingCost',
-    unit: '€',
-    digits: 2,
-    money: true,
-    energy: 'charging',
-  },
-  { key: 'maintenanceCost', unit: '€', digits: 2, money: true },
+  { key: 'chargingCost', format: money, energy: 'charging' },
+  { key: 'maintenanceCost', format: money },
 ];
 
 /**
@@ -58,11 +66,10 @@ export default function RangeList({ hiLo }: { hiLo: HiLoStats }) {
   );
 
   const value = (range: HiLo | undefined, side: 'min' | 'max', row: Row) => {
-    const number = range?.[side];
+    const inverse = row.inverse?.(format);
+    const number = range?.[inverse ? (side === 'min' ? 'max' : 'min') : side];
     if (number === undefined || number === null) return EMPTY;
-    return row.money
-      ? format.money(number)
-      : format.unit(number, row.unit, row.digits);
+    return row.format(format, number);
   };
 
   return (
@@ -85,7 +92,9 @@ export default function RangeList({ hiLo }: { hiLo: HiLoStats }) {
                   mb: 0.5,
                 }}
               >
-                {t(`dashboard.range.${key}`)}
+                {t(`dashboard.range.${key}`, {
+                  context: format.units.distance.context,
+                })}
               </Typography>
               <Stack
                 direction="row"

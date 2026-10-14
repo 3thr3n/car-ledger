@@ -87,6 +87,10 @@ public class AccountResource extends AbstractResource
 		account.setVatCountry(input.vatCountry());
 		account.setCurrency(input.currency());
 		account.setLanguage(input.language());
+		if (input.unitSystem() != null)
+		{
+			account.setUnitSystem(input.unitSystem());
+		}
 
 		return Account.convert(account, isAdmin());
 	}

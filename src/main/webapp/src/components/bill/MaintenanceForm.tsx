@@ -11,6 +11,7 @@ import {
 } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
 import { hasValue, toApiDate, useFormat } from '@/utils/format';
+import { odometerToApi, odometerToField, Units } from '@/utils/units';
 import useVatCountry from '@/hooks/useVatCountry';
 import NumberField from './NumberField';
 import DateVatFields from './DateVatFields';
@@ -36,11 +37,13 @@ const empty = (): MaintenanceState => ({
   description: '',
 });
 
-const fromBill = (bill: MaintenanceBill): MaintenanceState => ({
+const fromBill = (bill: MaintenanceBill, units: Units): MaintenanceState => ({
   date: dayjs(bill.date),
   workshop: bill.workshop ?? '',
   description: bill.description ?? '',
-  odometer: hasValue(bill.odometer) ? bill.odometer : undefined,
+  odometer: hasValue(bill.odometer)
+    ? odometerToField(units, bill.odometer)
+    : undefined,
   laborCost: hasValue(bill.laborCost) ? bill.laborCost : undefined,
   partsCost: hasValue(bill.partsCost) ? bill.partsCost : undefined,
   total: bill.total,
@@ -61,7 +64,7 @@ export default function MaintenanceForm({
   );
   const vat = useVatCountry(bill?.vatRate);
   const [form, setForm] = useState<MaintenanceState>(() =>
-    bill ? fromBill(bill) : empty(),
+    bill ? fromBill(bill, format.units) : empty(),
   );
   const [touched, setTouched] = useState(false);
 
@@ -111,7 +114,7 @@ export default function MaintenanceForm({
       total,
       workshop: form.workshop.trim() || undefined,
       description: form.description.trim() || undefined,
-      odometer: form.odometer,
+      odometer: odometerToApi(format.units, form.odometer),
       laborCost: form.laborCost,
       partsCost: form.partsCost,
     };
@@ -144,12 +147,12 @@ export default function MaintenanceForm({
             value={form.odometer}
             onChange={(odometer) => set({ odometer })}
             decimalScale={0}
-            suffix=" km"
+            suffix={` ${format.units.distance.label}`}
             max={10_000_000}
             helperText={
               car &&
               t('bill.currentOdometer', {
-                km: format.unit(car.currentOdometer.value, 'km', 0),
+                km: format.distance(car.currentOdometer.value),
               })
             }
           />

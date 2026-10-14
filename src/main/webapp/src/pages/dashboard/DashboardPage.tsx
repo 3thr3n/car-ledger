@@ -71,7 +71,7 @@ export default function DashboardPage({
   // only charges: the consumption is in kWh, with both kWh is the hint
   const onlyCharged =
     hasValue(average.chargingConsumption) && !hasValue(average.fuelConsumption);
-  const fuelVolume = format.unit(total.unit, 'l', 1);
+  const fuelVolume = format.volume(total.unit, 1);
   const chargedVolume = format.unit(total.chargedUnit, 'kWh', 0);
 
   return (
@@ -85,7 +85,9 @@ export default function DashboardPage({
       {!!dueReminders?.length && (
         <Section
           title={t('dashboard.reminders.title')}
-          subtitle={t('dashboard.reminders.subtitle')}
+          subtitle={t('dashboard.reminders.subtitle', {
+            context: format.units.distance.context,
+          })}
           sx={{ mb: 2 }}
         >
           <ReminderList compact showCar reminders={dueReminders} />
@@ -107,8 +109,10 @@ export default function DashboardPage({
             emphasis
             loading={isLoading}
             icon={<SpeedRounded />}
-            label={t('dashboard.kpi.costPerKm')}
-            value={format.unit(average.costPerKm, 'ct/km')}
+            label={t('dashboard.kpi.costPerKm', {
+              context: format.units.distance.context,
+            })}
+            value={format.costPerDistance(average.costPerKm)}
           />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
@@ -119,7 +123,7 @@ export default function DashboardPage({
               color="charging"
               icon={<EvStationRounded />}
               label={t('dashboard.kpi.consumption')}
-              value={format.unit(average.chargingConsumption, 'kWh/100km')}
+              value={format.chargingConsumption(average.chargingConsumption)}
             />
           ) : (
             <StatTile
@@ -128,13 +132,12 @@ export default function DashboardPage({
               color="fuel"
               icon={<LocalGasStationRounded />}
               label={t('dashboard.kpi.consumption')}
-              value={format.unit(average.fuelConsumption, 'l/100km')}
+              value={format.consumption(average.fuelConsumption)}
               hint={
                 hasValue(average.chargingConsumption)
                   ? t('dashboard.kpi.chargingConsumption', {
-                      value: format.unit(
+                      value: format.chargingConsumption(
                         average.chargingConsumption,
-                        'kWh/100km',
                       ),
                     })
                   : undefined
@@ -148,7 +151,7 @@ export default function DashboardPage({
             loading={isLoading}
             icon={<RouteRounded />}
             label={t('dashboard.kpi.distance')}
-            value={format.unit(total.trackedDistance, 'km', 0)}
+            value={format.distance(total.trackedDistance)}
             hint={
               hasValue(total.chargedUnit)
                 ? hasValue(total.unit)

@@ -24,6 +24,7 @@ import {
 import { invalidateCar, localClient } from '@/utils/QueryClient';
 import { errorMessage } from '@/utils/BackendError';
 import { toApiDate, useFormat } from '@/utils/format';
+import { odometerToApi, odometerToField, Units } from '@/utils/units';
 import NumberField from '@/components/bill/NumberField';
 
 /** common reminders, they fill title and repetition */
@@ -63,6 +64,12 @@ export default function ReminderDialog({
   );
 }
 
+/** the interval of a preset in round miles, e.g. 15,000 km are 9,500 mi */
+function presetInterval(units: Units, km: number) {
+  const value = units.distance.fromKm(km);
+  return units.distance.label === 'km' ? value : Math.round(value / 500) * 500;
+}
+
 function ReminderForm({
   carId,
   odometer,
@@ -71,19 +78,21 @@ function ReminderForm({
 }: Omit<ReminderDialogProps, 'open'>) {
   const { t } = useTranslation();
   const format = useFormat();
+  const { units } = format;
   const [title, setTitle] = useState(reminder?.title ?? '');
   const [dueDate, setDueDate] = useState<Dayjs | null>(
     reminder?.dueDate ? dayjs(reminder.dueDate) : null,
   );
-  // missing values are null in the JSON, the form uses undefined
+  // missing values are null in the JSON, the form uses undefined; the
+  // distances are in the units of the account
   const [dueOdometer, setDueOdometer] = useState(
-    reminder?.dueOdometer ?? undefined,
+    odometerToField(units, reminder?.dueOdometer),
   );
   const [intervalMonths, setIntervalMonths] = useState(
     reminder?.intervalMonths ?? undefined,
   );
   const [intervalKm, setIntervalKm] = useState(
-    reminder?.intervalKm ?? undefined,
+    odometerToField(units, reminder?.intervalKm),
   );
   const [note, setNote] = useState(reminder?.note ?? '');
 
@@ -129,12 +138,16 @@ function ReminderForm({
   const applyPreset = (preset: (typeof presets)[number]) => {
     setTitle(t(`reminder.presets.${preset.key}`));
     setIntervalMonths(preset.intervalMonths);
-    setIntervalKm('intervalKm' in preset ? preset.intervalKm : undefined);
+    const interval =
+      'intervalKm' in preset
+        ? presetInterval(units, preset.intervalKm)
+        : undefined;
+    setIntervalKm(interval);
     if (!hasDate) {
       setDueDate(dayjs().add(preset.intervalMonths, 'month'));
     }
-    if ('intervalKm' in preset && dueOdometer === undefined && odometer) {
-      setDueOdometer(odometer + preset.intervalKm);
+    if (interval !== undefined && dueOdometer === undefined && odometer) {
+      setDueOdometer(odometerToField(units, odometer)! + interval);
     }
   };
 
@@ -145,9 +158,9 @@ function ReminderForm({
       title: title.trim(),
       note: note.trim() || undefined,
       dueDate: hasDate ? toApiDate(dueDate) : undefined,
-      dueOdometer,
+      dueOdometer: odometerToApi(units, dueOdometer),
       intervalMonths,
-      intervalKm,
+      intervalKm: odometerToApi(units, intervalKm),
     };
     if (reminder) {
       update.mutate({ path: { carId, id: reminder.id }, body });
@@ -217,12 +230,12 @@ function ReminderForm({
                 value={dueOdometer}
                 onChange={setDueOdometer}
                 decimalScale={0}
-                suffix=" km"
+                suffix={` ${units.distance.label}`}
                 max={10_000_000}
                 helperText={
                   odometer !== undefined &&
                   t('reminder.currentOdometer', {
-                    km: format.unit(odometer, 'km', 0),
+                    km: format.distance(odometer),
                   })
                 }
               />
@@ -252,11 +265,13 @@ function ReminderForm({
                 error={errors.intervalMonths}
               />
               <NumberField
-                label={t('reminder.fields.intervalKm')}
+                label={t('reminder.fields.intervalKm', {
+                  context: units.distance.context,
+                })}
                 value={intervalKm}
                 onChange={setIntervalKm}
                 decimalScale={0}
-                suffix=" km"
+                suffix={` ${units.distance.label}`}
                 max={1_000_000}
                 error={errors.intervalKm}
               />
