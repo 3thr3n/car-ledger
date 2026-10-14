@@ -184,6 +184,32 @@ public class AttachmentService
 		return attachment;
 	}
 
+	/**
+	 * Saves a file of a restored backup, checked like an upload: a picture of the
+	 * car without a bill, an attachment of the bill otherwise
+	 *
+	 * @throws jakarta.ws.rs.BadRequestException
+	 *             with the reasons, if the file cannot be used
+	 */
+	public AttachmentEntity restore(CarEntity car, BillEntity bill, String fileName, byte[] content)
+	{
+		FileType type = requireValid(content, bill == null, new ArrayList<>());
+		return save(car, bill, fileName, type, content);
+	}
+
+	/**
+	 * @return the content of an attachment, for the backup
+	 */
+	public byte[] content(AttachmentEntity attachment)
+	{
+		return storageOf(attachment).load(attachment);
+	}
+
+	public int maxPerBill()
+	{
+		return maxPerBill;
+	}
+
 	private void remove(AttachmentEntity attachment)
 	{
 		storageOf(attachment).delete(attachment);

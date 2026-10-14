@@ -162,6 +162,31 @@
           }
         }
       },
+      "BackupSummary" : {
+        "type" : "object",
+        "properties" : {
+          "cars" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "bills" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "recurringBills" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "reminders" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "files" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
       "Bill" : {
         "type" : "object",
         "properties" : {
@@ -4108,6 +4133,80 @@
         },
         "summary" : "Delete Me",
         "tags" : [ "Account Resource" ]
+      }
+    },
+    "/api/user/me/backup" : {
+      "post" : {
+        "description" : "Restores a backup into the own account, which must not have cars yet",
+        "operationId" : "restoreBackup",
+        "requestBody" : {
+          "content" : {
+            "multipart/form-data" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "file" : {
+                    "type" : "string",
+                    "format" : "binary"
+                  }
+                }
+              },
+              "encoding" : {
+                "file" : {
+                  "contentType" : "application/zip"
+                }
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Restored.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/BackupSummary"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "No backup, an unknown version, invalid content or more cars than allowed",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "The account has cars already."
+          }
+        },
+        "summary" : "Restore",
+        "tags" : [ "Backup Resource" ]
+      },
+      "get" : {
+        "description" : "All own data as ZIP: settings, cars, entries, recurring costs, reminders and the files",
+        "operationId" : "downloadBackup",
+        "responses" : {
+          "200" : {
+            "description" : "The backup.",
+            "content" : {
+              "application/zip" : {
+                "schema" : {
+                  "format" : "binary",
+                  "type" : "string"
+                }
+              }
+            }
+          }
+        },
+        "summary" : "Download",
+        "tags" : [ "Backup Resource" ]
       }
     },
     "/api/user/me/settings" : {

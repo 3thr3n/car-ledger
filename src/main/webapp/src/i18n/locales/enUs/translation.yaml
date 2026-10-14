@@ -416,6 +416,16 @@ import:
     errors_other: "{{count}} errors"
     row: "Row {{row}}"
 
+backup:
+  title: "Backup"
+  text: "All your data in one file: settings, cars, entries, recurring costs, reminders, receipts and pictures. Restore it here or on another CarLedger."
+  download: "Download backup"
+  restore: "Restore backup"
+  restoreHelp: "Restores a downloaded backup into your account, which has no cars yet."
+  restoreOnlyEmpty: "A backup can only be restored into an account without cars."
+  restored: "Backup restored: {{cars}} car(s), {{bills}} entries, {{files}} files"
+  failed: "The backup could not be restored"
+
 settings:
   title: "Settings"
   subtitle: "Preferences of your account, on every device."
@@ -443,6 +453,7 @@ settings:
     confirmTitle: "Delete your account?"
     confirmText: "All your cars, entries, recurring costs and reminders are removed permanently. This cannot be undone."
     identityProvider: "Only your data in CarLedger is deleted. Your login at the identity provider stays; signing in again starts with an empty account."
+    backupFirst: "Download a backup first"
     typeName: "Type {{name}} to confirm"
     done: "Your account was deleted"
 
