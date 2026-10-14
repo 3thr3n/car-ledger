@@ -88,6 +88,7 @@ export default function BillListPage({
         )}
       </Stack>
       <BillTable
+        carId={carId}
         rows={list.rows}
         total={list.total}
         columns={columns}
