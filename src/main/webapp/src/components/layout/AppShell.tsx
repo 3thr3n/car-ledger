@@ -3,6 +3,7 @@ import {
   Box,
   Drawer,
   IconButton,
+  LinearProgress,
   Toolbar,
   Typography,
   useMediaQuery,
@@ -12,6 +13,7 @@ import MenuRounded from '@mui/icons-material/MenuRounded';
 import { ReactNode, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Sidebar from '@/components/layout/Sidebar';
+import useMe from '@/hooks/useMe';
 import productLogo from '@/assets/car-ledger.svg';
 
 const SIDEBAR_WIDTH = 264;
@@ -21,6 +23,11 @@ export default function AppShell({ children }: { children: ReactNode }) {
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
   const [open, setOpen] = useState(false);
+  // the pages start with the settings of the account, e.g. a form with its
+  // units: rendered once the account is loaded, or known to be missing. Not
+  // when it is fetched again, a query with an error is fetched again whenever
+  // a page mounts it.
+  const { isFetched } = useMe();
 
   return (
     <Box
@@ -96,7 +103,11 @@ export default function AppShell({ children }: { children: ReactNode }) {
           flexDirection: 'column',
         }}
       >
-        {children}
+        {!isFetched ? (
+          <LinearProgress aria-label={t('app.loading')} />
+        ) : (
+          children
+        )}
       </Box>
     </Box>
   );

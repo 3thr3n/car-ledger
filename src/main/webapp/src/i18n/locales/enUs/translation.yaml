@@ -1,5 +1,6 @@
 app:
   title: "CarLedger"
+  loading: "Loading"
   language: "Language"
   openSource: "CarLedger is open source — find it on"
 

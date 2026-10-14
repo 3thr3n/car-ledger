@@ -60,6 +60,20 @@ test.describe.serial('units', () => {
     await expect(row).toContainText('30.0 mpg');
   });
 
+  test('opens the edit form in gallons on a direct load', async ({ page }) => {
+    const bills = await (await api.get(`/api/bill/${carId}/fuel/all`)).json();
+    const billId = (bills.data as { id: number }[])[0].id;
+
+    // the form starts with the units of the account, loaded before the page
+    await page.goto(`/car/${carId}/bill/${billId}/edit?type=FUEL`);
+    await expect(page.getByRole('textbox', { name: /^Gallons/ })).toHaveValue(
+      '10 gal',
+    );
+    await expect(page.getByRole('textbox', { name: /^Distance/ })).toHaveValue(
+      '300 mi',
+    );
+  });
+
   test('takes a refuel in gallons and miles', async ({ page }) => {
     await page.goto(`/car/${carId}/bill/add?type=FUEL`);
     const field = (name: RegExp) => page.getByRole('textbox', { name });
