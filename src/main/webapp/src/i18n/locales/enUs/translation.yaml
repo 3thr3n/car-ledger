@@ -393,6 +393,8 @@ import:
     vat: "VAT country"
     result: "Done"
   typeHint: "Recurring costs cannot be imported."
+  units: "Units of the file"
+  unitsHelp: "The values are converted to km and liters. An export of CarLedger is always metric."
   fileHint: "A comma separated file with a header row. These fields can be imported (* required):"
   chooseFile: "Choose CSV file"
   noHeader: "The file has no header row."

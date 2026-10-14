@@ -103,4 +103,49 @@ test.describe.serial('units', () => {
     expect(added?.unit).toBeCloseTo(45.42, 2);
     expect(added?.distance).toBeCloseTo(560.05, 2);
   });
+
+  test('imports a file in US units', async ({ page }) => {
+    await page.goto(`/car/${carId}/bill/import?type=FUEL`);
+    // preselected with the units of the account
+    await expect(
+      page.getByRole('combobox', { name: 'Units of the file' }),
+    ).toContainText('US');
+    await page.getByRole('button', { name: 'Continue' }).first().click();
+    await page.locator('input[type=file]').setInputFiles({
+      name: 'refuels.csv',
+      mimeType: 'text/csv',
+      buffer: Buffer.from(
+        'date,unit,pricePerUnit,distance\n2026-04-01,10,3.459,300',
+      ),
+    });
+    await expect(
+      page
+        .getByRole('combobox', { name: /^Gallons/ })
+        .filter({ visible: true }),
+    ).toHaveText('unit');
+    // the stepper keeps the buttons of collapsing steps, the active one is last
+    await page
+      .getByRole('button', { name: 'Continue', exact: true })
+      .filter({ visible: true })
+      .last()
+      .click();
+    await page.getByRole('button', { name: 'Start import' }).click();
+    await expect(page.getByText('1 entry imported')).toBeVisible();
+
+    // converted to liters, cent per liter and km
+    const bills = await (await api.get(`/api/bill/${carId}/fuel/all`)).json();
+    const imported = (
+      bills.data as {
+        date: string;
+        unit: number;
+        pricePerUnit: number;
+        distance: number;
+      }[]
+    ).find((bill) => bill.date === '2026-04-01');
+    expect(imported).toMatchObject({
+      unit: 37.85,
+      pricePerUnit: 91.38,
+      distance: 482.8,
+    });
+  });
 });

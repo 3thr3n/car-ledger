@@ -26,7 +26,7 @@ import Papa from 'papaparse';
 import { ChangeEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
-import { BillType, CsvImportResult, importCsv } from '@/generated';
+import { BillType, CsvImportResult, importCsv, UnitSystem } from '@/generated';
 import {
   getCsvFieldsOptions,
   getMyCarOptions,
@@ -35,6 +35,8 @@ import { invalidateCar, localClient } from '@/utils/QueryClient';
 import { errorMessage } from '@/utils/BackendError';
 import { billTypes, billTypesFor } from '@/utils/billTypes';
 import useVatCountry from '@/hooks/useVatCountry';
+import { useFormat } from '@/utils/format';
+import { unitsOf } from '@/utils/units';
 import {
   loadMapping,
   restoreMapping,
@@ -67,6 +69,7 @@ export default function ImportBillPage({
   initialType,
 }: ImportBillPageProps) {
   const { t } = useTranslation();
+  const format = useFormat();
   const vat = useVatCountry();
 
   const [step, setStep] = useState(0);
@@ -84,10 +87,12 @@ export default function ImportBillPage({
       ? selectedType
       : importTypes[0].type
   ) as ImportType;
+  // the file is in these units, an export of CarLedger always in metric ones
+  const [unitSystem, setUnitSystem] = useState(format.units.system);
   const fieldLabel = (field: string) =>
     t(
       `bill.fields.${(type === BillType.CHARGING && chargingLabels[field]) || field}`,
-      { defaultValue: field },
+      { defaultValue: field, context: unitsOf(unitSystem).volume.context },
     );
   const [file, setFile] = useState<File>();
   const [headers, setHeaders] = useState<string[]>([]);
@@ -117,6 +122,7 @@ export default function ImportBillPage({
           billType: type,
           order: JSON.stringify(mapping),
           vat: vat.vatRate,
+          unitSystem,
         },
         throwOnError: true,
       });
@@ -209,6 +215,21 @@ export default function ImportBillPage({
                   </ToggleButton>
                 ))}
               </ToggleButtonGroup>
+              <TextField
+                select
+                size="small"
+                label={t('import.units')}
+                value={unitSystem}
+                onChange={(e) => setUnitSystem(e.target.value as UnitSystem)}
+                helperText={t('import.unitsHelp')}
+                sx={{ display: 'flex', maxWidth: 420, mb: 2 }}
+              >
+                {Object.values(UnitSystem).map((system) => (
+                  <MenuItem key={system} value={system}>
+                    {t(`settings.unitSystems.${system}`)}
+                  </MenuItem>
+                ))}
+              </TextField>
               <Box>
                 <Button variant="contained" onClick={() => setStep(1)}>
                   {t('button.continue')}

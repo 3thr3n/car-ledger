@@ -3637,6 +3637,9 @@
                   "vat" : {
                     "type" : "integer",
                     "format" : "int32"
+                  },
+                  "unitSystem" : {
+                    "$ref" : "#/components/schemas/UnitSystem"
                   }
                 }
               },

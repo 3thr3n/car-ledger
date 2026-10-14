@@ -1834,6 +1834,7 @@ export type ImportCsvData = {
         billType?: BillType;
         order?: string;
         vat?: number;
+        unitSystem?: UnitSystem;
     };
     path: {
         carId: number;

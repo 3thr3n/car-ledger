@@ -5,6 +5,7 @@ import java.util.Set;
 import de.codeflowwizardry.carledger.csv.CsvColumnMapping;
 import de.codeflowwizardry.carledger.csv.CsvFieldExtractors;
 import de.codeflowwizardry.carledger.csv.CsvImporter;
+import de.codeflowwizardry.carledger.csv.ImportUnits;
 import de.codeflowwizardry.carledger.data.factory.MaintenanceBillFactory;
 import de.codeflowwizardry.carledger.rest.car.maintenance.MaintenanceBillInput;
 import jakarta.enterprise.context.RequestScoped;
@@ -22,13 +23,14 @@ public class MaintenanceBillCsvImporter implements CsvImporter<MaintenanceBillIn
 	}
 
 	@Override
-	public MaintenanceBillInput parseRow(String[] line, CsvColumnMapping mapping, Integer vat)
+	public MaintenanceBillInput parseRow(String[] line, CsvColumnMapping mapping, Integer vat,
+			ImportUnits units)
 	{
 		return new MaintenanceBillInput(
 				CsvFieldExtractors.getBigDecimal(line, mapping, "total"),
 				CsvFieldExtractors.getInteger(line, mapping, "vatRate", vat),
 				CsvFieldExtractors.getLocalDate(line, mapping, "date"),
-				CsvFieldExtractors.getInteger(line, mapping, "odometer"),
+				units.odometer(CsvFieldExtractors.getInteger(line, mapping, "odometer")),
 				CsvFieldExtractors.getBigDecimal(line, mapping, "laborCost"),
 				CsvFieldExtractors.getBigDecimal(line, mapping, "partsCost"),
 				CsvFieldExtractors.getString(line, mapping, "description"),
