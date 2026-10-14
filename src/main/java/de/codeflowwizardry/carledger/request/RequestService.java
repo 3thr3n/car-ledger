@@ -5,6 +5,9 @@ import java.util.List;
 import de.codeflowwizardry.carledger.Utils;
 import de.codeflowwizardry.carledger.data.AccountEntity;
 import de.codeflowwizardry.carledger.exception.AlreadyPresentException;
+import de.codeflowwizardry.carledger.webhook.CarRequestDecided;
+import de.codeflowwizardry.carledger.webhook.WebhookEvent;
+import de.codeflowwizardry.carledger.webhook.Webhooks;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -20,11 +23,13 @@ public class RequestService
 	public static final int MAX_TEXT = 500;
 
 	private final RequestRepository repository;
+	private final Webhooks webhooks;
 
 	@Inject
-	public RequestService(RequestRepository repository)
+	public RequestService(RequestRepository repository, Webhooks webhooks)
 	{
 		this.repository = repository;
+		this.webhooks = webhooks;
 	}
 
 	/**
@@ -39,6 +44,7 @@ public class RequestService
 		RequestEntity request = findOpen(id, handler.type());
 		handler.approve(request, input);
 		request.decide(RequestState.APPROVED, decidedBy, null);
+		publishDecision(request);
 		return request;
 	}
 
@@ -54,6 +60,7 @@ public class RequestService
 				: List.of());
 		RequestEntity request = findOpen(id, type);
 		request.decide(RequestState.REJECTED, decidedBy, comment == null || comment.isBlank() ? null : comment.trim());
+		publishDecision(request);
 		return request;
 	}
 
@@ -69,6 +76,20 @@ public class RequestService
 		if (request.getState() != RequestState.OPEN)
 		{
 			request.setOutcomeSeen(true);
+		}
+	}
+
+	private void publishDecision(RequestEntity request)
+	{
+		switch (request.getType())
+		{
+			case CAR_LIMIT -> {
+				CarLimitPayload payload = CarLimitPayload.of(request.getPayload());
+				webhooks.publish(WebhookEvent.CAR_REQUEST_DECIDED, new CarRequestDecided(request.getId(),
+						request.getAccount().getUserId(), request.getState().name(), payload.cars(),
+						payload.grantedMaxCars(), request.getComment(), request.getDecidedBy(),
+						request.getDecidedAt()));
+			}
 		}
 	}
 

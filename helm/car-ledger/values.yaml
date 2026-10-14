@@ -43,6 +43,14 @@ carLedger:
     # ingress gets the annotation nginx.ingress.kubernetes.io/proxy-body-size with this value (unless
     # set in ingress.annotations); other proxies in front of the app need a similar limit
     maxRequestSize: 12M
+  # events as signed HTTP webhooks, e.g. to n8n (see docs/WEBHOOKS.md); without a url nothing is sent
+  webhook:
+    url:
+    # secret with the key of the HMAC-SHA256 signature (X-CarLedger-Signature), unsigned without one
+    existingSecret:
+    secretKey: "webhook-secret"
+    # event types to send, all without a list, e.g. [car-request.created, car-request.decided]
+    events: []
   # probes of the app, the paths are fixed. The startup probe gives a slow start (small CPU limit,
   # database migrations) failureThreshold * periodSeconds, 150 s by default, before the pod is restarted
   startupProbe:

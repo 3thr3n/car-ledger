@@ -33,6 +33,8 @@ spending and usage patterns.
   and pictures) as one ZIP and restores it into an account without cars, e.g. on another installation.
 - **Car Requests:** Users who reached their car limit request more cars in the app, administrators approve or reject
   them on the administration page.
+- **Webhooks:** Events like a new car request are sent as signed HTTP requests to tools like n8n, see
+  [docs/WEBHOOKS.md](docs/WEBHOOKS.md).
 - **CSV Import:** Import multiple receipts at once using a CSV file, making it quick to upload historical or bulk data.
 - **CSV Export:** Export the receipts of a type as CSV, in the format of the import, or all expenses of a car
   including the payments of the recurring costs in one CSV for spreadsheets.
