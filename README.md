@@ -140,6 +140,20 @@ Date,Fuel Volume (L),Price per L (€),Distance (km),Car estimate (L)
 18.10.2024,38.23,171.9,494.2,8.2
 ```
 
+### Charges
+
+Charges of electric cars and plug-in hybrids have their own import. The columns are assigned in the import, required
+are the date, the kWh and the price per kWh (in cent). The distance is the km since the last charge, the location is
+`HOME` or `PUBLIC` (in any case) and the state of charge the percent after charging, all three are optional:
+
+```csv
+date,unit,pricePerUnit,distance,location,stateOfCharge
+2026-03-01,40,30,250,HOME,80
+12.03.2026,25.5,"59,0",120,public,
+```
+
+The export of the charges writes these columns with the total and the VAT rate, it can be imported again.
+
 ## Tests
 
 ```bash

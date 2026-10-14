@@ -94,6 +94,43 @@ class ExportResourceTest
 
 	@Test
 	@TestSecurity(user = "peter", roles = "user")
+	void shouldExportTheChargesInTheFormatOfTheImport()
+	{
+		// the location in any case, or none
+		importCsv(new java.io.ByteArrayInputStream("""
+				2026-03-01,40,30,250,home,80
+				2026-03-12,25.5,"59,0",120,Public,
+				2026-03-20,8,32,,,
+				""".getBytes(StandardCharsets.UTF_8)), "CHARGING", """
+				{ "date": 0, "unit": 1, "pricePerUnit": 2, "distance": 3, "location": 4, "stateOfCharge": 5 }
+				""", false)
+				.body("successCount", is(3))
+				.body("errorCount", is(0));
+
+		String csv = export("CHARGING", null)
+				.header("Content-Disposition", "attachment; filename=\"neat-car-charging.csv\"")
+				.extract()
+				.asString();
+
+		assertEquals("""
+				date,total,vatRate,unit,pricePerUnit,distance,location,stateOfCharge
+				2026-03-01,12.00,19,40.00,30.00,250.00,HOME,80
+				2026-03-12,15.05,19,25.50,59.00,120.00,PUBLIC,
+				2026-03-20,2.56,19,8.00,32.00,0.00,,
+				""", csv);
+
+		// imported again with the header as mapping, every row exists already
+		importCsv(new java.io.ByteArrayInputStream(csv.getBytes(StandardCharsets.UTF_8)), "CHARGING", """
+				{ "date": 0, "total": 1, "vatRate": 2, "unit": 3, "pricePerUnit": 4, "distance": 5,
+				  "location": 6, "stateOfCharge": 7 }
+				""", true)
+				.body("successCount", is(0))
+				.body("skippedCount", is(3))
+				.body("errorCount", is(0));
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = "user")
 	void shouldQuoteTextsAndFilterByYear()
 	{
 		importCsv(new java.io.ByteArrayInputStream("""
@@ -122,7 +159,7 @@ class ExportResourceTest
 				.get("/api/export/{carId}")
 				.then()
 				.statusCode(400)
-				.body(containsString("FUEL, MAINTENANCE, MISCELLANEOUS"));
+				.body(containsString("FUEL, CHARGING, MAINTENANCE, MISCELLANEOUS"));
 
 		given().pathParam("carId", carId)
 				.get("/api/export/{carId}")

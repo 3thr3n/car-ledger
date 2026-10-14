@@ -2,6 +2,8 @@ package de.codeflowwizardry.carledger.rest;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -512,6 +514,41 @@ class ImportResourceTest
 				.get("/api/import/" + carEntity.getId() + "/fields")
 				.then()
 				.statusCode(200);
+
+		given()
+				.queryParam("importType", "CHARGING")
+				.when()
+				.get("/api/import/" + carEntity.getId() + "/fields")
+				.then()
+				.statusCode(200)
+				.body("required", containsInAnyOrder("date", "unit", "pricePerUnit"))
+				.body("all", hasItems("location", "stateOfCharge"));
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldReportAnUnknownChargingLocation()
+	{
+		given().contentType(ContentType.MULTIPART)
+				.multiPart("file", "import.csv", """
+						2026-03-01,40,30,garage
+						2026-03-02,40,30,home
+						""".getBytes(java.nio.charset.StandardCharsets.UTF_8), "text/csv")
+				.multiPart("order", """
+						{ "date": 0, "unit": 1, "pricePerUnit": 2, "location": 3 }
+						""")
+				.multiPart("billType", "CHARGING")
+				.multiPart("vat", 19)
+				.when()
+				.post("/api/import/" + carEntity.getId())
+				.then()
+				.statusCode(200)
+				.body("successCount", is(1))
+				.body("errorCount", is(1))
+				.body("errors[0].message",
+						is("Could not parse 'garage' for field 'location', expected one of [HOME, PUBLIC]"));
 	}
 
 	@Test
@@ -527,14 +564,6 @@ class ImportResourceTest
 				.then()
 				.statusCode(400)
 				.body(is("Recurring costs cannot be imported, their payments are booked automatically!"));
-
-		given()
-				.queryParam("importType", "CHARGING")
-				.when()
-				.get("/api/import/" + carEntity.getId() + "/fields")
-				.then()
-				.statusCode(400)
-				.body(is("Charges cannot be imported yet, only refuels, maintenance and miscellaneous entries!"));
 
 		given().contentType(ContentType.MULTIPART)
 				.multiPart("file", "import.csv", getFile("csv/maintenance_import_1.csv"), "text/csv")

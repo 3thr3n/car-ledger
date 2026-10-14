@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.Arrays;
 import java.util.List;
 import de.codeflowwizardry.carledger.exception.CsvImportException;
 
@@ -102,6 +103,29 @@ public class CsvFieldExtractors
 		}
 
 		return normalized.replace(',', '.');
+	}
+
+	/**
+	 * @return the constant of the name, ignoring the case; <code>null</code> for
+	 *         an empty value
+	 */
+	public static <E extends Enum<E>> E getEnum(String[] line, CsvColumnMapping mapping, String fieldName,
+			Class<E> type)
+	{
+		String value = getString(line, mapping, fieldName);
+		if (value == null)
+		{
+			return null;
+		}
+		for (E constant : type.getEnumConstants())
+		{
+			if (constant.name().equalsIgnoreCase(value))
+			{
+				return constant;
+			}
+		}
+		throw new CsvImportException(String.format("Could not parse '%s' for field '%s', expected one of %s", value,
+				fieldName, Arrays.toString(type.getEnumConstants())));
 	}
 
 	public static Integer getInteger(String[] line, CsvColumnMapping mapping, String fieldName)

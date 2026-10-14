@@ -17,6 +17,7 @@ import de.codeflowwizardry.carledger.data.CarEntity;
 import de.codeflowwizardry.carledger.data.repository.AbstractBillRepository;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
+import de.codeflowwizardry.carledger.data.repository.ChargingBillRepository;
 import de.codeflowwizardry.carledger.data.repository.FuelBillRepository;
 import de.codeflowwizardry.carledger.data.repository.MaintenanceBillRepository;
 import de.codeflowwizardry.carledger.data.repository.MiscellaneousBillRepository;
@@ -33,18 +34,21 @@ public class ExportResource extends AbstractResource
 
 	private final CarRepository carRepository;
 	private final FuelBillRepository fuelBillRepository;
+	private final ChargingBillRepository chargingBillRepository;
 	private final MaintenanceBillRepository maintenanceBillRepository;
 	private final MiscellaneousBillRepository miscellaneousBillRepository;
 
 	@Inject
 	public ExportResource(SecurityIdentity identity, AccountRepository accountRepository,
 			CarRepository carRepository, FuelBillRepository fuelBillRepository,
+			ChargingBillRepository chargingBillRepository,
 			MaintenanceBillRepository maintenanceBillRepository,
 			MiscellaneousBillRepository miscellaneousBillRepository)
 	{
 		super(identity, accountRepository);
 		this.carRepository = carRepository;
 		this.fuelBillRepository = fuelBillRepository;
+		this.chargingBillRepository = chargingBillRepository;
 		this.maintenanceBillRepository = maintenanceBillRepository;
 		this.miscellaneousBillRepository = miscellaneousBillRepository;
 	}
@@ -67,19 +71,20 @@ public class ExportResource extends AbstractResource
 			throw new WrongUserException();
 		}
 
-		if (type == null || type == BillType.RECURRING || type == BillType.CHARGING)
+		if (type == null || type == BillType.RECURRING)
 		{
 			throw new BadRequestException(Response.status(400)
-					.entity("Type has to be one of FUEL, MAINTENANCE, MISCELLANEOUS")
+					.entity("Type has to be one of FUEL, CHARGING, MAINTENANCE, MISCELLANEOUS")
 					.build());
 		}
 
 		String csv = switch (type)
 		{
 			case FUEL -> export(CsvExporter.FUEL, fuelBillRepository, carId, year);
+			case CHARGING -> export(CsvExporter.CHARGING, chargingBillRepository, carId, year);
 			case MAINTENANCE -> export(CsvExporter.MAINTENANCE, maintenanceBillRepository, carId, year);
 			case MISCELLANEOUS -> export(CsvExporter.MISCELLANEOUS, miscellaneousBillRepository, carId, year);
-			case CHARGING, RECURRING -> throw new IllegalStateException("checked above");
+			case RECURRING -> throw new IllegalStateException("checked above");
 		};
 
 		return Response.ok(csv, TEXT_CSV + "; charset=UTF-8")
