@@ -31,18 +31,26 @@ public class CsvImportService
 	public CsvImportResult importBills(Reader csv, CsvColumnMapping mapping, long carId, String name, int skipLines,
 			Integer vat, BillType type) throws IOException
 	{
-		CsvProcessor<?> processor = null;
-
-		switch (type)
+		CsvProcessor<?> processor = switch (type)
 		{
-			case FUEL -> processor = new CsvProcessor<>(fuelBillCsvImporter);
-			case MAINTENANCE -> processor = new CsvProcessor<>(maintenanceBillCsvImporter);
-			case MISCELLANEOUS -> processor = new CsvProcessor<>(miscellaneousBillCsvImporter);
-		}
-		if (processor == null)
-		{
-			throw new CsvImportException("Type does not exist!");
-		}
+			case FUEL -> new CsvProcessor<>(fuelBillCsvImporter);
+			case MAINTENANCE -> new CsvProcessor<>(maintenanceBillCsvImporter);
+			case MISCELLANEOUS -> new CsvProcessor<>(miscellaneousBillCsvImporter);
+			case CHARGING, RECURRING -> throw new CsvImportException(notImportable(type));
+		};
 		return processor.process(csv, mapping, skipLines, vat, carId, name);
+	}
+
+	/**
+	 * @return why the type cannot be imported, shown to the user
+	 */
+	public static String notImportable(BillType type)
+	{
+		return switch (type)
+		{
+			case RECURRING -> "Recurring costs cannot be imported, their payments are booked automatically!";
+			case CHARGING -> "Charges cannot be imported yet, only refuels, maintenance and miscellaneous entries!";
+			default -> "The type " + type + " cannot be imported!";
+		};
 	}
 }
