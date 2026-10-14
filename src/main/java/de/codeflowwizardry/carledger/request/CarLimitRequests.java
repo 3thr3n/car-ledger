@@ -11,6 +11,9 @@ import de.codeflowwizardry.carledger.data.AccountEntity;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import de.codeflowwizardry.carledger.exception.AlreadyPresentException;
 import de.codeflowwizardry.carledger.rest.admin.MaxCarsInput;
+import de.codeflowwizardry.carledger.webhook.CarRequestCreated;
+import de.codeflowwizardry.carledger.webhook.WebhookEvent;
+import de.codeflowwizardry.carledger.webhook.Webhooks;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
@@ -29,13 +32,16 @@ public class CarLimitRequests implements RequestHandler<Integer>
 	private final RequestRepository repository;
 	private final CarRepository carRepository;
 	private final EntityManager em;
+	private final Webhooks webhooks;
 
 	@Inject
-	public CarLimitRequests(RequestRepository repository, CarRepository carRepository, EntityManager em)
+	public CarLimitRequests(RequestRepository repository, CarRepository carRepository, EntityManager em,
+			Webhooks webhooks)
 	{
 		this.repository = repository;
 		this.carRepository = carRepository;
 		this.em = em;
+		this.webhooks = webhooks;
 	}
 
 	@Override
@@ -93,6 +99,8 @@ public class CarLimitRequests implements RequestHandler<Integer>
 			// a second request at the same time, the index allows only one open request
 			throw new AlreadyPresentException("You already requested more cars, wait for the decision!", e);
 		}
+		webhooks.publish(WebhookEvent.CAR_REQUEST_CREATED, new CarRequestCreated(request.getId(),
+				account.getUserId(), cars, account.getMaxCars(), request.getReason(), request.getCreatedAt()));
 		return request;
 	}
 

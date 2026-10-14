@@ -131,6 +131,8 @@ with the role `user`, the roles are missing in the tokens of the client.
 - **Backups**: users download all of their data as ZIP in the settings and restore it into an account without cars.
   The restore is an upload as well and limited by `carLedger.attachments.maxRequestSize`: a backup with many receipts
   can be larger, raise the limit (and the one of the proxies) for the restore.
+- **Webhooks**: `carLedger.webhook.url` sends events like a new car request as signed HTTP requests, e.g. to n8n; the
+  key of the signature comes from `carLedger.webhook.existingSecret`. See [WEBHOOKS.md](WEBHOOKS.md).
 
 ## Upgrading to the current version
 
