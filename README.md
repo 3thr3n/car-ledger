@@ -111,10 +111,10 @@ To start using CarLedger, follow these steps:
 ### Exporting Receipts as CSV
 
 - The lists of refuels, maintenance and other costs export their entries as CSV, all of them or of the selected year.
-- The ledger on the overview of a car exports all expenses as one CSV (every entry and the payments of the recurring
-  costs, oldest first), for spreadsheets; it cannot be imported again.
 - The file uses the field names of the import as header, ISO dates and a dot as decimal separator, so it can be
   imported again without assigning the columns. Entries that exist already are skipped by the import.
+- The ledger on the overview of a car exports all expenses as one CSV (every entry and the payments of the recurring
+  costs, oldest first), for spreadsheets; it cannot be imported again.
 
 ### Data Aggregation & Summarization
 
