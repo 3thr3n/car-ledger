@@ -128,6 +128,9 @@ with the role `user`, the roles are missing in the tokens of the client.
   (12 MB): the nginx ingress gets the annotation `nginx.ingress.kubernetes.io/proxy-body-size` automatically, other
   proxies (e.g. a Gateway or a reverse proxy in front of the cluster) need the same limit, otherwise uploads fail with
   413.
+- **Backups**: users download all of their data as ZIP in the settings and restore it into an account without cars.
+  The restore is an upload as well and limited by `carLedger.attachments.maxRequestSize`: a backup with many receipts
+  can be larger, raise the limit (and the one of the proxies) for the restore.
 
 ## Upgrading to the current version
 

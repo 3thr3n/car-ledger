@@ -3,8 +3,8 @@
 import { type DefaultError, type InfiniteData, infiniteQueryOptions, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen';
-import { addBillAttachment, addNewChargingBill, addNewFuelBill, addNewMaintenanceBill, addNewMiscellaneousBill, addNewRecurringBill, addReminder, callback, completeReminder, createCar, deleteAdminAccount, deleteAttachment, deleteBill, deleteCarPicture, deleteMyCar, deleteMyself, deleteRecurringBill, deleteReminder, endRecurringBill, exportAllExpensesCsv, exportCsv, getAdminAccounts, getAdminStats, getAllBills, getAllBillYears, getAllChargingBills, getAllChargingBillYears, getAllFuelBills, getAllFuelBillYears, getAllMaintenanceBills, getAllMaintenanceBillYears, getAllMiscellaneousBills, getAllMiscellaneousBillYears, getAllRecurringBills, getAttachmentContent, getBillAttachments, getCarPicture, getChargingBill, getCsvFields, getDashboardStats, getFuelBill, getMaintenanceBill, getMiscellaneousBill, getMonthlyStats, getMyCar, getMyCarOverview, getMyCars, getMyself, getRecurringBill, getReminders, importCsv, login, loginError, logout, logoutCallback, type Options, setCarPicture, updateAdminAccount, updateChargingBill, updateFuelBill, updateMaintenanceBill, updateMiscellaneousBill, updateMyCar, updateMySettings, updateRecurringBill, updateReminder } from '../sdk.gen';
-import type { AddBillAttachmentData, AddBillAttachmentError, AddBillAttachmentResponse, AddNewChargingBillData, AddNewChargingBillError, AddNewFuelBillData, AddNewFuelBillError, AddNewMaintenanceBillData, AddNewMaintenanceBillError, AddNewMiscellaneousBillData, AddNewMiscellaneousBillError, AddNewRecurringBillData, AddNewRecurringBillError, AddNewRecurringBillResponse, AddReminderData, AddReminderError, AddReminderResponse, CallbackData, CompleteReminderData, CompleteReminderError, CompleteReminderResponse, CreateCarData, DeleteAdminAccountData, DeleteAdminAccountResponse, DeleteAttachmentData, DeleteAttachmentResponse, DeleteBillData, DeleteBillResponse, DeleteCarPictureData, DeleteCarPictureResponse, DeleteMyCarData, DeleteMyCarResponse, DeleteMyselfData, DeleteMyselfResponse, DeleteRecurringBillData, DeleteReminderData, DeleteReminderResponse, EndRecurringBillData, EndRecurringBillError, EndRecurringBillResponse, ExportAllExpensesCsvData, ExportAllExpensesCsvResponse, ExportCsvData, ExportCsvResponse, GetAdminAccountsData, GetAdminAccountsResponse, GetAdminStatsData, GetAdminStatsResponse, GetAllBillsData, GetAllBillsResponse, GetAllBillYearsData, GetAllBillYearsResponse, GetAllChargingBillsData, GetAllChargingBillsResponse, GetAllChargingBillYearsData, GetAllChargingBillYearsResponse, GetAllFuelBillsData, GetAllFuelBillsResponse, GetAllFuelBillYearsData, GetAllFuelBillYearsResponse, GetAllMaintenanceBillsData, GetAllMaintenanceBillsResponse, GetAllMaintenanceBillYearsData, GetAllMaintenanceBillYearsResponse, GetAllMiscellaneousBillsData, GetAllMiscellaneousBillsResponse, GetAllMiscellaneousBillYearsData, GetAllMiscellaneousBillYearsResponse, GetAllRecurringBillsData, GetAllRecurringBillsResponse, GetAttachmentContentData, GetBillAttachmentsData, GetBillAttachmentsResponse, GetCarPictureData, GetChargingBillData, GetChargingBillResponse, GetCsvFieldsData, GetCsvFieldsResponse, GetDashboardStatsData, GetDashboardStatsResponse, GetFuelBillData, GetFuelBillResponse, GetMaintenanceBillData, GetMaintenanceBillResponse, GetMiscellaneousBillData, GetMiscellaneousBillResponse, GetMonthlyStatsData, GetMonthlyStatsResponse, GetMyCarData, GetMyCarOverviewData, GetMyCarOverviewResponse, GetMyCarResponse, GetMyCarsData, GetMyCarsResponse, GetMyselfData, GetMyselfResponse, GetRecurringBillData, GetRecurringBillResponse, GetRemindersData, GetRemindersResponse, ImportCsvData, LoginData, LoginErrorData, LogoutCallbackData, LogoutData, SetCarPictureData, SetCarPictureError, SetCarPictureResponse, UpdateAdminAccountData, UpdateAdminAccountError, UpdateAdminAccountResponse, UpdateChargingBillData, UpdateChargingBillError, UpdateChargingBillResponse, UpdateFuelBillData, UpdateFuelBillError, UpdateFuelBillResponse, UpdateMaintenanceBillData, UpdateMaintenanceBillError, UpdateMaintenanceBillResponse, UpdateMiscellaneousBillData, UpdateMiscellaneousBillError, UpdateMiscellaneousBillResponse, UpdateMyCarData, UpdateMySettingsData, UpdateMySettingsError, UpdateMySettingsResponse, UpdateRecurringBillData, UpdateRecurringBillError, UpdateRecurringBillResponse, UpdateReminderData, UpdateReminderError, UpdateReminderResponse } from '../types.gen';
+import { addBillAttachment, addNewChargingBill, addNewFuelBill, addNewMaintenanceBill, addNewMiscellaneousBill, addNewRecurringBill, addReminder, callback, completeReminder, createCar, deleteAdminAccount, deleteAttachment, deleteBill, deleteCarPicture, deleteMyCar, deleteMyself, deleteRecurringBill, deleteReminder, downloadBackup, endRecurringBill, exportAllExpensesCsv, exportCsv, getAdminAccounts, getAdminStats, getAllBills, getAllBillYears, getAllChargingBills, getAllChargingBillYears, getAllFuelBills, getAllFuelBillYears, getAllMaintenanceBills, getAllMaintenanceBillYears, getAllMiscellaneousBills, getAllMiscellaneousBillYears, getAllRecurringBills, getAttachmentContent, getBillAttachments, getCarPicture, getChargingBill, getCsvFields, getDashboardStats, getFuelBill, getMaintenanceBill, getMiscellaneousBill, getMonthlyStats, getMyCar, getMyCarOverview, getMyCars, getMyself, getRecurringBill, getReminders, importCsv, login, loginError, logout, logoutCallback, type Options, restoreBackup, setCarPicture, updateAdminAccount, updateChargingBill, updateFuelBill, updateMaintenanceBill, updateMiscellaneousBill, updateMyCar, updateMySettings, updateRecurringBill, updateReminder } from '../sdk.gen';
+import type { AddBillAttachmentData, AddBillAttachmentError, AddBillAttachmentResponse, AddNewChargingBillData, AddNewChargingBillError, AddNewFuelBillData, AddNewFuelBillError, AddNewMaintenanceBillData, AddNewMaintenanceBillError, AddNewMiscellaneousBillData, AddNewMiscellaneousBillError, AddNewRecurringBillData, AddNewRecurringBillError, AddNewRecurringBillResponse, AddReminderData, AddReminderError, AddReminderResponse, CallbackData, CompleteReminderData, CompleteReminderError, CompleteReminderResponse, CreateCarData, DeleteAdminAccountData, DeleteAdminAccountResponse, DeleteAttachmentData, DeleteAttachmentResponse, DeleteBillData, DeleteBillResponse, DeleteCarPictureData, DeleteCarPictureResponse, DeleteMyCarData, DeleteMyCarResponse, DeleteMyselfData, DeleteMyselfResponse, DeleteRecurringBillData, DeleteReminderData, DeleteReminderResponse, DownloadBackupData, DownloadBackupResponse, EndRecurringBillData, EndRecurringBillError, EndRecurringBillResponse, ExportAllExpensesCsvData, ExportAllExpensesCsvResponse, ExportCsvData, ExportCsvResponse, GetAdminAccountsData, GetAdminAccountsResponse, GetAdminStatsData, GetAdminStatsResponse, GetAllBillsData, GetAllBillsResponse, GetAllBillYearsData, GetAllBillYearsResponse, GetAllChargingBillsData, GetAllChargingBillsResponse, GetAllChargingBillYearsData, GetAllChargingBillYearsResponse, GetAllFuelBillsData, GetAllFuelBillsResponse, GetAllFuelBillYearsData, GetAllFuelBillYearsResponse, GetAllMaintenanceBillsData, GetAllMaintenanceBillsResponse, GetAllMaintenanceBillYearsData, GetAllMaintenanceBillYearsResponse, GetAllMiscellaneousBillsData, GetAllMiscellaneousBillsResponse, GetAllMiscellaneousBillYearsData, GetAllMiscellaneousBillYearsResponse, GetAllRecurringBillsData, GetAllRecurringBillsResponse, GetAttachmentContentData, GetBillAttachmentsData, GetBillAttachmentsResponse, GetCarPictureData, GetChargingBillData, GetChargingBillResponse, GetCsvFieldsData, GetCsvFieldsResponse, GetDashboardStatsData, GetDashboardStatsResponse, GetFuelBillData, GetFuelBillResponse, GetMaintenanceBillData, GetMaintenanceBillResponse, GetMiscellaneousBillData, GetMiscellaneousBillResponse, GetMonthlyStatsData, GetMonthlyStatsResponse, GetMyCarData, GetMyCarOverviewData, GetMyCarOverviewResponse, GetMyCarResponse, GetMyCarsData, GetMyCarsResponse, GetMyselfData, GetMyselfResponse, GetRecurringBillData, GetRecurringBillResponse, GetRemindersData, GetRemindersResponse, ImportCsvData, LoginData, LoginErrorData, LogoutCallbackData, LogoutData, RestoreBackupData, RestoreBackupError, RestoreBackupResponse, SetCarPictureData, SetCarPictureError, SetCarPictureResponse, UpdateAdminAccountData, UpdateAdminAccountError, UpdateAdminAccountResponse, UpdateChargingBillData, UpdateChargingBillError, UpdateChargingBillResponse, UpdateFuelBillData, UpdateFuelBillError, UpdateFuelBillResponse, UpdateMaintenanceBillData, UpdateMaintenanceBillError, UpdateMaintenanceBillResponse, UpdateMiscellaneousBillData, UpdateMiscellaneousBillError, UpdateMiscellaneousBillResponse, UpdateMyCarData, UpdateMySettingsData, UpdateMySettingsError, UpdateMySettingsResponse, UpdateRecurringBillData, UpdateRecurringBillError, UpdateRecurringBillResponse, UpdateReminderData, UpdateReminderError, UpdateReminderResponse } from '../types.gen';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -1515,6 +1515,45 @@ export const getMyselfOptions = (options?: Options<GetMyselfData>) => queryOptio
     },
     queryKey: getMyselfQueryKey(options)
 });
+
+export const downloadBackupQueryKey = (options?: Options<DownloadBackupData>) => createQueryKey('downloadBackup', options);
+
+/**
+ * Download
+ *
+ * All own data as ZIP: settings, cars, entries, recurring costs, reminders and the files
+ */
+export const downloadBackupOptions = (options?: Options<DownloadBackupData>) => queryOptions<DownloadBackupResponse, DefaultError, DownloadBackupResponse, ReturnType<typeof downloadBackupQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await downloadBackup({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: downloadBackupQueryKey(options)
+});
+
+/**
+ * Restore
+ *
+ * Restores a backup into the own account, which must not have cars yet
+ */
+export const restoreBackupMutation = (options?: Partial<Options<RestoreBackupData>>): UseMutationOptions<RestoreBackupResponse, RestoreBackupError, Options<RestoreBackupData>> => {
+    const mutationOptions: UseMutationOptions<RestoreBackupResponse, RestoreBackupError, Options<RestoreBackupData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await restoreBackup({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 /**
  * Update Settings

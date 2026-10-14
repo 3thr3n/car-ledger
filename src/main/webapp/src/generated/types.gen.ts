@@ -59,6 +59,14 @@ export type AverageStats = {
     costPerKm?: number;
 };
 
+export type BackupSummary = {
+    cars?: number;
+    bills?: number;
+    recurringBills?: number;
+    reminders?: number;
+    files?: number;
+};
+
 export type Bill = {
     attachments?: number;
     id?: number;
@@ -2131,6 +2139,53 @@ export type GetMyselfResponses = {
 };
 
 export type GetMyselfResponse = GetMyselfResponses[keyof GetMyselfResponses];
+
+export type DownloadBackupData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/user/me/backup';
+};
+
+export type DownloadBackupResponses = {
+    /**
+     * The backup.
+     */
+    200: Blob | File;
+};
+
+export type DownloadBackupResponse = DownloadBackupResponses[keyof DownloadBackupResponses];
+
+export type RestoreBackupData = {
+    body: {
+        file?: Blob | File;
+    };
+    path?: never;
+    query?: never;
+    url: '/api/user/me/backup';
+};
+
+export type RestoreBackupErrors = {
+    /**
+     * No backup, an unknown version, invalid content or more cars than allowed
+     */
+    400: Array<unknown>;
+    /**
+     * The account has cars already.
+     */
+    409: unknown;
+};
+
+export type RestoreBackupError = RestoreBackupErrors[keyof RestoreBackupErrors];
+
+export type RestoreBackupResponses = {
+    /**
+     * Restored.
+     */
+    200: BackupSummary;
+};
+
+export type RestoreBackupResponse = RestoreBackupResponses[keyof RestoreBackupResponses];
 
 export type UpdateMySettingsData = {
     body: SettingsInput;

@@ -12,6 +12,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
+import FileDownloadRounded from '@mui/icons-material/FileDownloadRounded';
 import { useMutation } from '@tanstack/react-query';
 import { SubmitEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -26,6 +27,7 @@ import { clearMappings } from '@/utils/csv';
 import { markAccountDeleted } from '@/utils/accountDeleted';
 import { currencySymbol, DEFAULT_CURRENCY, useFormat } from '@/utils/format';
 import Page from '@/components/layout/Page';
+import BackupSection, { backupUrl } from '@/components/settings/BackupSection';
 import PageHeader from '@/components/ui/PageHeader';
 import VatCountrySelect from '@/components/bill/VatCountrySelect';
 
@@ -61,6 +63,7 @@ export default function SettingsPage() {
       />
       {/* keyed, so the form starts with the loaded settings */}
       {account && <SettingsForm key={account.name} account={account} />}
+      {account && <BackupSection />}
       {account?.name && <DeleteAccount name={account.name} />}
     </Page>
   );
@@ -289,9 +292,18 @@ function DeleteAccount({ name }: { name: string }) {
           <DialogContentText sx={{ mb: 1.5 }}>
             {t('settings.deleteAccount.confirmText')}
           </DialogContentText>
-          <DialogContentText sx={{ mb: 2 }}>
+          <DialogContentText sx={{ mb: 1.5 }}>
             {t('settings.deleteAccount.identityProvider')}
           </DialogContentText>
+          {/* the last chance to keep the data, e.g. for another instance */}
+          <Button
+            href={backupUrl}
+            size="small"
+            startIcon={<FileDownloadRounded />}
+            sx={{ mb: 2, ml: -0.5 }}
+          >
+            {t('settings.deleteAccount.backupFirst')}
+          </Button>
           <TextField
             label={t('settings.deleteAccount.typeName', { name })}
             value={confirmation}

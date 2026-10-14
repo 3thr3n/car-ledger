@@ -29,6 +29,8 @@ spending and usage patterns.
   kWh/100km next to the refuels in liters.
 - **Units:** Show and enter the values in metric units, US units (miles, gallons, mpg) or UK units (miles, liters,
   mpg), set per account. They are stored in km and liters, the API always uses those.
+- **Backup:** Every user downloads all of their data (settings, cars, entries, recurring costs, reminders, receipts
+  and pictures) as one ZIP and restores it into an account without cars, e.g. on another installation.
 - **CSV Import:** Import multiple receipts at once using a CSV file, making it quick to upload historical or bulk data.
 - **CSV Export:** Export the receipts of a type as CSV, in the format of the import, or all expenses of a car
   including the payments of the recurring costs in one CSV for spreadsheets.
