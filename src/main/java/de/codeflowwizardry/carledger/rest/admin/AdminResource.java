@@ -15,6 +15,9 @@ import de.codeflowwizardry.carledger.data.repository.AccountRepository.AccountUs
 import de.codeflowwizardry.carledger.data.repository.BillRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import de.codeflowwizardry.carledger.data.repository.RecurringBillRepository;
+import de.codeflowwizardry.carledger.request.RequestRepository;
+import de.codeflowwizardry.carledger.request.RequestState;
+import de.codeflowwizardry.carledger.request.RequestType;
 import de.codeflowwizardry.carledger.rest.AbstractResource;
 import io.quarkus.security.identity.SecurityIdentity;
 import jakarta.inject.Inject;
@@ -37,15 +40,18 @@ public class AdminResource extends AbstractResource
 	private final CarRepository carRepository;
 	private final BillRepository billRepository;
 	private final RecurringBillRepository recurringBillRepository;
+	private final RequestRepository requestRepository;
 
 	@Inject
 	public AdminResource(SecurityIdentity identity, AccountRepository accountRepository, CarRepository carRepository,
-			BillRepository billRepository, RecurringBillRepository recurringBillRepository)
+			BillRepository billRepository, RecurringBillRepository recurringBillRepository,
+			RequestRepository requestRepository)
 	{
 		super(identity, accountRepository);
 		this.carRepository = carRepository;
 		this.billRepository = billRepository;
 		this.recurringBillRepository = recurringBillRepository;
+		this.requestRepository = requestRepository;
 	}
 
 	@GET
@@ -59,7 +65,8 @@ public class AdminResource extends AbstractResource
 				accountRepository.countSeenSince(OffsetDateTime.now().minusDays(30)),
 				carRepository.count(),
 				billRepository.count(),
-				recurringBillRepository.count());
+				recurringBillRepository.count(),
+				requestRepository.count(RequestType.CAR_LIMIT, RequestState.OPEN));
 	}
 
 	@GET

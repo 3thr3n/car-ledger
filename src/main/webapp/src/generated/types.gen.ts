@@ -31,12 +31,41 @@ export type AdminAccountPage = {
     data?: Array<AdminAccount>;
 };
 
+export type AdminCarRequest = {
+    id: number;
+    accountId: number;
+    account: string;
+    cars: number;
+    maxCars: number;
+    grantedMaxCars?: number;
+    reason?: string;
+    state: RequestState;
+    createdAt: OffsetDateTime;
+    decidedAt?: OffsetDateTime;
+    decidedBy?: string;
+    comment?: string;
+    currentCars: number;
+    currentMaxCars: number;
+};
+
+export type AdminCarRequestPage = {
+    total?: number;
+    page?: number;
+    size?: number;
+    data?: Array<AdminCarRequest>;
+};
+
 export type AdminStats = {
     accounts?: number;
     activeAccounts?: number;
     cars?: number;
     bills?: number;
     recurringBills?: number;
+    openRequests?: number;
+};
+
+export type ApproveCarRequestInput = {
+    maxCars?: number;
 };
 
 export type Attachment = {
@@ -182,6 +211,24 @@ export type CarOverview = {
     totalCost?: number;
     avgConsumption?: number;
     avgChargingConsumption?: number;
+};
+
+export type CarRequest = {
+    id: number;
+    cars: number;
+    maxCars: number;
+    grantedMaxCars?: number;
+    reason?: string;
+    state: RequestState;
+    createdAt: OffsetDateTime;
+    decidedAt?: OffsetDateTime;
+    comment?: string;
+    outcomeSeen: boolean;
+};
+
+export type CarRequestInput = {
+    cars?: number;
+    reason?: string;
 };
 
 export type ChargingBill = {
@@ -392,6 +439,10 @@ export enum RecurringBillSort {
     NEXT_DUE = 'NEXT_DUE'
 }
 
+export type RejectCarRequestInput = {
+    comment?: string;
+};
+
 export type Reminder = {
     id: number;
     carId: number;
@@ -426,6 +477,12 @@ export enum ReminderStatus {
     OVERDUE = 'OVERDUE',
     DUE_SOON = 'DUE_SOON',
     UPCOMING = 'UPCOMING'
+}
+
+export enum RequestState {
+    OPEN = 'OPEN',
+    APPROVED = 'APPROVED',
+    REJECTED = 'REJECTED'
 }
 
 export type Row = {
@@ -545,6 +602,96 @@ export type UpdateAdminAccountResponses = {
 };
 
 export type UpdateAdminAccountResponse = UpdateAdminAccountResponses[keyof UpdateAdminAccountResponses];
+
+export type GetAdminCarRequestsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        page?: number;
+        size?: number;
+        state?: RequestState;
+    };
+    url: '/api/admin/car-requests';
+};
+
+export type GetAdminCarRequestsResponses = {
+    /**
+     * Requests found.
+     */
+    200: AdminCarRequestPage;
+};
+
+export type GetAdminCarRequestsResponse = GetAdminCarRequestsResponses[keyof GetAdminCarRequestsResponses];
+
+export type ApproveCarRequestData = {
+    body: ApproveCarRequestInput;
+    path: {
+        id: number;
+    };
+    query?: never;
+    url: '/api/admin/car-requests/{id}/approve';
+};
+
+export type ApproveCarRequestErrors = {
+    /**
+     * Validation failed, please check the response
+     */
+    400: Array<unknown>;
+    /**
+     * Request not found.
+     */
+    404: unknown;
+    /**
+     * The request was decided already.
+     */
+    409: unknown;
+};
+
+export type ApproveCarRequestError = ApproveCarRequestErrors[keyof ApproveCarRequestErrors];
+
+export type ApproveCarRequestResponses = {
+    /**
+     * Request approved.
+     */
+    200: AdminCarRequest;
+};
+
+export type ApproveCarRequestResponse = ApproveCarRequestResponses[keyof ApproveCarRequestResponses];
+
+export type RejectCarRequestData = {
+    body: RejectCarRequestInput;
+    path: {
+        id: number;
+    };
+    query?: never;
+    url: '/api/admin/car-requests/{id}/reject';
+};
+
+export type RejectCarRequestErrors = {
+    /**
+     * Validation failed, please check the response
+     */
+    400: Array<unknown>;
+    /**
+     * Request not found.
+     */
+    404: unknown;
+    /**
+     * The request was decided already.
+     */
+    409: unknown;
+};
+
+export type RejectCarRequestError = RejectCarRequestErrors[keyof RejectCarRequestErrors];
+
+export type RejectCarRequestResponses = {
+    /**
+     * Request rejected.
+     */
+    200: AdminCarRequest;
+};
+
+export type RejectCarRequestResponse = RejectCarRequestResponses[keyof RejectCarRequestResponses];
 
 export type GetAdminStatsData = {
     body?: never;
@@ -2186,6 +2333,80 @@ export type RestoreBackupResponses = {
 };
 
 export type RestoreBackupResponse = RestoreBackupResponses[keyof RestoreBackupResponses];
+
+export type RequestMoreCarsData = {
+    body: CarRequestInput;
+    path?: never;
+    query?: never;
+    url: '/api/user/me/car-requests';
+};
+
+export type RequestMoreCarsErrors = {
+    /**
+     * Validation failed, or the user can still add cars
+     */
+    400: Array<unknown>;
+    /**
+     * An open request exists already.
+     */
+    409: unknown;
+};
+
+export type RequestMoreCarsError = RequestMoreCarsErrors[keyof RequestMoreCarsErrors];
+
+export type RequestMoreCarsResponses = {
+    /**
+     * Request created.
+     */
+    201: CarRequest;
+};
+
+export type RequestMoreCarsResponse = RequestMoreCarsResponses[keyof RequestMoreCarsResponses];
+
+export type GetMyLatestCarRequestData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/user/me/car-requests/latest';
+};
+
+export type GetMyLatestCarRequestResponses = {
+    /**
+     * Request found.
+     */
+    200: CarRequest;
+    /**
+     * No request yet.
+     */
+    204: void;
+};
+
+export type GetMyLatestCarRequestResponse = GetMyLatestCarRequestResponses[keyof GetMyLatestCarRequestResponses];
+
+export type MarkCarRequestSeenData = {
+    body?: never;
+    path: {
+        id: number;
+    };
+    query?: never;
+    url: '/api/user/me/car-requests/{id}/seen';
+};
+
+export type MarkCarRequestSeenErrors = {
+    /**
+     * Request not found for the user.
+     */
+    404: unknown;
+};
+
+export type MarkCarRequestSeenResponses = {
+    /**
+     * Marked as seen.
+     */
+    204: void;
+};
+
+export type MarkCarRequestSeenResponse = MarkCarRequestSeenResponses[keyof MarkCarRequestSeenResponses];
 
 export type UpdateMySettingsData = {
     body: SettingsInput;

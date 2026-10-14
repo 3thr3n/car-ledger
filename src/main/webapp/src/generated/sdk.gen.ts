@@ -2,7 +2,7 @@
 
 import { type Client, type ClientMeta, formDataBodySerializer, type Options as Options2, type RequestResult, type TDataShape } from './client';
 import { client } from './client.gen';
-import type { AddBillAttachmentData, AddBillAttachmentErrors, AddBillAttachmentResponses, AddNewChargingBillData, AddNewChargingBillErrors, AddNewChargingBillResponses, AddNewFuelBillData, AddNewFuelBillErrors, AddNewFuelBillResponses, AddNewMaintenanceBillData, AddNewMaintenanceBillErrors, AddNewMaintenanceBillResponses, AddNewMiscellaneousBillData, AddNewMiscellaneousBillErrors, AddNewMiscellaneousBillResponses, AddNewRecurringBillData, AddNewRecurringBillErrors, AddNewRecurringBillResponses, AddReminderData, AddReminderErrors, AddReminderResponses, CallbackData, CallbackResponses, CompleteReminderData, CompleteReminderErrors, CompleteReminderResponses, CreateCarData, CreateCarErrors, CreateCarResponses, DeleteAdminAccountData, DeleteAdminAccountErrors, DeleteAdminAccountResponses, DeleteAttachmentData, DeleteAttachmentErrors, DeleteAttachmentResponses, DeleteBillData, DeleteBillErrors, DeleteBillResponses, DeleteCarPictureData, DeleteCarPictureErrors, DeleteCarPictureResponses, DeleteMyCarData, DeleteMyCarErrors, DeleteMyCarResponses, DeleteMyselfData, DeleteMyselfResponses, DeleteRecurringBillData, DeleteRecurringBillErrors, DeleteRecurringBillResponses, DeleteReminderData, DeleteReminderErrors, DeleteReminderResponses, DownloadBackupData, DownloadBackupResponses, EndRecurringBillData, EndRecurringBillErrors, EndRecurringBillResponses, ExportAllExpensesCsvData, ExportAllExpensesCsvErrors, ExportAllExpensesCsvResponses, ExportCsvData, ExportCsvErrors, ExportCsvResponses, GetAdminAccountsData, GetAdminAccountsResponses, GetAdminStatsData, GetAdminStatsResponses, GetAllBillsData, GetAllBillsErrors, GetAllBillsResponses, GetAllBillYearsData, GetAllBillYearsResponses, GetAllChargingBillsData, GetAllChargingBillsErrors, GetAllChargingBillsResponses, GetAllChargingBillYearsData, GetAllChargingBillYearsResponses, GetAllFuelBillsData, GetAllFuelBillsErrors, GetAllFuelBillsResponses, GetAllFuelBillYearsData, GetAllFuelBillYearsResponses, GetAllMaintenanceBillsData, GetAllMaintenanceBillsErrors, GetAllMaintenanceBillsResponses, GetAllMaintenanceBillYearsData, GetAllMaintenanceBillYearsResponses, GetAllMiscellaneousBillsData, GetAllMiscellaneousBillsErrors, GetAllMiscellaneousBillsResponses, GetAllMiscellaneousBillYearsData, GetAllMiscellaneousBillYearsResponses, GetAllRecurringBillsData, GetAllRecurringBillsResponses, GetAttachmentContentData, GetAttachmentContentErrors, GetAttachmentContentResponses, GetBillAttachmentsData, GetBillAttachmentsErrors, GetBillAttachmentsResponses, GetCarPictureData, GetCarPictureErrors, GetCarPictureResponses, GetChargingBillData, GetChargingBillErrors, GetChargingBillResponses, GetCsvFieldsData, GetCsvFieldsResponses, GetDashboardStatsData, GetDashboardStatsResponses, GetFuelBillData, GetFuelBillErrors, GetFuelBillResponses, GetMaintenanceBillData, GetMaintenanceBillErrors, GetMaintenanceBillResponses, GetMiscellaneousBillData, GetMiscellaneousBillErrors, GetMiscellaneousBillResponses, GetMonthlyStatsData, GetMonthlyStatsResponses, GetMyCarData, GetMyCarErrors, GetMyCarOverviewData, GetMyCarOverviewErrors, GetMyCarOverviewResponses, GetMyCarResponses, GetMyCarsData, GetMyCarsResponses, GetMyselfData, GetMyselfResponses, GetRecurringBillData, GetRecurringBillErrors, GetRecurringBillResponses, GetRemindersData, GetRemindersResponses, ImportCsvData, ImportCsvErrors, ImportCsvResponses, LoginData, LoginErrorData, LoginErrorResponses, LoginResponses, LogoutCallbackData, LogoutCallbackResponses, LogoutData, LogoutResponses, RestoreBackupData, RestoreBackupErrors, RestoreBackupResponses, SetCarPictureData, SetCarPictureErrors, SetCarPictureResponses, UpdateAdminAccountData, UpdateAdminAccountErrors, UpdateAdminAccountResponses, UpdateChargingBillData, UpdateChargingBillErrors, UpdateChargingBillResponses, UpdateFuelBillData, UpdateFuelBillErrors, UpdateFuelBillResponses, UpdateMaintenanceBillData, UpdateMaintenanceBillErrors, UpdateMaintenanceBillResponses, UpdateMiscellaneousBillData, UpdateMiscellaneousBillErrors, UpdateMiscellaneousBillResponses, UpdateMyCarData, UpdateMyCarErrors, UpdateMyCarResponses, UpdateMySettingsData, UpdateMySettingsErrors, UpdateMySettingsResponses, UpdateRecurringBillData, UpdateRecurringBillErrors, UpdateRecurringBillResponses, UpdateReminderData, UpdateReminderErrors, UpdateReminderResponses } from './types.gen';
+import type { AddBillAttachmentData, AddBillAttachmentErrors, AddBillAttachmentResponses, AddNewChargingBillData, AddNewChargingBillErrors, AddNewChargingBillResponses, AddNewFuelBillData, AddNewFuelBillErrors, AddNewFuelBillResponses, AddNewMaintenanceBillData, AddNewMaintenanceBillErrors, AddNewMaintenanceBillResponses, AddNewMiscellaneousBillData, AddNewMiscellaneousBillErrors, AddNewMiscellaneousBillResponses, AddNewRecurringBillData, AddNewRecurringBillErrors, AddNewRecurringBillResponses, AddReminderData, AddReminderErrors, AddReminderResponses, ApproveCarRequestData, ApproveCarRequestErrors, ApproveCarRequestResponses, CallbackData, CallbackResponses, CompleteReminderData, CompleteReminderErrors, CompleteReminderResponses, CreateCarData, CreateCarErrors, CreateCarResponses, DeleteAdminAccountData, DeleteAdminAccountErrors, DeleteAdminAccountResponses, DeleteAttachmentData, DeleteAttachmentErrors, DeleteAttachmentResponses, DeleteBillData, DeleteBillErrors, DeleteBillResponses, DeleteCarPictureData, DeleteCarPictureErrors, DeleteCarPictureResponses, DeleteMyCarData, DeleteMyCarErrors, DeleteMyCarResponses, DeleteMyselfData, DeleteMyselfResponses, DeleteRecurringBillData, DeleteRecurringBillErrors, DeleteRecurringBillResponses, DeleteReminderData, DeleteReminderErrors, DeleteReminderResponses, DownloadBackupData, DownloadBackupResponses, EndRecurringBillData, EndRecurringBillErrors, EndRecurringBillResponses, ExportAllExpensesCsvData, ExportAllExpensesCsvErrors, ExportAllExpensesCsvResponses, ExportCsvData, ExportCsvErrors, ExportCsvResponses, GetAdminAccountsData, GetAdminAccountsResponses, GetAdminCarRequestsData, GetAdminCarRequestsResponses, GetAdminStatsData, GetAdminStatsResponses, GetAllBillsData, GetAllBillsErrors, GetAllBillsResponses, GetAllBillYearsData, GetAllBillYearsResponses, GetAllChargingBillsData, GetAllChargingBillsErrors, GetAllChargingBillsResponses, GetAllChargingBillYearsData, GetAllChargingBillYearsResponses, GetAllFuelBillsData, GetAllFuelBillsErrors, GetAllFuelBillsResponses, GetAllFuelBillYearsData, GetAllFuelBillYearsResponses, GetAllMaintenanceBillsData, GetAllMaintenanceBillsErrors, GetAllMaintenanceBillsResponses, GetAllMaintenanceBillYearsData, GetAllMaintenanceBillYearsResponses, GetAllMiscellaneousBillsData, GetAllMiscellaneousBillsErrors, GetAllMiscellaneousBillsResponses, GetAllMiscellaneousBillYearsData, GetAllMiscellaneousBillYearsResponses, GetAllRecurringBillsData, GetAllRecurringBillsResponses, GetAttachmentContentData, GetAttachmentContentErrors, GetAttachmentContentResponses, GetBillAttachmentsData, GetBillAttachmentsErrors, GetBillAttachmentsResponses, GetCarPictureData, GetCarPictureErrors, GetCarPictureResponses, GetChargingBillData, GetChargingBillErrors, GetChargingBillResponses, GetCsvFieldsData, GetCsvFieldsResponses, GetDashboardStatsData, GetDashboardStatsResponses, GetFuelBillData, GetFuelBillErrors, GetFuelBillResponses, GetMaintenanceBillData, GetMaintenanceBillErrors, GetMaintenanceBillResponses, GetMiscellaneousBillData, GetMiscellaneousBillErrors, GetMiscellaneousBillResponses, GetMonthlyStatsData, GetMonthlyStatsResponses, GetMyCarData, GetMyCarErrors, GetMyCarOverviewData, GetMyCarOverviewErrors, GetMyCarOverviewResponses, GetMyCarResponses, GetMyCarsData, GetMyCarsResponses, GetMyLatestCarRequestData, GetMyLatestCarRequestResponses, GetMyselfData, GetMyselfResponses, GetRecurringBillData, GetRecurringBillErrors, GetRecurringBillResponses, GetRemindersData, GetRemindersResponses, ImportCsvData, ImportCsvErrors, ImportCsvResponses, LoginData, LoginErrorData, LoginErrorResponses, LoginResponses, LogoutCallbackData, LogoutCallbackResponses, LogoutData, LogoutResponses, MarkCarRequestSeenData, MarkCarRequestSeenErrors, MarkCarRequestSeenResponses, RejectCarRequestData, RejectCarRequestErrors, RejectCarRequestResponses, RequestMoreCarsData, RequestMoreCarsErrors, RequestMoreCarsResponses, RestoreBackupData, RestoreBackupErrors, RestoreBackupResponses, SetCarPictureData, SetCarPictureErrors, SetCarPictureResponses, UpdateAdminAccountData, UpdateAdminAccountErrors, UpdateAdminAccountResponses, UpdateChargingBillData, UpdateChargingBillErrors, UpdateChargingBillResponses, UpdateFuelBillData, UpdateFuelBillErrors, UpdateFuelBillResponses, UpdateMaintenanceBillData, UpdateMaintenanceBillErrors, UpdateMaintenanceBillResponses, UpdateMiscellaneousBillData, UpdateMiscellaneousBillErrors, UpdateMiscellaneousBillResponses, UpdateMyCarData, UpdateMyCarErrors, UpdateMyCarResponses, UpdateMySettingsData, UpdateMySettingsErrors, UpdateMySettingsResponses, UpdateRecurringBillData, UpdateRecurringBillErrors, UpdateRecurringBillResponses, UpdateReminderData, UpdateReminderErrors, UpdateReminderResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -39,6 +39,41 @@ export const deleteAdminAccount = <ThrowOnError extends boolean = false>(options
  */
 export const updateAdminAccount = <ThrowOnError extends boolean = false>(options: Options<UpdateAdminAccountData, ThrowOnError>): RequestResult<UpdateAdminAccountResponses, UpdateAdminAccountErrors, ThrowOnError> => (options.client ?? client).post<UpdateAdminAccountResponses, UpdateAdminAccountErrors, ThrowOnError>({
     url: '/api/admin/accounts/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Get Car Requests
+ *
+ * Requests for more cars, the open ones by age, the decided ones newest first; pages starting at 1
+ */
+export const getAdminCarRequests = <ThrowOnError extends boolean = false>(options?: Options<GetAdminCarRequestsData, ThrowOnError>): RequestResult<GetAdminCarRequestsResponses, unknown, ThrowOnError> => (options?.client ?? client).get<GetAdminCarRequestsResponses, unknown, ThrowOnError>({ url: '/api/admin/car-requests', ...options });
+
+/**
+ * Approve
+ *
+ * Approves the request and raises the car limit of the account
+ */
+export const approveCarRequest = <ThrowOnError extends boolean = false>(options: Options<ApproveCarRequestData, ThrowOnError>): RequestResult<ApproveCarRequestResponses, ApproveCarRequestErrors, ThrowOnError> => (options.client ?? client).post<ApproveCarRequestResponses, ApproveCarRequestErrors, ThrowOnError>({
+    url: '/api/admin/car-requests/{id}/approve',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Reject
+ *
+ * Rejects the request, the comment is shown to the user
+ */
+export const rejectCarRequest = <ThrowOnError extends boolean = false>(options: Options<RejectCarRequestData, ThrowOnError>): RequestResult<RejectCarRequestResponses, RejectCarRequestErrors, ThrowOnError> => (options.client ?? client).post<RejectCarRequestResponses, RejectCarRequestErrors, ThrowOnError>({
+    url: '/api/admin/car-requests/{id}/reject',
     ...options,
     headers: {
         'Content-Type': 'application/json',
@@ -602,6 +637,34 @@ export const restoreBackup = <ThrowOnError extends boolean = false>(options: Opt
         ...options.headers
     }
 });
+
+/**
+ * Request More Cars
+ *
+ * Requests more cars than the limit of the account allows
+ */
+export const requestMoreCars = <ThrowOnError extends boolean = false>(options: Options<RequestMoreCarsData, ThrowOnError>): RequestResult<RequestMoreCarsResponses, RequestMoreCarsErrors, ThrowOnError> => (options.client ?? client).post<RequestMoreCarsResponses, RequestMoreCarsErrors, ThrowOnError>({
+    url: '/api/user/me/car-requests',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Get Latest
+ *
+ * The newest own request for more cars
+ */
+export const getMyLatestCarRequest = <ThrowOnError extends boolean = false>(options?: Options<GetMyLatestCarRequestData, ThrowOnError>): RequestResult<GetMyLatestCarRequestResponses, unknown, ThrowOnError> => (options?.client ?? client).get<GetMyLatestCarRequestResponses, unknown, ThrowOnError>({ url: '/api/user/me/car-requests/latest', ...options });
+
+/**
+ * Mark Seen
+ *
+ * The decision was shown to the user, it is not shown again
+ */
+export const markCarRequestSeen = <ThrowOnError extends boolean = false>(options: Options<MarkCarRequestSeenData, ThrowOnError>): RequestResult<MarkCarRequestSeenResponses, MarkCarRequestSeenErrors, ThrowOnError> => (options.client ?? client).post<MarkCarRequestSeenResponses, MarkCarRequestSeenErrors, ThrowOnError>({ url: '/api/user/me/car-requests/{id}/seen', ...options });
 
 /**
  * Update Settings

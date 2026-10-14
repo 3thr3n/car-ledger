@@ -1,6 +1,16 @@
-import { Box, Card, Grid, Skeleton, Stack, Typography } from '@mui/material';
+import {
+  Box,
+  Button,
+  Card,
+  Chip,
+  Grid,
+  Skeleton,
+  Stack,
+  Typography,
+} from '@mui/material';
 import AddRounded from '@mui/icons-material/AddRounded';
 import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getMyCarsOptions } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
@@ -11,10 +21,15 @@ import PageHeader from '@/components/ui/PageHeader';
 import CarAvatar from '@/components/layout/CarAvatar';
 import { RouterCardActionArea } from '@/components/ui/links';
 import ErrorPage from '@/pages/ErrorPage';
+import useCarRequest from '@/hooks/useCarRequest';
+import CarRequestDialog from '@/components/request/CarRequestDialog';
+import CarRequestOutcome from '@/components/request/CarRequestOutcome';
 
 export default function GaragePage() {
   const { t } = useTranslation();
   const { maxCars } = useMe();
+  const carRequest = useCarRequest();
+  const [requesting, setRequesting] = useState(false);
 
   const {
     data: cars,
@@ -37,6 +52,8 @@ export default function GaragePage() {
         subtitle={t('garage.subtitle')}
         eyebrow={maxCars > 0 && t('garage.slots', { used, max: maxCars })}
       />
+
+      <CarRequestOutcome />
 
       <Grid container spacing={2}>
         {isLoading &&
@@ -193,12 +210,38 @@ export default function GaragePage() {
                   >
                     {t('garage.limitReached')}
                   </Typography>
+                  {carRequest.isOpen ? (
+                    <Chip
+                      sx={{ mt: 1.5 }}
+                      color="info"
+                      variant="outlined"
+                      label={t('carRequest.pending', {
+                        count: carRequest.request?.cars ?? 0,
+                      })}
+                    />
+                  ) : (
+                    !carRequest.isLoading && (
+                      <Button
+                        sx={{ mt: 1.5 }}
+                        variant="outlined"
+                        size="small"
+                        onClick={() => setRequesting(true)}
+                      >
+                        {t('carRequest.button')}
+                      </Button>
+                    )
+                  )}
                 </Stack>
               )}
             </Card>
           </Grid>
         )}
       </Grid>
+      <CarRequestDialog
+        open={requesting}
+        maxCars={maxCars}
+        onClose={() => setRequesting(false)}
+      />
     </Page>
   );
 }
