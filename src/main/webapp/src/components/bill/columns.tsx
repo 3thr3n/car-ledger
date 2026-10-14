@@ -2,6 +2,7 @@ import { GridColDef, GridValidRowModel } from '@mui/x-data-grid';
 import { useTranslation } from 'react-i18next';
 import {
   Bill,
+  ChargingBill,
   FuelBill,
   MaintenanceBill,
   MiscellaneousBill,
@@ -140,6 +141,79 @@ export function useFuelColumns(): Columns<FuelBill> {
         hasValue(row.avgConsumption)
           ? f.unit(row.avgConsumption, 'l/100km')
           : undefined,
+      ]
+        .filter(Boolean)
+        .join(' · '),
+      amount: f.money(row.total),
+    }),
+  };
+}
+
+export function useChargingColumns(): Columns<ChargingBill> {
+  const { t } = useTranslation();
+  const f = useFormat();
+
+  return {
+    columns: [
+      {
+        field: 'date',
+        headerName: t('bill.fields.date'),
+        minWidth: 130,
+        flex: 1,
+        valueFormatter: (value: string) => f.date(value),
+      },
+      {
+        field: 'unit',
+        headerName: t('bill.fields.chargedUnit'),
+        ...money,
+        valueFormatter: (value: number) => f.unit(value, 'kWh'),
+      },
+      {
+        field: 'pricePerUnit',
+        headerName: t('bill.fields.chargingPricePerUnit'),
+        ...money,
+        minWidth: 120,
+        valueFormatter: (value: number) => f.unit(value, 'ct/kWh', 1),
+      },
+      {
+        field: 'distance',
+        headerName: t('bill.fields.distance'),
+        ...money,
+        valueFormatter: (value: number) =>
+          hasValue(value) ? f.unit(value, 'km', 1) : '—',
+      },
+      {
+        field: 'avgConsumption',
+        headerName: t('bill.fields.avgConsumption'),
+        ...money,
+        minWidth: 140,
+        valueFormatter: (value: number) =>
+          hasValue(value) ? f.unit(value, 'kWh/100km') : '—',
+      },
+      {
+        field: 'location',
+        headerName: t('bill.fields.location'),
+        minWidth: 110,
+        valueFormatter: (value: string) =>
+          value ? t(`bill.locations.${value}`) : '—',
+      },
+      {
+        field: 'total',
+        headerName: t('bill.fields.total'),
+        ...money,
+        valueFormatter: (value: number) => f.money(value),
+        cellClassName: 'strong',
+      },
+    ],
+    mobileRow: (row) => ({
+      primary: f.date(row.date),
+      secondary: [
+        f.unit(row.unit, 'kWh'),
+        f.unit(row.pricePerUnit, 'ct/kWh', 1),
+        hasValue(row.avgConsumption)
+          ? f.unit(row.avgConsumption, 'kWh/100km')
+          : undefined,
+        row.location ? t(`bill.locations.${row.location}`) : undefined,
       ]
         .filter(Boolean)
         .join(' · '),

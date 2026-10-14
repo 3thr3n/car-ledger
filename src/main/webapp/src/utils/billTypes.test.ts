@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { billTypes, isBillType } from './billTypes';
-import { BillType } from '@/generated';
+import { billTypes, billTypesFor, isBillType } from './billTypes';
+import { BillType, EnergyType } from '@/generated';
 
 describe('billTypes', () => {
   it('only allows importing types the CSV import supports', () => {
@@ -12,5 +12,20 @@ describe('billTypes', () => {
     expect(isBillType('FUEL')).toBe(true);
     expect(isBillType('fuel')).toBe(false);
     expect(isBillType(undefined)).toBe(false);
+  });
+
+  it('offers refuels with a tank and charges with a battery', () => {
+    const types = (energyType: EnergyType) =>
+      billTypesFor(energyType).map((meta) => meta.type);
+    expect(types(EnergyType.DIESEL)).toEqual([
+      BillType.FUEL,
+      BillType.MAINTENANCE,
+      BillType.MISCELLANEOUS,
+      BillType.RECURRING,
+    ]);
+    expect(types(EnergyType.ELECTRIC)).not.toContain(BillType.FUEL);
+    expect(types(EnergyType.PLUG_IN_HYBRID)).toEqual(
+      expect.arrayContaining([BillType.FUEL, BillType.CHARGING]),
+    );
   });
 });

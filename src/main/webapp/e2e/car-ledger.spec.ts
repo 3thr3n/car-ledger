@@ -157,6 +157,35 @@ test.describe.serial('car ledger', () => {
     );
   });
 
+  test('adds a charge of the plug-in hybrid in kWh', async () => {
+    await page.goto(carUrl);
+    await page.getByRole('tab', { name: 'Charging' }).click();
+    await expect(page).toHaveURL(/\/bill\/charging$/);
+    await expect(page.getByText('No Charging entries yet')).toBeVisible();
+
+    await page.goto(`${carUrl}/bill/add?type=CHARGING`);
+    // a typo, more than the battery of 10.4 kWh holds
+    await field(/^kWh/).fill('40');
+    await expect(
+      page.getByText(/40.00 kWh is more than the battery holds \(10.4 kWh\)/),
+    ).toBeVisible();
+    await field(/^kWh/).fill('9');
+    await expect(page.getByText(/more than the battery holds/)).toHaveCount(0);
+    await field(/^Total/).fill('2.7');
+    await expect(page.getByText('Calculated: 30.0 ct/kWh')).toBeVisible();
+    await field(/^Distance/).fill('50');
+    await expect(page.getByText('Consumption: 18.00 kWh/100km')).toBeVisible();
+    await page.getByRole('combobox', { name: /^Location/ }).click();
+    await page.getByRole('option', { name: 'Home' }).click();
+    await page.getByRole('button', { name: 'Save', exact: true }).click();
+
+    await expect(page).toHaveURL(/\/bill\/charging$/);
+    const row = page.getByRole('row', { name: /30\.0 ct\/kWh/ });
+    await expect(row).toContainText('18.00 kWh/100km');
+    await expect(row).toContainText('Home');
+    await expect(row).toContainText(money(2.7));
+  });
+
   test('adds a recurring cost and ends it', async () => {
     await page.goto(`${carUrl}/bill/add?type=RECURRING`);
 
@@ -289,9 +318,11 @@ test.describe.serial('car ledger', () => {
     await page.goto('/dashboard');
 
     await expect(page.getByText('Cost breakdown')).toBeVisible();
-    // 70 + 2 imported refuels (71.75 + 66.60) + 125.50 maintenance
-    await expect(page.getByText(money(333.85)).first()).toBeVisible();
+    // 70 + 2 imported refuels (71.75 + 66.60) + 125.50 maintenance + 2.70 charging
+    await expect(page.getByText(money(336.55)).first()).toBeVisible();
     await expect(page.getByText('3 entries')).toBeVisible();
+    // the consumption in kWh is the hint of the one in liters
+    await expect(page.getByText('18.00 kWh/100km electric')).toBeVisible();
 
     // the imported refuels of January and February are in the monthly chart
     const chart = page.locator('.MuiCard-root', { hasText: 'Costs per month' });
@@ -305,6 +336,8 @@ test.describe.serial('car ledger', () => {
     await chart.getByRole('button', { name: 'Fuel', exact: true }).click();
     await expect(chart.getByText('Fuel price')).toBeVisible();
     await expect(chart.getByText('No refuels in this period')).toHaveCount(0);
+    await chart.getByRole('button', { name: 'Charging', exact: true }).click();
+    await expect(chart.getByText('Electricity price')).toBeVisible();
   });
 
   test('deletes an entry from the ledger', async () => {

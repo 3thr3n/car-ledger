@@ -4,6 +4,7 @@ import EditBillPage, { EditableBillType } from '@/pages/car/bill/EditBillPage';
 
 const editableTypes: string[] = [
   BillType.FUEL,
+  BillType.CHARGING,
   BillType.MAINTENANCE,
   BillType.MISCELLANEOUS,
   BillType.RECURRING,

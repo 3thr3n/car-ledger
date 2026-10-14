@@ -78,6 +78,9 @@ dashboard:
     consumption: "Ø Verbrauch"
     distance: "Erfasste Strecke"
     fuelVolume: "{{value}} Kraftstoff"
+    chargingConsumption: "{{value}} elektrisch"
+    chargedVolume: "{{value}} geladen"
+    bothVolumes: "{{fuel}} Kraftstoff · {{charged}} geladen"
   split:
     title: "Kostenaufteilung"
     subtitle: "Anteil jeder Kostenart"
@@ -89,6 +92,8 @@ dashboard:
     distance: "Strecke pro Tankfüllung"
     fuelCostPerKm: "Kraftstoffkosten pro km"
     maintenanceCost: "Kosten pro Wartung"
+    chargingPricePerUnit: "Strompreis"
+    chargingCostPerKm: "Ladekosten pro km"
   range:
     title: "Tiefst- und Höchstwerte"
     subtitle: "Spanne über einzelne Einträge"
@@ -98,6 +103,9 @@ dashboard:
     distance: "Strecke pro Tankfüllung"
     fuelCost: "Kosten pro Tankfüllung"
     maintenanceCost: "Kosten pro Wartung"
+    chargingPricePerUnit: "Strompreis"
+    chargingConsumption: "Verbrauch (elektrisch)"
+    chargingCost: "Kosten pro Ladung"
   reminders:
     title: "Bald fällig"
     subtitle: "Überfällige Erinnerungen und die in den nächsten 30 Tagen oder 1.000 km fälligen"
@@ -105,12 +113,16 @@ dashboard:
     title: "Kosten pro Monat"
     costs: "Kosten"
     fuel: "Kraftstoff"
-    pricePerUnit: "Kraftstoffpreis"
+    charging: "Laden"
+    pricePerUnit:
+      fuel: "Kraftstoffpreis"
+      charging: "Strompreis"
     consumption: "Verbrauch"
     tooltipTotal: "{{month}} · Gesamt {{total}}"
     empty:
       costs: "Keine Kosten in diesem Zeitraum"
       fuel: "Keine Tankfüllungen in diesem Zeitraum"
+      charging: "Keine Ladungen in diesem Zeitraum"
   empty:
     title: "Noch nichts auszuwerten"
     text: "Erfasse Einträge für eines deiner Fahrzeuge, dann erscheinen hier die Zahlen."
@@ -158,6 +170,8 @@ car:
     runningEmpty: "Keine laufenden Kosten"
     addRecurring: "Laufende Kosten anlegen"
     nextDue: "Nächste Fälligkeit {{date}}"
+    avgChargingConsumption: "Ø Verbrauch (elektrisch)"
+    charges: "Ladungen"
   picture:
     choose: "Bild auswählen"
     change: "Bild ändern"
@@ -239,6 +253,7 @@ bill:
   currentOdometer: "Aktuell etwa {{km}}"
   types:
     FUEL: "Tanken"
+    CHARGING: "Laden"
     MAINTENANCE: "Wartung"
     MISCELLANEOUS: "Sonstiges"
     RECURRING: "Laufend"
@@ -283,6 +298,10 @@ bill:
     amount: "Betrag"
     paidTotal: "Bisher bezahlt"
     status: "Status"
+    chargedUnit: "kWh"
+    chargingPricePerUnit: "Preis pro kWh"
+    location: "Ort"
+    stateOfCharge: "Ladestand"
   add:
     button: "Eintrag erfassen"
     title: "Neuer Eintrag"
@@ -291,6 +310,7 @@ bill:
     saved: "Eintrag gespeichert"
     describe:
       FUEL: "Eine Tankfüllung. Zwei von Betrag, Litern und Literpreis genügen."
+      CHARGING: "Eine Ladung zu Hause oder an einer Ladesäule. Zwei von Betrag, kWh und kWh-Preis genügen."
       MAINTENANCE: "Ein Service, eine Inspektion oder eine Reparatur."
       MISCELLANEOUS: "Jede andere einmalige Ausgabe, z. B. Waschanlage oder Parken."
       RECURRING: "Fixkosten, die sich wiederholen, z. B. Versicherung oder Leasingrate."
@@ -311,6 +331,7 @@ bill:
   empty:
     title: "Noch keine Einträge: {{type}}"
     FUEL: "Erfasse deine Tankfüllungen, um Verbrauch und Kraftstoffkosten zu sehen."
+    CHARGING: "Erfasse deine Ladungen, um den Verbrauch in kWh und die Ladekosten zu sehen."
     MAINTENANCE: "Erfasse Services und Reparaturen, um Wartungskosten zu verfolgen."
     MISCELLANEOUS: "Erfasse sonstige Ausgaben wie Parken oder Waschanlage."
     RECURRING: "Lege Fixkosten wie die Versicherung an — sie werden automatisch gebucht."
@@ -320,6 +341,14 @@ bill:
   computed: "Berechnet: {{value}}"
   consumption: "Verbrauch: {{value}}"
   distanceHelp: "Kilometer seit der letzten Tankfüllung"
+  chargingHint: "Fülle mindestens zwei von Betrag, kWh und kWh-Preis aus. Der dritte Wert wird berechnet."
+  overBattery: "{{unit}} ist mehr, als die Batterie fasst ({{size}}), auch mit Ladeverlusten. Bitte die kWh prüfen."
+  chargingDistanceHelp: "Kilometer seit der letzten Ladung"
+  stateOfChargeHelp: "Optional, nach dem Laden"
+  locations:
+    HOME: "Zu Hause"
+    PUBLIC: "Ladesäule"
+    none: "Keine Angabe"
   estimateHelp: "Laut Bordcomputer"
   totalHelp: "Leer lassen für Arbeitslohn + Teile"
   amountHelp: "Wird an jedem Fälligkeitstag gebucht"

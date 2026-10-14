@@ -2,6 +2,7 @@ import { Grid, Stack } from '@mui/material';
 import PaymentsRounded from '@mui/icons-material/PaymentsRounded';
 import SpeedRounded from '@mui/icons-material/SpeedRounded';
 import LocalGasStationRounded from '@mui/icons-material/LocalGasStationRounded';
+import EvStationRounded from '@mui/icons-material/EvStationRounded';
 import RouteRounded from '@mui/icons-material/RouteRounded';
 import InsightsRounded from '@mui/icons-material/InsightsRounded';
 import { useQuery } from '@tanstack/react-query';
@@ -67,6 +68,11 @@ export default function DashboardPage({
   const total = data?.total ?? {};
   const average = data?.average ?? {};
   const isEmpty = !isLoading && !hasValue(total.total);
+  // only charges: the consumption is in kWh, with both kWh is the hint
+  const onlyCharged =
+    hasValue(average.chargingConsumption) && !hasValue(average.fuelConsumption);
+  const fuelVolume = format.unit(total.unit, 'l', 1);
+  const chargedVolume = format.unit(total.chargedUnit, 'kWh', 0);
 
   return (
     <Page id="DashboardPage">
@@ -106,14 +112,35 @@ export default function DashboardPage({
           />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
-          <StatTile
-            emphasis
-            loading={isLoading}
-            color="fuel"
-            icon={<LocalGasStationRounded />}
-            label={t('dashboard.kpi.consumption')}
-            value={format.unit(average.fuelConsumption, 'l/100km')}
-          />
+          {onlyCharged ? (
+            <StatTile
+              emphasis
+              loading={isLoading}
+              color="charging"
+              icon={<EvStationRounded />}
+              label={t('dashboard.kpi.consumption')}
+              value={format.unit(average.chargingConsumption, 'kWh/100km')}
+            />
+          ) : (
+            <StatTile
+              emphasis
+              loading={isLoading}
+              color="fuel"
+              icon={<LocalGasStationRounded />}
+              label={t('dashboard.kpi.consumption')}
+              value={format.unit(average.fuelConsumption, 'l/100km')}
+              hint={
+                hasValue(average.chargingConsumption)
+                  ? t('dashboard.kpi.chargingConsumption', {
+                      value: format.unit(
+                        average.chargingConsumption,
+                        'kWh/100km',
+                      ),
+                    })
+                  : undefined
+              }
+            />
+          )}
         </Grid>
         <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
           <StatTile
@@ -122,9 +149,16 @@ export default function DashboardPage({
             icon={<RouteRounded />}
             label={t('dashboard.kpi.distance')}
             value={format.unit(total.trackedDistance, 'km', 0)}
-            hint={t('dashboard.kpi.fuelVolume', {
-              value: format.unit(total.unit, 'l', 1),
-            })}
+            hint={
+              hasValue(total.chargedUnit)
+                ? hasValue(total.unit)
+                  ? t('dashboard.kpi.bothVolumes', {
+                      fuel: fuelVolume,
+                      charged: chargedVolume,
+                    })
+                  : t('dashboard.kpi.chargedVolume', { value: chargedVolume })
+                : t('dashboard.kpi.fuelVolume', { value: fuelVolume })
+            }
           />
         </Grid>
       </Grid>

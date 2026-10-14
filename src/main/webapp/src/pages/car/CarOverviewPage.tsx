@@ -4,6 +4,8 @@ import LocalGasStationRounded from '@mui/icons-material/LocalGasStationRounded';
 import BuildRounded from '@mui/icons-material/BuildRounded';
 import ReceiptLongRounded from '@mui/icons-material/ReceiptLongRounded';
 import WaterDropRounded from '@mui/icons-material/WaterDropRounded';
+import EvStationRounded from '@mui/icons-material/EvStationRounded';
+import BoltRounded from '@mui/icons-material/BoltRounded';
 import ArrowForwardRounded from '@mui/icons-material/ArrowForwardRounded';
 import { useQuery } from '@tanstack/react-query';
 import dayjs from 'dayjs';
@@ -19,6 +21,7 @@ import {
 import { localClient } from '@/utils/QueryClient';
 import { BillType, RecurringBillSort } from '@/generated';
 import { toApiDate, useFormat } from '@/utils/format';
+import { hasBattery, hasTank } from '@/utils/energy';
 import useBillList from '@/hooks/useBillList';
 import StatTile from '@/components/ui/StatTile';
 import Section from '@/components/ui/Section';
@@ -75,13 +78,7 @@ export default function CarOverviewPage({ id }: { id: number }) {
     getRemindersOptions({ client: localClient, path: { carId: id } }),
   );
 
-  const tiles = [
-    {
-      key: 'totalCost',
-      icon: <PaymentsRounded />,
-      color: 'primary',
-      value: format.money(overview?.totalCost),
-    },
+  const fuelTiles = [
     {
       key: 'avgConsumption',
       icon: <WaterDropRounded />,
@@ -94,6 +91,31 @@ export default function CarOverviewPage({ id }: { id: number }) {
       color: 'fuel',
       value: overview?.totalRefuels ?? 0,
     },
+  ] as const;
+  const chargingTiles = [
+    {
+      key: 'avgChargingConsumption',
+      icon: <BoltRounded />,
+      color: 'charging',
+      value: format.unit(overview?.avgChargingConsumption, 'kWh/100km'),
+    },
+    {
+      key: 'charges',
+      icon: <EvStationRounded />,
+      color: 'charging',
+      value: overview?.totalCharges ?? 0,
+    },
+  ] as const;
+
+  const tiles = [
+    {
+      key: 'totalCost',
+      icon: <PaymentsRounded />,
+      color: 'primary',
+      value: format.money(overview?.totalCost),
+    },
+    ...(hasTank(car?.energyType) ? fuelTiles : []),
+    ...(hasBattery(car?.energyType) ? chargingTiles : []),
     {
       key: 'maintenance',
       icon: <BuildRounded />,
@@ -114,7 +136,12 @@ export default function CarOverviewPage({ id }: { id: number }) {
         {tiles.map((tile, index) => (
           <Grid
             key={tile.key}
-            size={{ xs: index === 0 ? 12 : 6, sm: 4, lg: 'grow' }}
+            // a plug-in hybrid has 7 tiles, too many for one row
+            size={{
+              xs: index === 0 ? 12 : 6,
+              sm: 4,
+              lg: tiles.length > 5 ? 3 : 'grow',
+            }}
           >
             <StatTile
               loading={isLoading}

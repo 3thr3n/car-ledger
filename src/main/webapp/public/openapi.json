@@ -132,13 +132,22 @@
           "pricePerUnit" : {
             "type" : "number"
           },
+          "chargingPricePerUnit" : {
+            "type" : "number"
+          },
           "distance" : {
             "type" : "number"
           },
           "fuelCostPerKm" : {
             "type" : "number"
           },
+          "chargingCostPerKm" : {
+            "type" : "number"
+          },
           "fuelConsumption" : {
+            "type" : "number"
+          },
+          "chargingConsumption" : {
             "type" : "number"
           },
           "maintenanceCost" : {
@@ -212,6 +221,29 @@
             "type" : "array",
             "items" : {
               "$ref" : "#/components/schemas/Bill"
+            }
+          }
+        }
+      },
+      "BillPagedChargingBill" : {
+        "type" : "object",
+        "properties" : {
+          "total" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "page" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "data" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ChargingBill"
             }
           }
         }
@@ -310,7 +342,7 @@
       },
       "BillType" : {
         "type" : "string",
-        "enum" : [ "FUEL", "MAINTENANCE", "MISCELLANEOUS", "RECURRING" ]
+        "enum" : [ "FUEL", "CHARGING", "MAINTENANCE", "MISCELLANEOUS", "RECURRING" ]
       },
       "Car" : {
         "type" : "object",
@@ -412,6 +444,10 @@
             "type" : "integer",
             "format" : "int64"
           },
+          "totalCharges" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "totalMaintenanceEvents" : {
             "type" : "integer",
             "format" : "int64"
@@ -425,8 +461,92 @@
           },
           "avgConsumption" : {
             "type" : "number"
+          },
+          "avgChargingConsumption" : {
+            "type" : "number"
           }
         }
+      },
+      "ChargingBill" : {
+        "type" : "object",
+        "properties" : {
+          "attachments" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "date" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          },
+          "year" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "vatRate" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "distance" : {
+            "type" : "number"
+          },
+          "unit" : {
+            "type" : "number"
+          },
+          "pricePerUnit" : {
+            "type" : "number"
+          },
+          "avgConsumption" : {
+            "type" : "number"
+          },
+          "total" : {
+            "type" : "number"
+          },
+          "location" : {
+            "$ref" : "#/components/schemas/ChargingLocation"
+          },
+          "stateOfCharge" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "ChargingBillInput" : {
+        "type" : "object",
+        "properties" : {
+          "total" : {
+            "type" : "number"
+          },
+          "vatRate" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "date" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          },
+          "distance" : {
+            "type" : "number"
+          },
+          "unit" : {
+            "type" : "number"
+          },
+          "pricePerUnit" : {
+            "type" : "number"
+          },
+          "location" : {
+            "$ref" : "#/components/schemas/ChargingLocation"
+          },
+          "stateOfCharge" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "ChargingLocation" : {
+        "type" : "string",
+        "enum" : [ "HOME", "PUBLIC" ]
       },
       "CsvFields" : {
         "type" : "object",
@@ -580,6 +700,9 @@
           "pricePerUnit" : {
             "$ref" : "#/components/schemas/HiLo"
           },
+          "chargingPricePerUnit" : {
+            "$ref" : "#/components/schemas/HiLo"
+          },
           "distance" : {
             "$ref" : "#/components/schemas/HiLo"
           },
@@ -589,7 +712,13 @@
           "consumption" : {
             "$ref" : "#/components/schemas/HiLo"
           },
+          "chargingConsumption" : {
+            "$ref" : "#/components/schemas/HiLo"
+          },
           "fuelCost" : {
+            "$ref" : "#/components/schemas/HiLo"
+          },
+          "chargingCost" : {
             "$ref" : "#/components/schemas/HiLo"
           },
           "maintenanceCost" : {
@@ -735,13 +864,16 @@
       },
       "MonthStats" : {
         "type" : "object",
-        "required" : [ "month", "fuel", "maintenance", "miscellaneous", "recurring", "total", "distance", "unit" ],
+        "required" : [ "month", "fuel", "charging", "maintenance", "miscellaneous", "recurring", "total", "distance", "unit", "chargedUnit" ],
         "properties" : {
           "month" : {
             "type" : "string",
             "examples" : [ "2026-03" ]
           },
           "fuel" : {
+            "type" : "number"
+          },
+          "charging" : {
             "type" : "number"
           },
           "maintenance" : {
@@ -762,10 +894,19 @@
           "unit" : {
             "type" : "number"
           },
+          "chargedUnit" : {
+            "type" : "number"
+          },
           "pricePerUnit" : {
             "type" : "number"
           },
+          "chargingPricePerUnit" : {
+            "type" : "number"
+          },
           "consumption" : {
+            "type" : "number"
+          },
+          "chargingConsumption" : {
             "type" : "number"
           },
           "costPerKm" : {
@@ -1008,10 +1149,16 @@
           "unit" : {
             "type" : "number"
           },
+          "chargedUnit" : {
+            "type" : "number"
+          },
           "trackedDistance" : {
             "type" : "number"
           },
           "fuelTotal" : {
+            "type" : "number"
+          },
+          "chargingTotal" : {
             "type" : "number"
           },
           "maintenanceTotal" : {
@@ -1024,6 +1171,10 @@
             "type" : "number"
           },
           "fuelBills" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "chargingBills" : {
             "type" : "integer",
             "format" : "int32"
           },
@@ -1552,6 +1703,298 @@
         },
         "summary" : "Get All My Bills",
         "tags" : [ "Bill Resource" ]
+      }
+    },
+    "/api/bill/{carId}/charging" : {
+      "parameters" : [ {
+        "name" : "carId",
+        "in" : "path",
+        "required" : true,
+        "schema" : {
+          "type" : "integer",
+          "format" : "int64"
+        }
+      } ],
+      "put" : {
+        "operationId" : "addNewChargingBill",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ChargingBillInput"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "202" : {
+            "description" : "Bill created."
+          },
+          "404" : {
+            "description" : "Car is not for your user."
+          },
+          "400" : {
+            "description" : "Validation failed, please check the response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Something went wrong while saving. Please ask the server admin for help."
+          }
+        },
+        "summary" : "Add New Bill",
+        "tags" : [ "Charging Resource" ]
+      }
+    },
+    "/api/bill/{carId}/charging/all" : {
+      "parameters" : [ {
+        "name" : "carId",
+        "in" : "path",
+        "required" : true,
+        "schema" : {
+          "type" : "integer",
+          "format" : "int64"
+        }
+      } ],
+      "get" : {
+        "description" : "Gets all bills for specified car, Pages starting at 1",
+        "operationId" : "getAllChargingBills",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "order",
+          "in" : "query",
+          "schema" : {
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/SortOrder"
+            }, {
+              "default" : "DESC"
+            } ]
+          }
+        }, {
+          "name" : "page",
+          "in" : "query",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 1
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 10
+          }
+        }, {
+          "description" : "Field to sort by, the bills are sorted by date if equal",
+          "name" : "sort",
+          "in" : "query",
+          "schema" : {
+            "type" : "string",
+            "default" : "date"
+          }
+        }, {
+          "name" : "year",
+          "in" : "query",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Bills found.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/BillPagedChargingBill"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "The bills cannot be sorted by the field."
+          }
+        },
+        "summary" : "Get All My Bills",
+        "tags" : [ "Charging Resource" ]
+      }
+    },
+    "/api/bill/{carId}/charging/years" : {
+      "parameters" : [ {
+        "name" : "carId",
+        "in" : "path",
+        "required" : true,
+        "schema" : {
+          "type" : "integer",
+          "format" : "int64"
+        }
+      } ],
+      "get" : {
+        "description" : "Gets all years of bills for specified car",
+        "operationId" : "getAllChargingBillYears",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Bills found and years extracted.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "type" : "integer",
+                    "format" : "int32"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary" : "Get All My Bills",
+        "tags" : [ "Charging Resource" ]
+      }
+    },
+    "/api/bill/{carId}/charging/{billId}" : {
+      "parameters" : [ {
+        "name" : "carId",
+        "in" : "path",
+        "required" : true,
+        "schema" : {
+          "type" : "integer",
+          "format" : "int64"
+        }
+      } ],
+      "post" : {
+        "description" : "Updates a bill, calculated values are calculated again",
+        "operationId" : "updateChargingBill",
+        "parameters" : [ {
+          "name" : "billId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ChargingBillInput"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Bill updated.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ChargingBill"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed, please check the response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Bill not found for the car of your user."
+          },
+          "409" : {
+            "description" : "Another bill with the same date and total exists."
+          }
+        },
+        "summary" : "Update Bill",
+        "tags" : [ "Charging Resource" ]
+      },
+      "get" : {
+        "description" : "Gets one bill of the car",
+        "operationId" : "getChargingBill",
+        "parameters" : [ {
+          "name" : "billId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Bill found.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ChargingBill"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Bill not found for the car of your user."
+          }
+        },
+        "summary" : "Get Bill",
+        "tags" : [ "Charging Resource" ]
       }
     },
     "/api/bill/{carId}/fuel" : {

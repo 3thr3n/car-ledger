@@ -28,12 +28,31 @@ export interface MonthlyChartProps {
   subtitle?: string;
 }
 
-type View = 'costs' | 'fuel';
+type View = 'costs' | 'fuel' | 'charging';
+
+/** the price and consumption lines of the refuels or the charges */
+const energyViews = {
+  fuel: {
+    price: 'pricePerUnit',
+    consumption: 'consumption',
+    priceUnit: 'ct/l',
+    consumptionUnit: 'l/100km',
+    color: 'fuel',
+  },
+  charging: {
+    price: 'chargingPricePerUnit',
+    consumption: 'chargingConsumption',
+    priceUnit: 'ct/kWh',
+    consumptionUnit: 'kWh/100km',
+    color: 'charging',
+  },
+} as const;
 
 const HEIGHT = 300;
 
 const costParts = [
   { key: 'fuel', type: BillType.FUEL },
+  { key: 'charging', type: BillType.CHARGING },
   { key: 'maintenance', type: BillType.MAINTENANCE },
   { key: 'miscellaneous', type: BillType.MISCELLANEOUS },
   { key: 'recurring', type: BillType.RECURRING },
@@ -42,7 +61,10 @@ const costParts = [
 /** a missing average is a gap in the line, not a zero */
 const orNull = (value?: number | null) => num(value) ?? null;
 
-/** Costs per month by type, or fuel price and consumption per month. */
+/**
+ * Costs per month by type, or price and consumption of the refuels or the
+ * charges per month.
+ */
 export default function MonthlyChart({
   carId,
   from,
@@ -96,7 +118,20 @@ export default function MonthlyChart({
 
   const hasCosts = months.some((month) => (num(month.total) ?? 0) > 0);
   const hasFuel = months.some((month) => num(month.pricePerUnit) !== undefined);
-  const isEmpty = view === 'costs' ? !hasCosts : !hasFuel;
+  const hasCharging = months.some(
+    (month) => num(month.chargingPricePerUnit) !== undefined,
+  );
+  // the fuel view stays without any charges, also when it is still empty
+  const views: View[] = [
+    'costs',
+    ...(hasFuel || !hasCharging ? (['fuel'] as const) : []),
+    ...(hasCharging ? (['charging'] as const) : []),
+  ];
+  // e.g. the fuel view of a filter which now only has charges
+  const shown = views.includes(view) ? view : 'costs';
+  const isEmpty =
+    shown === 'costs' ? !hasCosts : shown === 'fuel' ? !hasFuel : !hasCharging;
+  const energy = shown === 'costs' ? undefined : energyViews[shown];
 
   const compactMoney = new Intl.NumberFormat(format.locale, {
     style: 'currency',
@@ -112,15 +147,14 @@ export default function MonthlyChart({
         <ToggleButtonGroup
           size="small"
           exclusive
-          value={view}
+          value={shown}
           onChange={(_, value) => value && setView(value)}
         >
-          <ToggleButton value="costs" sx={{ px: 1.5 }}>
-            {t('dashboard.monthly.costs')}
-          </ToggleButton>
-          <ToggleButton value="fuel" sx={{ px: 1.5 }}>
-            {t('dashboard.monthly.fuel')}
-          </ToggleButton>
+          {views.map((option) => (
+            <ToggleButton key={option} value={option} sx={{ px: 1.5 }}>
+              {t(`dashboard.monthly.${option}`)}
+            </ToggleButton>
+          ))}
         </ToggleButtonGroup>
       }
     >
@@ -136,10 +170,10 @@ export default function MonthlyChart({
           <EmptyState
             compact
             icon={<BarChartRounded />}
-            title={t(`dashboard.monthly.empty.${view}`)}
+            title={t(`dashboard.monthly.empty.${shown}`)}
           />
         </Box>
-      ) : view === 'costs' ? (
+      ) : !energy ? (
         <BarChart
           height={HEIGHT}
           loading={isLoading}
@@ -165,30 +199,34 @@ export default function MonthlyChart({
         <LineChart
           height={HEIGHT}
           loading={isLoading}
-          dataset={months.map(fuelRow)}
+          dataset={months.map((month) => ({
+            month: month.month,
+            pricePerUnit: orNull(month[energy.price]),
+            consumption: orNull(month[energy.consumption]),
+          }))}
           xAxis={[xAxis]}
           yAxis={[
             {
               id: 'price',
               width: 56,
-              label: 'ct/l',
+              label: energy.priceUnit,
             },
             {
               id: 'consumption',
               position: 'right',
               width: 48,
-              label: 'l/100km',
+              label: energy.consumptionUnit,
             },
           ]}
           series={[
             {
               dataKey: 'pricePerUnit',
               yAxisId: 'price',
-              label: t('dashboard.monthly.pricePerUnit'),
-              color: theme.palette.fuel.main,
+              label: t(`dashboard.monthly.pricePerUnit.${shown}`),
+              color: theme.palette[energy.color].main,
               connectNulls: true,
               valueFormatter: (value: number | null) =>
-                format.unit(value, 'ct/l', 1),
+                format.unit(value, energy.priceUnit, 1),
             },
             {
               dataKey: 'consumption',
@@ -197,7 +235,7 @@ export default function MonthlyChart({
               color: theme.palette.primary.main,
               connectNulls: true,
               valueFormatter: (value: number | null) =>
-                format.unit(value, 'l/100km'),
+                format.unit(value, energy.consumptionUnit),
             },
           ]}
           margin={{ left: 0, right: 0 }}
@@ -211,16 +249,9 @@ function costRow(month: MonthStats) {
   return {
     month: month.month,
     fuel: num(month.fuel) ?? 0,
+    charging: num(month.charging) ?? 0,
     maintenance: num(month.maintenance) ?? 0,
     miscellaneous: num(month.miscellaneous) ?? 0,
     recurring: num(month.recurring) ?? 0,
-  };
-}
-
-function fuelRow(month: MonthStats) {
-  return {
-    month: month.month,
-    pricePerUnit: orNull(month.pricePerUnit),
-    consumption: orNull(month.consumption),
   };
 }

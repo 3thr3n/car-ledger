@@ -8,7 +8,7 @@ import jakarta.persistence.*;
 
 @Entity
 @Table(name = "bill_fuel")
-public class FuelBillEntity extends AbstractBillEntity
+public class FuelBillEntity extends AbstractBillEntity implements EnergyBill
 {
 	@Id
 	private Long id;

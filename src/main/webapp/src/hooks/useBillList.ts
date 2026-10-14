@@ -3,6 +3,8 @@ import { useState } from 'react';
 import {
   getAllBillsOptions,
   getAllBillYearsOptions,
+  getAllChargingBillsOptions,
+  getAllChargingBillYearsOptions,
   getAllFuelBillsOptions,
   getAllFuelBillYearsOptions,
   getAllMaintenanceBillsOptions,
@@ -13,17 +15,20 @@ import {
 import { localClient } from '@/utils/QueryClient';
 import {
   Bill,
+  ChargingBill,
   FuelBill,
   MaintenanceBill,
   MiscellaneousBill,
   SortOrder,
 } from '@/generated';
 
-export type ListKind = 'all' | 'fuel' | 'maintenance' | 'miscellaneous';
+export type ListKind =
+  'all' | 'fuel' | 'charging' | 'maintenance' | 'miscellaneous';
 
 interface RowMap {
   all: Bill;
   fuel: FuelBill;
+  charging: ChargingBill;
   maintenance: MaintenanceBill;
   miscellaneous: MiscellaneousBill;
 }
@@ -46,6 +51,7 @@ export const DEFAULT_SORT: SortModel = { field: 'date', sort: 'desc' };
 const listOptions = {
   all: getAllBillsOptions,
   fuel: getAllFuelBillsOptions,
+  charging: getAllChargingBillsOptions,
   maintenance: getAllMaintenanceBillsOptions,
   miscellaneous: getAllMiscellaneousBillsOptions,
 };
@@ -53,6 +59,7 @@ const listOptions = {
 const yearOptions = {
   all: getAllBillYearsOptions,
   fuel: getAllFuelBillYearsOptions,
+  charging: getAllChargingBillYearsOptions,
   maintenance: getAllMaintenanceBillYearsOptions,
   miscellaneous: getAllMiscellaneousBillYearsOptions,
 };

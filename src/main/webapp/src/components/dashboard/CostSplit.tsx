@@ -20,13 +20,18 @@ export default function CostSplit({ total }: { total: TotalStats }) {
   const format = useFormat();
 
   const fuel = num(total.fuelTotal) ?? 0;
+  const charging = num(total.chargingTotal) ?? 0;
   const maintenance = num(total.maintenanceTotal) ?? 0;
   const miscellaneous = num(total.miscellaneousTotal) ?? 0;
   const sum = num(total.total) ?? 0;
-  const recurring = Math.max(0, sum - fuel - maintenance - miscellaneous);
+  const recurring = Math.max(
+    0,
+    sum - fuel - charging - maintenance - miscellaneous,
+  );
 
   const parts: Part[] = [
     { type: BillType.FUEL, amount: fuel, count: total.fuelBills },
+    { type: BillType.CHARGING, amount: charging, count: total.chargingBills },
     {
       type: BillType.MAINTENANCE,
       amount: maintenance,

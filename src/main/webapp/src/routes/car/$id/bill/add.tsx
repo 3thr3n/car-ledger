@@ -18,7 +18,7 @@ function RouteComponent() {
   return (
     <AddBillPage
       carId={Number(id)}
-      type={type ?? BillType.FUEL}
+      type={type}
       onTypeChange={(next) =>
         navigate({ search: { type: next }, replace: true })
       }

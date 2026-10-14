@@ -49,6 +49,7 @@ public class BillRepository extends AbstractBillRepository<BillEntity>
 
 		String query = "from bill b"
 				+ " left join fetch b.fuelBill"
+				+ " left join fetch b.chargingBill"
 				+ " left join fetch b.maintenanceBill"
 				+ " left join fetch b.miscellaneousBill"
 				+ where(carId, username, from, to, params);
@@ -89,13 +90,15 @@ public class BillRepository extends AbstractBillRepository<BillEntity>
 	}
 
 	/**
-	 * @return average consumption of all fuel bills of a car, which have a
+	 * @param energy
+	 *            the refuels in l/100km or the charges in kWh/100km
+	 * @return average consumption of all refuels or charges of a car, which have a
 	 *         consumption
 	 */
-	public BigDecimal averageConsumption(long carId, String username)
+	public BigDecimal averageConsumption(long carId, String username, Energy energy)
 	{
 		Object[] sumAndCount = getEntityManager()
-				.createQuery("select sum(f.avgConsumption), count(f) from FuelBillEntity f"
+				.createQuery("select sum(f.avgConsumption), count(f) from " + energy.entity + " f"
 						+ " where f.bill.car.id = :carId and f.bill.car.user.userId = :userId"
 						+ " and f.avgConsumption > 0", Object[].class)
 				.setParameter("carId", carId)
@@ -130,27 +133,27 @@ public class BillRepository extends AbstractBillRepository<BillEntity>
 	}
 
 	/**
-	 * Liters and distance per month. Consumption and price only use refuels with a
-	 * distance, the others would distort them.
+	 * Liters or kWh and distance per month and car. Consumption and price only use
+	 * refuels or charges with a distance, the others would distort them.
 	 *
 	 * @param carId
 	 *            or {@link CarRepository#ALL_CARS}
-	 * @return months without refuels are missing
+	 * @return months without refuels or charges are missing
 	 */
-	public List<MonthFuel> sumFuelPerMonth(long carId, String username, Optional<LocalDate> from,
-			Optional<LocalDate> to)
+	public List<MonthEnergy> sumEnergyPerMonth(long carId, String username, Optional<LocalDate> from,
+			Optional<LocalDate> to, Energy energy)
 	{
 		Map<String, Object> params = new HashMap<>();
-		String query = "select year(b.date), month(b.date), sum(f.unit), sum(coalesce(f.distance, 0)),"
+		String query = "select year(b.date), month(b.date), b.car.id, sum(f.unit), sum(coalesce(f.distance, 0)),"
 				+ " sum(case when f.distance > 0 then f.unit else 0 end),"
 				+ " sum(f.pricePerUnit * f.unit)"
-				+ " from bill b join b.fuelBill f"
+				+ " from bill b join b." + energy.association + " f"
 				+ where(carId, username, from, to, params)
-				+ " group by year(b.date), month(b.date)";
+				+ " group by year(b.date), month(b.date), b.car.id";
 
 		return rows(query, params).stream()
-				.map(row -> new MonthFuel(month(row), (BigDecimal) row[2], (BigDecimal) row[3],
-						(BigDecimal) row[4], (BigDecimal) row[5]))
+				.map(row -> new MonthEnergy(month(row), (Long) row[2], (BigDecimal) row[3], (BigDecimal) row[4],
+						(BigDecimal) row[5], (BigDecimal) row[6]))
 				.toList();
 	}
 
@@ -196,13 +199,31 @@ public class BillRepository extends AbstractBillRepository<BillEntity>
 	}
 
 	/**
+	 * @param unit
+	 *            liters or kWh
 	 * @param unitWithDistance
-	 *            liters of the refuels with a distance
+	 *            liters or kWh of the refuels or charges with a distance
 	 * @param pricedUnit
-	 *            sum of price per liter (cent) times liters
+	 *            sum of price per unit (cent) times unit
 	 */
-	public record MonthFuel(YearMonth month, BigDecimal unit, BigDecimal distance, BigDecimal unitWithDistance,
-			BigDecimal pricedUnit)
+	public record MonthEnergy(YearMonth month, long carId, BigDecimal unit, BigDecimal distance,
+			BigDecimal unitWithDistance, BigDecimal pricedUnit)
 	{
+	}
+
+	/**
+	 * Refuels in liters or charges in kWh
+	 */
+	public enum Energy {
+		FUEL("FuelBillEntity", "fuelBill"), CHARGING("ChargingBillEntity", "chargingBill");
+
+		private final String entity;
+		private final String association;
+
+		Energy(String entity, String association)
+		{
+			this.entity = entity;
+			this.association = association;
+		}
 	}
 }

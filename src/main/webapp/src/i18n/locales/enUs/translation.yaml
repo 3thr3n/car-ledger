@@ -78,6 +78,9 @@ dashboard:
     consumption: "Avg. consumption"
     distance: "Tracked distance"
     fuelVolume: "{{value}} fuel"
+    chargingConsumption: "{{value}} electric"
+    chargedVolume: "{{value}} charged"
+    bothVolumes: "{{fuel}} fuel · {{charged}} charged"
   split:
     title: "Cost breakdown"
     subtitle: "Share of each kind of expense"
@@ -89,6 +92,8 @@ dashboard:
     distance: "Distance per refuel"
     fuelCostPerKm: "Fuel cost per km"
     maintenanceCost: "Cost per maintenance"
+    chargingPricePerUnit: "Electricity price"
+    chargingCostPerKm: "Charging cost per km"
   range:
     title: "Lowest and highest"
     subtitle: "Spread across single entries"
@@ -98,6 +103,9 @@ dashboard:
     distance: "Distance per refuel"
     fuelCost: "Cost per refuel"
     maintenanceCost: "Cost per maintenance"
+    chargingPricePerUnit: "Electricity price"
+    chargingConsumption: "Consumption (electric)"
+    chargingCost: "Cost per charge"
   reminders:
     title: "Due soon"
     subtitle: "Overdue reminders and the ones due in the next 30 days or 1,000 km"
@@ -105,12 +113,16 @@ dashboard:
     title: "Costs per month"
     costs: "Costs"
     fuel: "Fuel"
-    pricePerUnit: "Fuel price"
+    charging: "Charging"
+    pricePerUnit:
+      fuel: "Fuel price"
+      charging: "Electricity price"
     consumption: "Consumption"
     tooltipTotal: "{{month}} · Total {{total}}"
     empty:
       costs: "No costs in this period"
       fuel: "No refuels in this period"
+      charging: "No charges in this period"
   empty:
     title: "Nothing to analyze yet"
     text: "Add entries to one of your cars and the numbers show up here."
@@ -158,6 +170,8 @@ car:
     runningEmpty: "No running recurring costs"
     addRecurring: "Add recurring cost"
     nextDue: "Next due {{date}}"
+    avgChargingConsumption: "Avg. consumption (electric)"
+    charges: "Charges"
   picture:
     choose: "Choose picture"
     change: "Change picture"
@@ -239,6 +253,7 @@ bill:
   currentOdometer: "Currently about {{km}}"
   types:
     FUEL: "Fuel"
+    CHARGING: "Charging"
     MAINTENANCE: "Maintenance"
     MISCELLANEOUS: "Miscellaneous"
     RECURRING: "Recurring"
@@ -283,6 +298,10 @@ bill:
     amount: "Amount"
     paidTotal: "Paid so far"
     status: "Status"
+    chargedUnit: "kWh"
+    chargingPricePerUnit: "Price per kWh"
+    location: "Location"
+    stateOfCharge: "State of charge"
   add:
     button: "Add entry"
     title: "New entry"
@@ -291,6 +310,7 @@ bill:
     saved: "Entry saved"
     describe:
       FUEL: "A refuel. Two of total, liters and price per liter are enough."
+      CHARGING: "A charge at home or at a station. Two of total, kWh and price per kWh are enough."
       MAINTENANCE: "A service, inspection or repair."
       MISCELLANEOUS: "Any other one-off expense, like a car wash or parking."
       RECURRING: "A fixed cost that repeats, like insurance or a leasing rate."
@@ -311,6 +331,7 @@ bill:
   empty:
     title: "No {{type}} entries yet"
     FUEL: "Record your refuels to see consumption and fuel costs."
+    CHARGING: "Record your charges to see the consumption in kWh and the charging costs."
     MAINTENANCE: "Record services and repairs to track maintenance costs."
     MISCELLANEOUS: "Record other expenses like parking or a car wash."
     RECURRING: "Add fixed costs like insurance — they are booked automatically."
@@ -320,6 +341,14 @@ bill:
   computed: "Calculated: {{value}}"
   consumption: "Consumption: {{value}}"
   distanceHelp: "Kilometers since the last refuel"
+  chargingHint: "Fill in at least two of total, kWh and price per kWh. The third value is calculated."
+  overBattery: "{{unit}} is more than the battery holds ({{size}}), even with charging losses. Please check the kWh."
+  chargingDistanceHelp: "Kilometers since the last charge"
+  stateOfChargeHelp: "Optional, after charging"
+  locations:
+    HOME: "Home"
+    PUBLIC: "Public station"
+    none: "Not specified"
   estimateHelp: "As shown by the on-board computer"
   totalHelp: "Leave empty to use labor + parts"
   amountHelp: "Charged on every due date"

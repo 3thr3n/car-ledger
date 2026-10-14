@@ -36,10 +36,13 @@ public class BillEntity extends AbstractBillEntity
 	@JoinColumn(name = "b_car_id", nullable = false)
 	protected CarEntity car;
 
-	// lazy, otherwise every loaded bill triggers three extra selects; fetch join
+	// lazy, otherwise every loaded bill triggers four extra selects; fetch join
 	// them where needed
 	@OneToOne(mappedBy = "bill", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private FuelBillEntity fuelBill;
+
+	@OneToOne(mappedBy = "bill", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	private ChargingBillEntity chargingBill;
 
 	@OneToOne(mappedBy = "bill", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private MaintenanceBillEntity maintenanceBill;
@@ -145,6 +148,11 @@ public class BillEntity extends AbstractBillEntity
 	public FuelBillEntity getFuelBill()
 	{
 		return fuelBill;
+	}
+
+	public ChargingBillEntity getChargingBill()
+	{
+		return chargingBill;
 	}
 
 	public MaintenanceBillEntity getMaintenanceBill()

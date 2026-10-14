@@ -14,7 +14,7 @@ import jakarta.persistence.TypedQuery;
 /**
  * Calculates the current odometer of cars. Readings are the odometer of the car
  * and the ones of maintenance bills. The latest reading is the base, the
- * distances of the refuels after its day are added.
+ * distances of the refuels or charges after its day are added.
  */
 @ApplicationScoped
 public class OdometerService
@@ -52,23 +52,40 @@ public class OdometerService
 			add(readings, row);
 		}
 
-		// refuel distance per car and day, one row per day with a refuel
+		Map<Long, NavigableMap<LocalDate, BigDecimal>> refueled = drivenPerDay("FuelBillEntity", carId, username);
+		Map<Long, NavigableMap<LocalDate, BigDecimal>> charged = drivenPerDay("ChargingBillEntity", carId, username);
+
+		Map<Long, Odometer> odometers = new HashMap<>();
+		readings.forEach((id, carReadings) -> odometers.put(id,
+				calculate(carReadings, refueled.getOrDefault(id, Collections.emptyNavigableMap()),
+						charged.getOrDefault(id, Collections.emptyNavigableMap()))));
+		return odometers;
+	}
+
+	/**
+	 * @param entity
+	 *            the refuels or the charges
+	 * @return distance per car and day, one entry per day with a distance
+	 */
+	private Map<Long, NavigableMap<LocalDate, BigDecimal>> drivenPerDay(String entity, long carId, String username)
+	{
 		Map<Long, NavigableMap<LocalDate, BigDecimal>> driven = new HashMap<>();
-		for (Object[] row : query("select b.car.id, b.date, sum(f.distance) from FuelBillEntity f join f.bill b"
+		for (Object[] row : query("select b.car.id, b.date, sum(f.distance) from " + entity + " f join f.bill b"
 				+ " where b.car.user.userId = :userId and f.distance > 0", "b.car", carId, username,
 				" group by b.car.id, b.date"))
 		{
 			driven.computeIfAbsent((Long) row[0], id -> new TreeMap<>()).put((LocalDate) row[1],
 					(BigDecimal) row[2]);
 		}
-
-		Map<Long, Odometer> odometers = new HashMap<>();
-		readings.forEach((id, carReadings) -> odometers.put(id,
-				calculate(carReadings, driven.getOrDefault(id, Collections.emptyNavigableMap()))));
-		return odometers;
+		return driven;
 	}
 
-	static Odometer calculate(List<Reading> readings, NavigableMap<LocalDate, BigDecimal> drivenPerDay)
+	/**
+	 * Both distances are the km since the last refuel or charge: a plug-in hybrid
+	 * counts the larger one, not both.
+	 */
+	static Odometer calculate(List<Reading> readings, NavigableMap<LocalDate, BigDecimal> refueledPerDay,
+			NavigableMap<LocalDate, BigDecimal> chargedPerDay)
 	{
 		// latest by day, the higher one on the same day
 		Reading base = readings.stream()
@@ -76,13 +93,18 @@ public class OdometerService
 				.orElseThrow();
 		int highest = readings.stream().mapToInt(Reading::value).max().orElseThrow();
 
-		int driven = drivenPerDay.tailMap(base.date(), false)
+		int driven = Math.max(drivenSince(refueledPerDay, base.date()), drivenSince(chargedPerDay, base.date()));
+
+		return new Odometer(Math.max(base.value() + driven, highest), base.value(), base.date(), driven);
+	}
+
+	private static int drivenSince(NavigableMap<LocalDate, BigDecimal> drivenPerDay, LocalDate day)
+	{
+		return drivenPerDay.tailMap(day, false)
 				.values()
 				.stream()
 				.reduce(BigDecimal.ZERO, BigDecimal::add)
 				.intValue();
-
-		return new Odometer(Math.max(base.value() + driven, highest), base.value(), base.date(), driven);
 	}
 
 	private static void add(Map<Long, List<Reading>> readings, Object[] row)

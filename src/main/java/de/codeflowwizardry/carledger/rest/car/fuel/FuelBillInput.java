@@ -8,8 +8,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import de.codeflowwizardry.carledger.rest.records.input.AbstractBillInput;
+import de.codeflowwizardry.carledger.rest.records.input.EnergyBillInput;
 
-public class FuelBillInput extends AbstractBillInput
+public class FuelBillInput extends AbstractBillInput implements EnergyBillInput
 {
 	private final BigDecimal distance;
 	private final BigDecimal unit;

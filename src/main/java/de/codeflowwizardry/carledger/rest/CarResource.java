@@ -17,6 +17,7 @@ import de.codeflowwizardry.carledger.data.AccountEntity;
 import de.codeflowwizardry.carledger.data.CarEntity;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.BillRepository;
+import de.codeflowwizardry.carledger.data.repository.BillRepository.Energy;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import de.codeflowwizardry.carledger.data.repository.RecurringBillPaymentRepository;
 import de.codeflowwizardry.carledger.exception.WrongUserException;
@@ -89,7 +90,8 @@ public class CarResource extends AbstractResource
 		// the total contains the payments of the recurring costs, like the dashboard
 		return CarOverview.convert(billRepository.summarizeByType(id, context.getName()),
 				recurringBillPaymentRepository.sumAmount(id, context.getName(), Optional.empty(), Optional.empty()),
-				billRepository.averageConsumption(id, context.getName()));
+				billRepository.averageConsumption(id, context.getName(), Energy.FUEL),
+				billRepository.averageConsumption(id, context.getName(), Energy.CHARGING));
 	}
 
 	@POST

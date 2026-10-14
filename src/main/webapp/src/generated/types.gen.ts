@@ -48,9 +48,12 @@ export type Attachment = {
 
 export type AverageStats = {
     pricePerUnit?: number;
+    chargingPricePerUnit?: number;
     distance?: number;
     fuelCostPerKm?: number;
+    chargingCostPerKm?: number;
     fuelConsumption?: number;
+    chargingConsumption?: number;
     maintenanceCost?: number;
     costPerKm?: number;
 };
@@ -88,6 +91,13 @@ export type BillPagedBill = {
     data?: Array<Bill>;
 };
 
+export type BillPagedChargingBill = {
+    total?: number;
+    page?: number;
+    size?: number;
+    data?: Array<ChargingBill>;
+};
+
 export type BillPagedFuelBill = {
     total?: number;
     page?: number;
@@ -118,6 +128,7 @@ export type BillPagedRecurringBill = {
 
 export enum BillType {
     FUEL = 'FUEL',
+    CHARGING = 'CHARGING',
     MAINTENANCE = 'MAINTENANCE',
     MISCELLANEOUS = 'MISCELLANEOUS',
     RECURRING = 'RECURRING'
@@ -156,11 +167,44 @@ export type CarInput = {
 
 export type CarOverview = {
     totalRefuels?: number;
+    totalCharges?: number;
     totalMaintenanceEvents?: number;
     totalMiscellaneousEvents?: number;
     totalCost?: number;
     avgConsumption?: number;
+    avgChargingConsumption?: number;
 };
+
+export type ChargingBill = {
+    attachments?: number;
+    id?: number;
+    date?: LocalDate;
+    year?: number;
+    vatRate?: number;
+    distance?: number;
+    unit?: number;
+    pricePerUnit?: number;
+    avgConsumption?: number;
+    total?: number;
+    location?: ChargingLocation;
+    stateOfCharge?: number;
+};
+
+export type ChargingBillInput = {
+    total?: number;
+    vatRate?: number;
+    date?: LocalDate;
+    distance?: number;
+    unit?: number;
+    pricePerUnit?: number;
+    location?: ChargingLocation;
+    stateOfCharge?: number;
+};
+
+export enum ChargingLocation {
+    HOME = 'HOME',
+    PUBLIC = 'PUBLIC'
+}
 
 export type CsvFields = {
     all?: Array<string>;
@@ -221,10 +265,13 @@ export type HiLo = {
 
 export type HiLoStats = {
     pricePerUnit?: HiLo;
+    chargingPricePerUnit?: HiLo;
     distance?: HiLo;
     fuelCostPerKm?: HiLo;
     consumption?: HiLo;
+    chargingConsumption?: HiLo;
     fuelCost?: HiLo;
+    chargingCost?: HiLo;
     maintenanceCost?: HiLo;
 };
 
@@ -279,14 +326,18 @@ export type MiscellaneousBillInput = {
 export type MonthStats = {
     month: string;
     fuel: number;
+    charging: number;
     maintenance: number;
     miscellaneous: number;
     recurring: number;
     total: number;
     distance: number;
     unit: number;
+    chargedUnit: number;
     pricePerUnit?: number;
+    chargingPricePerUnit?: number;
     consumption?: number;
+    chargingConsumption?: number;
     costPerKm?: number;
 };
 
@@ -386,12 +437,15 @@ export enum SortOrder {
 
 export type TotalStats = {
     unit?: number;
+    chargedUnit?: number;
     trackedDistance?: number;
     fuelTotal?: number;
+    chargingTotal?: number;
     maintenanceTotal?: number;
     miscellaneousTotal?: number;
     total?: number;
     fuelBills?: number;
+    chargingBills?: number;
     maintenanceBills?: number;
     miscellaneousBills?: number;
 };
@@ -712,6 +766,153 @@ export type GetAllBillsResponses = {
 };
 
 export type GetAllBillsResponse = GetAllBillsResponses[keyof GetAllBillsResponses];
+
+export type AddNewChargingBillData = {
+    body: ChargingBillInput;
+    path: {
+        carId: number;
+    };
+    query?: never;
+    url: '/api/bill/{carId}/charging';
+};
+
+export type AddNewChargingBillErrors = {
+    /**
+     * Validation failed, please check the response
+     */
+    400: Array<unknown>;
+    /**
+     * Car is not for your user.
+     */
+    404: unknown;
+    /**
+     * Something went wrong while saving. Please ask the server admin for help.
+     */
+    500: unknown;
+};
+
+export type AddNewChargingBillError = AddNewChargingBillErrors[keyof AddNewChargingBillErrors];
+
+export type AddNewChargingBillResponses = {
+    /**
+     * Bill created.
+     */
+    202: unknown;
+};
+
+export type GetAllChargingBillsData = {
+    body?: never;
+    path: {
+        carId: number;
+    };
+    query?: {
+        order?: SortOrder & unknown;
+        page?: number;
+        size?: number;
+        /**
+         * Field to sort by, the bills are sorted by date if equal
+         */
+        sort?: string;
+        year?: number;
+    };
+    url: '/api/bill/{carId}/charging/all';
+};
+
+export type GetAllChargingBillsErrors = {
+    /**
+     * The bills cannot be sorted by the field.
+     */
+    400: unknown;
+};
+
+export type GetAllChargingBillsResponses = {
+    /**
+     * Bills found.
+     */
+    200: BillPagedChargingBill;
+};
+
+export type GetAllChargingBillsResponse = GetAllChargingBillsResponses[keyof GetAllChargingBillsResponses];
+
+export type GetAllChargingBillYearsData = {
+    body?: never;
+    path: {
+        carId: number;
+    };
+    query?: never;
+    url: '/api/bill/{carId}/charging/years';
+};
+
+export type GetAllChargingBillYearsResponses = {
+    /**
+     * Bills found and years extracted.
+     */
+    200: Array<number>;
+};
+
+export type GetAllChargingBillYearsResponse = GetAllChargingBillYearsResponses[keyof GetAllChargingBillYearsResponses];
+
+export type GetChargingBillData = {
+    body?: never;
+    path: {
+        carId: number;
+        billId: number;
+    };
+    query?: never;
+    url: '/api/bill/{carId}/charging/{billId}';
+};
+
+export type GetChargingBillErrors = {
+    /**
+     * Bill not found for the car of your user.
+     */
+    404: unknown;
+};
+
+export type GetChargingBillResponses = {
+    /**
+     * Bill found.
+     */
+    200: ChargingBill;
+};
+
+export type GetChargingBillResponse = GetChargingBillResponses[keyof GetChargingBillResponses];
+
+export type UpdateChargingBillData = {
+    body: ChargingBillInput;
+    path: {
+        carId: number;
+        billId: number;
+    };
+    query?: never;
+    url: '/api/bill/{carId}/charging/{billId}';
+};
+
+export type UpdateChargingBillErrors = {
+    /**
+     * Validation failed, please check the response
+     */
+    400: Array<unknown>;
+    /**
+     * Bill not found for the car of your user.
+     */
+    404: unknown;
+    /**
+     * Another bill with the same date and total exists.
+     */
+    409: unknown;
+};
+
+export type UpdateChargingBillError = UpdateChargingBillErrors[keyof UpdateChargingBillErrors];
+
+export type UpdateChargingBillResponses = {
+    /**
+     * Bill updated.
+     */
+    200: ChargingBill;
+};
+
+export type UpdateChargingBillResponse = UpdateChargingBillResponses[keyof UpdateChargingBillResponses];
 
 export type AddNewFuelBillData = {
     body: FuelBillInput;
