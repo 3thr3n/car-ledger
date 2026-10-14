@@ -514,6 +514,42 @@ class ImportResourceTest
 				.statusCode(200);
 	}
 
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldExplainWhyATypeCannotBeImported()
+	{
+		given()
+				.queryParam("importType", "RECURRING")
+				.when()
+				.get("/api/import/" + carEntity.getId() + "/fields")
+				.then()
+				.statusCode(400)
+				.body(is("Recurring costs cannot be imported, their payments are booked automatically!"));
+
+		given()
+				.queryParam("importType", "CHARGING")
+				.when()
+				.get("/api/import/" + carEntity.getId() + "/fields")
+				.then()
+				.statusCode(400)
+				.body(is("Charges cannot be imported yet, only refuels, maintenance and miscellaneous entries!"));
+
+		given().contentType(ContentType.MULTIPART)
+				.multiPart("file", "import.csv", getFile("csv/maintenance_import_1.csv"), "text/csv")
+				.multiPart("order", """
+						{ "date": 0, "total": 1 }
+						""")
+				.multiPart("billType", "RECURRING")
+				.multiPart("vat", 19)
+				.when()
+				.post("/api/import/" + carEntity.getId())
+				.then()
+				.statusCode(400)
+				.body(is("Recurring costs cannot be imported, their payments are booked automatically!"));
+	}
+
 	@AfterEach
 	@Transactional
 	void cleanup()
