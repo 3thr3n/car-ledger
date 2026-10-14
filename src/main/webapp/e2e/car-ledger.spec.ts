@@ -146,6 +146,29 @@ test.describe.serial('car ledger', () => {
     await expect(row.getByRole('button', { name: 'End' })).toHaveCount(0);
   });
 
+  test('fixes the name of a recurring cost', async () => {
+    await page
+      .getByRole('row', { name: /E2E Insurance/ })
+      .getByRole('button', { name: 'Edit' })
+      .click();
+
+    await expect(field(/^Name/)).toHaveValue('E2E Insurance');
+    await field(/^Name/).fill('E2E Car insurance');
+    // only a changed amount, interval or date books the payments again
+    const rebook = page.getByText('The payments are booked again');
+    await expect(rebook).toHaveCount(0);
+    await field(/^Amount/).fill('40');
+    await expect(rebook).toBeVisible();
+    await field(/^Amount/).fill('39.9');
+    await expect(rebook).toHaveCount(0);
+    await page.getByRole('button', { name: 'Save', exact: true }).click();
+
+    await expect(page).toHaveURL(/\/bill\/recurring$/);
+    const row = page.getByRole('row', { name: /E2E Car insurance/ });
+    await expect(row).toContainText('Finished');
+    await expect(row).toContainText(money(39.9));
+  });
+
   const uploadCsv = (name: string, lines: string[]) =>
     page.locator('input[type=file]').setInputFiles({
       name,

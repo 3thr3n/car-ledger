@@ -312,6 +312,7 @@ bill:
   miscellaneousPlaceholder: "e.g. Car wash"
   recurringPlaceholder: "e.g. Car insurance"
   recurringPastHint: "The start date is in the past — all payments since then are booked right away."
+  recurringRebookHint: "The payments are booked again from the start date with the new values."
   recurringInfo: "Payments are booked automatically on each due date."
   onlyRunning: "Only running"
   errors:

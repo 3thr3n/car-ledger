@@ -6,6 +6,7 @@ import {
   getFuelBillOptions,
   getMaintenanceBillOptions,
   getMiscellaneousBillOptions,
+  getRecurringBillOptions,
 } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
 import PageHeader from '@/components/ui/PageHeader';
@@ -13,10 +14,14 @@ import TypeChip from '@/components/ui/TypeChip';
 import FuelForm from '@/components/bill/FuelForm';
 import MaintenanceForm from '@/components/bill/MaintenanceForm';
 import MiscellaneousForm from '@/components/bill/MiscellaneousForm';
+import RecurringForm from '@/components/bill/RecurringForm';
 import ErrorPage from '@/pages/ErrorPage';
 
 export type EditableBillType =
-  BillType.FUEL | BillType.MAINTENANCE | BillType.MISCELLANEOUS;
+  | BillType.FUEL
+  | BillType.MAINTENANCE
+  | BillType.MISCELLANEOUS
+  | BillType.RECURRING;
 
 export interface EditBillPageProps {
   carId: number;
@@ -44,11 +49,16 @@ export default function EditBillPage({
     ...getMiscellaneousBillOptions({ client: localClient, path }),
     enabled: type === BillType.MISCELLANEOUS,
   });
+  const recurring = useQuery({
+    ...getRecurringBillOptions({ client: localClient, path }),
+    enabled: type === BillType.RECURRING,
+  });
 
   const query = {
     FUEL: fuel,
     MAINTENANCE: maintenance,
     MISCELLANEOUS: miscellaneous,
+    RECURRING: recurring,
   }[type];
 
   if (query.isError) {
@@ -88,6 +98,9 @@ export default function EditBillPage({
                 carId={carId}
                 bill={miscellaneous.data}
               />
+            )}
+            {recurring.data && (
+              <RecurringForm key={billId} carId={carId} bill={recurring.data} />
             )}
           </>
         )}

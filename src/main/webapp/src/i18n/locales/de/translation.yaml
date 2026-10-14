@@ -312,6 +312,7 @@ bill:
   miscellaneousPlaceholder: "z. B. Waschanlage"
   recurringPlaceholder: "z. B. Kfz-Versicherung"
   recurringPastHint: "Der Beginn liegt in der Vergangenheit — alle Zahlungen seitdem werden sofort gebucht."
+  recurringRebookHint: "Die Zahlungen werden ab dem Beginn mit den neuen Werten neu gebucht."
   recurringInfo: "Zahlungen werden an jedem Fälligkeitstag automatisch gebucht."
   onlyRunning: "Nur laufende"
   errors:

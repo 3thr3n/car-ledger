@@ -71,6 +71,14 @@ public class RecurringBillPaymentRepository implements PanacheRepository<Recurri
 		delete("bill = ?1 and dueDate >= ?2", bill, day);
 	}
 
+	/**
+	 * Removes all payments of the bill
+	 */
+	public void deleteAll(RecurringBillEntity bill)
+	{
+		delete("bill", bill);
+	}
+
 	public BigDecimal sumAmount(RecurringBillEntity bill)
 	{
 		BigDecimal sum = getEntityManager()

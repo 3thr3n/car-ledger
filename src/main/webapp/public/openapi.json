@@ -2519,6 +2519,103 @@
       }
     },
     "/api/bill/{carId}/recurring/{billId}" : {
+      "post" : {
+        "description" : "Updates a recurring bill, a changed amount, interval or date books the payments again",
+        "operationId" : "updateRecurringBill",
+        "parameters" : [ {
+          "name" : "billId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/RecurringBillInput"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Bill updated.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RecurringBill"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed, please check the response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Bill not found for the car of your user."
+          }
+        },
+        "summary" : "Update Recurring Bill",
+        "tags" : [ "Recurring Resource" ]
+      },
+      "get" : {
+        "description" : "Gets one recurring bill of the car",
+        "operationId" : "getRecurringBill",
+        "parameters" : [ {
+          "name" : "billId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Bill found.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RecurringBill"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Bill not found for the car of your user."
+          }
+        },
+        "summary" : "Get Recurring Bill",
+        "tags" : [ "Recurring Resource" ]
+      },
       "delete" : {
         "operationId" : "deleteRecurringBill",
         "parameters" : [ {
