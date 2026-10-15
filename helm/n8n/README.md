@@ -36,7 +36,7 @@ carLedger:
 ```
 
 ```bash
-helm upgrade car-ledger oci://ghcr.io/3thr3n/car-ledger/helm -f my-values.yaml
+helm upgrade car-ledger oci://ghcr.io/3thr3n/car-ledger/car-ledger -f my-values.yaml
 ```
 
 In separate namespaces, set `carLedger.namespace` to the one of CarLedger. The secret `car-ledger-webhook` is then

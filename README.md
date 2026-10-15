@@ -208,10 +208,12 @@ For using the helm chart, you can add this as a dependency and update the values
 
 ```yaml
 dependencies:
-  - name: helm
-    version: "0.3.x"
+  - name: car-ledger
+    version: "0.4.x"
     repository: oci://ghcr.io/3thr3n/car-ledger
 ```
+
+Up to 0.3.x, the chart was named `helm` (`oci://ghcr.io/3thr3n/car-ledger/helm`), it is `car-ledger` since 0.4.0.
 
 Every [release](https://github.com/3thr3n/car-ledger/releases) publishes the chart and the image in its version (e.g.
 `0.3.0`), the release notes name both. Builds of `develop` are published as prereleases (`0.4.0-dev.<run number>`,

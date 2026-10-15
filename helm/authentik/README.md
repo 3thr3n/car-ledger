@@ -23,7 +23,7 @@ helm install authentik oci://ghcr.io/3thr3n/car-ledger/authentik \
   --set hostname=authentik.example.com \
   --set carLedger.hostname=car-ledger.example.com
 
-helm install car-ledger oci://ghcr.io/3thr3n/car-ledger/helm \
+helm install car-ledger oci://ghcr.io/3thr3n/car-ledger/car-ledger \
   --set ingress.host=example.com \
   --set carLedger.auth.url=https://authentik.example.com/application/o/car-ledger/ \
   --set carLedger.auth.clientId=car-ledger \
@@ -41,7 +41,7 @@ helm install authentik oci://ghcr.io/3thr3n/car-ledger/authentik -n authentik --
   --set carLedger.hostname=car-ledger.example.com \
   --set carLedger.namespace=car-ledger
 
-helm install car-ledger oci://ghcr.io/3thr3n/car-ledger/helm -n car-ledger \
+helm install car-ledger oci://ghcr.io/3thr3n/car-ledger/car-ledger -n car-ledger \
   --set ingress.host=example.com \
   --set carLedger.auth.url=https://authentik.example.com/application/o/car-ledger/ \
   --set carLedger.auth.clientId=car-ledger \
