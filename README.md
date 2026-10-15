@@ -219,7 +219,7 @@ Every [release](https://github.com/3thr3n/car-ledger/releases) publishes the cha
 `0.3.0`), the release notes name both. Builds of `develop` are published as prereleases (`0.4.0-dev.<run number>`,
 chart and image of the same build), a range takes them only with a prerelease suffix (e.g. `>=0.4.0-0`).
 
-The login uses OpenID Connect: `helm/keycloak` deploys Keycloak, `helm/authentik` deploys authentik with CarLedger
+The login uses OpenID Connect: `helm/keycloak` deploys Keycloak with the realm of CarLedger, `helm/authentik` deploys authentik with CarLedger
 already set up, any other provider works as well.
 Optionally, `helm/n8n` deploys n8n to approve the car requests, see [docs/N8N.md](docs/N8N.md).
 `helm/stack` deploys the app with any of them in one release and sets up the secrets between them, see

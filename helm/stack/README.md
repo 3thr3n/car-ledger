@@ -8,7 +8,7 @@ host names, URLs and secrets between them are set up by the stack:
 |---------------------------------|---------------------------------------------------------------------------------------------------------------|
 | always                          | CarLedger at `car-ledger.<global.host>`                                                                       |
 | `global.authentik.enabled=true` | authentik at `authentik.<global.host>` with CarLedger as application; the app logs in there with the client `car-ledger` and the generated secret `car-ledger-oidc` |
-| `global.keycloak.enabled=true`  | Keycloak at `keycloak.<global.host>`, the app logs in at its realm `car-ledger`. The realm, the client and the secret `keycloak` are set up by hand, see [DEPLOYMENT.md](../../docs/DEPLOYMENT.md#2-realm-and-client) |
+| `global.keycloak.enabled=true`  | Keycloak at `keycloak.<global.host>` with the realm `car-ledger` imported; the app logs in there with the client `carLedger` and the generated secret `keycloak` |
 | `global.n8n.enabled=true`       | n8n at `n8n.<global.host>`; the app sends `car-request.created` to its workflow (`http://n8n-main:5678/webhook/car-ledger`), signed with the generated secret `car-ledger-webhook`, and n8n knows the URL of CarLedger |
 
 Without an identity provider, the app uses an existing one, see `app.carLedger.auth.*` and
@@ -16,7 +16,7 @@ Without an identity provider, the app uses an existing one, see `app.carLedger.a
 
 ## Install
 
-With authentik and n8n, nothing has to be set up by hand besides the users:
+Nothing has to be set up by hand besides the users, e.g. with authentik and n8n:
 
 ```bash
 helm install car-ledger oci://ghcr.io/3thr3n/car-ledger/stack \
@@ -36,8 +36,8 @@ After the install, the notes of the release name the admin passwords and the nex
 
 - **authentik**: log in as `akadmin` (`kubectl get secret authentik-bootstrap -o jsonpath='{.data.password}' | base64 -d`)
   and add the users of CarLedger to the group `user` (or `admin`).
-- **Keycloak**: log in as `car-ledger` (secret `car-ledger-keycloak-admin`), set up the realm and the client and create
-  the secret `keycloak`, see [DEPLOYMENT.md](../../docs/DEPLOYMENT.md#2-realm-and-client). The app waits for the secret.
+- **Keycloak**: log in as `car-ledger` (secret `car-ledger-keycloak-admin`), create the users of CarLedger in the realm
+  `car-ledger` (they get the role `user`) and give the administrators the realm role `admin`.
 - **n8n**: open `https://n8n.example.com` right away and create the owner account (the first visitor becomes the
   owner), then continue with the service account and the workflow in [N8N.md](../../docs/N8N.md).
 
