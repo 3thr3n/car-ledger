@@ -150,6 +150,13 @@ export default function MonthlyChart({
   };
 
   const hasCosts = months.some((month) => (num(month.total) ?? 0) > 0);
+  // charging is only a part of the costs with charges, e.g. not for petrol cars
+  const hasChargingCosts = months.some(
+    (month) => (num(month.charging) ?? 0) > 0,
+  );
+  const shownCostParts = costParts.filter(
+    (part) => part.type !== BillType.CHARGING || hasChargingCosts,
+  );
   const hasFuel = months.some((month) => num(month.pricePerUnit) !== undefined);
   const hasCharging = months.some(
     (month) => num(month.chargingPricePerUnit) !== undefined,
@@ -218,7 +225,7 @@ export default function MonthlyChart({
               valueFormatter: (value: number) => compactMoney.format(value),
             },
           ]}
-          series={costParts.map((part) => ({
+          series={shownCostParts.map((part) => ({
             dataKey: part.key,
             stack: 'total',
             label: t(`bill.types.${part.type}`),
