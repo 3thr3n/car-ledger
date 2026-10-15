@@ -31,7 +31,16 @@ export default function CostSplit({ total }: { total: TotalStats }) {
 
   const parts: Part[] = [
     { type: BillType.FUEL, amount: fuel, count: total.fuelBills },
-    { type: BillType.CHARGING, amount: charging, count: total.chargingBills },
+    // only cars with charges, e.g. not for petrol cars
+    ...(total.chargingBills
+      ? [
+          {
+            type: BillType.CHARGING,
+            amount: charging,
+            count: total.chargingBills,
+          },
+        ]
+      : []),
     {
       type: BillType.MAINTENANCE,
       amount: maintenance,
