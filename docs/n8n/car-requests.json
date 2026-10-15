@@ -86,7 +86,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "=https://car-ledger.example.com/api/admin/car-requests/{{ $('Verify signature').item.json.requestId }}/approve",
+        "url": "={{ $env.CARLEDGER_URL }}/api/admin/car-requests/{{ $('Verify signature').item.json.requestId }}/approve",
         "authentication": "genericCredentialType",
         "genericAuthType": "oAuth2Api",
         "sendBody": true,
@@ -105,7 +105,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "=https://car-ledger.example.com/api/admin/car-requests/{{ $('Verify signature').item.json.requestId }}/reject",
+        "url": "={{ $env.CARLEDGER_URL }}/api/admin/car-requests/{{ $('Verify signature').item.json.requestId }}/reject",
         "authentication": "genericCredentialType",
         "genericAuthType": "oAuth2Api",
         "sendBody": true,

@@ -1,0 +1,12 @@
+apiVersion: v2
+name: n8n
+description: n8n for CarLedger, standalone with SQLite, with the webhook secret of CarLedger generated and set up
+type: application
+
+version: 0.1.0
+appVersion: "2.43.5"
+
+dependencies:
+  - name: n8n
+    version: 1.16.0
+    repository: oci://ghcr.io/n8n-io/n8n-helm-chart

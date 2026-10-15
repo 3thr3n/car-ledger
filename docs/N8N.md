@@ -3,7 +3,8 @@
 When a user requests more cars, CarLedger sends the webhook `car-request.created` (see [WEBHOOKS.md](WEBHOOKS.md)).
 [n8n](https://n8n.io) can turn it into a message with *Approve* and *Reject* on any channel (e-mail, Telegram, Matrix,
 ntfy …) and call the admin API of CarLedger with the answer. n8n is optional and not part of the CarLedger chart:
-without it, the administrators decide on the administration page.
+without it, the administrators decide on the administration page. The chart [helm/n8n](../helm/n8n/README.md) deploys
+n8n with everything the example workflow needs, including the shared secret of the webhooks.
 
 ```mermaid
 sequenceDiagram
@@ -64,7 +65,7 @@ version):
 ## 2. Webhook
 
 Point the webhook of CarLedger to the production URL of the n8n workflow and share a secret (see
-[WEBHOOKS.md](WEBHOOKS.md)):
+[WEBHOOKS.md](WEBHOOKS.md)). With [helm/n8n](../helm/n8n/README.md) the secret `car-ledger-webhook` is generated:
 
 ```yaml
 carLedger:
@@ -76,17 +77,21 @@ carLedger:
 
 ## 3. Workflow
 
-[n8n/car-requests.json](n8n/car-requests.json) is an example to import (*Workflows → Import from file*). It has not
-been run against a real n8n yet, check every node after the import:
+[n8n/car-requests.json](n8n/car-requests.json) is an example to import (*Workflows → Import from file*). The
+webhook and the signature check are tested with n8n 2.43.5; the message to the admin and the calls of the admin API
+are not run against a real installation yet, check them after the import:
 
 1. **Webhook**: `POST /webhook/car-ledger`, option *Raw Body* on, so the signature can be checked over the exact body.
 2. **Verify signature** (Code): computes the HMAC-SHA256 of the raw body with the secret and drops events with a wrong
-   signature or of another type. It needs the module `crypto` (`NODE_FUNCTION_ALLOW_BUILTIN=crypto` for n8n) and the
-   secret in the environment variable `CARLEDGER_WEBHOOK_SECRET` of n8n.
+   signature or of another type. It needs the module `crypto` (`NODE_FUNCTION_ALLOW_BUILTIN=crypto` for n8n), the
+   secret in the environment variable `CARLEDGER_WEBHOOK_SECRET` of n8n and access to it
+   (`N8N_BLOCK_ENV_ACCESS_IN_NODE=false`, n8n 2 blocks `$env` by default). [helm/n8n](../helm/n8n/README.md) sets all
+   three.
 3. **Ask the admin** (Send and Wait for Response): a message with the account, the number of cars and the reason, and
    the buttons *Approve* and *Reject*. The example uses e-mail; every channel with *Send and Wait for Response* works.
 4. **Approved?** (If): decides which endpoint is called.
-5. **Approve** / **Reject** (HTTP Request): `POST https://car-ledger.example.com/api/admin/car-requests/{requestId}/approve`
+5. **Approve** / **Reject** (HTTP Request): `POST {CARLEDGER_URL}/api/admin/car-requests/{requestId}/approve`
+   (`CARLEDGER_URL` is an environment variable of n8n, set by helm/n8n, e.g. `https://car-ledger.example.com`)
    with the body `{}` (the limit becomes the current one plus the requested cars), or `…/reject` with
    `{ "comment": "Rejected in n8n" }`. Authentication: an *OAuth2 API* credential with the grant type
    *Client Credentials*, the token endpoint of the identity provider, the client id and secret of the service account
