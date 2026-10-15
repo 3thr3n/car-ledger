@@ -237,7 +237,7 @@ public class BackupService
 		if (cars.size() > account.getMaxCars())
 		{
 			Utils.requireValid(List.of("The backup has " + cars.size() + " cars, your account allows "
-					+ account.getMaxCars() + ". Ask the administrator for more."));
+					+ account.getMaxCars() + ". Request more cars in the garage first."));
 		}
 		restoreSettings(account, backup.settings());
 
