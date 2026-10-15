@@ -241,7 +241,7 @@ Use the image of a release (a git tag of `main`) or a dev build of `develop`. On
 | 1.7.0     | Energy type of the cars (existing cars become petrol), optional tank size and battery capacity (0.4.0)               |
 | 1.8.0     | Table for the charges of electric cars and plug-in hybrids (0.4.0)                                                   |
 | 1.9.0     | Unit system of the accounts (metric, US, UK), existing accounts stay metric (0.4.0)                                  |
-| 1.10.0    | Table for the requests of the users, first: more cars (0.4.x)                                                        |
+| 1.10.0    | Table for the requests of the users, first: more cars (0.4.0)                                                        |
 
 An older image refuses to start on the migrated database, as Flyway finds migrations it does not know. To go back,
 restore the backup. Without the backup, the older image runs on the migrated database (the new columns have defaults)
@@ -259,18 +259,30 @@ kubectl set env deployment/car-ledger QUARKUS_FLYWAY_IGNORE_FUTURE_MIGRATIONS=tr
   the actual mileage in *Edit car*, it becomes a new reading as of today.
 - **Settings**: all accounts start with VAT country Germany and the currency Euro. Users with another currency change
   it in *Settings*, existing amounts are not converted.
+- **Energy type** (0.4.0): existing cars become petrol cars. Owners of another car (diesel, LPG, CNG, electric,
+  plug-in hybrid) change it in *Edit car*; only electric cars and plug-in hybrids record charges.
+- **Car requests** (0.4.0): users who reached their car limit request more cars in the garage, the role `admin` approves
+  or rejects them on the administration page; the entry *Administration* shows the number of open requests. Nothing
+  to set up.
+- **Webhooks and service accounts** (0.4.0, optional): without `carLedger.webhook.url` no events are sent, see
+  [WEBHOOKS.md](WEBHOOKS.md). Scripts can call the API with the access token of a service account, see
+  [Service accounts](#service-accounts).
 - **Chart name** (0.4.0): the app chart is named `car-ledger` now, published at
   `oci://ghcr.io/3thr3n/car-ledger/car-ledger`. The old path `oci://ghcr.io/3thr3n/car-ledger/helm` ends with 0.3.0,
   switch the path in `helm upgrade` (the release and its resources stay the same) and in the dependencies of your
   charts (`name: car-ledger`).
-- **Keycloak realm** (keycloak chart 0.4.0): with `carLedger.hostname`, the chart imports the realm `car-ledger` and
-  generates the secret `keycloak`. Existing installations can set it as well: the existing realm and a secret
-  `keycloak` created by hand are kept. Keycloak starts with `--import-realm` and mounts the ConfigMap
-  `keycloak-realm` in any case (empty without `carLedger.hostname`), so its pod is restarted by the upgrade.
 - **Charts** (0.4.0): `keycloak` and `authentik` are published as well, upgrade them from
   `oci://ghcr.io/3thr3n/car-ledger/<chart>`. Installed on their own, they deploy the same resources as before; only in
   the stack chart do they get other names. The values `carLedger.auth.clientId` and `carLedger.auth.existingSecret` of
   the app chart are empty by default now, they still default to `carLedger` and `keycloak`.
+- **Stack chart** (0.4.0, new): `oci://ghcr.io/3thr3n/car-ledger/stack` deploys the app with Keycloak or authentik in
+  one release, see [Everything in one release](#everything-in-one-release). It is meant for new installations: an
+  existing app release named `car-ledger` can switch to it without Keycloak or authentik in the stack (its values move
+  under `app:`), an existing Keycloak or authentik is not taken over.
+- **Keycloak realm** (keycloak chart 0.4.0): with `carLedger.hostname`, the chart imports the realm `car-ledger` and
+  generates the secret `keycloak`. Existing installations can set it as well: the existing realm and a secret
+  `keycloak` created by hand are kept. Keycloak starts with `--import-realm` and mounts the ConfigMap
+  `keycloak-realm` in any case (empty without `carLedger.hostname`), so its pod is restarted by the upgrade.
 - **Uploads** (0.3.0): receipts and car pictures need requests up to `carLedger.attachments.maxRequestSize` (12 MB). The
   nginx ingress of the chart gets the annotation automatically; a Gateway or a proxy in front needs the same limit,
   otherwise uploads fail with 413. The files are stored in PostgreSQL, the backup above includes them.
