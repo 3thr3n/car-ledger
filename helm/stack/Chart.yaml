@@ -11,7 +11,7 @@ appVersion: "main"
 # The charts of this repository, in the versions of the same commit. Their names (car-ledger-postgresql,
 # car-ledger-oidc, car-ledger-webhook, ...) are fixed, install the stack once per namespace as "car-ledger".
 dependencies:
-  - name: helm
+  - name: car-ledger
     alias: app
     version: ">=0.0.0-0"
     repository: file://../car-ledger

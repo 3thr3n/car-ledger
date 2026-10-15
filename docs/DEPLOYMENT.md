@@ -12,7 +12,7 @@ CarLedger runs on Kubernetes. It needs an OpenID Connect provider for the login,
 
 The app is reachable as `car-ledger.<host>`.
 
-A release publishes the charts at `oci://ghcr.io/3thr3n/car-ledger/<chart>`: `helm` (the app) and `stack` in the
+A release publishes the charts at `oci://ghcr.io/3thr3n/car-ledger/<chart>`: `car-ledger` (the app) and `stack` in the
 version of the release, `keycloak`, `authentik` and `n8n` in their own versions (raised when they change, the release
 notes name them). From the repository, run `helm dependency update helm/<chart>` before the install.
 
@@ -113,12 +113,13 @@ shorter ones), 32 or more are recommended, and all replicas need the same one.
 ### 4. CarLedger
 
 ```bash
-helm install car-ledger oci://ghcr.io/3thr3n/car-ledger/helm --set ingress.host=example.com
+helm install car-ledger oci://ghcr.io/3thr3n/car-ledger/car-ledger --set ingress.host=example.com
 ```
 
-Without `--version` the latest release is installed. A release (e.g. `0.3.0`, see the
-[releases](https://github.com/3thr3n/car-ledger/releases)) publishes the image `ghcr.io/3thr3n/car-ledger:0.3.0` and the
-chart `oci://ghcr.io/3thr3n/car-ledger/helm` in version `0.3.0`, which runs that image.
+Without `--version` the latest release is installed. A release (e.g. `0.4.0`, see the
+[releases](https://github.com/3thr3n/car-ledger/releases)) publishes the image `ghcr.io/3thr3n/car-ledger:0.4.0` and the
+chart `oci://ghcr.io/3thr3n/car-ledger/car-ledger` in version `0.4.0`, which runs that image (up to 0.3.x the chart was
+`oci://ghcr.io/3thr3n/car-ledger/helm`).
 
 Every build of `develop` publishes the image `ghcr.io/3thr3n/car-ledger:<run number>` and the chart as the prerelease
 `<next release>-dev.<run number>`, e.g. `0.4.0-dev.123`, which runs the image of the same build: `--version
@@ -185,7 +186,7 @@ Checklist for installations running an older image of the app.
 ### Upgrade
 
 ```bash
-helm upgrade car-ledger oci://ghcr.io/3thr3n/car-ledger/helm -f my-values.yaml
+helm upgrade car-ledger oci://ghcr.io/3thr3n/car-ledger/car-ledger -f my-values.yaml
 ```
 
 Pass your values file instead of `--reuse-values`, which keeps the old values and drops new defaults of the chart (e.g.
@@ -223,6 +224,10 @@ kubectl set env deployment/car-ledger QUARKUS_FLYWAY_IGNORE_FUTURE_MIGRATIONS=tr
   the actual mileage in *Edit car*, it becomes a new reading as of today.
 - **Settings**: all accounts start with VAT country Germany and the currency Euro. Users with another currency change
   it in *Settings*, existing amounts are not converted.
+- **Chart name** (0.4.0): the app chart is named `car-ledger` now, published at
+  `oci://ghcr.io/3thr3n/car-ledger/car-ledger`. The old path `oci://ghcr.io/3thr3n/car-ledger/helm` ends with 0.3.0,
+  switch the path in `helm upgrade` (the release and its resources stay the same) and in the dependencies of your
+  charts (`name: car-ledger`).
 - **Charts** (0.4.0): `keycloak`, `authentik` and `n8n` are published as well, upgrade them from
   `oci://ghcr.io/3thr3n/car-ledger/<chart>`. Installed on their own, they deploy the same resources as before; only in
   the stack chart do they get other names. The values `carLedger.auth.clientId` and `carLedger.auth.existingSecret` of
