@@ -145,7 +145,7 @@ public class CarResource extends AbstractResource
 		{
 			return Response
 					.status(400)
-					.entity("Max cars already reached! Delete one car or ask the administrator for an increase.")
+					.entity("Max cars already reached! Delete one car or request more cars in the garage.")
 					.build();
 		}
 
