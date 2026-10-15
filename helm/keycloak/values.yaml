@@ -1,8 +1,20 @@
+# CarLedger as OpenID Connect client. With its host name, the realm car-ledger is imported on the first start of
+# Keycloak: the confidential client carLedger (PKCE S256, the redirect URIs of CarLedger), the roles user (a default
+# role, every new user gets it) and admin. The client secret and the state secret are generated into the secret
+# keycloak, which the car-ledger chart reads by default. An existing realm is kept as it is, so is a secret keycloak
+# created by hand. Without the host name, set up the realm and the secret by hand (docs/DEPLOYMENT.md).
+carLedger:
+  # public host name of CarLedger, e.g. car-ledger.example.com, defaults to car-ledger.<global.host> of the stack chart
+  hostname: ""
+  # Namespace of CarLedger, if it is not the one of Keycloak: the secret keycloak is created there as well (the
+  # namespace has to exist)
+  namespace: ""
+
 # Values of the codecentric keycloakx chart, see https://github.com/codecentric/helm-charts/tree/master/charts/keycloakx
 keycloak:
   # public host name, e.g. keycloak.example.com, defaults to keycloak.<global.host> of the stack chart
   hostname: ""
-  # whether keycloak is reached via https
+  # whether Keycloak and CarLedger are reached via https
   tls: true
   # admin, created on the first start. An empty password is generated and kept in the secret <release>-admin
   auth:
@@ -12,8 +24,10 @@ keycloak:
   nameOverride: keycloak
   command:
     - /opt/keycloak/bin/kc.sh
+  # imports the realm car-ledger of templates/realm.yaml on the first start, if it does not exist yet
   args:
     - start
+    - --import-realm
   http:
     relativePath: /
   proxy:
@@ -43,6 +57,13 @@ keycloak:
         secretKeyRef:
           name: {{ include "carLedgerKeycloak.prefix" . }}-admin
           key: password
+    # client secret of CarLedger, for the import of the realm (templates/realm.yaml)
+    - name: CAR_LEDGER_CLIENT_SECRET
+      valueFrom:
+        secretKeyRef:
+          name: keycloak
+          key: secret
+          optional: true
     {{- $hostname := include "carLedgerKeycloak.hostname" . }}
     {{- if $hostname }}
     - name: KC_HOSTNAME
@@ -51,6 +72,14 @@ keycloak:
     - name: KC_HOSTNAME_STRICT
       value: "false"
     {{- end }}
+  extraVolumes: |
+    - name: realm
+      configMap:
+        name: {{ include "carLedgerKeycloak.prefix" . }}-realm
+  extraVolumeMounts: |
+    - name: realm
+      mountPath: /opt/keycloak/data/import
+      readOnly: true
   # the first start after an update migrates the database, which can take long on small nodes
   startupProbe: |
     httpGet:

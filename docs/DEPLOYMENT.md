@@ -42,8 +42,9 @@ the charts one by one, which also works with the identity provider or n8n in oth
 
 CarLedger uses standard OpenID Connect, nothing is specific to Keycloak:
 
-- **Keycloak** (`helm/keycloak`): the default of the car-ledger chart. The realm, the client and the secret for the
-  app are set up by hand, see [below](#fresh-install-with-keycloak).
+- **Keycloak** (`helm/keycloak`): the default of the car-ledger chart. With `carLedger.hostname`, it imports the realm
+  with the client and the roles and generates the secret for the app, see [below](#fresh-install-with-keycloak). In
+  separate namespaces, set `carLedger.namespace`, so the secret is created in the namespace of the app as well.
 - **authentik** (`helm/authentik`): sets up the client, the groups and the secret for the app by itself. See
   [its README](../helm/authentik/README.md). It is not lighter than Keycloak, idle it uses about 1.1 GiB. In separate
   namespaces, set `carLedger.namespace`, so the secret is created in the namespace of the app as well.
@@ -71,7 +72,9 @@ have the same user name at the new provider.
 ### 1. Keycloak
 
 ```bash
-helm install keycloak oci://ghcr.io/3thr3n/car-ledger/keycloak --set keycloak.hostname=keycloak.example.com
+helm install keycloak oci://ghcr.io/3thr3n/car-ledger/keycloak \
+  --set keycloak.hostname=keycloak.example.com \
+  --set carLedger.hostname=car-ledger.example.com
 ```
 
 The admin user is `car-ledger`, its password is generated and kept in the secret `keycloak-admin`:
@@ -84,7 +87,18 @@ The first start creates the database and can take a few minutes.
 
 ### 2. Realm and client
 
-There is no realm import, set it up once in the Keycloak admin console:
+With `carLedger.hostname`, Keycloak imports the realm `car-ledger` on its first start:
+
+- the client `carLedger`: confidential, standard flow with PKCE `S256`, the redirect URIs of CarLedger
+- the realm roles `user` and `admin`; `user` is a default role, every new user gets it. `admin` opens the
+  administration, give it to the administrators.
+
+Create the users of CarLedger in the realm `car-ledger` (*Users → Add user*, then a password under *Credentials*).
+
+An existing realm `car-ledger` is kept as it is, the import only creates a missing one. Changes in the admin console
+are kept as well. Another realm name or client id: set up the realm by hand.
+
+Without `carLedger.hostname`, nothing is imported; set the realm up once in the Keycloak admin console:
 
 1. Realm `car-ledger` (another name: set `carLedger.auth.url` of the car-ledger chart).
 2. Client `carLedger` (OpenID Connect):
@@ -98,8 +112,10 @@ There is no realm import, set it up once in the Keycloak admin console:
 
 ### 3. Secret for the app
 
-The app reads the client secret and the state secret from the secret `keycloak` (`carLedger.auth.existingSecret`),
-the keycloak chart does not create it:
+The app reads the client secret and the state secret from the secret `keycloak` (`carLedger.auth.existingSecret`).
+With `carLedger.hostname`, the keycloak chart generates it (key `secret` is the client secret of the imported realm)
+and keeps it on upgrades; a secret `keycloak` created by hand before is kept and not taken over. Without the import,
+create it with the client secret of `carLedger`:
 
 ```bash
 kubectl create secret generic keycloak \
@@ -228,6 +244,10 @@ kubectl set env deployment/car-ledger QUARKUS_FLYWAY_IGNORE_FUTURE_MIGRATIONS=tr
   `oci://ghcr.io/3thr3n/car-ledger/car-ledger`. The old path `oci://ghcr.io/3thr3n/car-ledger/helm` ends with 0.3.0,
   switch the path in `helm upgrade` (the release and its resources stay the same) and in the dependencies of your
   charts (`name: car-ledger`).
+- **Keycloak realm** (keycloak chart 0.4.0): with `carLedger.hostname`, the chart imports the realm `car-ledger` and
+  generates the secret `keycloak`. Existing installations can set it as well: the existing realm and a secret
+  `keycloak` created by hand are kept. Keycloak starts with `--import-realm` and mounts the ConfigMap
+  `keycloak-realm` in any case (empty without `carLedger.hostname`), so its pod is restarted by the upgrade.
 - **Charts** (0.4.0): `keycloak`, `authentik` and `n8n` are published as well, upgrade them from
   `oci://ghcr.io/3thr3n/car-ledger/<chart>`. Installed on their own, they deploy the same resources as before; only in
   the stack chart do they get other names. The values `carLedger.auth.clientId` and `carLedger.auth.existingSecret` of

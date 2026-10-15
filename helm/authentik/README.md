@@ -1,6 +1,6 @@
 # authentik for CarLedger
 
-An alternative to the keycloak chart that needs no manual setup. It deploys
+An alternative to the keycloak chart. It deploys
 [authentik](https://goauthentik.io) via the [official chart](https://github.com/goauthentik/helm) with its own
 PostgreSQL (official image, the bitnami one of the authentik chart is not used), and sets up CarLedger with a
 blueprint:
@@ -97,5 +97,4 @@ namespace.
 - Accounts of CarLedger are bound to the user name (`preferred_username`). Renaming a user in authentik starts with an
   empty account in CarLedger.
 - authentik is not lighter than Keycloak: idle, the server uses about 730 MiB and the worker about 350 MiB (measured
-  with 2026.8.3), plus the PostgreSQL. It needs no manual setup though, the keycloak chart needs the realm, the client
-  and the secret set up by hand.
+  with 2026.8.3), plus the PostgreSQL. Both charts set up CarLedger by themselves.

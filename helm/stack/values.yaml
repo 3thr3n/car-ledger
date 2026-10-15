@@ -4,7 +4,7 @@ global:
   host: ""
   # The identity provider, at most one of keycloak and authentik. Without one, the app uses an existing provider,
   # set app.carLedger.auth.* (by default https://keycloak.<host>/realms/car-ledger and the secret keycloak).
-  # Keycloak: the realm, the client and the secret keycloak are set up by hand (docs/DEPLOYMENT.md).
+  # Keycloak: imports the realm car-ledger with the client of CarLedger, the app uses the generated secret keycloak
   keycloak:
     enabled: false
   # authentik: sets up CarLedger by itself, the app uses its client and the generated secret car-ledger-oidc

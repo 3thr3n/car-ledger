@@ -10,3 +10,8 @@ Prefix of the PostgreSQL and the admin secret: the release name, or <release>-ke
 {{- define "carLedgerKeycloak.hostname" -}}
 {{- .Values.hostname | default (and ((.Values.global).host) (printf "keycloak.%s" ((.Values.global).host))) | default "" -}}
 {{- end }}
+
+{{/* Public host name of CarLedger: carLedger.hostname, else car-ledger.<global.host> of the stack chart */}}
+{{- define "carLedgerKeycloak.carLedgerHostname" -}}
+{{- .Values.carLedger.hostname | default (and ((.Values.global).host) (printf "car-ledger.%s" ((.Values.global).host))) | default "" -}}
+{{- end }}

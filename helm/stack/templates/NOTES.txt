@@ -3,9 +3,8 @@ CarLedger: https://car-ledger.{{ .Values.global.host }}
 
 Keycloak: https://keycloak.{{ .Values.global.host }}, admin car-ledger, password:
   kubectl get secret {{ .Release.Name }}-keycloak-admin -n {{ .Release.Namespace }} -o jsonpath='{.data.password}' | base64 -d
-Set up the realm car-ledger, the client carLedger and the secret keycloak once, see docs/DEPLOYMENT.md
-(https://github.com/3thr3n/car-ledger/blob/main/docs/DEPLOYMENT.md#2-realm-and-client). The app starts after
-the secret exists.
+The realm car-ledger with the client of CarLedger is imported on the first start. Create the users of CarLedger
+in the realm car-ledger (they get the role user), and give the administrators the realm role admin.
 {{- end }}
 {{- if .Values.global.authentik.enabled }}
 
