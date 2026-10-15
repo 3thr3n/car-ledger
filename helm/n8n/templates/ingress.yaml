@@ -17,11 +17,11 @@ spec:
   {{- if .Values.tls }}
   tls:
     - hosts:
-        - {{ required "hostname is required" .Values.hostname }}
+        - {{ required "hostname is required" (include "n8n.hostname" .) }}
       secretName: n8n-ingress-tls
   {{- end }}
   rules:
-    - host: {{ required "hostname is required" .Values.hostname }}
+    - host: {{ required "hostname is required" (include "n8n.hostname" .) }}
       http:
         paths:
           - backend:

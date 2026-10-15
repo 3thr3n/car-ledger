@@ -1,0 +1,29 @@
+global:
+  # Base domain, required: CarLedger is reachable as car-ledger.<host>, the others as keycloak.<host>,
+  # authentik.<host> and n8n.<host>
+  host: ""
+  # The identity provider, at most one of keycloak and authentik. Without one, the app uses an existing provider,
+  # set app.carLedger.auth.* (by default https://keycloak.<host>/realms/car-ledger and the secret keycloak).
+  # Keycloak: the realm, the client and the secret keycloak are set up by hand (docs/DEPLOYMENT.md).
+  keycloak:
+    enabled: false
+  # authentik: sets up CarLedger by itself, the app uses its client and the generated secret car-ledger-oidc
+  authentik:
+    enabled: false
+  # n8n to approve car requests: the app sends car-request.created to its workflow, signed with the generated
+  # secret car-ledger-webhook
+  n8n:
+    enabled: false
+
+# Values of the car-ledger chart (helm/car-ledger), e.g. app.ingress.certManager or app.carLedger.resources.
+# Login and webhooks default to the charts enabled above, values set here win.
+app: {}
+
+# Values of the keycloak chart (helm/keycloak), e.g. keycloak.keycloak.ingress.annotations
+keycloak: {}
+
+# Values of the authentik chart (helm/authentik), e.g. authentik.ingress.certManager
+authentik: {}
+
+# Values of the n8n chart (helm/n8n), e.g. n8n.ingress.certManager
+n8n: {}

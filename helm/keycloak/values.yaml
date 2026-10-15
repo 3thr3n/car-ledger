@@ -1,6 +1,6 @@
 # Values of the codecentric keycloakx chart, see https://github.com/codecentric/helm-charts/tree/master/charts/keycloakx
 keycloak:
-  # public host name, e.g. keycloak.example.com
+  # public host name, e.g. keycloak.example.com, defaults to keycloak.<global.host> of the stack chart
   hostname: ""
   # whether keycloak is reached via https
   tls: true
@@ -27,25 +27,26 @@ keycloak:
     username: bn_keycloak
   extraEnv: |
     - name: KC_DB_URL_HOST
-      value: {{ .Release.Name }}-postgresql
+      value: {{ include "carLedgerKeycloak.prefix" . }}-postgresql
     - name: KC_DB_PASSWORD
       valueFrom:
         secretKeyRef:
-          name: {{ .Release.Name }}-postgresql
+          name: {{ include "carLedgerKeycloak.prefix" . }}-postgresql
           key: password
     - name: KC_BOOTSTRAP_ADMIN_USERNAME
       valueFrom:
         secretKeyRef:
-          name: {{ .Release.Name }}-admin
+          name: {{ include "carLedgerKeycloak.prefix" . }}-admin
           key: username
     - name: KC_BOOTSTRAP_ADMIN_PASSWORD
       valueFrom:
         secretKeyRef:
-          name: {{ .Release.Name }}-admin
+          name: {{ include "carLedgerKeycloak.prefix" . }}-admin
           key: password
-    {{- if .Values.hostname }}
+    {{- $hostname := include "carLedgerKeycloak.hostname" . }}
+    {{- if $hostname }}
     - name: KC_HOSTNAME
-      value: {{ if .Values.tls }}https{{ else }}http{{ end }}://{{ .Values.hostname }}
+      value: {{ if .Values.tls }}https{{ else }}http{{ end }}://{{ $hostname }}
     {{- else }}
     - name: KC_HOSTNAME_STRICT
       value: "false"
@@ -73,16 +74,16 @@ keycloak:
     annotations:
       cert-manager.io/cluster-issuer: lets-encrypt
     rules:
-      - host: "{{ .Values.hostname }}"
+      - host: '{{ include "carLedgerKeycloak.hostname" . }}'
         paths:
           - path: /
             pathType: Prefix
     tls:
       - hosts:
-          - "{{ .Values.hostname }}"
-        secretName: "{{ .Values.hostname }}-tls"
+          - '{{ include "carLedgerKeycloak.hostname" . }}'
+        secretName: '{{ include "carLedgerKeycloak.hostname" . }}-tls'
 
-  # Gateway API, alternative to the ingress
+  # Gateway API, alternative to the ingress (the hostnames are not derived from hostname)
   httpRoute:
     enabled: false
     parentRefs:

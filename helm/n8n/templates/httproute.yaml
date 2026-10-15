@@ -7,7 +7,7 @@ spec:
   parentRefs:
     {{- toYaml .Values.httpRoute.parentRefs | nindent 4 }}
   hostnames:
-    - {{ required "hostname is required" .Values.hostname }}
+    - {{ required "hostname is required" (include "n8n.hostname" .) }}
   rules:
     - matches:
         - path:

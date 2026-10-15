@@ -22,10 +22,10 @@ spec:
   ingressClassName: {{ .Values.ingress.className }}
   tls:
     - hosts:
-        - car-ledger.{{ .Values.ingress.host }}
+        - car-ledger.{{ include "carLedger.host" . }}
       secretName: car-ledger-ingress-tls
   rules:
-    - host: car-ledger.{{ .Values.ingress.host }}
+    - host: car-ledger.{{ include "carLedger.host" . }}
       http:
         paths:
           - backend:

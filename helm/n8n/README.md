@@ -15,11 +15,12 @@ The chart sets up what the [example workflow](../../docs/n8n/car-requests.json) 
 
 ## Install
 
-Both charts in the same namespace:
+Together with the app in one release, the [stack chart](../stack/README.md) sets everything up with
+`global.n8n.enabled=true`, the webhooks of the app included. On its own, both charts in the same namespace (from the
+repository: `helm dependency update helm/n8n` and `helm/n8n` instead):
 
 ```bash
-helm dependency update helm/n8n
-helm install n8n helm/n8n \
+helm install n8n oci://ghcr.io/3thr3n/car-ledger/n8n \
   --set hostname=n8n.example.com \
   --set carLedger.hostname=car-ledger.example.com
 ```
