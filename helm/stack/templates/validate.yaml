@@ -1,0 +1,5 @@
+{{- /* nothing is rendered, the values are only checked */}}
+{{- $_ := required "global.host is required, the base domain of CarLedger (car-ledger.<host>)" .Values.global.host }}
+{{- if and .Values.global.keycloak.enabled .Values.global.authentik.enabled }}
+{{- fail "Enable only one identity provider: global.keycloak.enabled or global.authentik.enabled" }}
+{{- end }}

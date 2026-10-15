@@ -4,7 +4,9 @@ When a user requests more cars, CarLedger sends the webhook `car-request.created
 [n8n](https://n8n.io) can turn it into a message with *Approve* and *Reject* on any channel (e-mail, Telegram, Matrix,
 ntfy …) and call the admin API of CarLedger with the answer. n8n is optional and not part of the CarLedger chart:
 without it, the administrators decide on the administration page. The chart [helm/n8n](../helm/n8n/README.md) deploys
-n8n with everything the example workflow needs, including the shared secret of the webhooks.
+n8n with everything the example workflow needs, including the shared secret of the webhooks. The
+[stack chart](../helm/stack/README.md) deploys it together with the app (`global.n8n.enabled=true`) and sets up the
+webhook of step 2 as well.
 
 ```mermaid
 sequenceDiagram
@@ -74,6 +76,9 @@ carLedger:
     existingSecret: car-ledger-webhook
     events: [car-request.created]
 ```
+
+With the stack chart, this is the default: the app sends to the service of n8n in the cluster
+(`http://n8n-main:5678/webhook/car-ledger`).
 
 ## 3. Workflow
 

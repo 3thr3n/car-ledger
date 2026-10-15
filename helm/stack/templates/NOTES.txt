@@ -1,0 +1,20 @@
+CarLedger: https://car-ledger.{{ .Values.global.host }}
+{{- if .Values.global.keycloak.enabled }}
+
+Keycloak: https://keycloak.{{ .Values.global.host }}, admin car-ledger, password:
+  kubectl get secret {{ .Release.Name }}-keycloak-admin -n {{ .Release.Namespace }} -o jsonpath='{.data.password}' | base64 -d
+Set up the realm car-ledger, the client carLedger and the secret keycloak once, see docs/DEPLOYMENT.md
+(https://github.com/3thr3n/car-ledger/blob/main/docs/DEPLOYMENT.md#2-realm-and-client). The app starts after
+the secret exists.
+{{- end }}
+{{- if .Values.global.authentik.enabled }}
+
+authentik: https://authentik.{{ .Values.global.host }}, admin akadmin, password:
+  kubectl get secret authentik-bootstrap -n {{ .Release.Namespace }} -o jsonpath='{.data.password}' | base64 -d
+Add the users of CarLedger to the group user (or admin).
+{{- end }}
+{{- if .Values.global.n8n.enabled }}
+
+n8n: https://n8n.{{ .Values.global.host }}. Create the owner account right away (the first visitor becomes the
+owner), then import the workflow, see docs/N8N.md (https://github.com/3thr3n/car-ledger/blob/main/docs/N8N.md).
+{{- end }}

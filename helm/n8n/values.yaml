@@ -1,12 +1,12 @@
 # public host name of n8n, e.g. n8n.example.com: the editor, and the links of "Send and Wait for Response"
-# that the administrators open
+# that the administrators open. Defaults to n8n.<global.host> of the stack chart
 hostname: ""
 # whether n8n and CarLedger are reached via https
 tls: true
 
 carLedger:
   # public host name of CarLedger, e.g. car-ledger.example.com; the workflow calls the admin API at
-  # $env.CARLEDGER_URL
+  # $env.CARLEDGER_URL. Defaults to car-ledger.<global.host> of the stack chart
   hostname: ""
   # The generated signature key of the webhooks (key "webhook-secret") is in the secret car-ledger-webhook,
   # set carLedger.webhook.existingSecret of the car-ledger chart to it. Namespace of CarLedger, if it is not the

@@ -1,4 +1,4 @@
-{{- $carLedger := printf "%s://%s" (include "carLedger.scheme" .) (required "carLedger.hostname is required" .Values.carLedger.hostname) }}
+{{- $carLedger := printf "%s://%s" (include "carLedgerAuthentik.scheme" .) (required "carLedger.hostname is required" (include "carLedgerAuthentik.carLedgerHostname" .)) }}
 apiVersion: v1
 kind: ConfigMap
 metadata:

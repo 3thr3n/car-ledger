@@ -1,11 +1,12 @@
-# public host name of authentik, e.g. authentik.example.com
+# public host name of authentik, e.g. authentik.example.com, defaults to authentik.<global.host> of the stack chart
 hostname: ""
 # whether authentik and CarLedger are reached via https
 tls: true
 
 # CarLedger as OpenID Connect client, created by the blueprint in templates/blueprint.yaml
 carLedger:
-  # public host name of CarLedger, e.g. car-ledger.example.com, for the redirect URIs
+  # public host name of CarLedger, e.g. car-ledger.example.com, for the redirect URIs; defaults to
+  # car-ledger.<global.host> of the stack chart
   hostname: ""
   clientId: car-ledger
   # application slug, part of the issuer: https://<hostname>/application/o/<slug>/
@@ -57,7 +58,7 @@ authentik:
   authentik:
     # secret key and database password come from the secret authentik-generated (global.env)
     postgresql:
-      host: "{{ .Release.Name }}-postgresql"
+      host: '{{ include "carLedgerAuthentik.prefix" . }}-postgresql'
       name: authentik
       user: authentik
   # the bitnami PostgreSQL of the authentik chart is not used, its images are no longer available

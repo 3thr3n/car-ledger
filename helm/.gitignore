@@ -1,1 +1,3 @@
 **/charts/*
+# the versions of the charts of this repository change, "helm dependency update helm/stack" writes it
+stack/Chart.lock

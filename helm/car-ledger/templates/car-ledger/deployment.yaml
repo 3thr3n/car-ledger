@@ -28,17 +28,13 @@ spec:
               containerPort: 9000
           env:
             - name: QUARKUS_OIDC_AUTH_SERVER_URL
-            {{ if .Values.carLedger.auth.url }}
-              value: {{ .Values.carLedger.auth.url }}
-            {{ else }}
-              value: "https://keycloak.{{ .Values.ingress.host }}/realms/car-ledger"
-            {{ end }}
+              value: {{ include "carLedger.authUrl" . | quote }}
             - name: QUARKUS_OIDC_CLIENT_ID
-              value: {{ .Values.carLedger.auth.clientId }}
+              value: {{ include "carLedger.authClientId" . | quote }}
             - name: QUARKUS_OIDC_CREDENTIALS_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.carLedger.auth.existingSecret }}
+                  name: {{ include "carLedger.authSecret" . }}
                   key: {{ .Values.carLedger.auth.secretKeys.clientSecret }}
             - name: QUARKUS_OIDC_AUTHENTICATION_SCOPES
               value: {{ .Values.carLedger.auth.scopes }}
@@ -47,7 +43,7 @@ spec:
             - name: QUARKUS_OIDC_AUTHENTICATION_STATE_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.carLedger.auth.existingSecret }}
+                  name: {{ include "carLedger.authSecret" . }}
                   key: {{ .Values.carLedger.auth.secretKeys.stateSecret }}
             - name: QUARKUS_INFINISPAN_CLIENT_HOSTS
               value: {{ .Values.carLedger.infinispan.hosts }}
@@ -80,20 +76,25 @@ spec:
               value: {{ .Values.carLedger.attachments.maxPerBill | quote }}
             - name: QUARKUS_HTTP_LIMITS_MAX_BODY_SIZE
               value: {{ .Values.carLedger.attachments.maxRequestSize | quote }}
+            {{- /* with n8n of the stack chart: its workflow at the service of n8n, and the secret of the n8n chart */}}
+            {{- $n8n := eq (include "carLedger.withN8n" .) "true" }}
             {{- with .Values.carLedger.webhook }}
-            {{- if .url }}
+            {{- $url := .url | default (ternary "http://n8n-main:5678/webhook/car-ledger" "" $n8n) }}
+            {{- $secret := .existingSecret | default (ternary "car-ledger-webhook" "" $n8n) }}
+            {{- $events := .events | default (ternary (list "car-request.created") list $n8n) }}
+            {{- if $url }}
             - name: CARLEDGER_WEBHOOK_URL
-              value: {{ .url | quote }}
-            {{- if .existingSecret }}
+              value: {{ $url | quote }}
+            {{- if $secret }}
             - name: CARLEDGER_WEBHOOK_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: {{ .existingSecret }}
+                  name: {{ $secret }}
                   key: {{ .secretKey }}
             {{- end }}
-            {{- if .events }}
+            {{- if $events }}
             - name: CARLEDGER_WEBHOOK_EVENTS
-              value: {{ join "," .events | quote }}
+              value: {{ join "," $events | quote }}
             {{- end }}
             {{- end }}
             {{- end }}

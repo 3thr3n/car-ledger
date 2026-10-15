@@ -4,6 +4,7 @@ CarLedger runs on Kubernetes. It needs an OpenID Connect provider for the login,
 
 | Chart             | Deploys                                                                                                                                 |
 |-------------------|-----------------------------------------------------------------------------------------------------------------------------------------|
+| `helm/stack`      | All of the charts below in one release, each switched on with one value and set up to work together, see [its README](../helm/stack/README.md) |
 | `helm/car-ledger` | The app, its PostgreSQL and Infinispan (keeps the login sessions, shared by all replicas)                                                |
 | `helm/keycloak`   | Keycloak 26.7 (via the [keycloakx chart](https://github.com/codecentric/helm-charts/tree/master/charts/keycloakx)) with its own PostgreSQL |
 | `helm/authentik`  | authentik 2026.8 with its own PostgreSQL, CarLedger is set up by a blueprint, see [its README](../helm/authentik/README.md)              |
@@ -11,11 +12,31 @@ CarLedger runs on Kubernetes. It needs an OpenID Connect provider for the login,
 
 The app is reachable as `car-ledger.<host>`.
 
+A release publishes the charts at `oci://ghcr.io/3thr3n/car-ledger/<chart>`: `helm` (the app) and `stack` in the
+version of the release, `keycloak`, `authentik` and `n8n` in their own versions (raised when they change, the release
+notes name them). From the repository, run `helm dependency update helm/<chart>` before the install.
+
+- [Everything in one release](#everything-in-one-release)
 - [Identity provider](#identity-provider)
 - [Fresh install with Keycloak](#fresh-install-with-keycloak)
 - [Upgrading to the current version](#upgrading-to-the-current-version)
 - [Upgrading from the bitnami based charts (0.1.x)](#upgrading-from-the-bitnami-based-charts-01x)
 - [Operations](#operations)
+
+## Everything in one release
+
+The stack chart deploys the app and, as chosen, Keycloak or authentik and n8n. It sets the host names, the login and
+the webhooks of the app and the generated secrets up between them, e.g. with authentik and n8n:
+
+```bash
+helm install car-ledger oci://ghcr.io/3thr3n/car-ledger/stack \
+  --set global.host=example.com \
+  --set global.authentik.enabled=true \
+  --set global.n8n.enabled=true
+```
+
+See [its README](../helm/stack/README.md) for the values and the steps after the install. The sections below install
+the charts one by one, which also works with the identity provider or n8n in other namespaces.
 
 ## Identity provider
 
@@ -50,8 +71,7 @@ have the same user name at the new provider.
 ### 1. Keycloak
 
 ```bash
-helm dependency update helm/keycloak
-helm install keycloak helm/keycloak --set keycloak.hostname=keycloak.example.com
+helm install keycloak oci://ghcr.io/3thr3n/car-ledger/keycloak --set keycloak.hostname=keycloak.example.com
 ```
 
 The admin user is `car-ledger`, its password is generated and kept in the secret `keycloak-admin`:
@@ -203,6 +223,10 @@ kubectl set env deployment/car-ledger QUARKUS_FLYWAY_IGNORE_FUTURE_MIGRATIONS=tr
   the actual mileage in *Edit car*, it becomes a new reading as of today.
 - **Settings**: all accounts start with VAT country Germany and the currency Euro. Users with another currency change
   it in *Settings*, existing amounts are not converted.
+- **Charts** (0.4.0): `keycloak`, `authentik` and `n8n` are published as well, upgrade them from
+  `oci://ghcr.io/3thr3n/car-ledger/<chart>`. Installed on their own, they deploy the same resources as before; only in
+  the stack chart do they get other names. The values `carLedger.auth.clientId` and `carLedger.auth.existingSecret` of
+  the app chart are empty by default now, they still default to `carLedger` and `keycloak`.
 - **Uploads** (0.3.0): receipts and car pictures need requests up to `carLedger.attachments.maxRequestSize` (12 MB). The
   nginx ingress of the chart gets the annotation automatically; a Gateway or a proxy in front needs the same limit,
   otherwise uploads fail with 413. The files are stored in PostgreSQL, the backup above includes them.
