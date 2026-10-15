@@ -7,6 +7,7 @@ CarLedger runs on Kubernetes. It needs an OpenID Connect provider for the login,
 | `helm/car-ledger` | The app, its PostgreSQL and Infinispan (keeps the login sessions, shared by all replicas)                                                |
 | `helm/keycloak`   | Keycloak 26.7 (via the [keycloakx chart](https://github.com/codecentric/helm-charts/tree/master/charts/keycloakx)) with its own PostgreSQL |
 | `helm/authentik`  | authentik 2026.8 with its own PostgreSQL, CarLedger is set up by a blueprint, see [its README](../helm/authentik/README.md)              |
+| `helm/n8n`        | Optional: n8n 2.43 to approve car requests, with the shared secret of the webhooks, see [its README](../helm/n8n/README.md)              |
 
 The app is reachable as `car-ledger.<host>`.
 
