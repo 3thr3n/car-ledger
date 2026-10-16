@@ -54,14 +54,13 @@ updates:
       actions-minor-patch:
         update-types: [ "minor", "patch" ]
 
-  # chart dependencies (infinispan, keycloakx, authentik, n8n). An update of keycloak, authentik or n8n needs a
-  # new version of that chart before the release (helm/check-chart-versions.sh)
+  # chart dependencies (infinispan, keycloakx, authentik). An update of keycloak or authentik needs a new
+  # version of that chart before the release (helm/check-chart-versions.sh)
   - package-ecosystem: "helm"
     directories:
       - "/helm/car-ledger"
       - "/helm/keycloak"
       - "/helm/authentik"
-      - "/helm/n8n"
     target-branch: "develop"
     schedule:
       interval: "weekly"

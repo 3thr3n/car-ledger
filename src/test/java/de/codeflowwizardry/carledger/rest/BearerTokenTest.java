@@ -9,7 +9,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.keycloak.client.KeycloakTestClient;
 
 /**
- * Machines (e.g. n8n with a service account) call the API with an access token
+ * Machines (e.g. a script with a service account) call the API with an access token
  * instead of the session of the browser. Tokens of the Keycloak dev service:
  * alice has the role admin, bob only user. Redirects are not followed: without
  * a valid token the login page of Keycloak would answer with 200.

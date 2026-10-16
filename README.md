@@ -33,9 +33,8 @@ spending and usage patterns.
   and pictures) as one ZIP and restores it into an account without cars, e.g. on another installation.
 - **Car Requests:** Users who reached their car limit request more cars in the app, administrators approve or reject
   them on the administration page.
-- **Webhooks:** Events like a new car request are sent as signed HTTP requests to tools like n8n, see
-  [docs/WEBHOOKS.md](docs/WEBHOOKS.md). With n8n, administrators approve car requests from a message, see
-  [docs/N8N.md](docs/N8N.md).
+- **Webhooks:** Events like a new car request are sent as signed HTTP requests to other tools or your own scripts,
+  see [docs/WEBHOOKS.md](docs/WEBHOOKS.md).
 - **CSV Import:** Import multiple receipts at once using a CSV file, making it quick to upload historical or bulk data.
 - **CSV Export:** Export the receipts of a type as CSV, in the format of the import, or all expenses of a car
   including the payments of the recurring costs in one CSV for spreadsheets.
@@ -221,7 +220,6 @@ chart and image of the same build), a range takes them only with a prerelease su
 
 The login uses OpenID Connect: `helm/keycloak` deploys Keycloak with the realm of CarLedger, `helm/authentik` deploys authentik with CarLedger
 already set up, any other provider works as well.
-Optionally, `helm/n8n` deploys n8n to approve the car requests, see [docs/N8N.md](docs/N8N.md).
 `helm/stack` deploys the app with any of them in one release and sets up the secrets between them, see
 [its README](helm/stack/README.md). All charts are published at `oci://ghcr.io/3thr3n/car-ledger/<chart>`.
 

@@ -1,28 +1,26 @@
 # CarLedger stack
 
 CarLedger and the charts next to it in one release: the app (`helm/car-ledger`), the identity provider
-(`helm/keycloak` or `helm/authentik`) and optionally n8n (`helm/n8n`). Every part is switched on with one value, the
-host names, URLs and secrets between them are set up by the stack:
+(`helm/keycloak` or `helm/authentik`). Every part is switched on with one value, the host names, URLs and secrets
+between them are set up by the stack:
 
 | Enabled                         | Set up                                                                                                        |
 |---------------------------------|---------------------------------------------------------------------------------------------------------------|
 | always                          | CarLedger at `car-ledger.<global.host>`                                                                       |
 | `global.authentik.enabled=true` | authentik at `authentik.<global.host>` with CarLedger as application; the app logs in there with the client `car-ledger` and the generated secret `car-ledger-oidc` |
 | `global.keycloak.enabled=true`  | Keycloak at `keycloak.<global.host>` with the realm `car-ledger` imported; the app logs in there with the client `carLedger` and the generated secret `keycloak` |
-| `global.n8n.enabled=true`       | n8n at `n8n.<global.host>`; the app sends `car-request.created` to its workflow (`http://n8n-main:5678/webhook/car-ledger`), signed with the generated secret `car-ledger-webhook`, and n8n knows the URL of CarLedger |
 
 Without an identity provider, the app uses an existing one, see `app.carLedger.auth.*` and
 [DEPLOYMENT.md](../../docs/DEPLOYMENT.md#identity-provider).
 
 ## Install
 
-Nothing has to be set up by hand besides the users, e.g. with authentik and n8n:
+Nothing has to be set up by hand besides the users, e.g. with authentik:
 
 ```bash
 helm install car-ledger oci://ghcr.io/3thr3n/car-ledger/stack \
   --set global.host=example.com \
-  --set global.authentik.enabled=true \
-  --set global.n8n.enabled=true
+  --set global.authentik.enabled=true
 ```
 
 The stack has the version of the app: the release `0.4.0` runs the image `0.4.0` and contains the other charts of the
@@ -38,8 +36,6 @@ After the install, the notes of the release name the admin passwords and the nex
   and add the users of CarLedger to the group `user` (or `admin`).
 - **Keycloak**: log in as `car-ledger` (secret `car-ledger-keycloak-admin`), create the users of CarLedger in the realm
   `car-ledger` (they get the role `user`) and give the administrators the realm role `admin`.
-- **n8n**: open `https://n8n.example.com` right away and create the owner account (the first visitor becomes the
-  owner), then continue with the service account and the workflow in [N8N.md](../../docs/N8N.md).
 
 ## Values
 
@@ -48,14 +44,12 @@ After the install, the notes of the release name the admin passwords and the nex
 | `global.host`              |         | Base domain, required                                                               |
 | `global.keycloak.enabled`  | `false` | Deploy Keycloak, at most one of Keycloak and authentik                              |
 | `global.authentik.enabled` | `false` | Deploy authentik                                                                    |
-| `global.n8n.enabled`       | `false` | Deploy n8n and send the car requests to it                                          |
 | `app.*`                    |         | Values of the [car-ledger chart](../car-ledger/values.yaml)                         |
 | `keycloak.*`               |         | Values of the [keycloak chart](../keycloak/values.yaml)                             |
 | `authentik.*`              |         | Values of the [authentik chart](../authentik/README.md)                             |
-| `n8n.*`                    |         | Values of the [n8n chart](../n8n/README.md)                                         |
 
-Values set for a chart win over the ones of the stack, e.g. `app.carLedger.webhook.events` to send more events to n8n,
-or `authentik.hostname=login.example.com` for another host name. The app does not see the values of the other
+Values set for a chart win over the ones of the stack, e.g. `authentik.hostname=login.example.com` for another host
+name. The app does not see the values of the other
 charts: with another host name or slug of authentik, set `app.carLedger.auth.url` as well.
 
 A values file for the stack with cert-manager, e.g. `my-values.yaml`:
@@ -65,8 +59,6 @@ global:
   host: example.com
   authentik:
     enabled: true
-  n8n:
-    enabled: true
 
 app:
   ingress:
@@ -74,20 +66,17 @@ app:
 authentik:
   ingress:
     certManager: lets-encrypt
-n8n:
-  ingress:
-    certManager: lets-encrypt
 ```
 
 With the Gateway API instead of an ingress, switch each chart: `app.ingress.enabled=false`,
-`app.httpRoute.enabled=true`, the same for `authentik.*` and `n8n.*`, and for Keycloak
+`app.httpRoute.enabled=true`, the same for `authentik.*`, and for Keycloak
 `keycloak.keycloak.ingress.enabled=false`, `keycloak.keycloak.httpRoute.enabled=true` and
 `keycloak.keycloak.httpRoute.hostnames`.
 
 ## From the repository
 
 ```bash
-for chart in car-ledger keycloak authentik n8n stack; do helm dependency update helm/$chart; done
+for chart in car-ledger keycloak authentik stack; do helm dependency update helm/$chart; done
 helm install car-ledger helm/stack --set global.host=example.com ...
 ```
 
