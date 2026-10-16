@@ -27,6 +27,7 @@ import RangeList from '@/components/dashboard/RangeList';
 import MonthlyChart from '@/components/dashboard/LazyMonthlyChart';
 import Section from '@/components/ui/Section';
 import ReminderList from '@/components/reminder/ReminderList';
+import InstallHint from '@/components/install/InstallHint';
 import ErrorPage from '@/pages/ErrorPage';
 
 export interface DashboardPageProps {
@@ -80,6 +81,7 @@ export default function DashboardPage({
         title={t('dashboard.title')}
         subtitle={t('dashboard.subtitle')}
       />
+      <InstallHint />
       <DashboardFilter search={search} onChange={onSearchChange} />
 
       {!!dueReminders?.length && (
