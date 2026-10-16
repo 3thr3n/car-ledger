@@ -76,6 +76,19 @@ spec:
               value: {{ .Values.carLedger.attachments.maxPerBill | quote }}
             - name: QUARKUS_HTTP_LIMITS_MAX_BODY_SIZE
               value: {{ .Values.carLedger.attachments.maxRequestSize | quote }}
+            {{- with .Values.carLedger.push }}
+            {{- if .enabled }}
+            - name: CARLEDGER_PUSH_ENABLED
+              value: "true"
+            - name: CARLEDGER_PUSH_SUBJECT
+              value: {{ .subject | default (printf "https://car-ledger.%s" (include "carLedger.host" $)) | quote }}
+            - name: CARLEDGER_PUSH_PRIVATE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .existingSecret | default "car-ledger-push" }}
+                  key: {{ .privateKeyKey }}
+            {{- end }}
+            {{- end }}
             {{- with .Values.carLedger.mail }}
             {{- if .host }}
             - name: CARLEDGER_MAIL_ENABLED

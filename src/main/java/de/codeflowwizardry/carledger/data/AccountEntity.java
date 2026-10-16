@@ -79,6 +79,13 @@ public class AccountEntity
 	private boolean notifyRequestDecided = true;
 
 	/**
+	 * The notifications by mail, the other channel are the browsers that
+	 * subscribed
+	 */
+	@Column(name = "notify_by_mail", nullable = false)
+	private boolean notifyByMail = true;
+
+	/**
 	 * Mail the reminders of the cars once they are due soon
 	 */
 	@Column(name = "notify_reminders", nullable = false)
@@ -214,6 +221,16 @@ public class AccountEntity
 	public void setNotifyRequestDecided(boolean notifyRequestDecided)
 	{
 		this.notifyRequestDecided = notifyRequestDecided;
+	}
+
+	public boolean isNotifyByMail()
+	{
+		return notifyByMail;
+	}
+
+	public void setNotifyByMail(boolean notifyByMail)
+	{
+		this.notifyByMail = notifyByMail;
 	}
 
 	public boolean isNotifyReminders()

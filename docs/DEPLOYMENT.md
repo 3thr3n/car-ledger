@@ -172,6 +172,7 @@ with the role `user`, the roles are missing in the tokens of the client.
 - **Service accounts**: besides the login of the browser, the API accepts access tokens of the identity provider
   (`Authorization: Bearer …`), e.g. of a script deciding car requests. See [Service accounts](#service-accounts).
 - **E-mail**: `carLedger.mail.host` sends notifications by e-mail, see [E-mail](#e-mail).
+- **Push**: the notifications reach the browsers as push messages, on by default, see [Push](#push).
 - **Installable app**: the app has a web app manifest (`/manifest.json`) and a service worker (`/sw.js`), which keeps
   the files of the app (not the data) for a fast start. Both need HTTPS, which the ingress provides. A proxy or CDN in
   front must not cache `/sw.js` for long, otherwise new versions arrive late; the app asks the user to reload when a
@@ -208,6 +209,24 @@ carLedger:
   the request of the user, the error is logged. The count of open requests in the app stays the reliable source.
 
 Without a host nothing is sent, the settings page says so. In dev mode the mails are only written to the log.
+
+### Push
+
+The same notifications (due reminders, new car requests, decisions) reach the browsers as push messages (Web Push),
+on every device where the user turns on *Settings → Notifications → Push on this device*. A user can have both, e-mail
+and push, or only one of them.
+
+- **Nothing to set up**: the chart generates the key of the server (VAPID, P-256) into the secret `car-ledger-push` and
+  keeps it on upgrades. A new key ends all subscriptions, the users turn push on again. An own key:
+  `carLedger.push.existingSecret` with the key `private-key`, e.g.
+  `openssl ecparam -name prime256v1 -genkey -noout | kubectl create secret generic my-push --from-file=private-key=/dev/stdin`.
+- **Push services**: the messages go to the push service of the browser (Google for Chrome and Android, Mozilla for
+  Firefox, Apple for Safari), end-to-end encrypted: the service cannot read them. The app needs outgoing HTTPS to
+  them. `carLedger.push.subject` is the contact the services see, by default `https://car-ledger.<ingress.host>`.
+- **iPhone and iPad**: only the installed app (home screen) receives push messages, the settings say so.
+- **Delivery**: after the change is saved, in the background, with three retries; a browser the push service does not
+  know anymore (uninstalled, permission withdrawn) is removed.
+- `carLedger.push.enabled=false` turns push off, the settings say so.
 
 ### Service accounts
 
@@ -281,6 +300,7 @@ Use the image of a release (a git tag of `main`) or a dev build of `develop`. On
 | 1.10.0    | Table for the requests of the users, first: more cars (0.4.0)                                                        |
 | 1.11.0    | Address, role and browser language of the accounts, notification settings, all on by default (0.5.0)                |
 | 1.12.0    | Which due of a reminder was mailed, the mails of the reminders on by default (0.5.0)                                 |
+| 1.13.0    | The browsers that receive push messages, the switch of the e-mails (on) (0.5.0)                                      |
 
 An older image refuses to start on the migrated database, as Flyway finds migrations it does not know. To go back,
 restore the backup. Without the backup, the older image runs on the migrated database (the new columns have defaults)
@@ -302,6 +322,8 @@ kubectl set env deployment/car-ledger QUARKUS_FLYWAY_IGNORE_FUTURE_MIGRATIONS=tr
   reminders (on the first day all reminders that are due already, in one mail per user), see
   [E-mail](#e-mail). The addresses and the role `admin` are stored at the next visit of each user, until then
   nobody gets mails.
+- **Push** (0.5.0): on by default, the chart creates the secret `car-ledger-push` with the key of the server. Each user
+  turns it on per device in the settings, see [Push](#push). The app needs outgoing HTTPS to the push services.
 - **Energy type** (0.4.0): existing cars become petrol cars. Owners of another car (diesel, LPG, CNG, electric,
   plug-in hybrid) change it in *Edit car*; only electric cars and plug-in hybrids record charges.
 - **Car requests** (0.4.0): users who reached their car limit request more cars in the garage, the role `admin` approves

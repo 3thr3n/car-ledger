@@ -15,6 +15,7 @@ import de.codeflowwizardry.carledger.data.ReminderEntity;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import de.codeflowwizardry.carledger.data.repository.ReminderRepository;
+import de.codeflowwizardry.carledger.notification.push.PushConfig;
 import de.codeflowwizardry.carledger.rest.car.reminder.Reminder;
 import de.codeflowwizardry.carledger.rest.car.reminder.ReminderStatus;
 import de.codeflowwizardry.carledger.rest.records.Odometer;
@@ -24,34 +25,36 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 /**
- * Once a day, every account gets one mail with its reminders that became due
- * soon or overdue (the status of the app: 30 days or 1000 km before). A
- * reminder is mailed once per due date and odometer; done or changed, it is
- * mailed again when its new due comes.
+ * Once a day, every account gets one notification (mail and push) with its
+ * reminders that became due soon or overdue (the status of the app: 30 days or
+ * 1000 km before). A reminder is notified once per due date and odometer; done
+ * or changed, it is notified again when its new due comes.
  */
 @ApplicationScoped
-public class ReminderMails
+public class ReminderNotifications
 {
-	private static final Logger LOG = LoggerFactory.getLogger(ReminderMails.class);
+	private static final Logger LOG = LoggerFactory.getLogger(ReminderNotifications.class);
 
 	private final MailConfig config;
+	private final PushConfig pushConfig;
 	private final AccountRepository accountRepository;
 	private final ReminderRepository reminderRepository;
 	private final OdometerService odometerService;
-	private final MailNotifications mails;
+	private final Notifications notifications;
 
 	@Inject
-	public ReminderMails(MailConfig config, AccountRepository accountRepository,
-			ReminderRepository reminderRepository, OdometerService odometerService, MailNotifications mails)
+	public ReminderNotifications(MailConfig config, PushConfig pushConfig, AccountRepository accountRepository,
+			ReminderRepository reminderRepository, OdometerService odometerService, Notifications notifications)
 	{
 		this.config = config;
+		this.pushConfig = pushConfig;
 		this.accountRepository = accountRepository;
 		this.reminderRepository = reminderRepository;
 		this.odometerService = odometerService;
-		this.mails = mails;
+		this.notifications = notifications;
 	}
 
-	@Scheduled(cron = "{carledger.mail.reminders-cron}", identity = "reminder-mails")
+	@Scheduled(cron = "{carledger.mail.reminders-cron}", identity = "reminder-notifications")
 	void sendDaily()
 	{
 		send(LocalDate.now());
@@ -63,12 +66,12 @@ public class ReminderMails
 	 */
 	void send(LocalDate today)
 	{
-		if (!config.enabled())
+		if (!config.enabled() && !pushConfig.enabled())
 		{
 			return;
 		}
 		List<Long> accounts = QuarkusTransaction.requiringNew().call(() -> accountRepository
-				.find("notifyReminders = true and email is not null").stream()
+				.find("notifyReminders = true").stream()
 				.map(AccountEntity::getId)
 				.toList());
 		for (Long id : accounts)
@@ -87,6 +90,12 @@ public class ReminderMails
 	private void send(long accountId, LocalDate today)
 	{
 		AccountEntity account = accountRepository.findById(accountId);
+		// without a channel the reminders stay unmarked, e.g. for an address added
+		// later
+		if (!notifications.canReach(account))
+		{
+			return;
+		}
 		List<ReminderEntity> reminders = reminderRepository.list(CarRepository.ALL_CARS, account.getUserId());
 		if (reminders.isEmpty())
 		{
@@ -105,12 +114,12 @@ public class ReminderMails
 			}
 		}
 		due.sort(ReminderService.BY_URGENCY);
-		mails.reminders(account, due);
+		notifications.reminders(account, due);
 	}
 
 	/**
 	 * Marks the reminder as mailed for its due. An update with a condition, so of
-	 * several replicas running the job only one mails it.
+	 * several replicas running the job only one notifies it.
 	 *
 	 * @return whether it was not mailed for this due yet
 	 */

@@ -32,7 +32,7 @@ import jakarta.transaction.Transactional;
  * units of the account
  */
 @QuarkusTest
-class ReminderMailsTest
+class ReminderNotificationsTest
 {
 	private static final LocalDate TODAY = LocalDate.now();
 
@@ -40,7 +40,7 @@ class ReminderMailsTest
 	MockMailbox mailbox;
 
 	@Inject
-	ReminderMails reminderMails;
+	ReminderNotifications reminderNotifications;
 
 	@Inject
 	AccountRepository accountRepository;
@@ -134,7 +134,7 @@ class ReminderMailsTest
 	@Test
 	void shouldMailTheDueRemindersOnce() throws Exception
 	{
-		reminderMails.send(TODAY);
+		reminderNotifications.send(TODAY);
 
 		Mail toPeter = mailsTo("peter@example.com", 1).getFirst();
 		assertEquals("3 reminders are due", toPeter.getSubject());
@@ -156,7 +156,7 @@ class ReminderMailsTest
 
 		// the next day nothing new
 		mailbox.clear();
-		reminderMails.send(TODAY.plusDays(1));
+		reminderNotifications.send(TODAY.plusDays(1));
 		Thread.sleep(200);
 		assertEquals(0, mailbox.getTotalMessagesSent());
 	}
@@ -164,13 +164,13 @@ class ReminderMailsTest
 	@Test
 	void shouldMailAgainForTheNextDue() throws Exception
 	{
-		reminderMails.send(TODAY);
+		reminderNotifications.send(TODAY);
 		mailsTo("peter@example.com", 1);
 		mailbox.clear();
 
 		// done and due again, e.g. a repeating reminder
 		setDueDate(tuev, TODAY.plusDays(5));
-		reminderMails.send(TODAY);
+		reminderNotifications.send(TODAY);
 
 		Mail toPeter = mailsTo("peter@example.com", 1).getFirst();
 		assertEquals("Reminder due: TÜV (Golf)", toPeter.getSubject());
@@ -180,7 +180,7 @@ class ReminderMailsTest
 	@Test
 	void shouldMailInTheLanguageAndTheUnitsOfTheAccount() throws Exception
 	{
-		reminderMails.send(TODAY);
+		reminderNotifications.send(TODAY);
 
 		Mail toAnna = mailsTo("anna@example.com", 1).getFirst();
 		assertEquals("Erinnerung fällig: Inspektion (Polo)", toAnna.getSubject());

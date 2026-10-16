@@ -6,7 +6,7 @@ import jakarta.inject.Inject;
 
 /**
  * Publishes events: as webhooks ({@link WebhookSender}) and as mails
- * ({@link de.codeflowwizardry.carledger.notification.MailNotifications}). They
+ * ({@link de.codeflowwizardry.carledger.notification.Notifications}). They
  * are sent after the transaction succeeded, a failing transaction sends
  * nothing.
  */

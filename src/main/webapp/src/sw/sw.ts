@@ -33,3 +33,56 @@ self.addEventListener('message', (event) => {
   if (event.data?.type === 'SKIP_WAITING') self.skipWaiting();
 });
 clientsClaim();
+
+/** a notification of the server (see Notifications.java) */
+interface PushPayload {
+  title?: string;
+  body?: string;
+  /** page of the app it opens */
+  url?: string;
+  /** a newer one with the same tag replaces the older */
+  tag?: string;
+}
+
+self.addEventListener('push', (event) => {
+  let payload: PushPayload;
+  try {
+    payload = event.data?.json() ?? {};
+  } catch {
+    payload = { body: event.data?.text() };
+  }
+  event.waitUntil(
+    self.registration.showNotification(payload.title ?? 'CarLedger', {
+      body: payload.body,
+      tag: payload.tag,
+      icon: '/icons/icon-192.png',
+      data: { url: payload.url ?? '/dashboard' },
+    }),
+  );
+});
+
+// a click focuses the app and opens the page of the notification
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const url = new URL(
+    event.notification.data?.url ?? '/dashboard',
+    self.location.origin,
+  ).href;
+  event.waitUntil(
+    (async () => {
+      const windows = await self.clients.matchAll({
+        type: 'window',
+        includeUncontrolled: true,
+      });
+      const open = windows.find(
+        (client) => new URL(client.url).origin === self.location.origin,
+      );
+      if (open) {
+        await open.focus();
+        await open.navigate(url).catch(() => undefined);
+      } else {
+        await self.clients.openWindow(url);
+      }
+    })(),
+  );
+});

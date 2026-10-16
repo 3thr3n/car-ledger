@@ -55,6 +55,16 @@ carLedger:
     secretKey: "webhook-secret"
     # event types to send, all without a list, e.g. [car-request.created, car-request.decided]
     events: []
+  # notifications as push messages to the browsers that turn them on in the settings (see
+  # docs/DEPLOYMENT.md#push). Needs no other service: the chart generates the key of the server
+  # into the secret car-ledger-push and keeps it, a new key ends all subscriptions
+  push:
+    enabled: true
+    # contact for the push services (mailto: or https:), defaults to https://car-ledger.<ingress.host>
+    subject:
+    # own secret with the key (EC PRIVATE KEY, P-256) instead of the generated one
+    existingSecret:
+    privateKeyKey: "private-key"
   # notifications by e-mail (new car requests to the admins, decisions to the user, see
   # docs/DEPLOYMENT.md#e-mail); without a host no mails are sent. The address of a user comes from the
   # claim "email" of the login
