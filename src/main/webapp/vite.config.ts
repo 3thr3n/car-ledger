@@ -26,8 +26,9 @@ export default defineConfig({
       manifestFilename: 'manifest.json',
       injectManifest: {
         globPatterns: ['**/*.{js,css,html,svg,png,ico,woff2}'],
-        // the spec of the API is no part of the app
-        globIgnores: ['openapi.json'],
+        // the spec of the API is no part of the app, the flags are loaded when
+        // the list of the countries is opened
+        globIgnores: ['openapi.json', 'assets/flags/**'],
       },
       manifest: {
         name: 'CarLedger',
@@ -73,8 +74,16 @@ export default defineConfig({
     include: ['src/**/*.test.{ts,tsx}'],
   },
   build: {
+    // the flags stay files, loaded when shown, instead of data URIs in the code
+    assetsInlineLimit: (file) =>
+      file.includes('flag-icons') ? false : undefined,
     rolldownOptions: {
       output: {
+        // the flags of the countries apart, see globIgnores
+        assetFileNames: (asset) =>
+          asset.originalFileNames?.some((name) => name.includes('flag-icons'))
+            ? 'assets/flags/[name]-[hash][extname]'
+            : 'assets/[name]-[hash][extname]',
         // libraries the app always loads completely, in an own chunk that stays
         // cached between releases. Not @mui/material: parts of it are only used
         // by lazy routes and would end up in the first load.

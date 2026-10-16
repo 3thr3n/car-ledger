@@ -8,13 +8,11 @@ import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.lang3.StringUtils;
@@ -47,9 +45,13 @@ import jakarta.transaction.Transactional;
 @ApplicationScoped
 public class BackupService
 {
-	/** guards against ZIP bombs, far above any real backup */
+	/**
+	 * Guards against ZIP bombs, far above any real backup: what may be unpacked in
+	 * total (not at once, the files are unpacked one by one) and per backup.json
+	 */
 	static final long MAX_UNPACKED = 1024L * 1024 * 1024;
 	static final int MAX_ENTRIES = 100_000;
+	static final long MAX_JSON = 16L * 1024 * 1024;
 
 	private final AccountRepository accountRepository;
 	private final CarRepository carRepository;
@@ -225,8 +227,15 @@ public class BackupService
 	@Transactional
 	public BackupSummary restore(String user, InputStream zip)
 	{
-		Map<String, byte[]> entries = unpack(zip);
-		BackupFile backup = parse(entries.get(BackupFile.ENTRY));
+		try (BackupArchive entries = new BackupArchive(zip, MAX_ENTRIES, MAX_UNPACKED))
+		{
+			return restore(user, entries);
+		}
+	}
+
+	private BackupSummary restore(String user, BackupArchive entries)
+	{
+		BackupFile backup = parse(entries.read(BackupFile.ENTRY, MAX_JSON));
 
 		AccountEntity account = accountRepository.findByIdentifier(user);
 		if (carRepository.countForUser(user) > 0)
@@ -256,45 +265,6 @@ public class BackupService
 		int recurringBills;
 		int reminders;
 		int files;
-	}
-
-	private static Map<String, byte[]> unpack(InputStream in)
-	{
-		Map<String, byte[]> entries = new HashMap<>();
-		long unpacked = 0;
-		try (ZipInputStream zip = new ZipInputStream(in))
-		{
-			ZipEntry entry;
-			while ((entry = zip.getNextEntry()) != null)
-			{
-				if (entry.isDirectory())
-				{
-					continue;
-				}
-				if (entries.size() >= MAX_ENTRIES)
-				{
-					Utils.requireValid(List.of("The backup has too many files!"));
-				}
-				ByteArrayOutputStream content = new ByteArrayOutputStream();
-				byte[] buffer = new byte[64 * 1024];
-				int read;
-				while ((read = zip.read(buffer)) > 0)
-				{
-					unpacked += read;
-					if (unpacked > MAX_UNPACKED)
-					{
-						Utils.requireValid(List.of("The backup is too large!"));
-					}
-					content.write(buffer, 0, read);
-				}
-				entries.put(entry.getName(), content.toByteArray());
-			}
-		}
-		catch (IOException e)
-		{
-			Utils.requireValid(List.of("The file is no backup of CarLedger!"));
-		}
-		return entries;
 	}
 
 	private BackupFile parse(byte[] json)
@@ -343,7 +313,7 @@ public class BackupService
 		}
 	}
 
-	private void restoreCar(AccountEntity account, BackupFile.Car backup, Map<String, byte[]> entries,
+	private void restoreCar(AccountEntity account, BackupFile.Car backup, BackupArchive entries,
 			Counter counter)
 	{
 		CarInput input = new CarInput(backup.name(), backup.year(), backup.odometer(), backup.licensePlate(),
@@ -403,7 +373,7 @@ public class BackupService
 		}
 	}
 
-	private void restoreBill(CarEntity car, BackupFile.Bill backup, Map<String, byte[]> entries, Counter counter)
+	private void restoreBill(CarEntity car, BackupFile.Bill backup, BackupArchive entries, Counter counter)
 	{
 		if (backup.type() == null || backup.date() == null || backup.total() == null)
 		{
@@ -506,9 +476,9 @@ public class BackupService
 		}
 	}
 
-	private static byte[] content(Map<String, byte[]> entries, BackupFile.File file)
+	private byte[] content(BackupArchive entries, BackupFile.File file)
 	{
-		byte[] content = file.path() == null ? null : entries.get(file.path());
+		byte[] content = entries.read(file.path(), attachmentService.maxSize());
 		if (content == null)
 		{
 			Utils.requireValid(List.of("The file " + file.fileName() + " is missing in the backup!"));

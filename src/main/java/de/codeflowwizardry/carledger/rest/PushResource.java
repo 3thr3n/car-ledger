@@ -13,6 +13,7 @@ import de.codeflowwizardry.carledger.data.AccountEntity;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.notification.Notifications;
 import de.codeflowwizardry.carledger.notification.push.PushConfig;
+import de.codeflowwizardry.carledger.notification.push.PushEndpoints;
 import de.codeflowwizardry.carledger.notification.push.PushSubscriptionEntity;
 import de.codeflowwizardry.carledger.notification.push.PushSubscriptionRepository;
 import de.codeflowwizardry.carledger.notification.push.VapidKeys;
@@ -67,6 +68,10 @@ public class PushResource extends AbstractResource
 	public Response subscribe(PushSubscriptionInput input)
 	{
 		Utils.requireValid(input == null ? List.of("The subscription is missing!") : input.validate());
+		if (!PushEndpoints.isAllowed(input.endpoint(), config.allowedHosts()))
+		{
+			Utils.requireValid(List.of("The endpoint is no known push service!"));
+		}
 		AccountEntity account = getAccount();
 		// the same browser after another login belongs to the new account
 		PushSubscriptionEntity subscription = subscriptions.findByEndpoint(input.endpoint())

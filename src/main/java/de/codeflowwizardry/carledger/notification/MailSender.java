@@ -1,6 +1,7 @@
 package de.codeflowwizardry.carledger.notification;
 
 import java.time.Duration;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +41,20 @@ public class MailSender
 		}
 	}
 
+	/**
+	 * @return the addresses for the log, enough to tell them apart: the first
+	 *         letter and the domain, e.g. a…@example.com
+	 */
+	static List<String> masked(List<String> addresses)
+	{
+		return addresses.stream()
+				.map(address -> {
+					int at = address.indexOf('@');
+					return at <= 0 ? "…" : address.charAt(0) + "…" + address.substring(at);
+				})
+				.toList();
+	}
+
 	private void send(String event, Mail mail)
 	{
 		Duration backoff = config.backoff();
@@ -50,8 +65,8 @@ public class MailSender
 					.atMost(config.retries());
 		}
 		sending.subscribe().with(
-				ignored -> LOG.debug("Mail {} sent to {}", event, mail.getTo()),
-				error -> LOG.warn("Mail {} to {} not sent after {} attempts: {}", event, mail.getTo(),
+				ignored -> LOG.debug("Mail {} sent to {}", event, masked(mail.getTo())),
+				error -> LOG.warn("Mail {} to {} not sent after {} attempts: {}", event, masked(mail.getTo()),
 						config.retries() + 1, error.toString()));
 	}
 }

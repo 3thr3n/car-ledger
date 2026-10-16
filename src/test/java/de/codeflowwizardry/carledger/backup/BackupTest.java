@@ -309,6 +309,56 @@ class BackupTest
 	}
 
 	@Test
+	void shouldRejectAZipBomb() throws IOException
+	{
+		deleteCar();
+		// 20 MB of spaces pack into a few KB
+		byte[] json = new byte[20 * 1024 * 1024];
+		java.util.Arrays.fill(json, (byte) ' ');
+		byte[] bomb = zip(Map.of("backup.json", json));
+		assertTrue(bomb.length < 100 * 1024);
+
+		restore(bomb).statusCode(400).body("[0]", is("The file backup.json of the backup is too large!"));
+	}
+
+	@Test
+	void shouldRejectAFileLargerThanAnAttachment() throws IOException
+	{
+		Map<String, byte[]> entries = unzip(download());
+		deleteCar();
+		// the tests allow 64 KB per file
+		String path = entries.keySet().stream().filter(name -> name.startsWith("files/")).findFirst().orElseThrow();
+		byte[] large = java.util.Arrays.copyOf(entries.get(path), 100 * 1024);
+		entries.put(path, large);
+
+		restore(zip(entries)).statusCode(400).body("[0]", is("The file " + path + " of the backup is too large!"));
+		given().when().get("/api/car/my").then().body("size()", is(0));
+	}
+
+	@Test
+	void shouldRejectAFileUsedTwice() throws IOException
+	{
+		Map<String, byte[]> entries = unzip(download());
+		deleteCar();
+		ObjectNode json = (ObjectNode) mapper.readTree(entries.get("backup.json"));
+		// the picture of the car points to the file of an attachment
+		ObjectNode car = (ObjectNode) json.withArray("cars").get(0);
+		JsonNode attachment = null;
+		for (JsonNode bill : car.withArray("bills"))
+		{
+			if (bill.path("attachments").size() > 0)
+			{
+				attachment = bill.path("attachments").get(0);
+			}
+		}
+		car.set("picture", attachment.deepCopy());
+		entries.put("backup.json", mapper.writeValueAsBytes(json));
+
+		restore(zip(entries)).statusCode(400).body("[0]", containsString("is used twice in the backup"));
+		given().when().get("/api/car/my").then().body("size()", is(0));
+	}
+
+	@Test
 	void shouldRestoreNothingWithAMissingFile() throws IOException
 	{
 		Map<String, byte[]> entries = unzip(download());

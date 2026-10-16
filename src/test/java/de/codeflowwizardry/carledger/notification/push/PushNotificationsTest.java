@@ -364,6 +364,12 @@ class PushNotificationsTest
 		given().contentType(ContentType.JSON)
 				.body(Map.of("endpoint", "http://push.example.com", "p256dh", "x", "auth", "y"))
 				.put("/api/user/me/push/subscriptions").then().statusCode(400);
+		// a host in the network of the server is no push service
+		given().contentType(ContentType.JSON)
+				.body(Map.of("endpoint", "https://10.0.0.5/admin", "p256dh", peterPhone.p256dh(), "auth",
+						peterPhone.authBase64()))
+				.put("/api/user/me/push/subscriptions").then().statusCode(400)
+				.body("[0]", Matchers.is("The endpoint is no known push service!"));
 		given().contentType(ContentType.JSON)
 				.body(Map.of("endpoint", endpoint, "p256dh", peterPhone.p256dh(), "auth", peterPhone.authBase64()))
 				.put("/api/user/me/push/subscriptions").then().statusCode(204);

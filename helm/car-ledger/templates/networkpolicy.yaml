@@ -1,0 +1,65 @@
+{{- /*
+Only the app reaches its PostgreSQL and Infinispan (and what networkPolicy.extraFrom allows). The app itself is not
+restricted. Needs a network plugin that enforces NetworkPolicies, ignored by the others.
+*/}}
+{{- if .Values.networkPolicy.enabled }}
+{{- if .Values.carledgerpostgres.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ .Release.Name }}-postgresql
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: postgresql
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: primary
+  policyTypes: [ Ingress ]
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: car-ledger
+        {{- with .Values.networkPolicy.extraFrom }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      ports:
+        - port: 5432
+          protocol: TCP
+{{- end }}
+{{- if .Values.infinispan.enabled }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ .Release.Name }}-infinispan
+spec:
+  podSelector:
+    matchLabels:
+      clusterName: {{ .Values.infinispan.deploy.nameOverride }}
+      app: infinispan-pod
+  policyTypes: [ Ingress ]
+  ingress:
+    # the sessions of the app
+    - from:
+        - podSelector:
+            matchLabels:
+              app: car-ledger
+        {{- with .Values.networkPolicy.extraFrom }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      ports:
+        - port: 11222
+          protocol: TCP
+    # the members of the Infinispan cluster among each other
+    - from:
+        - podSelector:
+            matchLabels:
+              clusterName: {{ .Values.infinispan.deploy.nameOverride }}
+              app: infinispan-pod
+    # the metrics, e.g. for Prometheus
+    - ports:
+        - port: 11223
+          protocol: TCP
+{{- end }}
+{{- end }}

@@ -1,6 +1,7 @@
 package de.codeflowwizardry.carledger.notification.push;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.Optional;
 
 import io.smallrye.config.ConfigMapping;
@@ -51,4 +52,13 @@ public interface PushConfig
 
 	@WithDefault("PT10S")
 	Duration timeout();
+
+	/**
+	 * @return the hosts of the push services the browsers subscribe at, a leading
+	 *         "*." for their subdomains: Google (Chrome, Edge on Android), Mozilla
+	 *         (Firefox), Apple (Safari), Microsoft (Edge). Messages only go there,
+	 *         a subscription cannot point the server to other hosts.
+	 */
+	@WithDefault("*.googleapis.com,*.google.com,*.push.services.mozilla.com,*.push.apple.com,*.notify.windows.com")
+	List<String> allowedHosts();
 }
