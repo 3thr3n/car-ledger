@@ -1408,6 +1408,15 @@
       "UnitSystem" : {
         "type" : "string",
         "enum" : [ "METRIC", "US", "UK" ]
+      },
+      "Version" : {
+        "type" : "object",
+        "required" : [ "version" ],
+        "properties" : {
+          "version" : {
+            "type" : "string"
+          }
+        }
       }
     },
     "securitySchemes" : {
@@ -4731,6 +4740,26 @@
         },
         "summary" : "Update Settings",
         "tags" : [ "Account Resource" ]
+      }
+    },
+    "/api/version" : {
+      "get" : {
+        "description" : "Version of the server, e.g. 0.5.0 or 0.5.0-dev.531",
+        "operationId" : "getVersion",
+        "responses" : {
+          "200" : {
+            "description" : "Version of the server.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Version"
+                }
+              }
+            }
+          }
+        },
+        "summary" : "Get Version",
+        "tags" : [ "Version Resource" ]
       }
     }
   },

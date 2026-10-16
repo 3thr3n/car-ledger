@@ -535,6 +535,10 @@ export enum UnitSystem {
     UK = 'UK'
 }
 
+export type Version = {
+    version: string;
+};
+
 export type GetAdminAccountsData = {
     body?: never;
     path?: never;
@@ -2483,3 +2487,19 @@ export type UpdateMySettingsResponses = {
 };
 
 export type UpdateMySettingsResponse = UpdateMySettingsResponses[keyof UpdateMySettingsResponses];
+
+export type GetVersionData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/version';
+};
+
+export type GetVersionResponses = {
+    /**
+     * Version of the server.
+     */
+    200: Version;
+};
+
+export type GetVersionResponse = GetVersionResponses[keyof GetVersionResponses];
