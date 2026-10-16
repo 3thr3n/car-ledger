@@ -74,7 +74,12 @@ test.describe.serial('car requests', () => {
   });
 
   test('approves the request as administrator', async ({ page }) => {
-    await page.goto('/admin');
+    // the navigation shows the open request on every page
+    await page.goto('/dashboard');
+    const nav = page.getByRole('link', { name: /Administration/ });
+    await expect(nav.getByLabel('1 open request')).toBeVisible();
+    await nav.click();
+    await expect(page).toHaveURL(/\/admin/);
     await expect(page.getByText('Open requests')).toBeVisible();
     const request = page
       .locator('.MuiCard-root', { hasText: 'Car requests' })
@@ -92,6 +97,7 @@ test.describe.serial('car requests', () => {
 
     await expect(page.getByText('Request approved')).toBeVisible();
     await expect(page.getByText('No requests')).toBeVisible();
+    await expect(nav.getByLabel(/open request/)).toHaveCount(0);
     await expect(page.getByRole('row', { name: /bob/ })).toContainText('/ 2');
   });
 

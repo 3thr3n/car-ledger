@@ -1,5 +1,6 @@
 import {
   AppBar,
+  Badge,
   Box,
   Drawer,
   IconButton,
@@ -14,6 +15,7 @@ import { ReactNode, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Sidebar from '@/components/layout/Sidebar';
 import useMe from '@/hooks/useMe';
+import useOpenCarRequests from '@/hooks/useOpenCarRequests';
 import productLogo from '@/assets/car-ledger.svg';
 
 const SIDEBAR_WIDTH = 264;
@@ -28,6 +30,8 @@ export default function AppShell({ children }: { children: ReactNode }) {
   // when it is fetched again, a query with an error is fetched again whenever
   // a page mounts it.
   const { isFetched } = useMe();
+  // the sidebar is behind the menu on phones: a dot shows the open requests
+  const openRequests = useOpenCarRequests();
 
   return (
     <Box
@@ -70,7 +74,20 @@ export default function AppShell({ children }: { children: ReactNode }) {
                 onClick={() => setOpen(true)}
                 aria-label="menu"
               >
-                <MenuRounded />
+                <Badge
+                  variant="dot"
+                  color="error"
+                  invisible={openRequests === 0}
+                  slotProps={{
+                    badge: {
+                      'aria-label': t('admin.requests.openCount', {
+                        count: openRequests,
+                      }),
+                    },
+                  }}
+                >
+                  <MenuRounded />
+                </Badge>
               </IconButton>
               <Box
                 component="img"

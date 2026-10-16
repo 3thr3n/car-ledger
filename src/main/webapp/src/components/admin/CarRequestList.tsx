@@ -30,6 +30,7 @@ import { useFormat } from '@/utils/format';
 import Section from '@/components/ui/Section';
 import EmptyState from '@/components/ui/EmptyState';
 import NumberField from '@/components/bill/NumberField';
+import useOpenCarRequests from '@/hooks/useOpenCarRequests';
 
 /** the same limits as the backend */
 const MAX_LIMIT = 100;
@@ -62,12 +63,7 @@ export default function CarRequestList() {
   const [approving, setApproving] = useState<AdminCarRequest>();
   const [rejecting, setRejecting] = useState<AdminCarRequest>();
 
-  const { data: open } = useQuery(
-    getAdminCarRequestsOptions({
-      client: localClient,
-      query: { state: RequestState.OPEN, size: 1 },
-    }),
-  );
+  const open = useOpenCarRequests();
   const { data, isLoading } = useQuery({
     ...getAdminCarRequestsOptions({
       client: localClient,
@@ -84,7 +80,7 @@ export default function CarRequestList() {
     <Section
       title={
         <Badge
-          badgeContent={open?.total ?? 0}
+          badgeContent={open}
           color="error"
           sx={{ pr: 1.5 }}
           slotProps={{ badge: { 'aria-label': t('admin.requests.open') } }}
