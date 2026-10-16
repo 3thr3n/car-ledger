@@ -1506,10 +1506,19 @@
                 }
               }
             }
+          },
+          "401" : {
+            "description" : "Not Authorized"
+          },
+          "403" : {
+            "description" : "Not Allowed"
           }
         },
         "summary" : "Get Accounts",
-        "tags" : [ "Admin Resource" ]
+        "tags" : [ "Admin Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ "admin" ]
+        } ]
       }
     },
     "/api/admin/accounts/{id}" : {
@@ -1559,10 +1568,19 @@
           },
           "404" : {
             "description" : "Account not found."
+          },
+          "401" : {
+            "description" : "Not Authorized"
+          },
+          "403" : {
+            "description" : "Not Allowed"
           }
         },
         "summary" : "Update Account",
-        "tags" : [ "Admin Resource" ]
+        "tags" : [ "Admin Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ "admin" ]
+        } ]
       },
       "delete" : {
         "description" : "Deletes the account with all its cars and bills",
@@ -1585,10 +1603,19 @@
           },
           "404" : {
             "description" : "Account not found."
+          },
+          "401" : {
+            "description" : "Not Authorized"
+          },
+          "403" : {
+            "description" : "Not Allowed"
           }
         },
         "summary" : "Delete Account",
-        "tags" : [ "Admin Resource" ]
+        "tags" : [ "Admin Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ "admin" ]
+        } ]
       }
     },
     "/api/admin/car-requests" : {
@@ -1628,10 +1655,19 @@
                 }
               }
             }
+          },
+          "401" : {
+            "description" : "Not Authorized"
+          },
+          "403" : {
+            "description" : "Not Allowed"
           }
         },
         "summary" : "Get Car Requests",
-        "tags" : [ "Admin Car Request Resource" ]
+        "tags" : [ "Admin Car Request Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ "admin" ]
+        } ]
       }
     },
     "/api/admin/car-requests/{id}/approve" : {
@@ -1684,10 +1720,19 @@
           },
           "409" : {
             "description" : "The request was decided already."
+          },
+          "401" : {
+            "description" : "Not Authorized"
+          },
+          "403" : {
+            "description" : "Not Allowed"
           }
         },
         "summary" : "Approve",
-        "tags" : [ "Admin Car Request Resource" ]
+        "tags" : [ "Admin Car Request Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ "admin" ]
+        } ]
       }
     },
     "/api/admin/car-requests/{id}/reject" : {
@@ -1740,10 +1785,19 @@
           },
           "409" : {
             "description" : "The request was decided already."
+          },
+          "401" : {
+            "description" : "Not Authorized"
+          },
+          "403" : {
+            "description" : "Not Allowed"
           }
         },
         "summary" : "Reject",
-        "tags" : [ "Admin Car Request Resource" ]
+        "tags" : [ "Admin Car Request Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ "admin" ]
+        } ]
       }
     },
     "/api/admin/stats" : {
@@ -1760,10 +1814,19 @@
                 }
               }
             }
+          },
+          "401" : {
+            "description" : "Not Authorized"
+          },
+          "403" : {
+            "description" : "Not Allowed"
           }
         },
         "summary" : "Get Stats",
-        "tags" : [ "Admin Resource" ]
+        "tags" : [ "Admin Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ "admin" ]
+        } ]
       }
     },
     "/api/attachment/{carId}/bill/{billId}" : {

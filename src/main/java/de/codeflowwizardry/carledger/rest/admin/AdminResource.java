@@ -20,7 +20,6 @@ import de.codeflowwizardry.carledger.request.RequestState;
 import de.codeflowwizardry.carledger.request.RequestType;
 import de.codeflowwizardry.carledger.rest.AbstractResource;
 import io.quarkus.security.identity.SecurityIdentity;
-import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
@@ -35,9 +34,6 @@ import jakarta.ws.rs.core.Response;
  * without request context behind the static resources).
  */
 @Path("admin")
-// also checked by the HTTP permission of /api/admin*, in case it is ever
-// changed
-@RolesAllowed("admin")
 @Produces(MediaType.APPLICATION_JSON)
 public class AdminResource extends AbstractResource
 {

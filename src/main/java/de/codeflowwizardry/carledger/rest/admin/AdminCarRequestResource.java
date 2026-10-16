@@ -17,7 +17,6 @@ import de.codeflowwizardry.carledger.request.RequestState;
 import de.codeflowwizardry.carledger.request.RequestType;
 import de.codeflowwizardry.carledger.rest.AbstractResource;
 import io.quarkus.security.identity.SecurityIdentity;
-import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
@@ -28,9 +27,6 @@ import jakarta.ws.rs.core.MediaType;
  * enforced by the HTTP permission of "/api/admin*".
  */
 @Path("admin/car-requests")
-// also checked by the HTTP permission of /api/admin*, in case it is ever
-// changed
-@RolesAllowed("admin")
 @Produces(MediaType.APPLICATION_JSON)
 public class AdminCarRequestResource extends AbstractResource
 {
