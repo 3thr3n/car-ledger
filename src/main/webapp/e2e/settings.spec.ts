@@ -77,6 +77,7 @@ test.describe.serial('settings', () => {
               email: 'alice@example.com',
               newRequests: true,
               requestDecided: true,
+              reminders: true,
             },
           })
         : route.continue(),
@@ -89,6 +90,11 @@ test.describe.serial('settings', () => {
       name: 'New requests for more cars (as administrator)',
     });
     await expect(newRequests).toBeChecked();
+    await expect(
+      page.getByRole('switch', {
+        name: 'Reminders of my cars that are due soon (once a day)',
+      }),
+    ).toBeChecked();
 
     await newRequests.click();
     await expect(page.getByText('Notifications saved')).toBeVisible();
@@ -97,6 +103,7 @@ test.describe.serial('settings', () => {
     const saved = await (await api.get('/api/user/me/notifications')).json();
     expect(saved.newRequests).toBe(false);
     expect(saved.requestDecided).toBe(true);
+    expect(saved.reminders).toBe(true);
     await api.put('/api/user/me/notifications', {
       data: { newRequests: true },
     });

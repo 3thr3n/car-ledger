@@ -463,6 +463,7 @@ notifications:
   sentTo: "Gesendet an {{email}}, die Adresse deiner Anmeldung."
   noEmail: "Deine Anmeldung hat keine E-Mail-Adresse. Trage eine beim Identitätsanbieter ein und melde dich erneut an."
   unavailable: "Dieses CarLedger versendet keine E-Mails, der Administrator kann es einrichten."
+  reminders: "Bald fällige Erinnerungen meiner Fahrzeuge (einmal am Tag)"
   requestDecided: "Wenn über meine Anfrage für mehr Fahrzeuge entschieden wurde"
   newRequests: "Neue Anfragen für mehr Fahrzeuge (als Administrator)"
   saved: "Benachrichtigungen gespeichert"

@@ -82,6 +82,8 @@ spec:
               value: "true"
             - name: CARLEDGER_MAIL_APP_URL
               value: {{ .appUrl | default (printf "https://car-ledger.%s" (include "carLedger.host" $)) | quote }}
+            - name: CARLEDGER_MAIL_REMINDERS_CRON
+              value: {{ .remindersCron | quote }}
             - name: QUARKUS_MAILER_HOST
               value: {{ .host | quote }}
             - name: QUARKUS_MAILER_PORT

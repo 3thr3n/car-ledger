@@ -7,7 +7,9 @@ package de.codeflowwizardry.carledger.rest.records.input;
  *            mail about new requests, only sent to administrators
  * @param requestDecided
  *            mail when an own request was decided
+ * @param reminders
+ *            mail the reminders of the cars once they are due soon
  */
-public record NotificationSettingsInput(Boolean newRequests, Boolean requestDecided)
+public record NotificationSettingsInput(Boolean newRequests, Boolean requestDecided, Boolean reminders)
 {
 }

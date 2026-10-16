@@ -78,6 +78,12 @@ public class AccountEntity
 	@Column(name = "notify_request_decided", nullable = false)
 	private boolean notifyRequestDecided = true;
 
+	/**
+	 * Mail the reminders of the cars once they are due soon
+	 */
+	@Column(name = "notify_reminders", nullable = false)
+	private boolean notifyReminders = true;
+
 	public Long getId()
 	{
 		return id;
@@ -208,6 +214,16 @@ public class AccountEntity
 	public void setNotifyRequestDecided(boolean notifyRequestDecided)
 	{
 		this.notifyRequestDecided = notifyRequestDecided;
+	}
+
+	public boolean isNotifyReminders()
+	{
+		return notifyReminders;
+	}
+
+	public void setNotifyReminders(boolean notifyReminders)
+	{
+		this.notifyReminders = notifyReminders;
 	}
 
 	public UnitSystem getUnitSystem()

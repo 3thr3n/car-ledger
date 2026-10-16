@@ -66,6 +66,18 @@ export default function NotificationSection() {
             <FormControlLabel
               control={
                 <Switch
+                  checked={!!data.reminders}
+                  disabled={update.isPending}
+                  onChange={(_, checked) =>
+                    update.mutate({ body: { reminders: checked } })
+                  }
+                />
+              }
+              label={t('notifications.reminders')}
+            />
+            <FormControlLabel
+              control={
+                <Switch
                   checked={!!data.requestDecided}
                   disabled={update.isPending}
                   onChange={(_, checked) =>

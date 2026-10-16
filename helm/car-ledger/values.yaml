@@ -74,6 +74,8 @@ carLedger:
     passwordKey: "password"
     # where the links in the mails point to, defaults to https://car-ledger.<ingress.host>
     appUrl:
+    # when the due reminders are mailed (Quartz cron), in UTC: 07:00 UTC by default, "off" for never
+    remindersCron: "0 0 7 * * ?"
   # probes of the app, the paths are fixed. The startup probe gives a slow start (small CPU limit,
   # database migrations) failureThreshold * periodSeconds, 150 s by default, before the pod is restarted
   startupProbe:
