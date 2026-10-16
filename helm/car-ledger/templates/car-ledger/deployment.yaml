@@ -82,6 +82,10 @@ spec:
               value: "true"
             - name: CARLEDGER_PUSH_SUBJECT
               value: {{ .subject | default (printf "https://car-ledger.%s" (include "carLedger.host" $)) | quote }}
+            {{- if .allowedHosts }}
+            - name: CARLEDGER_PUSH_ALLOWED_HOSTS
+              value: {{ join "," .allowedHosts | quote }}
+            {{- end }}
             - name: CARLEDGER_PUSH_PRIVATE_KEY
               valueFrom:
                 secretKeyRef:

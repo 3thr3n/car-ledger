@@ -65,6 +65,9 @@ carLedger:
     # own secret with the key (EC PRIVATE KEY, P-256) instead of the generated one
     existingSecret:
     privateKeyKey: "private-key"
+    # hosts of the push services the messages may go to, e.g. ["*.googleapis.com", "push.example.com"];
+    # empty for Google, Mozilla, Apple and Microsoft. A subscription cannot point the app to other hosts
+    allowedHosts: []
   # notifications by e-mail (new car requests to the admins, decisions to the user, see
   # docs/DEPLOYMENT.md#e-mail); without a host no mails are sent. The address of a user comes from the
   # claim "email" of the login

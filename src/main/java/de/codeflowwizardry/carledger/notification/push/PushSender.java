@@ -63,6 +63,13 @@ public class PushSender
 	 */
 	CompletableFuture<Boolean> send(String event, PushMessage message)
 	{
+		if (!PushEndpoints.isAllowed(message.endpoint(), config.allowedHosts()))
+		{
+			// saved before the check, or the allowed hosts changed
+			LOG.warn("Push {} to subscription {} not sent: the endpoint is no known push service", event,
+					message.subscriptionId());
+			return CompletableFuture.completedFuture(false);
+		}
 		HttpRequest request;
 		try
 		{
@@ -89,7 +96,9 @@ public class PushSender
 
 	private CompletableFuture<Boolean> attempt(HttpRequest request, String event, PushMessage message, int retry)
 	{
-		return client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+		// the body is not read: only the status counts, nothing of the answer reaches
+		// the log
+		return client.sendAsync(request, HttpResponse.BodyHandlers.discarding())
 				.handle((response, error) -> {
 					int status = error == null ? response.statusCode() : 0;
 					if (status / 100 == 2)
@@ -102,7 +111,7 @@ public class PushSender
 						remove(message);
 						return CompletableFuture.completedFuture(false);
 					}
-					String problem = error != null ? error.toString() : "status " + status + " " + response.body();
+					String problem = error != null ? error.getClass().getSimpleName() : "status " + status;
 					boolean temporary = status == 0 || status == 429 || status >= 500;
 					if (!temporary || retry >= config.retries())
 					{

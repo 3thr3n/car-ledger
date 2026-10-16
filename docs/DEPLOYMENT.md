@@ -223,6 +223,8 @@ and push, or only one of them.
 - **Push services**: the messages go to the push service of the browser (Google for Chrome and Android, Mozilla for
   Firefox, Apple for Safari), end-to-end encrypted: the service cannot read them. The app needs outgoing HTTPS to
   them. `carLedger.push.subject` is the contact the services see, by default `https://car-ledger.<ingress.host>`.
+  Subscriptions and messages are limited to the hosts of these services (`carLedger.push.allowedHosts`), so a
+  subscription cannot make the app send requests to other hosts, e.g. inside the cluster.
 - **iPhone and iPad**: only the installed app (home screen) receives push messages, the settings say so.
 - **Delivery**: after the change is saved, in the background, with three retries; a browser the push service does not
   know anymore (uninstalled, permission withdrawn) is removed.
