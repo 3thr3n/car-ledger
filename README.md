@@ -35,8 +35,9 @@ spending and usage patterns.
   them on the administration page.
 - **Installable app:** On the phone, CarLedger can be added to the home screen and starts like an app; a long press
   on its icon offers *Add refuel*, the form of a new refuel (or charge) of the last opened car.
-- **Notifications by e-mail:** Users get a daily mail about the reminders of their cars that became due, administrators
-  about new car requests, users about the decision; each one can be turned off in the settings.
+- **Notifications by e-mail and push:** Users get notified about the reminders of their cars that became due (once a
+  day), administrators about new car requests, users about the decision. By e-mail and as push message on every device
+  where it is turned on; each one can be turned off in the settings.
 - **Webhooks:** Events like a new car request are sent as signed HTTP requests to other tools or your own scripts,
   see [docs/WEBHOOKS.md](docs/WEBHOOKS.md).
 - **CSV Import:** Import multiple receipts at once using a CSV file, making it quick to upload historical or bulk data.

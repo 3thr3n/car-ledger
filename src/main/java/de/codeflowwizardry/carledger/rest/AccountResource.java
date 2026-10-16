@@ -147,6 +147,10 @@ public class AccountResource extends AbstractResource
 	public NotificationSettings updateNotifications(NotificationSettingsInput input)
 	{
 		AccountEntity account = getAccount();
+		if (input != null && input.byMail() != null)
+		{
+			account.setNotifyByMail(input.byMail());
+		}
 		if (input != null && input.newRequests() != null)
 		{
 			account.setNotifyNewRequests(input.newRequests());

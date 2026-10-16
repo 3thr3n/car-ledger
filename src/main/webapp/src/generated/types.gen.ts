@@ -399,6 +399,7 @@ export type MonthStats = {
 
 export type NotificationSettings = {
     available?: boolean;
+    byMail?: boolean;
     email?: string;
     newRequests?: boolean;
     requestDecided?: boolean;
@@ -406,6 +407,7 @@ export type NotificationSettings = {
 };
 
 export type NotificationSettingsInput = {
+    byMail?: boolean;
     newRequests?: boolean;
     requestDecided?: boolean;
     reminders?: boolean;
@@ -419,6 +421,18 @@ export type Odometer = {
 };
 
 export type OffsetDateTime = string;
+
+export type PushSettings = {
+    available: boolean;
+    publicKey: string;
+    browsers: number;
+};
+
+export type PushSubscriptionInput = {
+    endpoint?: string;
+    p256dh?: string;
+    auth?: string;
+};
 
 export type RecurringBill = {
     id?: number;
@@ -2464,6 +2478,82 @@ export type UpdateMyNotificationsResponses = {
 };
 
 export type UpdateMyNotificationsResponse = UpdateMyNotificationsResponses[keyof UpdateMyNotificationsResponses];
+
+export type GetMyPushData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/user/me/push';
+};
+
+export type GetMyPushResponses = {
+    /**
+     * Push settings found.
+     */
+    200: PushSettings;
+};
+
+export type GetMyPushResponse = GetMyPushResponses[keyof GetMyPushResponses];
+
+export type UnsubscribeMyPushData = {
+    body: PushSubscriptionInput;
+    path?: never;
+    query?: never;
+    url: '/api/user/me/push/subscriptions';
+};
+
+export type UnsubscribeMyPushResponses = {
+    /**
+     * Subscription removed, also when it did not exist.
+     */
+    204: void;
+};
+
+export type UnsubscribeMyPushResponse = UnsubscribeMyPushResponses[keyof UnsubscribeMyPushResponses];
+
+export type SubscribeMyPushData = {
+    body: PushSubscriptionInput;
+    path?: never;
+    query?: never;
+    url: '/api/user/me/push/subscriptions';
+};
+
+export type SubscribeMyPushErrors = {
+    /**
+     * Validation failed, please check the response
+     */
+    400: unknown;
+};
+
+export type SubscribeMyPushResponses = {
+    /**
+     * Subscription saved.
+     */
+    204: void;
+};
+
+export type SubscribeMyPushResponse = SubscribeMyPushResponses[keyof SubscribeMyPushResponses];
+
+export type TestMyPushData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/user/me/push/test';
+};
+
+export type TestMyPushErrors = {
+    /**
+     * Push is not available or no browser subscribed.
+     */
+    409: unknown;
+};
+
+export type TestMyPushResponses = {
+    /**
+     * Sent to the browsers.
+     */
+    202: unknown;
+};
 
 export type UpdateMySettingsData = {
     body: SettingsInput;

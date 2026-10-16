@@ -1,0 +1,2 @@
+{#if count == 1}Reminder due: {first.title} ({first.car}){#else}{count} reminders are due{/if}
+{#for r in reminders}{r.title} ({r.car}){#if r_hasNext}, {/if}{/for}

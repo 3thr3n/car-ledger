@@ -1,0 +1,2 @@
+New car request from {account}
+{account} requests {cars} more {#if cars == 1}car{#else}cars{/if}{#if reason}: "{reason}"{/if}

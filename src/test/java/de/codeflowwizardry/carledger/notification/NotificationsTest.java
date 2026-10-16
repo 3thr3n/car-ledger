@@ -27,7 +27,7 @@ import jakarta.transaction.Transactional;
  * commit and in their language; the mailer of the tests only collects them
  */
 @QuarkusTest
-class MailNotificationsTest
+class NotificationsTest
 {
 	@Inject
 	MockMailbox mailbox;
@@ -114,6 +114,24 @@ class MailNotificationsTest
 		// not to carol (turned off), dave (no address), eve (no administrator) and
 		// peter (asked)
 		assertEquals(2, mailbox.getTotalMessagesSent());
+	}
+
+	@Test
+	void shouldNotMailWhenTheMailsAreOff() throws Exception
+	{
+		turnOffMails("alice");
+
+		peterRequests();
+
+		mailsTo("bob@example.com", 1);
+		Thread.sleep(200);
+		assertEquals(0, mailbox.getMailsSentTo("alice@example.com").size());
+	}
+
+	@Transactional
+	void turnOffMails(String name)
+	{
+		accountRepository.findByIdentifier(name).setNotifyByMail(false);
 	}
 
 	@Test

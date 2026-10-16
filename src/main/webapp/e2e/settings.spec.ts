@@ -58,13 +58,30 @@ test.describe.serial('settings', () => {
     await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible();
   });
 
-  test('shows the notifications by e-mail', async ({ page }) => {
-    // the users of the Keycloak dev service have no address
+  test('shows why no notifications can be sent', async ({ page }) => {
+    // the users of the Keycloak dev service have no address, and the dev server
+    // has no service worker for push
     await page.goto('/settings');
     await expect(
       page.getByText('Your login has no e-mail address.', { exact: false }),
     ).toBeVisible();
-    await expect(page.getByRole('switch')).toHaveCount(0);
+    await expect(
+      page.getByRole('switch', { name: 'By e-mail' }),
+    ).toBeDisabled();
+    await expect(page.getByTestId('push-hint')).toHaveText(
+      'This browser cannot receive push notifications here. Open the installed app or another browser.',
+    );
+    await expect(
+      page.getByRole('switch', { name: 'Push on this device' }),
+    ).toBeDisabled();
+    await expect(
+      page.getByText('Turn on e-mail or push first', { exact: false }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole('switch', {
+        name: 'Reminders of my cars that are due soon (once a day)',
+      }),
+    ).toBeDisabled();
   });
 
   test('turns a notification off', async ({ page }) => {
@@ -74,6 +91,7 @@ test.describe.serial('settings', () => {
         ? route.fulfill({
             json: {
               available: true,
+              byMail: true,
               email: 'alice@example.com',
               newRequests: true,
               requestDecided: true,
@@ -90,6 +108,7 @@ test.describe.serial('settings', () => {
       name: 'New requests for more cars (as administrator)',
     });
     await expect(newRequests).toBeChecked();
+    await expect(page.getByRole('switch', { name: 'By e-mail' })).toBeChecked();
     await expect(
       page.getByRole('switch', {
         name: 'Reminders of my cars that are due soon (once a day)',

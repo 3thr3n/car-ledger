@@ -1,0 +1,2 @@
+{#if count == 1}Erinnerung fällig: {first.title} ({first.car}){#else}{count} Erinnerungen sind fällig{/if}
+{#for r in reminders}{r.title} ({r.car}){#if r_hasNext}, {/if}{/for}
