@@ -11,6 +11,7 @@ import { routeTree } from './routeTree.gen';
 // Import internationalization
 import './i18n';
 import { registerServiceWorker } from '@/utils/serviceWorker';
+import { listenForInstallPrompt } from '@/utils/install';
 
 // Create a new router instance
 const router = createRouter({ routeTree });
@@ -23,6 +24,7 @@ declare module '@tanstack/react-router' {
 }
 
 registerServiceWorker();
+listenForInstallPrompt();
 
 // Render the app
 const rootElement = document.getElementById('root')!;

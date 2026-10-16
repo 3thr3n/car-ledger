@@ -436,6 +436,23 @@ import:
     errors_other: "{{count}} Fehler"
     row: "Zeile {{row}}"
 
+install:
+  install: "Installieren"
+  hint:
+    title: "Nutze CarLedger wie eine App"
+    text: "Lege es auf deinen Startbildschirm: Es startet schneller und öffnet sich ohne die Leiste des Browsers."
+    showMe: "Zeig mir wie"
+    later: "Nicht jetzt"
+  section:
+    title: "App"
+    text: "CarLedger kann auf den Startbildschirm deines Handys gelegt oder auf deinem Computer installiert werden und startet dann wie eine App."
+    installed: "Du nutzt CarLedger als installierte App."
+  steps:
+    ios: "Tippe in Safari auf Teilen (das Quadrat mit dem Pfeil) und dann auf „Zum Home-Bildschirm“."
+    firefoxAndroid: "Öffne das Menü ⋮ von Firefox und tippe auf „Zum Startbildschirm hinzufügen“ (in manchen Versionen „Installieren“)."
+    android: "Öffne das Menü ⋮ des Browsers und tippe auf „App installieren“ oder „Zum Startbildschirm hinzufügen“. In Chrome bietet ein langes Drücken auf das Symbol dann „Add refuel“ (neuer Tankvorgang)."
+    desktop: "Klicke in Chrome oder Edge auf das Installieren-Symbol rechts in der Adressleiste. Firefox und Safari auf dem Computer können es nicht installieren."
+
 notifications:
   title: "Benachrichtigungen per E-Mail"
   sentTo: "Gesendet an {{email}}, die Adresse deiner Anmeldung."
