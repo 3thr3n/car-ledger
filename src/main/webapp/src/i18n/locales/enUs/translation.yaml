@@ -491,6 +491,8 @@ admin:
     title: "Car requests"
     subtitle: "Users who reached their car limit and ask for more"
     open: "open requests"
+    openCount_one: "{{count}} open request"
+    openCount_other: "{{count}} open requests"
     filterOpen: "Open"
     filterAll: "All"
     empty: "No requests"

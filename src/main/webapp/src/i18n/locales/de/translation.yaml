@@ -491,6 +491,8 @@ admin:
     title: "Fahrzeug-Anfragen"
     subtitle: "Nutzer, die ihr Fahrzeuglimit erreicht haben und mehr anfragen"
     open: "offene Anfragen"
+    openCount_one: "{{count}} offene Anfrage"
+    openCount_other: "{{count}} offene Anfragen"
     filterOpen: "Offen"
     filterAll: "Alle"
     empty: "Keine Anfragen"
