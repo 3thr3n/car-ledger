@@ -172,6 +172,10 @@ with the role `user`, the roles are missing in the tokens of the client.
 - **Service accounts**: besides the login of the browser, the API accepts access tokens of the identity provider
   (`Authorization: Bearer …`), e.g. of a script deciding car requests. See [Service accounts](#service-accounts).
 - **E-mail**: `carLedger.mail.host` sends notifications by e-mail, see [E-mail](#e-mail).
+- **Installable app**: the app has a web app manifest (`/manifest.json`) and a service worker (`/sw.js`), which keeps
+  the files of the app (not the data) for a fast start. Both need HTTPS, which the ingress provides. A proxy or CDN in
+  front must not cache `/sw.js` for long, otherwise new versions arrive late; the app asks the user to reload when a
+  new version is ready.
 
 ### E-mail
 

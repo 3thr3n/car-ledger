@@ -1,5 +1,7 @@
 import { createFileRoute, redirect } from '@tanstack/react-router';
+import { useEffect } from 'react';
 import CarLayout from '@/pages/car/CarLayout';
+import { rememberCar } from '@/utils/lastCar';
 
 export const Route = createFileRoute('/car/$id')({
   beforeLoad: ({ params }) => {
@@ -17,5 +19,6 @@ export const Route = createFileRoute('/car/$id')({
 
 function RouteComponent() {
   const { id } = Route.useRouteContext();
+  useEffect(() => rememberCar(id), [id]);
   return <CarLayout id={id} />;
 }

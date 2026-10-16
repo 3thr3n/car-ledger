@@ -3,6 +3,9 @@ app:
   loading: "Wird geladen"
   language: "Sprache"
   openSource: "CarLedger ist Open Source — zu finden auf"
+  update:
+    text: "Eine neue Version von CarLedger ist verfügbar."
+    reload: "Neu laden"
 
 theme:
   light: "Helles Design"
