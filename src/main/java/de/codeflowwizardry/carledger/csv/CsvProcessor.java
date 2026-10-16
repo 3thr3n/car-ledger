@@ -25,8 +25,8 @@ public class CsvProcessor<T extends AbstractBillInput>
 		this.importer = importer;
 	}
 
-	public CsvImportResult process(Reader csv, CsvColumnMapping mapping, int skipLines, Integer vat, long carId,
-			String name)
+	public CsvImportResult process(Reader csv, CsvColumnMapping mapping, int skipLines, Integer vat,
+			ImportUnits units, long carId, String name)
 			throws IOException
 	{
 		importer.validateMapping(mapping);
@@ -46,7 +46,7 @@ public class CsvProcessor<T extends AbstractBillInput>
 
 				try
 				{
-					T entity = importer.parseRow(line, mapping, vat);
+					T entity = importer.parseRow(line, mapping, vat, units);
 					importer.save(entity, carId, name);
 					result.addSuccess();
 				}

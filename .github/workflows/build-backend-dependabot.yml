@@ -2,7 +2,7 @@ name: Java CI for dependabot
 
 on:
   pull_request:
-    branches: [ "main" ]
+    branches: [ "develop", "main" ]
 
 # only reads the repository, the token gets no write access
 permissions:

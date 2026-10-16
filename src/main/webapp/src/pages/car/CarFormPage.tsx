@@ -19,6 +19,12 @@ import { Car, createCar, CarInput, EnergyType } from '@/generated';
 import { toApiDate, useFormat } from '@/utils/format';
 import { normalizeVin, vinError } from '@/utils/vin';
 import {
+  convert,
+  odometerToApi,
+  odometerToField,
+  toField,
+} from '@/utils/units';
+import {
   hasBattery,
   hasTank,
   MAX_BATTERY_CAPACITY,
@@ -98,17 +104,22 @@ function CarForm({
   const navigate = useNavigate();
   const router = useRouter();
 
+  const format = useFormat();
+  const { units } = format;
   const [name, setName] = useState(initial.name ?? '');
   const [year, setYear] = useState<number | undefined>(
     initial.year ?? currentYear,
   );
+  // the odometer and the tank are in the units of the account
   const [odometer, setOdometer] = useState<number | undefined>(
-    current ?? initial.odometer ?? 0,
+    odometerToField(units, current ?? initial.odometer ?? 0),
   );
   const [energyType, setEnergyType] = useState(
     initial.energyType ?? EnergyType.PETROL,
   );
-  const [tankSize, setTankSize] = useState(initial.tankSize);
+  const [tankSize, setTankSize] = useState(
+    toField(initial.tankSize, units.volume.fromLiters, 1),
+  );
   const [batteryCapacity, setBatteryCapacity] = useState(
     initial.batteryCapacity,
   );
@@ -122,7 +133,6 @@ function CarForm({
   );
   const [picture, setPicture] = useState<File>();
   const [touched, setTouched] = useState(false);
-  const format = useFormat();
 
   const errors = {
     name: !name.trim() ? t('car.form.errors.name') : undefined,
@@ -216,15 +226,17 @@ function CarForm({
       name: name.trim(),
       year,
       odometer:
-        current !== undefined && odometer === current
+        current !== undefined && odometer === odometerToField(units, current)
           ? initial.odometer
-          : odometer,
+          : odometerToApi(units, odometer),
       licensePlate: licensePlate.trim() || undefined,
       vin: normalizeVin(vin) || undefined,
       purchaseDate: toApiDate(purchaseDate),
       purchasePrice,
       energyType,
-      tankSize: hasTank(energyType) ? tankSize : undefined,
+      tankSize: hasTank(energyType)
+        ? convert(tankSize, units.volume.toLiters)
+        : undefined,
       batteryCapacity: hasBattery(energyType) ? batteryCapacity : undefined,
     };
     if (id) {
@@ -290,9 +302,9 @@ function CarForm({
                 label={t('car.form.tankSize')}
                 value={tankSize}
                 onChange={setTankSize}
-                suffix=" l"
+                suffix={` ${units.volume.label}`}
                 decimalScale={1}
-                max={MAX_TANK_SIZE}
+                max={Math.floor(units.volume.fromLiters(MAX_TANK_SIZE))}
                 error={touched ? errors.tankSize : undefined}
                 helperText={t('car.form.sizeHelp')}
               />
@@ -318,7 +330,7 @@ function CarForm({
           value={odometer}
           onChange={setOdometer}
           decimalScale={0}
-          suffix=" km"
+          suffix={` ${units.distance.label}`}
           helperText={t(
             id === undefined
               ? 'car.form.odometerHelp'

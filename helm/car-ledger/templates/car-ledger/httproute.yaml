@@ -7,7 +7,7 @@ spec:
   parentRefs:
     {{- toYaml .Values.httpRoute.parentRefs | nindent 4 }}
   hostnames:
-    - car-ledger.{{ .Values.ingress.host }}
+    - car-ledger.{{ include "carLedger.host" . }}
   rules:
     - matches:
         - path:

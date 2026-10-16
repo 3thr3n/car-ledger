@@ -1,6 +1,7 @@
 import {
   Box,
   Button,
+  Chip,
   Divider,
   IconButton,
   List,
@@ -31,6 +32,7 @@ import { getMyCarsOptions } from '@/generated/@tanstack/react-query.gen';
 import { baseUrl, localClient } from '@/utils/QueryClient';
 import useMe from '@/hooks/useMe';
 import useSaveSettings from '@/hooks/useSaveSettings';
+import useOpenCarRequests from '@/hooks/useOpenCarRequests';
 import { RouterListItemButton } from '@/components/ui/links';
 import CarAvatar from '@/components/layout/CarAvatar';
 import productLogo from '@/assets/car-ledger.svg';
@@ -42,6 +44,7 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const { pathname } = useLocation();
   const { account, loggedIn, maxCars, isAdmin } = useMe();
   const settings = useSaveSettings();
+  const openRequests = useOpenCarRequests();
 
   // the language of the settings wins over the one of the browser
   useEffect(() => {
@@ -59,6 +62,7 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
         vatCountry: account.vatCountry,
         currency: account.currency,
         language,
+        unitSystem: account.unitSystem,
       });
     }
   };
@@ -150,6 +154,23 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
                     <AdminPanelSettingsRounded fontSize="small" />
                   </ListItemIcon>
                   <ListItemText primary={t('nav.admin')} />
+                  {openRequests > 0 && (
+                    <Tooltip
+                      title={t('admin.requests.openCount', {
+                        count: openRequests,
+                      })}
+                    >
+                      <Chip
+                        size="small"
+                        color="error"
+                        label={openRequests}
+                        aria-label={t('admin.requests.openCount', {
+                          count: openRequests,
+                        })}
+                        sx={{ height: 20, fontWeight: 600 }}
+                      />
+                    </Tooltip>
+                  )}
                 </RouterListItemButton>
               )}
             </List>

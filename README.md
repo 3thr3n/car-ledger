@@ -27,8 +27,17 @@ spending and usage patterns.
 - **Add/Delete Receipts:** Easily add or delete individual refueling receipts to keep your records up-to-date.
 - **Electric and Hybrid Cars:** Record the charges of electric cars and plug-in hybrids in kWh, with the consumption in
   kWh/100km next to the refuels in liters.
+- **Units:** Show and enter the values in metric units, US units (miles, gallons, mpg) or UK units (miles, liters,
+  mpg), set per account. They are stored in km and liters, the API always uses those.
+- **Backup:** Every user downloads all of their data (settings, cars, entries, recurring costs, reminders, receipts
+  and pictures) as one ZIP and restores it into an account without cars, e.g. on another installation.
+- **Car Requests:** Users who reached their car limit request more cars in the app, administrators approve or reject
+  them on the administration page.
+- **Webhooks:** Events like a new car request are sent as signed HTTP requests to other tools or your own scripts,
+  see [docs/WEBHOOKS.md](docs/WEBHOOKS.md).
 - **CSV Import:** Import multiple receipts at once using a CSV file, making it quick to upload historical or bulk data.
-- **CSV Export:** Export the receipts of a type as CSV, in the format of the import.
+- **CSV Export:** Export the receipts of a type as CSV, in the format of the import, or all expenses of a car
+  including the payments of the recurring costs in one CSV for spreadsheets.
 - **Data Aggregation & Summarization:** Get insights on your fuel expenses, including:
     - Total money spent on fuel
     - Total fuel volume purchased
@@ -110,6 +119,8 @@ To start using CarLedger, follow these steps:
 - The lists of refuels, maintenance and other costs export their entries as CSV, all of them or of the selected year.
 - The file uses the field names of the import as header, ISO dates and a dot as decimal separator, so it can be
   imported again without assigning the columns. Entries that exist already are skipped by the import.
+- The ledger on the overview of a car exports all expenses as one CSV (every entry and the payments of the recurring
+  costs, oldest first), for spreadsheets; it cannot be imported again.
 
 ### Data Aggregation & Summarization
 
@@ -176,10 +187,19 @@ generated from it with `yarn openapi-ts`. Commit both, the CI fails if they are 
 Contributions are welcome! Please follow these steps to contribute:
 
 1. Fork the repository.
-2. Create a new branch (`git checkout -b feature/YourFeature`).
+2. Create a new branch from `develop` (`git checkout -b feature/YourFeature develop`).
 3. Commit your changes (`git commit -m 'Add YourFeature'`).
 4. Push to the branch (`git push origin feature/YourFeature`).
-5. Open a Pull Request.
+5. Open a Pull Request against `develop`.
+
+### Branches and releases
+
+- `develop` gets all pull requests, its builds are published as prereleases (`<next release>-dev.<run number>`).
+- `main` only holds released states. A release is a pull request from `develop` to `main`, merged with a merge
+  commit (not squashed, so both branches keep the same history), then the tag of the version in
+  `helm/car-ledger/Chart.yaml` on `main`. Afterwards the next version is set in `Chart.yaml` on `develop`.
+- A hotfix branches from `main` and goes to `main` like a release. `develop` keeps a linear history, so the fix comes
+  to `develop` as a cherry-pick in a pull request of its own.
 
 ## Helm
 
@@ -187,17 +207,21 @@ For using the helm chart, you can add this as a dependency and update the values
 
 ```yaml
 dependencies:
-  - name: helm
-    version: "0.3.x"
+  - name: car-ledger
+    version: "0.4.x"
     repository: oci://ghcr.io/3thr3n/car-ledger
 ```
 
-Every [release](https://github.com/3thr3n/car-ledger/releases) publishes the chart and the image in its version (e.g.
-`0.3.0`), the release notes name both. Builds of `main` are published as prereleases (`0.4.0-dev.<run number>`, chart
-and image of the same build), a range takes them only with a prerelease suffix (e.g. `>=0.4.0-0`).
+Up to 0.3.x, the chart was named `helm` (`oci://ghcr.io/3thr3n/car-ledger/helm`), it is `car-ledger` since 0.4.0.
 
-The login uses OpenID Connect: `helm/keycloak` deploys Keycloak, `helm/authentik` deploys authentik with CarLedger
+Every [release](https://github.com/3thr3n/car-ledger/releases) publishes the chart and the image in its version (e.g.
+`0.3.0`), the release notes name both. Builds of `develop` are published as prereleases (`0.4.0-dev.<run number>`,
+chart and image of the same build), a range takes them only with a prerelease suffix (e.g. `>=0.4.0-0`).
+
+The login uses OpenID Connect: `helm/keycloak` deploys Keycloak with the realm of CarLedger, `helm/authentik` deploys authentik with CarLedger
 already set up, any other provider works as well.
+`helm/stack` deploys the app with any of them in one release and sets up the secrets between them, see
+[its README](helm/stack/README.md). All charts are published at `oci://ghcr.io/3thr3n/car-ledger/<chart>`.
 
 See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for choosing the identity provider, a fresh install (including the Keycloak
 realm and the secret the app needs), the checklist for upgrading and the upgrade from the bitnami based charts.

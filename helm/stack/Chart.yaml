@@ -1,0 +1,25 @@
+apiVersion: v2
+name: stack
+description: CarLedger with Keycloak or authentik in one release, the secrets and URLs set up between them
+type: application
+
+# Packaged with the version and the image of the car-ledger chart (see .github/workflows/build-backend.yml), keep it
+# equal to the version of helm/car-ledger.
+version: 0.4.0
+appVersion: "main"
+
+# The charts of this repository, in the versions of the same commit. Their names (car-ledger-postgresql,
+# car-ledger-oidc, car-ledger-webhook, ...) are fixed, install the stack once per namespace as "car-ledger".
+dependencies:
+  - name: car-ledger
+    alias: app
+    version: ">=0.0.0-0"
+    repository: file://../car-ledger
+  - name: keycloak
+    version: ">=0.0.0-0"
+    repository: file://../keycloak
+    condition: global.keycloak.enabled
+  - name: authentik
+    version: ">=0.0.0-0"
+    repository: file://../authentik
+    condition: global.authentik.enabled

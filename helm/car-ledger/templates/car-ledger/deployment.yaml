@@ -28,17 +28,13 @@ spec:
               containerPort: 9000
           env:
             - name: QUARKUS_OIDC_AUTH_SERVER_URL
-            {{ if .Values.carLedger.auth.url }}
-              value: {{ .Values.carLedger.auth.url }}
-            {{ else }}
-              value: "https://keycloak.{{ .Values.ingress.host }}/realms/car-ledger"
-            {{ end }}
+              value: {{ include "carLedger.authUrl" . | quote }}
             - name: QUARKUS_OIDC_CLIENT_ID
-              value: {{ .Values.carLedger.auth.clientId }}
+              value: {{ include "carLedger.authClientId" . | quote }}
             - name: QUARKUS_OIDC_CREDENTIALS_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.carLedger.auth.existingSecret }}
+                  name: {{ include "carLedger.authSecret" . }}
                   key: {{ .Values.carLedger.auth.secretKeys.clientSecret }}
             - name: QUARKUS_OIDC_AUTHENTICATION_SCOPES
               value: {{ .Values.carLedger.auth.scopes }}
@@ -47,7 +43,7 @@ spec:
             - name: QUARKUS_OIDC_AUTHENTICATION_STATE_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.carLedger.auth.existingSecret }}
+                  name: {{ include "carLedger.authSecret" . }}
                   key: {{ .Values.carLedger.auth.secretKeys.stateSecret }}
             - name: QUARKUS_INFINISPAN_CLIENT_HOSTS
               value: {{ .Values.carLedger.infinispan.hosts }}
@@ -80,6 +76,23 @@ spec:
               value: {{ .Values.carLedger.attachments.maxPerBill | quote }}
             - name: QUARKUS_HTTP_LIMITS_MAX_BODY_SIZE
               value: {{ .Values.carLedger.attachments.maxRequestSize | quote }}
+            {{- with .Values.carLedger.webhook }}
+            {{- if .url }}
+            - name: CARLEDGER_WEBHOOK_URL
+              value: {{ .url | quote }}
+            {{- if .existingSecret }}
+            - name: CARLEDGER_WEBHOOK_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .existingSecret }}
+                  key: {{ .secretKey }}
+            {{- end }}
+            {{- if .events }}
+            - name: CARLEDGER_WEBHOOK_EVENTS
+              value: {{ join "," .events | quote }}
+            {{- end }}
+            {{- end }}
+            {{- end }}
           # liveness and readiness start after the startup probe succeeded
           startupProbe:
             httpGet:

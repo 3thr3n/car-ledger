@@ -4,24 +4,45 @@ CarLedger runs on Kubernetes. It needs an OpenID Connect provider for the login,
 
 | Chart             | Deploys                                                                                                                                 |
 |-------------------|-----------------------------------------------------------------------------------------------------------------------------------------|
+| `helm/stack`      | All of the charts below in one release, each switched on with one value and set up to work together, see [its README](../helm/stack/README.md) |
 | `helm/car-ledger` | The app, its PostgreSQL and Infinispan (keeps the login sessions, shared by all replicas)                                                |
 | `helm/keycloak`   | Keycloak 26.7 (via the [keycloakx chart](https://github.com/codecentric/helm-charts/tree/master/charts/keycloakx)) with its own PostgreSQL |
 | `helm/authentik`  | authentik 2026.8 with its own PostgreSQL, CarLedger is set up by a blueprint, see [its README](../helm/authentik/README.md)              |
 
 The app is reachable as `car-ledger.<host>`.
 
+A release publishes the charts at `oci://ghcr.io/3thr3n/car-ledger/<chart>`: `car-ledger` (the app) and `stack` in the
+version of the release, `keycloak` and `authentik` in their own versions (raised when they change, the release notes
+name them). From the repository, run `helm dependency update helm/<chart>` before the install.
+
+- [Everything in one release](#everything-in-one-release)
 - [Identity provider](#identity-provider)
 - [Fresh install with Keycloak](#fresh-install-with-keycloak)
 - [Upgrading to the current version](#upgrading-to-the-current-version)
 - [Upgrading from the bitnami based charts (0.1.x)](#upgrading-from-the-bitnami-based-charts-01x)
 - [Operations](#operations)
 
+## Everything in one release
+
+The stack chart deploys the app and, as chosen, Keycloak or authentik. It sets the host names, the login of the app
+and the generated secrets up between them, e.g. with authentik:
+
+```bash
+helm install car-ledger oci://ghcr.io/3thr3n/car-ledger/stack \
+  --set global.host=example.com \
+  --set global.authentik.enabled=true
+```
+
+See [its README](../helm/stack/README.md) for the values and the steps after the install. The sections below install
+the charts one by one, which also works with the identity provider in another namespace.
+
 ## Identity provider
 
 CarLedger uses standard OpenID Connect, nothing is specific to Keycloak:
 
-- **Keycloak** (`helm/keycloak`): the default of the car-ledger chart. The realm, the client and the secret for the
-  app are set up by hand, see [below](#fresh-install-with-keycloak).
+- **Keycloak** (`helm/keycloak`): the default of the car-ledger chart. With `carLedger.hostname`, it imports the realm
+  with the client and the roles and generates the secret for the app, see [below](#fresh-install-with-keycloak). In
+  separate namespaces, set `carLedger.namespace`, so the secret is created in the namespace of the app as well.
 - **authentik** (`helm/authentik`): sets up the client, the groups and the secret for the app by itself. See
   [its README](../helm/authentik/README.md). It is not lighter than Keycloak, idle it uses about 1.1 GiB. In separate
   namespaces, set `carLedger.namespace`, so the secret is created in the namespace of the app as well.
@@ -49,8 +70,9 @@ have the same user name at the new provider.
 ### 1. Keycloak
 
 ```bash
-helm dependency update helm/keycloak
-helm install keycloak helm/keycloak --set keycloak.hostname=keycloak.example.com
+helm install keycloak oci://ghcr.io/3thr3n/car-ledger/keycloak \
+  --set keycloak.hostname=keycloak.example.com \
+  --set carLedger.hostname=car-ledger.example.com
 ```
 
 The admin user is `car-ledger`, its password is generated and kept in the secret `keycloak-admin`:
@@ -63,7 +85,18 @@ The first start creates the database and can take a few minutes.
 
 ### 2. Realm and client
 
-There is no realm import, set it up once in the Keycloak admin console:
+With `carLedger.hostname`, Keycloak imports the realm `car-ledger` on its first start:
+
+- the client `carLedger`: confidential, standard flow with PKCE `S256`, the redirect URIs of CarLedger
+- the realm roles `user` and `admin`; `user` is a default role, every new user gets it. `admin` opens the
+  administration, give it to the administrators.
+
+Create the users of CarLedger in the realm `car-ledger` (*Users → Add user*, then a password under *Credentials*).
+
+An existing realm `car-ledger` is kept as it is, the import only creates a missing one. Changes in the admin console
+are kept as well. Another realm name or client id: set up the realm by hand.
+
+Without `carLedger.hostname`, nothing is imported; set the realm up once in the Keycloak admin console:
 
 1. Realm `car-ledger` (another name: set `carLedger.auth.url` of the car-ledger chart).
 2. Client `carLedger` (OpenID Connect):
@@ -77,8 +110,10 @@ There is no realm import, set it up once in the Keycloak admin console:
 
 ### 3. Secret for the app
 
-The app reads the client secret and the state secret from the secret `keycloak` (`carLedger.auth.existingSecret`),
-the keycloak chart does not create it:
+The app reads the client secret and the state secret from the secret `keycloak` (`carLedger.auth.existingSecret`).
+With `carLedger.hostname`, the keycloak chart generates it (key `secret` is the client secret of the imported realm)
+and keeps it on upgrades; a secret `keycloak` created by hand before is kept and not taken over. Without the import,
+create it with the client secret of `carLedger`:
 
 ```bash
 kubectl create secret generic keycloak \
@@ -92,20 +127,22 @@ shorter ones), 32 or more are recommended, and all replicas need the same one.
 ### 4. CarLedger
 
 ```bash
-helm install car-ledger oci://ghcr.io/3thr3n/car-ledger/helm --set ingress.host=example.com
+helm install car-ledger oci://ghcr.io/3thr3n/car-ledger/car-ledger --set ingress.host=example.com
 ```
 
-Without `--version` the latest release is installed. A release (e.g. `0.3.0`, see the
-[releases](https://github.com/3thr3n/car-ledger/releases)) publishes the image `ghcr.io/3thr3n/car-ledger:0.3.0` and the
-chart `oci://ghcr.io/3thr3n/car-ledger/helm` in version `0.3.0`, which runs that image.
+Without `--version` the latest release is installed. A release (e.g. `0.4.0`, see the
+[releases](https://github.com/3thr3n/car-ledger/releases)) publishes the image `ghcr.io/3thr3n/car-ledger:0.4.0` and the
+chart `oci://ghcr.io/3thr3n/car-ledger/car-ledger` in version `0.4.0`, which runs that image (up to 0.3.x the chart was
+`oci://ghcr.io/3thr3n/car-ledger/helm`).
 
-Every build of `main` publishes the image `ghcr.io/3thr3n/car-ledger:<run number>` and the chart as the prerelease
+Every build of `develop` publishes the image `ghcr.io/3thr3n/car-ledger:<run number>` and the chart as the prerelease
 `<next release>-dev.<run number>`, e.g. `0.4.0-dev.123`, which runs the image of the same build: `--version
 0.4.0-dev.123` installs build 123, `--devel` the latest build. Leave `carLedger.image.tag` empty, it would override
 the image of the chart.
 
 From the repository (`helm dependency update helm/car-ledger`, `helm install car-ledger helm/car-ledger ...`) the chart
-runs the image `main`, the latest build of `main`.
+runs the image `main`, the latest build of `main`, which holds the released states. The image `develop` is the latest
+dev build.
 
 With another release name than `car-ledger`, set `carLedger.postgres.host` to `<release>-postgresql`. Passwords of
 PostgreSQL and Infinispan are generated on the first install and kept on upgrades.
@@ -127,6 +164,35 @@ with the role `user`, the roles are missing in the tokens of the client.
   (12 MB): the nginx ingress gets the annotation `nginx.ingress.kubernetes.io/proxy-body-size` automatically, other
   proxies (e.g. a Gateway or a reverse proxy in front of the cluster) need the same limit, otherwise uploads fail with
   413.
+- **Backups**: users download all of their data as ZIP in the settings and restore it into an account without cars.
+  The restore is an upload as well and limited by `carLedger.attachments.maxRequestSize`: a backup with many receipts
+  can be larger, raise the limit (and the one of the proxies) for the restore.
+- **Webhooks**: `carLedger.webhook.url` sends events like a new car request as signed HTTP requests; the key of the
+  signature comes from `carLedger.webhook.existingSecret`. See [WEBHOOKS.md](WEBHOOKS.md).
+- **Service accounts**: besides the login of the browser, the API accepts access tokens of the identity provider
+  (`Authorization: Bearer …`), e.g. of a script deciding car requests. See [Service accounts](#service-accounts).
+
+### Service accounts
+
+A tool or script calls the API as an OpenID Connect client of its own, whose tokens carry the role `admin` (or
+`user`). In Keycloak, in the realm `car-ledger`:
+
+1. **Clients → Create client**, e.g. client id `car-ledger-bot`, OpenID Connect.
+2. **Capability config**: *Client authentication* on, *Standard flow* and *Direct access grants* off,
+   *Service accounts roles* on.
+3. **Service accounts roles** tab of the client → *Assign role* → filter by realm roles → `admin`.
+4. Copy the client secret from the **Credentials** tab.
+
+```bash
+TOKEN=$(curl -s https://keycloak.example.com/realms/car-ledger/protocol/openid-connect/token \
+  -d grant_type=client_credentials -d client_id=car-ledger-bot -d client_secret="$SECRET" | jq -r .access_token)
+curl -H "Authorization: Bearer $TOKEN" "https://car-ledger.example.com/api/admin/car-requests?state=OPEN"
+```
+
+Requests decided this way show `service-account-car-ledger-bot` as the deciding administrator. authentik issues such
+tokens with the `client_credentials` grant of the provider *CarLedger*, the user name of a service account in the group
+`admin` and an app password, see the
+[authentik documentation](https://docs.goauthentik.io/add-secure-apps/providers/oauth2/client_credentials/).
 
 ## Upgrading to the current version
 
@@ -155,14 +221,14 @@ Checklist for installations running an older image of the app.
 ### Upgrade
 
 ```bash
-helm upgrade car-ledger oci://ghcr.io/3thr3n/car-ledger/helm -f my-values.yaml
+helm upgrade car-ledger oci://ghcr.io/3thr3n/car-ledger/car-ledger -f my-values.yaml
 ```
 
 Pass your values file instead of `--reuse-values`, which keeps the old values and drops new defaults of the chart (e.g.
 the Infinispan 15.2 image). Remove `carLedger.image.tag` from your values: the chart runs the image of its own build
 now, a tag set before would keep the old image.
 
-Use an image built from the current `main` (or a git tag of it). On the first start, Flyway migrates the database:
+Use the image of a release (a git tag of `main`) or a dev build of `develop`. On the first start, Flyway migrates the database:
 
 | Migration | Change                                                                                                               |
 |-----------|----------------------------------------------------------------------------------------------------------------------|
@@ -174,6 +240,8 @@ Use an image built from the current `main` (or a git tag of it). On the first st
 | 1.6.0     | Picture of the cars (0.3.0)                                                                                          |
 | 1.7.0     | Energy type of the cars (existing cars become petrol), optional tank size and battery capacity (0.4.0)               |
 | 1.8.0     | Table for the charges of electric cars and plug-in hybrids (0.4.0)                                                   |
+| 1.9.0     | Unit system of the accounts (metric, US, UK), existing accounts stay metric (0.4.0)                                  |
+| 1.10.0    | Table for the requests of the users, first: more cars (0.4.0)                                                        |
 
 An older image refuses to start on the migrated database, as Flyway finds migrations it does not know. To go back,
 restore the backup. Without the backup, the older image runs on the migrated database (the new columns have defaults)
@@ -191,6 +259,30 @@ kubectl set env deployment/car-ledger QUARKUS_FLYWAY_IGNORE_FUTURE_MIGRATIONS=tr
   the actual mileage in *Edit car*, it becomes a new reading as of today.
 - **Settings**: all accounts start with VAT country Germany and the currency Euro. Users with another currency change
   it in *Settings*, existing amounts are not converted.
+- **Energy type** (0.4.0): existing cars become petrol cars. Owners of another car (diesel, LPG, CNG, electric,
+  plug-in hybrid) change it in *Edit car*; only electric cars and plug-in hybrids record charges.
+- **Car requests** (0.4.0): users who reached their car limit request more cars in the garage, the role `admin` approves
+  or rejects them on the administration page; the entry *Administration* shows the number of open requests. Nothing
+  to set up.
+- **Webhooks and service accounts** (0.4.0, optional): without `carLedger.webhook.url` no events are sent, see
+  [WEBHOOKS.md](WEBHOOKS.md). Scripts can call the API with the access token of a service account, see
+  [Service accounts](#service-accounts).
+- **Chart name** (0.4.0): the app chart is named `car-ledger` now, published at
+  `oci://ghcr.io/3thr3n/car-ledger/car-ledger`. The old path `oci://ghcr.io/3thr3n/car-ledger/helm` ends with 0.3.0,
+  switch the path in `helm upgrade` (the release and its resources stay the same) and in the dependencies of your
+  charts (`name: car-ledger`).
+- **Charts** (0.4.0): `keycloak` and `authentik` are published as well, upgrade them from
+  `oci://ghcr.io/3thr3n/car-ledger/<chart>`. Installed on their own, they deploy the same resources as before; only in
+  the stack chart do they get other names. The values `carLedger.auth.clientId` and `carLedger.auth.existingSecret` of
+  the app chart are empty by default now, they still default to `carLedger` and `keycloak`.
+- **Stack chart** (0.4.0, new): `oci://ghcr.io/3thr3n/car-ledger/stack` deploys the app with Keycloak or authentik in
+  one release, see [Everything in one release](#everything-in-one-release). It is meant for new installations: an
+  existing app release named `car-ledger` can switch to it without Keycloak or authentik in the stack (its values move
+  under `app:`), an existing Keycloak or authentik is not taken over.
+- **Keycloak realm** (keycloak chart 0.4.0): with `carLedger.hostname`, the chart imports the realm `car-ledger` and
+  generates the secret `keycloak`. Existing installations can set it as well: the existing realm and a secret
+  `keycloak` created by hand are kept. Keycloak starts with `--import-realm` and mounts the ConfigMap
+  `keycloak-realm` in any case (empty without `carLedger.hostname`), so its pod is restarted by the upgrade.
 - **Uploads** (0.3.0): receipts and car pictures need requests up to `carLedger.attachments.maxRequestSize` (12 MB). The
   nginx ingress of the chart gets the annotation automatically; a Gateway or a proxy in front needs the same limit,
   otherwise uploads fail with 413. The files are stored in PostgreSQL, the backup above includes them.

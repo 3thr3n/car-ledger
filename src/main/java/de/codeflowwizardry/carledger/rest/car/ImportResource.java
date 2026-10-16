@@ -11,6 +11,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.jboss.resteasy.reactive.PartType;
 import org.jboss.resteasy.reactive.RestForm;
@@ -27,6 +28,7 @@ import de.codeflowwizardry.carledger.csv.importer.FuelBillCsvImporter;
 import de.codeflowwizardry.carledger.csv.importer.MaintenanceBillCsvImporter;
 import de.codeflowwizardry.carledger.csv.importer.MiscellaneousBillCsvImporter;
 import de.codeflowwizardry.carledger.data.BillType;
+import de.codeflowwizardry.carledger.data.UnitSystem;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import de.codeflowwizardry.carledger.exception.WrongUserException;
@@ -74,6 +76,7 @@ public class ImportResource extends AbstractResource
 			@RestForm("billType") BillType billType,
 			@RestForm("order") @PartType(MediaType.TEXT_PLAIN) String columnMappingJson,
 			@RestForm("vat") @PartType(MediaType.APPLICATION_JSON) Integer vat,
+			@Parameter(description = "Units of the file, metric without one") @RestForm("unitSystem") UnitSystem unitSystem,
 			@QueryParam("skipHeader") boolean skipHeader)
 	{
 		ObjectUtils.requireNonEmpty(csv, "CSV ('file') needs to be set!");
@@ -97,7 +100,7 @@ public class ImportResource extends AbstractResource
 				(file, mapping) -> csvImportService
 						.importBills(file, mapping, carId, context.getName(),
 								skipHeader ? 1 : 0,
-								vat, billType));
+								vat, unitSystem, billType));
 	}
 
 	@GET

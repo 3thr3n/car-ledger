@@ -16,7 +16,7 @@ import { BillType, MonthStats } from '@/generated';
 import { getMonthlyStatsOptions } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
 import { billTypes } from '@/utils/billTypes';
-import { num, useFormat } from '@/utils/format';
+import { Formatter, num, useFormat } from '@/utils/format';
 import Section from '@/components/ui/Section';
 import EmptyState from '@/components/ui/EmptyState';
 
@@ -30,23 +30,47 @@ export interface MonthlyChartProps {
 
 type View = 'costs' | 'fuel' | 'charging';
 
-/** the price and consumption lines of the refuels or the charges */
-const energyViews = {
-  fuel: {
-    price: 'pricePerUnit',
-    consumption: 'consumption',
-    priceUnit: 'ct/l',
-    consumptionUnit: 'l/100km',
-    color: 'fuel',
-  },
-  charging: {
-    price: 'chargingPricePerUnit',
-    consumption: 'chargingConsumption',
-    priceUnit: 'ct/kWh',
-    consumptionUnit: 'kWh/100km',
-    color: 'charging',
-  },
-} as const;
+/**
+ * The price and consumption lines of the refuels or the charges, in the units
+ * of the account
+ */
+function energyViews(format: Formatter) {
+  const { units } = format;
+  const fuelPriceLabel = units.fuelPrice.inCurrency
+    ? `${format.currencySymbol}/${units.volume.label}`
+    : `ct/${units.volume.label}`;
+  return {
+    fuel: {
+      price: 'pricePerUnit',
+      consumption: 'consumption',
+      priceLabel: fuelPriceLabel,
+      consumptionLabel: units.consumption.label,
+      toPrice: units.fuelPrice.fromCentsPerLiter,
+      toConsumption: units.consumption.fromLitersPer100Km,
+      formatPrice: (value: number | null) =>
+        units.fuelPrice.inCurrency
+          ? value === null
+            ? null
+            : `${format.money(value, units.fuelPrice.digits)}/${units.volume.label}`
+          : format.unit(value, fuelPriceLabel, units.fuelPrice.digits),
+      formatConsumption: (value: number | null) =>
+        format.unit(value, units.consumption.label, units.consumption.digits),
+      color: 'fuel',
+    },
+    charging: {
+      price: 'chargingPricePerUnit',
+      consumption: 'chargingConsumption',
+      priceLabel: 'ct/kWh',
+      consumptionLabel: units.chargingConsumption.label,
+      toPrice: (value: number) => value,
+      toConsumption: units.chargingConsumption.fromKwhPer100Km,
+      formatPrice: (value: number | null) => format.unit(value, 'ct/kWh', 1),
+      formatConsumption: (value: number | null) =>
+        format.unit(value, units.chargingConsumption.label),
+      color: 'charging',
+    },
+  } as const;
+}
 
 const HEIGHT = 300;
 
@@ -60,6 +84,15 @@ const costParts = [
 
 /** a missing average is a gap in the line, not a zero */
 const orNull = (value?: number | null) => num(value) ?? null;
+
+/** a value of the API in the units of the account, missing stays a gap */
+const inUnits = (
+  value: number | null | undefined,
+  conversion: (value: number) => number,
+) => {
+  const number = orNull(value);
+  return number === null ? null : conversion(number);
+};
 
 /**
  * Costs per month by type, or price and consumption of the refuels or the
@@ -117,6 +150,13 @@ export default function MonthlyChart({
   };
 
   const hasCosts = months.some((month) => (num(month.total) ?? 0) > 0);
+  // charging is only a part of the costs with charges, e.g. not for petrol cars
+  const hasChargingCosts = months.some(
+    (month) => (num(month.charging) ?? 0) > 0,
+  );
+  const shownCostParts = costParts.filter(
+    (part) => part.type !== BillType.CHARGING || hasChargingCosts,
+  );
   const hasFuel = months.some((month) => num(month.pricePerUnit) !== undefined);
   const hasCharging = months.some(
     (month) => num(month.chargingPricePerUnit) !== undefined,
@@ -131,7 +171,7 @@ export default function MonthlyChart({
   const shown = views.includes(view) ? view : 'costs';
   const isEmpty =
     shown === 'costs' ? !hasCosts : shown === 'fuel' ? !hasFuel : !hasCharging;
-  const energy = shown === 'costs' ? undefined : energyViews[shown];
+  const energy = shown === 'costs' ? undefined : energyViews(format)[shown];
 
   const compactMoney = new Intl.NumberFormat(format.locale, {
     style: 'currency',
@@ -185,7 +225,7 @@ export default function MonthlyChart({
               valueFormatter: (value: number) => compactMoney.format(value),
             },
           ]}
-          series={costParts.map((part) => ({
+          series={shownCostParts.map((part) => ({
             dataKey: part.key,
             stack: 'total',
             label: t(`bill.types.${part.type}`),
@@ -201,21 +241,24 @@ export default function MonthlyChart({
           loading={isLoading}
           dataset={months.map((month) => ({
             month: month.month,
-            pricePerUnit: orNull(month[energy.price]),
-            consumption: orNull(month[energy.consumption]),
+            pricePerUnit: inUnits(month[energy.price], energy.toPrice),
+            consumption: inUnits(
+              month[energy.consumption],
+              energy.toConsumption,
+            ),
           }))}
           xAxis={[xAxis]}
           yAxis={[
             {
               id: 'price',
               width: 56,
-              label: energy.priceUnit,
+              label: energy.priceLabel,
             },
             {
               id: 'consumption',
               position: 'right',
               width: 48,
-              label: energy.consumptionUnit,
+              label: energy.consumptionLabel,
             },
           ]}
           series={[
@@ -225,8 +268,7 @@ export default function MonthlyChart({
               label: t(`dashboard.monthly.pricePerUnit.${shown}`),
               color: theme.palette[energy.color].main,
               connectNulls: true,
-              valueFormatter: (value: number | null) =>
-                format.unit(value, energy.priceUnit, 1),
+              valueFormatter: energy.formatPrice,
             },
             {
               dataKey: 'consumption',
@@ -234,8 +276,7 @@ export default function MonthlyChart({
               label: t('dashboard.monthly.consumption'),
               color: theme.palette.primary.main,
               connectNulls: true,
-              valueFormatter: (value: number | null) =>
-                format.unit(value, energy.consumptionUnit),
+              valueFormatter: energy.formatConsumption,
             },
           ]}
           margin={{ left: 0, right: 0 }}

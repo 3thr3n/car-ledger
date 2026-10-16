@@ -23,8 +23,12 @@
           },
           "language" : {
             "type" : "string"
+          },
+          "unitSystem" : {
+            "$ref" : "#/components/schemas/UnitSystem"
           }
-        }
+        },
+        "required" : [ "unitSystem" ]
       },
       "AdminAccount" : {
         "type" : "object",
@@ -79,6 +83,85 @@
           }
         }
       },
+      "AdminCarRequest" : {
+        "type" : "object",
+        "required" : [ "id", "accountId", "account", "cars", "maxCars", "state", "createdAt", "currentCars", "currentMaxCars" ],
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "accountId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "account" : {
+            "type" : "string"
+          },
+          "cars" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "maxCars" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "grantedMaxCars" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "reason" : {
+            "type" : "string"
+          },
+          "state" : {
+            "$ref" : "#/components/schemas/RequestState"
+          },
+          "createdAt" : {
+            "type" : "string",
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          },
+          "decidedAt" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          },
+          "decidedBy" : {
+            "type" : "string"
+          },
+          "comment" : {
+            "type" : "string"
+          },
+          "currentCars" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "currentMaxCars" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "AdminCarRequestPage" : {
+        "type" : "object",
+        "properties" : {
+          "total" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "page" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "data" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/AdminCarRequest"
+            }
+          }
+        }
+      },
       "AdminStats" : {
         "type" : "object",
         "properties" : {
@@ -101,6 +184,19 @@
           "recurringBills" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "openRequests" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      },
+      "ApproveCarRequestInput" : {
+        "type" : "object",
+        "properties" : {
+          "maxCars" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         }
       },
@@ -155,6 +251,31 @@
           },
           "costPerKm" : {
             "type" : "number"
+          }
+        }
+      },
+      "BackupSummary" : {
+        "type" : "object",
+        "properties" : {
+          "cars" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "bills" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "recurringBills" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "reminders" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "files" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         }
       },
@@ -464,6 +585,59 @@
           },
           "avgChargingConsumption" : {
             "type" : "number"
+          }
+        }
+      },
+      "CarRequest" : {
+        "type" : "object",
+        "required" : [ "id", "cars", "maxCars", "state", "createdAt", "outcomeSeen" ],
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "cars" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "maxCars" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "grantedMaxCars" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "reason" : {
+            "type" : "string"
+          },
+          "state" : {
+            "$ref" : "#/components/schemas/RequestState"
+          },
+          "createdAt" : {
+            "type" : "string",
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          },
+          "decidedAt" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          },
+          "comment" : {
+            "type" : "string"
+          },
+          "outcomeSeen" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "CarRequestInput" : {
+        "type" : "object",
+        "properties" : {
+          "cars" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "reason" : {
+            "type" : "string"
           }
         }
       },
@@ -1018,6 +1192,14 @@
         "type" : "string",
         "enum" : [ "ACTIVE", "NEXT_DUE" ]
       },
+      "RejectCarRequestInput" : {
+        "type" : "object",
+        "properties" : {
+          "comment" : {
+            "type" : "string"
+          }
+        }
+      },
       "Reminder" : {
         "type" : "object",
         "required" : [ "id", "carId", "carName", "title", "status", "odometer" ],
@@ -1113,6 +1295,10 @@
         "type" : "string",
         "enum" : [ "OVERDUE", "DUE_SOON", "UPCOMING" ]
       },
+      "RequestState" : {
+        "type" : "string",
+        "enum" : [ "OPEN", "APPROVED", "REJECTED" ]
+      },
       "Row" : {
         "type" : "object",
         "properties" : {
@@ -1136,6 +1322,9 @@
           },
           "language" : {
             "type" : "string"
+          },
+          "unitSystem" : {
+            "$ref" : "#/components/schemas/UnitSystem"
           }
         }
       },
@@ -1187,6 +1376,10 @@
             "format" : "int32"
           }
         }
+      },
+      "UnitSystem" : {
+        "type" : "string",
+        "enum" : [ "METRIC", "US", "UK" ]
       }
     },
     "securitySchemes" : {
@@ -1317,6 +1510,161 @@
         },
         "summary" : "Delete Account",
         "tags" : [ "Admin Resource" ]
+      }
+    },
+    "/api/admin/car-requests" : {
+      "get" : {
+        "description" : "Requests for more cars, the open ones by age, the decided ones newest first; pages starting at 1",
+        "operationId" : "getAdminCarRequests",
+        "parameters" : [ {
+          "name" : "page",
+          "in" : "query",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 1
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
+          }
+        }, {
+          "name" : "state",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/RequestState"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Requests found.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AdminCarRequestPage"
+                }
+              }
+            }
+          }
+        },
+        "summary" : "Get Car Requests",
+        "tags" : [ "Admin Car Request Resource" ]
+      }
+    },
+    "/api/admin/car-requests/{id}/approve" : {
+      "post" : {
+        "description" : "Approves the request and raises the car limit of the account",
+        "operationId" : "approveCarRequest",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ApproveCarRequestInput"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Request approved.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AdminCarRequest"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed, please check the response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Request not found."
+          },
+          "409" : {
+            "description" : "The request was decided already."
+          }
+        },
+        "summary" : "Approve",
+        "tags" : [ "Admin Car Request Resource" ]
+      }
+    },
+    "/api/admin/car-requests/{id}/reject" : {
+      "post" : {
+        "description" : "Rejects the request, the comment is shown to the user",
+        "operationId" : "rejectCarRequest",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/RejectCarRequestInput"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Request rejected.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AdminCarRequest"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed, please check the response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Request not found."
+          },
+          "409" : {
+            "description" : "The request was decided already."
+          }
+        },
+        "summary" : "Reject",
+        "tags" : [ "Admin Car Request Resource" ]
       }
     },
     "/api/admin/stats" : {
@@ -3588,6 +3936,45 @@
         "tags" : [ "Export Resource" ]
       }
     },
+    "/api/export/{carId}/all" : {
+      "get" : {
+        "description" : "Exports all expenses of the car as one CSV, for spreadsheets: every bill and the payments of the recurring costs, the oldest first, ISO dates and a dot as decimal separator. Not meant to be imported again.",
+        "operationId" : "exportAllExpensesCsv",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "year",
+          "in" : "query",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "The expenses as CSV.",
+            "content" : {
+              "text/csv" : {
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Car not found."
+          }
+        },
+        "summary" : "Export All Expenses",
+        "tags" : [ "Export Resource" ]
+      }
+    },
     "/api/import/{carId}" : {
       "post" : {
         "description" : "This is the description for the import of an csv of your fuel entities.<br />\n<br />\nYou need to add the csv and the order in the csv (starts with 0).<br />\nseparator between columns is ',' (comma)\n",
@@ -3626,6 +4013,9 @@
                   "vat" : {
                     "type" : "integer",
                     "format" : "int32"
+                  },
+                  "unitSystem" : {
+                    "$ref" : "#/components/schemas/UnitSystem"
                   }
                 }
               },
@@ -4055,6 +4445,172 @@
         },
         "summary" : "Delete Me",
         "tags" : [ "Account Resource" ]
+      }
+    },
+    "/api/user/me/backup" : {
+      "post" : {
+        "description" : "Restores a backup into the own account, which must not have cars yet",
+        "operationId" : "restoreBackup",
+        "requestBody" : {
+          "content" : {
+            "multipart/form-data" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "file" : {
+                    "type" : "string",
+                    "format" : "binary"
+                  }
+                }
+              },
+              "encoding" : {
+                "file" : {
+                  "contentType" : "application/zip"
+                }
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Restored.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/BackupSummary"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "No backup, an unknown version, invalid content or more cars than allowed",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "The account has cars already."
+          }
+        },
+        "summary" : "Restore",
+        "tags" : [ "Backup Resource" ]
+      },
+      "get" : {
+        "description" : "All own data as ZIP: settings, cars, entries, recurring costs, reminders and the files",
+        "operationId" : "downloadBackup",
+        "responses" : {
+          "200" : {
+            "description" : "The backup.",
+            "content" : {
+              "application/zip" : {
+                "schema" : {
+                  "format" : "binary",
+                  "type" : "string"
+                }
+              }
+            }
+          }
+        },
+        "summary" : "Download",
+        "tags" : [ "Backup Resource" ]
+      }
+    },
+    "/api/user/me/car-requests" : {
+      "post" : {
+        "description" : "Requests more cars than the limit of the account allows",
+        "operationId" : "requestMoreCars",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CarRequestInput"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Request created.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CarRequest"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed, or the user can still add cars",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "An open request exists already."
+          }
+        },
+        "summary" : "Request More Cars",
+        "tags" : [ "Car Request Resource" ]
+      }
+    },
+    "/api/user/me/car-requests/latest" : {
+      "get" : {
+        "description" : "The newest own request for more cars",
+        "operationId" : "getMyLatestCarRequest",
+        "responses" : {
+          "200" : {
+            "description" : "Request found.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CarRequest"
+                }
+              }
+            }
+          },
+          "204" : {
+            "description" : "No request yet."
+          }
+        },
+        "summary" : "Get Latest",
+        "tags" : [ "Car Request Resource" ]
+      }
+    },
+    "/api/user/me/car-requests/{id}/seen" : {
+      "post" : {
+        "description" : "The decision was shown to the user, it is not shown again",
+        "operationId" : "markCarRequestSeen",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "Marked as seen."
+          },
+          "404" : {
+            "description" : "Request not found for the user."
+          }
+        },
+        "summary" : "Mark Seen",
+        "tags" : [ "Car Request Resource" ]
       }
     },
     "/api/user/me/settings" : {

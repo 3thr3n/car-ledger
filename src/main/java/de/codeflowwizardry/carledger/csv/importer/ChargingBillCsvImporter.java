@@ -5,6 +5,7 @@ import java.util.Set;
 import de.codeflowwizardry.carledger.csv.CsvColumnMapping;
 import de.codeflowwizardry.carledger.csv.CsvFieldExtractors;
 import de.codeflowwizardry.carledger.csv.CsvImporter;
+import de.codeflowwizardry.carledger.csv.ImportUnits;
 import de.codeflowwizardry.carledger.data.ChargingLocation;
 import de.codeflowwizardry.carledger.data.factory.ChargingBillFactory;
 import de.codeflowwizardry.carledger.rest.car.charging.ChargingBillInput;
@@ -23,13 +24,14 @@ public class ChargingBillCsvImporter implements CsvImporter<ChargingBillInput>
 	}
 
 	@Override
-	public ChargingBillInput parseRow(String[] line, CsvColumnMapping mapping, Integer vat)
+	public ChargingBillInput parseRow(String[] line, CsvColumnMapping mapping, Integer vat,
+			ImportUnits units)
 	{
 		return new ChargingBillInput(
 				CsvFieldExtractors.getLocalDate(line, mapping, "date"),
 				CsvFieldExtractors.getBigDecimal(line, mapping, "total"),
 				CsvFieldExtractors.getInteger(line, mapping, "vatRate", vat),
-				CsvFieldExtractors.getBigDecimal(line, mapping, "distance"),
+				units.distance(CsvFieldExtractors.getBigDecimal(line, mapping, "distance")),
 				CsvFieldExtractors.getBigDecimal(line, mapping, "unit"),
 				CsvFieldExtractors.getBigDecimal(line, mapping, "pricePerUnit"),
 				CsvFieldExtractors.getEnum(line, mapping, "location", ChargingLocation.class),

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { BillType } from '@/generated';
 import { getMyCarOptions } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
+import { useFormat } from '@/utils/format';
 import { billTypesFor } from '@/utils/billTypes';
 import PageHeader from '@/components/ui/PageHeader';
 import FuelForm from '@/components/bill/FuelForm';
@@ -25,6 +26,7 @@ export default function AddBillPage({
   onTypeChange,
 }: AddBillPageProps) {
   const { t } = useTranslation();
+  const { units } = useFormat();
   // loaded by the layout of the car already
   const { data: car } = useQuery(
     getMyCarOptions({ client: localClient, path: { id: carId } }),
@@ -111,7 +113,10 @@ export default function AddBillPage({
             mb: 2.5,
           }}
         >
-          {t(`bill.add.describe.${type}`)}
+          {t(`bill.add.describe.${type}`, {
+            // only the refuels name the volume
+            context: type === BillType.FUEL ? units.volume.context : undefined,
+          })}
         </Typography>
         {/* keyed, so switching the type starts with a fresh form */}
         {type === BillType.FUEL && <FuelForm key={type} carId={carId} />}

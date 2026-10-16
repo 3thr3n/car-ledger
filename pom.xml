@@ -133,6 +133,12 @@
             <artifactId>quarkus-test-security</artifactId>
             <scope>test</scope>
         </dependency>
+        <!-- access tokens of the Keycloak dev service, for the calls of service accounts -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-test-keycloak-server</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-jacoco</artifactId>

@@ -6,6 +6,8 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.InputStream;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
@@ -14,9 +16,17 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import de.codeflowwizardry.carledger.data.AccountEntity;
+import de.codeflowwizardry.carledger.data.BillCategory;
+import de.codeflowwizardry.carledger.data.BillInterval;
 import de.codeflowwizardry.carledger.data.CarEntity;
+import de.codeflowwizardry.carledger.data.factory.FuelBillFactory;
+import de.codeflowwizardry.carledger.data.factory.MaintenanceBillFactory;
+import de.codeflowwizardry.carledger.data.factory.RecurringBillFactory;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
+import de.codeflowwizardry.carledger.rest.car.fuel.FuelBillInput;
+import de.codeflowwizardry.carledger.rest.car.maintenance.MaintenanceBillInput;
+import de.codeflowwizardry.carledger.rest.car.recurring.RecurringBillInput;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
 import io.restassured.http.ContentType;
@@ -127,6 +137,63 @@ class ExportResourceTest
 				.body("successCount", is(0))
 				.body("skippedCount", is(3))
 				.body("errorCount", is(0));
+	}
+
+	@Inject
+	FuelBillFactory fuelBillFactory;
+
+	@Inject
+	MaintenanceBillFactory maintenanceBillFactory;
+
+	@Inject
+	RecurringBillFactory recurringBillFactory;
+
+	@Test
+	@TestSecurity(user = "peter", roles = "user")
+	void shouldExportAllExpensesIncludingTheRecurringPayments()
+	{
+		fuelBillFactory.create(new FuelBillInput(LocalDate.of(2025, 2, 10), null, 19, BigDecimal.valueOf(600),
+				BigDecimal.valueOf(40), BigDecimal.valueOf(175), null), carId, "peter");
+		maintenanceBillFactory.create(new MaintenanceBillInput(BigDecimal.valueOf(119), 19, LocalDate.of(2025, 1, 20),
+				null, null, null, "Oil change, filter", "Garage"), carId, "peter");
+		// payments on January 1 and February 1
+		recurringBillFactory.create(carId, new RecurringBillInput("Insurance", null, BillInterval.MONTHLY,
+				BillCategory.INSURANCE, LocalDate.of(2025, 1, 1), LocalDate.of(2025, 3, 1), BigDecimal.valueOf(45)),
+				"peter");
+
+		String csv = given().pathParam("carId", carId)
+				.get("/api/export/{carId}/all")
+				.then()
+				.statusCode(200)
+				.header("Content-Disposition", "attachment; filename=\"neat-car-all.csv\"")
+				.extract()
+				.asString();
+
+		assertEquals("""
+				date,type,description,category,total,netAmount,vatAmount,vatRate,quantity,unit,distance
+				2025-01-01,RECURRING,Insurance,INSURANCE,45.00,,,,,,
+				2025-01-20,MAINTENANCE,"Garage · Oil change, filter",,119.00,100.00,19.00,19,,,
+				2025-02-01,RECURRING,Insurance,INSURANCE,45.00,,,,,,
+				2025-02-10,FUEL,,,70.00,58.82,11.18,19,40.00,l,600.00
+				""", csv);
+
+		given().pathParam("carId", carId)
+				.queryParam("year", 2024)
+				.get("/api/export/{carId}/all")
+				.then()
+				.statusCode(200)
+				.header("Content-Disposition", containsString("neat-car-all-2024.csv"))
+				.body(is("date,type,description,category,total,netAmount,vatAmount,vatRate,quantity,unit,distance\n"));
+	}
+
+	@Test
+	@TestSecurity(user = "bob", roles = "user")
+	void shouldNotExportAllExpensesOfAnotherUser()
+	{
+		given().pathParam("carId", carId)
+				.get("/api/export/{carId}/all")
+				.then()
+				.statusCode(404);
 	}
 
 	@Test

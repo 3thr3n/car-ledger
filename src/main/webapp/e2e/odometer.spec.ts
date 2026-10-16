@@ -59,6 +59,19 @@ test.describe.serial('odometer', () => {
     await expect(page.getByText('Currently about 31,400 km')).toBeVisible();
   });
 
+  test('leaves out charging for a petrol car', async ({ page }) => {
+    // the refuel and the maintenance of the test before are the costs
+    await page.goto(`/car/${carId}`);
+    const chart = page.locator('.MuiCard-root', { hasText: 'Costs per month' });
+    await expect(chart.getByText('Maintenance', { exact: true })).toBeVisible();
+    await expect(chart.getByText('Charging', { exact: true })).toHaveCount(0);
+
+    await page.goto('/dashboard');
+    const split = page.locator('.MuiCard-root', { hasText: 'Cost breakdown' });
+    await expect(split.getByText('Fuel', { exact: false })).toBeVisible();
+    await expect(split.getByText(/^Charging/)).toHaveCount(0);
+  });
+
   test('keeps the reading when the car is saved unchanged', async ({
     page,
   }) => {

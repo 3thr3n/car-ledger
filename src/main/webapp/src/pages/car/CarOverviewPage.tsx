@@ -1,4 +1,5 @@
-import { Box, Divider, Grid, Stack, Typography } from '@mui/material';
+import { Box, Button, Divider, Grid, Stack, Typography } from '@mui/material';
+import FileDownloadRounded from '@mui/icons-material/FileDownloadRounded';
 import PaymentsRounded from '@mui/icons-material/PaymentsRounded';
 import LocalGasStationRounded from '@mui/icons-material/LocalGasStationRounded';
 import BuildRounded from '@mui/icons-material/BuildRounded';
@@ -18,7 +19,7 @@ import {
   getMyCarOverviewOptions,
   getRemindersOptions,
 } from '@/generated/@tanstack/react-query.gen';
-import { localClient } from '@/utils/QueryClient';
+import { baseUrl, localClient } from '@/utils/QueryClient';
 import { BillType, RecurringBillSort } from '@/generated';
 import { toApiDate, useFormat } from '@/utils/format';
 import { hasBattery, hasTank } from '@/utils/energy';
@@ -83,7 +84,7 @@ export default function CarOverviewPage({ id }: { id: number }) {
       key: 'avgConsumption',
       icon: <WaterDropRounded />,
       color: 'fuel',
-      value: format.unit(overview?.avgConsumption, 'l/100km'),
+      value: format.consumption(overview?.avgConsumption),
     },
     {
       key: 'refuels',
@@ -97,7 +98,7 @@ export default function CarOverviewPage({ id }: { id: number }) {
       key: 'avgChargingConsumption',
       icon: <BoltRounded />,
       color: 'charging',
-      value: format.unit(overview?.avgChargingConsumption, 'kWh/100km'),
+      value: format.chargingConsumption(overview?.avgChargingConsumption),
     },
     {
       key: 'charges',
@@ -168,14 +169,26 @@ export default function CarOverviewPage({ id }: { id: number }) {
             title={t('car.overview.ledger')}
             subtitle={t('car.overview.ledgerSubtitle')}
             action={
-              <RouterButton
-                to="/dashboard"
-                search={{ car: id }}
-                size="small"
-                endIcon={<ArrowForwardRounded />}
-              >
-                {t('car.overview.toDashboard')}
-              </RouterButton>
+              <Stack direction="row" spacing={1}>
+                {/* every entry and the recurring payments, for spreadsheets */}
+                {ledger.total > 0 && (
+                  <Button
+                    href={`${baseUrl}/api/export/${id}/all${ledger.year === undefined ? '' : `?year=${ledger.year}`}`}
+                    size="small"
+                    startIcon={<FileDownloadRounded />}
+                  >
+                    {t('car.overview.exportAll')}
+                  </Button>
+                )}
+                <RouterButton
+                  to="/dashboard"
+                  search={{ car: id }}
+                  size="small"
+                  endIcon={<ArrowForwardRounded />}
+                >
+                  {t('car.overview.toDashboard')}
+                </RouterButton>
+              </Stack>
             }
           >
             <Box sx={{ px: 2.5, pb: 1.5 }}>
