@@ -1,13 +1,16 @@
-import { Box, Button, Card, Stack, Typography } from '@mui/material';
+import { Alert, Box, Button, Card, Stack, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { isStandalone, useInstallPrompt } from '@/utils/install';
 import InstallSteps from '@/components/install/InstallSteps';
+import useVersion from '@/hooks/useVersion';
+import { reloadToNewest } from '@/utils/serviceWorker';
 
 /** the steps to install the app, also after the hint was dismissed */
 export default function InstallSection() {
   const { t } = useTranslation();
   const install = useInstallPrompt();
   const standalone = isStandalone();
+  const version = useVersion();
 
   return (
     <Card sx={{ p: 3, mt: 3 }}>
@@ -32,6 +35,30 @@ export default function InstallSection() {
           ) : (
             <InstallSteps />
           ))}
+        <Typography variant="body2" data-testid="version-details">
+          {t('app.versions', {
+            app: version.app,
+            server: version.server ?? '…',
+          })}
+        </Typography>
+        {version.outdated ? (
+          <Alert
+            severity="warning"
+            action={
+              <Button color="inherit" size="small" onClick={reloadToNewest}>
+                {t('app.update.reload')}
+              </Button>
+            }
+          >
+            {t('app.update.outdated')}
+          </Alert>
+        ) : (
+          version.server && (
+            <Typography variant="body2" sx={{ color: 'success.main' }}>
+              {t('app.update.current')}
+            </Typography>
+          )
+        )}
       </Stack>
     </Card>
   );
