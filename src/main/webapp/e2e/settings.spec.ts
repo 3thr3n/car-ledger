@@ -57,4 +57,49 @@ test.describe.serial('settings', () => {
     await page.getByRole('button', { name: 'Speichern' }).click();
     await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible();
   });
+
+  test('shows the notifications by e-mail', async ({ page }) => {
+    // the users of the Keycloak dev service have no address
+    await page.goto('/settings');
+    await expect(
+      page.getByText('Your login has no e-mail address.', { exact: false }),
+    ).toBeVisible();
+    await expect(page.getByRole('switch')).toHaveCount(0);
+  });
+
+  test('turns a notification off', async ({ page }) => {
+    // as if the login had an address, the change is saved by the backend
+    await page.route('**/api/user/me/notifications', (route) =>
+      route.request().method() === 'GET'
+        ? route.fulfill({
+            json: {
+              available: true,
+              email: 'alice@example.com',
+              newRequests: true,
+              requestDecided: true,
+            },
+          })
+        : route.continue(),
+    );
+    await page.goto('/settings');
+    await expect(
+      page.getByText('Sent to alice@example.com, the address of your login.'),
+    ).toBeVisible();
+    const newRequests = page.getByRole('switch', {
+      name: 'New requests for more cars (as administrator)',
+    });
+    await expect(newRequests).toBeChecked();
+
+    await newRequests.click();
+    await expect(page.getByText('Notifications saved')).toBeVisible();
+
+    const api = await aliceApi();
+    const saved = await (await api.get('/api/user/me/notifications')).json();
+    expect(saved.newRequests).toBe(false);
+    expect(saved.requestDecided).toBe(true);
+    await api.put('/api/user/me/notifications', {
+      data: { newRequests: true },
+    });
+    await api.dispose();
+  });
 });

@@ -5,8 +5,10 @@ import jakarta.enterprise.event.Event;
 import jakarta.inject.Inject;
 
 /**
- * Publishes events. They are sent after the transaction succeeded, a failing
- * transaction sends nothing.
+ * Publishes events: as webhooks ({@link WebhookSender}) and as mails
+ * ({@link de.codeflowwizardry.carledger.notification.MailNotifications}). They
+ * are sent after the transaction succeeded, a failing transaction sends
+ * nothing.
  */
 @ApplicationScoped
 public class Webhooks

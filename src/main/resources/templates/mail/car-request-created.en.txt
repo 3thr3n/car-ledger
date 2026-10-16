@@ -1,0 +1,12 @@
+New car request from {account}
+{account} requests {cars} more {#if cars == 1}car{#else}cars{/if}, the current limit is {maxCars}.
+{#if reason}
+Reason: "{reason}"
+{/if}
+
+{#if link}Approve or reject it on the administration page:
+{link}{#else}Approve or reject it on the administration page of CarLedger.{/if}
+
+--
+You get this mail as administrator of CarLedger. You can turn it off in the settings{#if settingsLink}:
+{settingsLink}{#else}.{/if}

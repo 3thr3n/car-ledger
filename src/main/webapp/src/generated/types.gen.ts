@@ -397,6 +397,18 @@ export type MonthStats = {
     costPerKm?: number;
 };
 
+export type NotificationSettings = {
+    available?: boolean;
+    email?: string;
+    newRequests?: boolean;
+    requestDecided?: boolean;
+};
+
+export type NotificationSettingsInput = {
+    newRequests?: boolean;
+    requestDecided?: boolean;
+};
+
 export type Odometer = {
     value: number;
     reading: number;
@@ -2407,6 +2419,45 @@ export type MarkCarRequestSeenResponses = {
 };
 
 export type MarkCarRequestSeenResponse = MarkCarRequestSeenResponses[keyof MarkCarRequestSeenResponses];
+
+export type GetMyNotificationsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/user/me/notifications';
+};
+
+export type GetMyNotificationsResponses = {
+    /**
+     * Notification settings found.
+     */
+    200: NotificationSettings;
+};
+
+export type GetMyNotificationsResponse = GetMyNotificationsResponses[keyof GetMyNotificationsResponses];
+
+export type UpdateMyNotificationsData = {
+    body: NotificationSettingsInput;
+    path?: never;
+    query?: never;
+    url: '/api/user/me/notifications';
+};
+
+export type UpdateMyNotificationsErrors = {
+    /**
+     * Bad Request
+     */
+    400: unknown;
+};
+
+export type UpdateMyNotificationsResponses = {
+    /**
+     * Notification settings saved.
+     */
+    200: NotificationSettings;
+};
+
+export type UpdateMyNotificationsResponse = UpdateMyNotificationsResponses[keyof UpdateMyNotificationsResponses];
 
 export type UpdateMySettingsData = {
     body: SettingsInput;

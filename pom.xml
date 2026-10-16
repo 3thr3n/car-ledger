@@ -92,6 +92,11 @@
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-scheduler</artifactId>
         </dependency>
+        <!-- notifications by e-mail, the texts are Qute templates -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-mailer</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>io.quarkiverse.quinoa</groupId>
@@ -131,6 +136,12 @@
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-test-security</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- claims of the token in tests, e.g. the e-mail address -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-test-security-oidc</artifactId>
             <scope>test</scope>
         </dependency>
         <!-- access tokens of the Keycloak dev service, for the calls of service accounts -->
