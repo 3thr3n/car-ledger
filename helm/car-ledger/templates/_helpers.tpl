@@ -1,7 +1,6 @@
 {{/*
 Values of the stack chart (helm/stack), empty when this chart is installed on its own: global.host is the base
-domain, global.authentik.enabled and global.n8n.enabled switch the defaults of the login and the webhooks to the
-charts deployed next to the app.
+domain, global.authentik.enabled switches the defaults of the login to the chart deployed next to the app.
 */}}
 
 {{/* Base domain, the app is reachable as car-ledger.<host> */}}
@@ -11,10 +10,6 @@ charts deployed next to the app.
 
 {{- define "carLedger.withAuthentik" -}}
 {{- if ((.Values.global).authentik).enabled }}true{{ end -}}
-{{- end }}
-
-{{- define "carLedger.withN8n" -}}
-{{- if ((.Values.global).n8n).enabled }}true{{ end -}}
 {{- end }}
 
 {{/* Issuer: carLedger.auth.url, else authentik or Keycloak at <name>.<host> */}}

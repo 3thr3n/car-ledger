@@ -8,13 +8,12 @@ CarLedger runs on Kubernetes. It needs an OpenID Connect provider for the login,
 | `helm/car-ledger` | The app, its PostgreSQL and Infinispan (keeps the login sessions, shared by all replicas)                                                |
 | `helm/keycloak`   | Keycloak 26.7 (via the [keycloakx chart](https://github.com/codecentric/helm-charts/tree/master/charts/keycloakx)) with its own PostgreSQL |
 | `helm/authentik`  | authentik 2026.8 with its own PostgreSQL, CarLedger is set up by a blueprint, see [its README](../helm/authentik/README.md)              |
-| `helm/n8n`        | Optional: n8n 2.43 to approve car requests, with the shared secret of the webhooks, see [its README](../helm/n8n/README.md)              |
 
 The app is reachable as `car-ledger.<host>`.
 
 A release publishes the charts at `oci://ghcr.io/3thr3n/car-ledger/<chart>`: `car-ledger` (the app) and `stack` in the
-version of the release, `keycloak`, `authentik` and `n8n` in their own versions (raised when they change, the release
-notes name them). From the repository, run `helm dependency update helm/<chart>` before the install.
+version of the release, `keycloak` and `authentik` in their own versions (raised when they change, the release notes
+name them). From the repository, run `helm dependency update helm/<chart>` before the install.
 
 - [Everything in one release](#everything-in-one-release)
 - [Identity provider](#identity-provider)
@@ -25,18 +24,17 @@ notes name them). From the repository, run `helm dependency update helm/<chart>`
 
 ## Everything in one release
 
-The stack chart deploys the app and, as chosen, Keycloak or authentik and n8n. It sets the host names, the login and
-the webhooks of the app and the generated secrets up between them, e.g. with authentik and n8n:
+The stack chart deploys the app and, as chosen, Keycloak or authentik. It sets the host names, the login of the app
+and the generated secrets up between them, e.g. with authentik:
 
 ```bash
 helm install car-ledger oci://ghcr.io/3thr3n/car-ledger/stack \
   --set global.host=example.com \
-  --set global.authentik.enabled=true \
-  --set global.n8n.enabled=true
+  --set global.authentik.enabled=true
 ```
 
 See [its README](../helm/stack/README.md) for the values and the steps after the install. The sections below install
-the charts one by one, which also works with the identity provider or n8n in other namespaces.
+the charts one by one, which also works with the identity provider in another namespace.
 
 ## Identity provider
 
@@ -169,11 +167,32 @@ with the role `user`, the roles are missing in the tokens of the client.
 - **Backups**: users download all of their data as ZIP in the settings and restore it into an account without cars.
   The restore is an upload as well and limited by `carLedger.attachments.maxRequestSize`: a backup with many receipts
   can be larger, raise the limit (and the one of the proxies) for the restore.
-- **Webhooks**: `carLedger.webhook.url` sends events like a new car request as signed HTTP requests, e.g. to n8n; the
-  key of the signature comes from `carLedger.webhook.existingSecret`. See [WEBHOOKS.md](WEBHOOKS.md).
+- **Webhooks**: `carLedger.webhook.url` sends events like a new car request as signed HTTP requests; the key of the
+  signature comes from `carLedger.webhook.existingSecret`. See [WEBHOOKS.md](WEBHOOKS.md).
 - **Service accounts**: besides the login of the browser, the API accepts access tokens of the identity provider
-  (`Authorization: Bearer …`), e.g. of a client with a service account and the role `admin` for n8n. See
-  [N8N.md](N8N.md).
+  (`Authorization: Bearer …`), e.g. of a script deciding car requests. See [Service accounts](#service-accounts).
+
+### Service accounts
+
+A tool or script calls the API as an OpenID Connect client of its own, whose tokens carry the role `admin` (or
+`user`). In Keycloak, in the realm `car-ledger`:
+
+1. **Clients → Create client**, e.g. client id `car-ledger-bot`, OpenID Connect.
+2. **Capability config**: *Client authentication* on, *Standard flow* and *Direct access grants* off,
+   *Service accounts roles* on.
+3. **Service accounts roles** tab of the client → *Assign role* → filter by realm roles → `admin`.
+4. Copy the client secret from the **Credentials** tab.
+
+```bash
+TOKEN=$(curl -s https://keycloak.example.com/realms/car-ledger/protocol/openid-connect/token \
+  -d grant_type=client_credentials -d client_id=car-ledger-bot -d client_secret="$SECRET" | jq -r .access_token)
+curl -H "Authorization: Bearer $TOKEN" "https://car-ledger.example.com/api/admin/car-requests?state=OPEN"
+```
+
+Requests decided this way show `service-account-car-ledger-bot` as the deciding administrator. authentik issues such
+tokens with the `client_credentials` grant of the provider *CarLedger*, the user name of a service account in the group
+`admin` and an app password, see the
+[authentik documentation](https://docs.goauthentik.io/add-secure-apps/providers/oauth2/client_credentials/).
 
 ## Upgrading to the current version
 
@@ -248,7 +267,7 @@ kubectl set env deployment/car-ledger QUARKUS_FLYWAY_IGNORE_FUTURE_MIGRATIONS=tr
   generates the secret `keycloak`. Existing installations can set it as well: the existing realm and a secret
   `keycloak` created by hand are kept. Keycloak starts with `--import-realm` and mounts the ConfigMap
   `keycloak-realm` in any case (empty without `carLedger.hostname`), so its pod is restarted by the upgrade.
-- **Charts** (0.4.0): `keycloak`, `authentik` and `n8n` are published as well, upgrade them from
+- **Charts** (0.4.0): `keycloak` and `authentik` are published as well, upgrade them from
   `oci://ghcr.io/3thr3n/car-ledger/<chart>`. Installed on their own, they deploy the same resources as before; only in
   the stack chart do they get other names. The values `carLedger.auth.clientId` and `carLedger.auth.existingSecret` of
   the app chart are empty by default now, they still default to `carLedger` and `keycloak`.

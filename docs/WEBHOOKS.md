@@ -1,7 +1,7 @@
 # Webhooks
 
-CarLedger sends events as signed HTTP `POST` requests to a URL, so other tools (n8n, Home Assistant, your own scripts)
-can react to them. Without a URL nothing is sent.
+CarLedger sends events as signed HTTP `POST` requests to a URL, so other tools (Home Assistant, your own scripts) can
+react to them. Without a URL nothing is sent.
 
 ## Configuration
 
@@ -25,7 +25,7 @@ kubectl create secret generic car-ledger-webhook --from-literal=webhook-secret="
 ```yaml
 carLedger:
   webhook:
-    url: https://n8n.example.com/webhook/car-ledger
+    url: https://hooks.example.com/car-ledger
     existingSecret: car-ledger-webhook
     secretKey: webhook-secret
 ```
