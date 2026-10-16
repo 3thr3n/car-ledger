@@ -239,7 +239,11 @@ A tool or script calls the API as an OpenID Connect client of its own, whose tok
 2. **Capability config**: *Client authentication* on, *Standard flow* and *Direct access grants* off,
    *Service accounts roles* on.
 3. **Service accounts roles** tab of the client → *Assign role* → filter by realm roles → `admin`.
-4. Copy the client secret from the **Credentials** tab.
+4. **Client scopes** tab → `car-ledger-bot-dedicated` → *Configure a new mapper* → **Audience**, name `audience
+   carLedger`, *Included Client Audience* `carLedger`, *Add to access token* on. CarLedger only accepts access tokens
+   that name it as audience, tokens of other clients of the realm are rejected (`carLedger.auth.audience`, `any`
+   turns the check off).
+5. Copy the client secret from the **Credentials** tab.
 
 ```bash
 TOKEN=$(curl -s https://keycloak.example.com/realms/car-ledger/protocol/openid-connect/token \
@@ -324,6 +328,11 @@ kubectl set env deployment/car-ledger QUARKUS_FLYWAY_IGNORE_FUTURE_MIGRATIONS=tr
   reminders (on the first day all reminders that are due already, in one mail per user), see
   [E-mail](#e-mail). The addresses and the role `admin` are stored at the next visit of each user, until then
   nobody gets mails.
+- **Audience** (0.5.0): access tokens (`Authorization: Bearer`) must name CarLedger as audience (`aud`, the client
+  id), tokens of other clients of the same realm are rejected; the login of the browser is not affected. Add the
+  audience mapper to the clients of service accounts ([Service accounts](#service-accounts), step 4); the realm of
+  the keycloak chart has it for `carLedger` itself. authentik sets the audience by itself. `carLedger.auth.audience=any`
+  keeps the old behaviour.
 - **Push** (0.5.0): on by default, the chart creates the secret `car-ledger-push` with the key of the server. Each user
   turns it on per device in the settings, see [Push](#push). The app needs outgoing HTTPS to the push services.
 - **Energy type** (0.4.0): existing cars become petrol cars. Owners of another car (diesel, LPG, CNG, electric,

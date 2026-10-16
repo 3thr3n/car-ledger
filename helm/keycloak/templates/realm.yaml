@@ -1,6 +1,7 @@
 {{- /*
 The realm car-ledger, imported on the first start of Keycloak (--import-realm, an existing realm is kept as it is).
 Without the host name of CarLedger the ConfigMap is empty and nothing is imported, the realm is set up by hand.
+The access tokens of the client carLedger name it as audience: CarLedger accepts only tokens for itself.
 */}}
 {{- $hostname := include "carLedgerKeycloak.carLedgerHostname" . }}
 apiVersion: v1
@@ -44,7 +45,16 @@ metadata:
         "redirectUris" (list (printf "%s/api/auth/callback" $carLedger))
         "attributes" (dict
           "pkce.code.challenge.method" "S256"
-          "post.logout.redirect.uris" (printf "%s/api/auth/logout-callback" $carLedger)))) }}
+          "post.logout.redirect.uris" (printf "%s/api/auth/logout-callback" $carLedger))
+        "protocolMappers" (list (dict
+          "name" "audience carLedger"
+          "protocol" "openid-connect"
+          "protocolMapper" "oidc-audience-mapper"
+          "config" (dict
+            "included.client.audience" "carLedger"
+            "id.token.claim" "false"
+            "access.token.claim" "true"
+            "introspection.token.claim" "true"))))) }}
 data:
   # ${CAR_LEDGER_CLIENT_SECRET} is replaced by Keycloak with the variable of the secret keycloak
   car-ledger.json: |
