@@ -34,4 +34,11 @@ public interface MailConfig
 	 */
 	@WithDefault("PT10S")
 	Duration backoff();
+
+	/**
+	 * @return when the due reminders are mailed, in the time zone of the server
+	 *         (UTC in the image); "off" for never
+	 */
+	@WithDefault("0 0 7 * * ?")
+	String remindersCron();
 }

@@ -155,6 +155,10 @@ public class AccountResource extends AbstractResource
 		{
 			account.setNotifyRequestDecided(input.requestDecided());
 		}
+		if (input != null && input.reminders() != null)
+		{
+			account.setNotifyReminders(input.reminders());
+		}
 		return NotificationSettings.convert(account, mailConfig.enabled());
 	}
 

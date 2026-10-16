@@ -1,5 +1,8 @@
 package de.codeflowwizardry.carledger.notification;
 
+import java.text.NumberFormat;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -10,7 +13,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.codeflowwizardry.carledger.data.AccountEntity;
+import de.codeflowwizardry.carledger.data.UnitSystem;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
+import de.codeflowwizardry.carledger.rest.car.reminder.Reminder;
 import de.codeflowwizardry.carledger.webhook.CarRequestCreated;
 import de.codeflowwizardry.carledger.webhook.CarRequestDecided;
 import de.codeflowwizardry.carledger.webhook.WebhookEvent;
@@ -36,6 +41,7 @@ import jakarta.inject.Inject;
 public class MailNotifications
 {
 	private static final Logger LOG = LoggerFactory.getLogger(MailNotifications.class);
+	private static final double KM_PER_MILE = 1.609344;
 
 	private final MailConfig config;
 	private final AccountRepository accountRepository;
@@ -121,6 +127,53 @@ public class MailNotifications
 		int newline = text.indexOf('\n');
 		return Mail.withText(recipient.getEmail(), text.substring(0, newline).strip(),
 				text.substring(newline + 1).strip() + "\n");
+	}
+
+	/**
+	 * Mails the reminders that became due to the owner of the cars, in one mail.
+	 * Sent after the commit.
+	 */
+	public void reminders(AccountEntity owner, List<Reminder> due)
+	{
+		if (!config.enabled() || due.isEmpty() || owner.getEmail() == null)
+		{
+			return;
+		}
+		Locale locale = Locale.forLanguageTag(owner.getMailLanguage().toLowerCase(Locale.ROOT));
+		boolean miles = owner.getUnitSystem() != UnitSystem.METRIC;
+		DateTimeFormatter dates = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(locale);
+		NumberFormat numbers = NumberFormat.getIntegerInstance(locale);
+
+		List<Map<String, Object>> items = due.stream().map(reminder -> {
+			Map<String, Object> item = new HashMap<>();
+			item.put("car", reminder.carName());
+			item.put("title", reminder.title());
+			item.put("note", Optional.ofNullable(reminder.note()).orElse(""));
+			item.put("date", reminder.dueDate() == null ? "" : dates.format(reminder.dueDate()));
+			item.put("daysLeft", reminder.daysLeft() == null ? 0 : reminder.daysLeft());
+			item.put("odometer",
+					reminder.dueOdometer() == null ? "" : numbers.format(distance(reminder.dueOdometer(), miles)));
+			int left = reminder.kmLeft() == null ? 0 : distance(reminder.kmLeft(), miles);
+			item.put("distanceLeft", left);
+			item.put("distanceLeftText", numbers.format(left));
+			return item;
+		}).toList();
+
+		Map<String, Object> data = new HashMap<>();
+		data.put("reminders", items);
+		data.put("first", items.getFirst());
+		data.put("count", items.size());
+		data.put("unit", miles ? "mi" : "km");
+		data.put("link", link("/dashboard"));
+		outgoing.fire(new OutgoingMails("reminders.due", List.of(mail(owner, "reminders-due", data))));
+	}
+
+	/**
+	 * @return the km in the units of the account, whole miles or km
+	 */
+	private static int distance(int km, boolean miles)
+	{
+		return miles ? (int) Math.round(km / KM_PER_MILE) : km;
 	}
 
 	/**

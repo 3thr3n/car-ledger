@@ -13,12 +13,15 @@ import de.codeflowwizardry.carledger.data.AccountEntity;
  *            mail about new requests, only sent to administrators
  * @param requestDecided
  *            mail when an own request was decided
+ * @param reminders
+ *            mail the reminders of the cars once they are due soon
  */
-public record NotificationSettings(boolean available, String email, boolean newRequests, boolean requestDecided)
+public record NotificationSettings(boolean available, String email, boolean newRequests, boolean requestDecided,
+		boolean reminders)
 {
 	public static NotificationSettings convert(AccountEntity account, boolean available)
 	{
 		return new NotificationSettings(available, account.getEmail(), account.isNotifyNewRequests(),
-				account.isNotifyRequestDecided());
+				account.isNotifyRequestDecided(), account.isNotifyReminders());
 	}
 }

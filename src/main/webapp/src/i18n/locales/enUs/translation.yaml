@@ -463,6 +463,7 @@ notifications:
   sentTo: "Sent to {{email}}, the address of your login."
   noEmail: "Your login has no e-mail address. Add one at your identity provider and log in again."
   unavailable: "This CarLedger does not send e-mails, the administrator can set it up."
+  reminders: "Reminders of my cars that are due soon (once a day)"
   requestDecided: "When my request for more cars is decided"
   newRequests: "New requests for more cars (as administrator)"
   saved: "Notifications saved"

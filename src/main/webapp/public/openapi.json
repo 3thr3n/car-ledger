@@ -1102,6 +1102,9 @@
           },
           "requestDecided" : {
             "type" : "boolean"
+          },
+          "reminders" : {
+            "type" : "boolean"
           }
         }
       },
@@ -1112,6 +1115,9 @@
             "type" : "boolean"
           },
           "requestDecided" : {
+            "type" : "boolean"
+          },
+          "reminders" : {
             "type" : "boolean"
           }
         }

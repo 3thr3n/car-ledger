@@ -402,11 +402,13 @@ export type NotificationSettings = {
     email?: string;
     newRequests?: boolean;
     requestDecided?: boolean;
+    reminders?: boolean;
 };
 
 export type NotificationSettingsInput = {
     newRequests?: boolean;
     requestDecided?: boolean;
+    reminders?: boolean;
 };
 
 export type Odometer = {
