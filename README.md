@@ -33,6 +33,8 @@ spending and usage patterns.
   and pictures) as one ZIP and restores it into an account without cars, e.g. on another installation.
 - **Car Requests:** Users who reached their car limit request more cars in the app, administrators approve or reject
   them on the administration page.
+- **Notifications by e-mail:** Administrators get a mail about new car requests, users about the decision; each one
+  can be turned off in the settings.
 - **Webhooks:** Events like a new car request are sent as signed HTTP requests to other tools or your own scripts,
   see [docs/WEBHOOKS.md](docs/WEBHOOKS.md).
 - **CSV Import:** Import multiple receipts at once using a CSV file, making it quick to upload historical or bulk data.

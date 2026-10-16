@@ -433,6 +433,15 @@ import:
     errors_other: "{{count}} Fehler"
     row: "Zeile {{row}}"
 
+notifications:
+  title: "Benachrichtigungen per E-Mail"
+  sentTo: "Gesendet an {{email}}, die Adresse deiner Anmeldung."
+  noEmail: "Deine Anmeldung hat keine E-Mail-Adresse. Trage eine beim Identitätsanbieter ein und melde dich erneut an."
+  unavailable: "Dieses CarLedger versendet keine E-Mails, der Administrator kann es einrichten."
+  requestDecided: "Wenn über meine Anfrage für mehr Fahrzeuge entschieden wurde"
+  newRequests: "Neue Anfragen für mehr Fahrzeuge (als Administrator)"
+  saved: "Benachrichtigungen gespeichert"
+
 backup:
   title: "Sicherung"
   text: "Alle deine Daten in einer Datei: Einstellungen, Fahrzeuge, Einträge, Fixkosten, Erinnerungen, Belege und Bilder. Stelle sie hier oder in einem anderen CarLedger wieder her."

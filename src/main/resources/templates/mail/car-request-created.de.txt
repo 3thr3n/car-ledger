@@ -1,0 +1,12 @@
+Neue Fahrzeug-Anfrage von {account}
+{account} fragt {cars} {#if cars == 1}weiteres Fahrzeug{#else}weitere Fahrzeuge{/if} an, das aktuelle Limit ist {maxCars}.
+{#if reason}
+Grund: „{reason}“
+{/if}
+
+{#if link}Genehmige oder lehne sie in der Verwaltung ab:
+{link}{#else}Genehmige oder lehne sie in der Verwaltung von CarLedger ab.{/if}
+
+--
+Du bekommst diese Mail als Administrator von CarLedger. Du kannst sie in den Einstellungen abschalten{#if settingsLink}:
+{settingsLink}{#else}.{/if}

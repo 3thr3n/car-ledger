@@ -433,6 +433,15 @@ import:
     errors_other: "{{count}} errors"
     row: "Row {{row}}"
 
+notifications:
+  title: "Notifications by e-mail"
+  sentTo: "Sent to {{email}}, the address of your login."
+  noEmail: "Your login has no e-mail address. Add one at your identity provider and log in again."
+  unavailable: "This CarLedger does not send e-mails, the administrator can set it up."
+  requestDecided: "When my request for more cars is decided"
+  newRequests: "New requests for more cars (as administrator)"
+  saved: "Notifications saved"
+
 backup:
   title: "Backup"
   text: "All your data in one file: settings, cars, entries, recurring costs, reminders, receipts and pictures. Restore it here or on another CarLedger."

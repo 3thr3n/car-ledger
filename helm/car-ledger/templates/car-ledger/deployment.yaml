@@ -76,6 +76,33 @@ spec:
               value: {{ .Values.carLedger.attachments.maxPerBill | quote }}
             - name: QUARKUS_HTTP_LIMITS_MAX_BODY_SIZE
               value: {{ .Values.carLedger.attachments.maxRequestSize | quote }}
+            {{- with .Values.carLedger.mail }}
+            {{- if .host }}
+            - name: CARLEDGER_MAIL_ENABLED
+              value: "true"
+            - name: CARLEDGER_MAIL_APP_URL
+              value: {{ .appUrl | default (printf "https://car-ledger.%s" (include "carLedger.host" $)) | quote }}
+            - name: QUARKUS_MAILER_HOST
+              value: {{ .host | quote }}
+            - name: QUARKUS_MAILER_PORT
+              value: {{ .port | quote }}
+            - name: QUARKUS_MAILER_START_TLS
+              value: {{ .startTls | quote }}
+            - name: QUARKUS_MAILER_TLS
+              value: {{ .tls | quote }}
+            - name: QUARKUS_MAILER_FROM
+              value: {{ .from | default (printf "car-ledger@%s" (include "carLedger.host" $)) | quote }}
+            {{- if .username }}
+            - name: QUARKUS_MAILER_USERNAME
+              value: {{ .username | quote }}
+            - name: QUARKUS_MAILER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ required "carLedger.mail.existingSecret is needed with carLedger.mail.username" .existingSecret }}
+                  key: {{ .passwordKey }}
+            {{- end }}
+            {{- end }}
+            {{- end }}
             {{- with .Values.carLedger.webhook }}
             {{- if .url }}
             - name: CARLEDGER_WEBHOOK_URL
