@@ -205,6 +205,14 @@ public class AttachmentService
 		return storageOf(attachment).load(attachment);
 	}
 
+	/**
+	 * @return the largest file in bytes
+	 */
+	public long maxSize()
+	{
+		return maxSize;
+	}
+
 	public int maxPerBill()
 	{
 		return maxPerBill;
