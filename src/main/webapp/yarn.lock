@@ -2993,6 +2993,11 @@ find-up@^5.0.0:
     locate-path "^6.0.0"
     path-exists "^4.0.0"
 
+flag-icons@7.5.0:
+  version "7.5.0"
+  resolved "https://registry.yarnpkg.com/flag-icons/-/flag-icons-7.5.0.tgz#66462df3e8bc5ef3a283322a46bb9dde1b290505"
+  integrity sha512-kd+MNXviFIg5hijH766tt+3x76ele1AXlo4zDdCxIvqWZhKt4T83bOtxUOOMlTx/EcFdUMH5yvQgYlFh1EqqFg==
+
 flat-cache@^6.1.23:
   version "6.1.23"
   resolved "https://registry.yarnpkg.com/flat-cache/-/flat-cache-6.1.23.tgz#735dc888c271868d7301b3bbb8edba5028afb61d"
@@ -4088,11 +4093,6 @@ rc9@^3.0.1:
   dependencies:
     defu "^6.1.7"
     destr "^2.0.5"
-
-react-country-flag@^3.1.0:
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/react-country-flag/-/react-country-flag-3.1.0.tgz#f0c4c332934a77d3e894ba4800634f7a887e53d4"
-  integrity sha512-JWQFw1efdv9sTC+TGQvTKXQg1NKbDU2mBiAiRWcKM9F1sK+/zjhP2yGmm8YDddWyZdXVkR8Md47rPMJmo4YO5g==
 
 react-dom@^19:
   version "19.3.0"

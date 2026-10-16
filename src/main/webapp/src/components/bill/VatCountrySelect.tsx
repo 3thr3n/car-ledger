@@ -1,10 +1,10 @@
 import { ReactNode } from 'react';
 import { Box, MenuItem, TextField } from '@mui/material';
 import countries from 'i18n-iso-countries';
-import ReactCountryFlag from 'react-country-flag';
 import { useTranslation } from 'react-i18next';
 import { formatVatPercent, supportedVatCountries } from '@/utils/VatCountries';
 import { useFormat } from '@/utils/format';
+import { flagUrl } from '@/utils/flags';
 
 export default function VatCountrySelect({
   value,
@@ -49,7 +49,18 @@ export default function VatCountrySelect({
               width: '100%',
             }}
           >
-            <ReactCountryFlag svg countryCode={code} />
+            <Box
+              component="img"
+              src={flagUrl(code)}
+              alt=""
+              loading="lazy"
+              sx={{
+                width: 22,
+                height: 16.5,
+                objectFit: 'cover',
+                borderRadius: 0.25,
+              }}
+            />
             <span>{name}</span>
             <Box
               component="span"
