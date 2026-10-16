@@ -8,6 +8,13 @@ import {
 } from '@/generated/@tanstack/react-query.gen';
 import queryClient, { localClient } from '@/utils/QueryClient';
 import { currentBrowser, isStandalone } from '@/utils/install';
+import {
+  keyBytes,
+  keyMatches,
+  rememberedEndpoint,
+  rememberEndpoint,
+} from '@/utils/push';
+import { unsubscribeMyPush } from '@/generated/sdk.gen';
 
 /**
  * - unavailable: the server sends no push messages
@@ -30,28 +37,16 @@ const supported = () =>
   'PushManager' in window &&
   'Notification' in window;
 
-/** the key of the server as the browser wants it */
-function keyBytes(base64url: string) {
-  const base64 = base64url.replace(/-/g, '+').replace(/_/g, '/');
-  const binary = atob(
-    base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), '='),
-  );
-  return Uint8Array.from(binary, (char) => char.charCodeAt(0));
-}
-
-function sameKey(subscription: PushSubscription, key: Uint8Array) {
-  const current = subscription.options.applicationServerKey;
-  if (!current) return false;
-  const bytes = new Uint8Array(current);
-  return (
-    bytes.length === key.length && bytes.every((byte, i) => byte === key[i])
-  );
-}
-
 async function registration() {
   if (!supported()) return undefined;
   return navigator.serviceWorker.getRegistration();
 }
+
+/** removes a subscription of this browser from the server, errors ignored */
+const forget = (endpoint: string) =>
+  unsubscribeMyPush({ client: localClient, body: { endpoint } }).catch(
+    () => undefined,
+  );
 
 const refresh = () =>
   queryClient.invalidateQueries({
@@ -89,6 +84,10 @@ export default function usePush() {
           auth: json.keys?.auth,
         },
       });
+      // a new subscription of this browser replaces its old one
+      const previous = rememberedEndpoint();
+      if (previous && previous !== current.endpoint) await forget(previous);
+      rememberEndpoint(current.endpoint);
       await refresh();
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -106,13 +105,23 @@ export default function usePush() {
       setHasWorker(!!worker);
       const current = (await worker?.pushManager.getSubscription()) ?? null;
       if (!active) return;
-      if (current && sameKey(current, keyBytes(settings.publicKey))) {
+      const matches =
+        current &&
+        keyMatches(current.options?.applicationServerKey, settings.publicKey);
+      if (current && matches !== false) {
         setSubscription(current);
         send(current).catch(() => undefined);
       } else {
-        // a subscription for an older key of the server receives nothing
+        // a subscription for an older key of the server receives nothing:
+        // removed here and on the server, the user turns push on again. A
+        // subscription the browser lost is removed from the server as well.
+        const previous = rememberedEndpoint();
+        if (current) await forget(current.endpoint);
+        if (previous && previous !== current?.endpoint) await forget(previous);
+        rememberEndpoint(null);
         await current?.unsubscribe();
-        setSubscription(null);
+        if (current || previous) await refresh();
+        if (active) setSubscription(null);
       }
     })();
     return () => {
@@ -138,6 +147,7 @@ export default function usePush() {
     if (!subscription) return;
     await remove.mutateAsync({ body: { endpoint: subscription.endpoint } });
     await subscription.unsubscribe();
+    rememberEndpoint(null);
     setSubscription(null);
     await refresh();
   };

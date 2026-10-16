@@ -132,7 +132,9 @@ export default function NotificationSection() {
             label={t('notifications.push.label')}
           />
           <FormHelperText sx={{ mt: 0 }} data-testid="push-hint">
-            {t(`notifications.push.${push.state}`, { count: push.browsers })}
+            {pushBusy && push.state === 'off'
+              ? t('notifications.push.turningOn')
+              : t(`notifications.push.${push.state}`, { count: push.browsers })}
           </FormHelperText>
           {push.state === 'on' && (
             <Button

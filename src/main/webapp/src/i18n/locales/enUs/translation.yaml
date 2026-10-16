@@ -476,6 +476,7 @@ notifications:
     off_zero: "Off on this device."
     on_one: "This device receives them."
     on_other: "{{count}} devices receive them, this one included."
+    turningOn: "Turning on… the first time the browser can take a moment."
     test: "Send a test"
     testSent: "Test sent, it should arrive in a few seconds"
     failed: "Push notifications could not be turned on"
