@@ -149,6 +149,13 @@ carledgerpostgres:
       cpu: 500m
       memory: 512Mi
 
+# only the app reaches its PostgreSQL and Infinispan; needs a network plugin that enforces NetworkPolicies
+networkPolicy:
+  enabled: true
+  # further sources, e.g. a backup tool: entries of NetworkPolicy ingress "from"
+  # (- podSelector: {matchLabels: {app: pg-backup}})
+  extraFrom: []
+
 infinispan:
   enabled: true
   images:

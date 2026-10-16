@@ -173,6 +173,10 @@ with the role `user`, the roles are missing in the tokens of the client.
   (`Authorization: Bearer …`), e.g. of a script deciding car requests. See [Service accounts](#service-accounts).
 - **E-mail**: `carLedger.mail.host` sends notifications by e-mail, see [E-mail](#e-mail).
 - **Push**: the notifications reach the browsers as push messages, on by default, see [Push](#push).
+- **Network policies**: only the app reaches its PostgreSQL and Infinispan, only Keycloak and authentik their
+  PostgreSQL (`networkPolicy.enabled`, on by default in all charts; needs a network plugin that enforces them). Further
+  sources, e.g. a backup tool: `networkPolicy.extraFrom`. `kubectl exec … pg_dump` (see [Operations](#operations))
+  is not affected.
 - **Installable app**: the app has a web app manifest (`/manifest.json`) and a service worker (`/sw.js`), which keeps
   the files of the app (not the data) for a fast start. Both need HTTPS, which the ingress provides. A proxy or CDN in
   front must not cache `/sw.js` for long, otherwise new versions arrive late; the app asks the user to reload when a
@@ -328,6 +332,8 @@ kubectl set env deployment/car-ledger QUARKUS_FLYWAY_IGNORE_FUTURE_MIGRATIONS=tr
   reminders (on the first day all reminders that are due already, in one mail per user), see
   [E-mail](#e-mail). The addresses and the role `admin` are stored at the next visit of each user, until then
   nobody gets mails.
+- **Network policies** (0.5.0; keycloak chart 0.5.0, authentik chart 0.4.0): only the app reaches its databases. A
+  tool that connects to a PostgreSQL over the network (backup, monitoring) needs `networkPolicy.extraFrom`.
 - **Audience** (0.5.0): access tokens (`Authorization: Bearer`) must name CarLedger as audience (`aud`, the client
   id), tokens of other clients of the same realm are rejected; the login of the browser is not affected. Add the
   audience mapper to the clients of service accounts ([Service accounts](#service-accounts), step 4); the realm of
