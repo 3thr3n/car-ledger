@@ -8,5 +8,11 @@ public abstract class AbstractBillEntity
 	// Parent for different BillEntities
 	public abstract BillEntity getBill();
 
-	public abstract BillType getType();
+	/**
+	 * @return the type of the {@link #getBill() bill}
+	 */
+	public BillType getType()
+	{
+		return getBill().getType();
+	}
 }

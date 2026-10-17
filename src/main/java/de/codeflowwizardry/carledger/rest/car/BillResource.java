@@ -4,6 +4,7 @@ import io.quarkus.security.identity.SecurityIdentity;
 import java.util.List;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
 import de.codeflowwizardry.carledger.data.BillEntity;
@@ -12,6 +13,7 @@ import de.codeflowwizardry.carledger.data.repository.BillRepository;
 import de.codeflowwizardry.carledger.exception.DbDeletionException;
 import de.codeflowwizardry.carledger.rest.records.Bill;
 import de.codeflowwizardry.carledger.rest.records.BillPaged;
+import de.codeflowwizardry.carledger.rest.records.SortOrder;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Response;
@@ -59,11 +61,14 @@ public class BillResource extends AbstractBillResource<BillRepository, BillEntit
 	@Path("all")
 	@Operation(operationId = "getAllBills", description = "Gets all bills for specified car, Pages starting at 1")
 	@APIResponse(responseCode = "200", description = "Bills found.")
+	@APIResponse(responseCode = "400", description = "The bills cannot be sorted by the field.")
 	public BillPaged<Bill> getAllMyBills(@PathParam("carId") long carId,
 			@QueryParam("page") @DefaultValue("1") int page,
 			@QueryParam("size") @DefaultValue("10") int size,
-			@QueryParam("year") Integer year)
+			@QueryParam("year") Integer year,
+			@Parameter(description = "Field to sort by, the bills are sorted by date if equal") @QueryParam("sort") @DefaultValue("date") String sort,
+			@QueryParam("order") @DefaultValue("DESC") SortOrder order)
 	{
-		return super.getAllMyBills(carId, page, size, year, Bill::convert);
+		return super.getAllMyBills(carId, page, size, year, sort, order, Bill::convert);
 	}
 }

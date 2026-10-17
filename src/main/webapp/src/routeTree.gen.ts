@@ -11,6 +11,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as RefuelRouteImport } from './routes/refuel'
 import { Route as CarIdRouteRouteImport } from './routes/car/$id/route'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
 import { Route as DevI18nRouteImport } from './routes/dev/i18n'
@@ -28,6 +29,9 @@ const Dev404LazyRouteImport = createFileRoute('/dev/404')()
 const CarIdIndexLazyRouteImport = createFileRoute('/car/$id/')()
 const CarIdEditLazyRouteImport = createFileRoute('/car/$id/edit')()
 const CarIdRemindersLazyRouteImport = createFileRoute('/car/$id/reminders')()
+const CarIdBillChargingIndexLazyRouteImport = createFileRoute(
+  '/car/$id/bill/charging/',
+)()
 const CarIdBillFuelIndexLazyRouteImport = createFileRoute(
   '/car/$id/bill/fuel/',
 )()
@@ -56,6 +60,11 @@ const ErrorLazyRoute = ErrorLazyRouteImport.update({
   path: '/error',
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/error.lazy').then((d) => d.Route))
+const RefuelRoute = RefuelRouteImport.update({
+  id: '/refuel',
+  path: '/refuel',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SettingsLazyRoute = SettingsLazyRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -123,6 +132,14 @@ const CarIdBillBillIdEditRoute = CarIdBillBillIdEditRouteImport.update({
   path: '/bill/$billId/edit',
   getParentRoute: () => CarIdRouteRoute,
 } as any)
+const CarIdBillChargingIndexLazyRoute =
+  CarIdBillChargingIndexLazyRouteImport.update({
+    id: '/bill/charging/',
+    path: '/bill/charging/',
+    getParentRoute: () => CarIdRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/car/$id/bill/charging/index.lazy').then((d) => d.Route),
+  )
 const CarIdBillFuelIndexLazyRoute = CarIdBillFuelIndexLazyRouteImport.update({
   id: '/bill/fuel/',
   path: '/bill/fuel/',
@@ -159,6 +176,7 @@ const CarIdBillRecurringIndexLazyRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexLazyRoute
+  '/refuel': typeof RefuelRoute
   '/admin': typeof AdminLazyRoute
   '/error': typeof ErrorLazyRoute
   '/settings': typeof SettingsLazyRoute
@@ -174,6 +192,7 @@ export interface FileRoutesByFullPath {
   '/car/$id/bill/add': typeof CarIdBillAddRoute
   '/car/$id/bill/import': typeof CarIdBillImportRoute
   '/car/$id/bill/$billId/edit': typeof CarIdBillBillIdEditRoute
+  '/car/$id/bill/charging/': typeof CarIdBillChargingIndexLazyRoute
   '/car/$id/bill/fuel/': typeof CarIdBillFuelIndexLazyRoute
   '/car/$id/bill/maintenance/': typeof CarIdBillMaintenanceIndexLazyRoute
   '/car/$id/bill/miscellaneous/': typeof CarIdBillMiscellaneousIndexLazyRoute
@@ -181,6 +200,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexLazyRoute
+  '/refuel': typeof RefuelRoute
   '/admin': typeof AdminLazyRoute
   '/error': typeof ErrorLazyRoute
   '/settings': typeof SettingsLazyRoute
@@ -195,6 +215,7 @@ export interface FileRoutesByTo {
   '/car/$id/bill/add': typeof CarIdBillAddRoute
   '/car/$id/bill/import': typeof CarIdBillImportRoute
   '/car/$id/bill/$billId/edit': typeof CarIdBillBillIdEditRoute
+  '/car/$id/bill/charging': typeof CarIdBillChargingIndexLazyRoute
   '/car/$id/bill/fuel': typeof CarIdBillFuelIndexLazyRoute
   '/car/$id/bill/maintenance': typeof CarIdBillMaintenanceIndexLazyRoute
   '/car/$id/bill/miscellaneous': typeof CarIdBillMiscellaneousIndexLazyRoute
@@ -203,6 +224,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexLazyRoute
+  '/refuel': typeof RefuelRoute
   '/admin': typeof AdminLazyRoute
   '/error': typeof ErrorLazyRoute
   '/settings': typeof SettingsLazyRoute
@@ -218,6 +240,7 @@ export interface FileRoutesById {
   '/car/$id/bill/add': typeof CarIdBillAddRoute
   '/car/$id/bill/import': typeof CarIdBillImportRoute
   '/car/$id/bill/$billId/edit': typeof CarIdBillBillIdEditRoute
+  '/car/$id/bill/charging/': typeof CarIdBillChargingIndexLazyRoute
   '/car/$id/bill/fuel/': typeof CarIdBillFuelIndexLazyRoute
   '/car/$id/bill/maintenance/': typeof CarIdBillMaintenanceIndexLazyRoute
   '/car/$id/bill/miscellaneous/': typeof CarIdBillMiscellaneousIndexLazyRoute
@@ -227,6 +250,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/refuel'
     | '/admin'
     | '/error'
     | '/settings'
@@ -242,6 +266,7 @@ export interface FileRouteTypes {
     | '/car/$id/bill/add'
     | '/car/$id/bill/import'
     | '/car/$id/bill/$billId/edit'
+    | '/car/$id/bill/charging/'
     | '/car/$id/bill/fuel/'
     | '/car/$id/bill/maintenance/'
     | '/car/$id/bill/miscellaneous/'
@@ -249,6 +274,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/refuel'
     | '/admin'
     | '/error'
     | '/settings'
@@ -263,6 +289,7 @@ export interface FileRouteTypes {
     | '/car/$id/bill/add'
     | '/car/$id/bill/import'
     | '/car/$id/bill/$billId/edit'
+    | '/car/$id/bill/charging'
     | '/car/$id/bill/fuel'
     | '/car/$id/bill/maintenance'
     | '/car/$id/bill/miscellaneous'
@@ -270,6 +297,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/refuel'
     | '/admin'
     | '/error'
     | '/settings'
@@ -285,6 +313,7 @@ export interface FileRouteTypes {
     | '/car/$id/bill/add'
     | '/car/$id/bill/import'
     | '/car/$id/bill/$billId/edit'
+    | '/car/$id/bill/charging/'
     | '/car/$id/bill/fuel/'
     | '/car/$id/bill/maintenance/'
     | '/car/$id/bill/miscellaneous/'
@@ -293,6 +322,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexLazyRoute: typeof IndexLazyRoute
+  RefuelRoute: typeof RefuelRoute
   AdminLazyRoute: typeof AdminLazyRoute
   ErrorLazyRoute: typeof ErrorLazyRoute
   SettingsLazyRoute: typeof SettingsLazyRoute
@@ -325,6 +355,13 @@ declare module '@tanstack/react-router' {
       path: '/error'
       fullPath: '/error'
       preLoaderRoute: typeof ErrorLazyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/refuel': {
+      id: '/refuel'
+      path: '/refuel'
+      fullPath: '/refuel'
+      preLoaderRoute: typeof RefuelRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/settings': {
@@ -418,6 +455,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CarIdBillBillIdEditRouteImport
       parentRoute: typeof CarIdRouteRoute
     }
+    '/car/$id/bill/charging/': {
+      id: '/car/$id/bill/charging/'
+      path: '/bill/charging'
+      fullPath: '/car/$id/bill/charging/'
+      preLoaderRoute: typeof CarIdBillChargingIndexLazyRouteImport
+      parentRoute: typeof CarIdRouteRoute
+    }
     '/car/$id/bill/fuel/': {
       id: '/car/$id/bill/fuel/'
       path: '/bill/fuel'
@@ -456,6 +500,7 @@ interface CarIdRouteRouteChildren {
   CarIdBillAddRoute: typeof CarIdBillAddRoute
   CarIdBillImportRoute: typeof CarIdBillImportRoute
   CarIdBillBillIdEditRoute: typeof CarIdBillBillIdEditRoute
+  CarIdBillChargingIndexLazyRoute: typeof CarIdBillChargingIndexLazyRoute
   CarIdBillFuelIndexLazyRoute: typeof CarIdBillFuelIndexLazyRoute
   CarIdBillMaintenanceIndexLazyRoute: typeof CarIdBillMaintenanceIndexLazyRoute
   CarIdBillMiscellaneousIndexLazyRoute: typeof CarIdBillMiscellaneousIndexLazyRoute
@@ -469,6 +514,7 @@ const CarIdRouteRouteChildren: CarIdRouteRouteChildren = {
   CarIdBillAddRoute: CarIdBillAddRoute,
   CarIdBillImportRoute: CarIdBillImportRoute,
   CarIdBillBillIdEditRoute: CarIdBillBillIdEditRoute,
+  CarIdBillChargingIndexLazyRoute: CarIdBillChargingIndexLazyRoute,
   CarIdBillFuelIndexLazyRoute: CarIdBillFuelIndexLazyRoute,
   CarIdBillMaintenanceIndexLazyRoute: CarIdBillMaintenanceIndexLazyRoute,
   CarIdBillMiscellaneousIndexLazyRoute: CarIdBillMiscellaneousIndexLazyRoute,
@@ -481,6 +527,7 @@ const CarIdRouteRouteWithChildren = CarIdRouteRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexLazyRoute: IndexLazyRoute,
+  RefuelRoute: RefuelRoute,
   AdminLazyRoute: AdminLazyRoute,
   ErrorLazyRoute: ErrorLazyRoute,
   SettingsLazyRoute: SettingsLazyRoute,

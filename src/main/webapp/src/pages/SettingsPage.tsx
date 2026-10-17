@@ -2,20 +2,34 @@ import {
   Box,
   Button,
   Card,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   MenuItem,
   Stack,
   TextField,
   Typography,
 } from '@mui/material';
+import FileDownloadRounded from '@mui/icons-material/FileDownloadRounded';
+import { useMutation } from '@tanstack/react-query';
 import { SubmitEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
-import { Account } from '@/generated';
+import { Account, UnitSystem } from '@/generated';
+import { deleteMyselfMutation } from '@/generated/@tanstack/react-query.gen';
 import useMe from '@/hooks/useMe';
 import useSaveSettings from '@/hooks/useSaveSettings';
-import { BackendError } from '@/utils/BackendError';
+import { errorMessage } from '@/utils/BackendError';
+import queryClient, { baseUrl, localClient } from '@/utils/QueryClient';
+import { clearMappings } from '@/utils/csv';
+import { markAccountDeleted } from '@/utils/accountDeleted';
 import { currencySymbol, DEFAULT_CURRENCY, useFormat } from '@/utils/format';
 import Page from '@/components/layout/Page';
+import BackupSection, { backupUrl } from '@/components/settings/BackupSection';
+import NotificationSection from '@/components/settings/NotificationSection';
+import InstallSection from '@/components/install/InstallSection';
 import PageHeader from '@/components/ui/PageHeader';
 import VatCountrySelect from '@/components/bill/VatCountrySelect';
 
@@ -51,6 +65,10 @@ export default function SettingsPage() {
       />
       {/* keyed, so the form starts with the loaded settings */}
       {account && <SettingsForm key={account.name} account={account} />}
+      {account && <NotificationSection />}
+      {account && <InstallSection />}
+      {account && <BackupSection />}
+      {account?.name && <DeleteAccount name={account.name} />}
     </Page>
   );
 }
@@ -63,6 +81,9 @@ function SettingsForm({ account }: { account: Account }) {
     account.currency ?? DEFAULT_CURRENCY,
   );
   const [language, setLanguage] = useState(account.language ?? BROWSER);
+  const [unitSystem, setUnitSystem] = useState(
+    account.unitSystem ?? UnitSystem.METRIC,
+  );
 
   const settings = useSaveSettings({
     onSuccess: () => {
@@ -70,12 +91,7 @@ function SettingsForm({ account }: { account: Account }) {
       if (language !== BROWSER) i18n.changeLanguage(language);
       toast.success(t('settings.saved'));
     },
-    onError: (error) =>
-      toast.error(
-        error instanceof BackendError && error.message
-          ? error.message
-          : t('errors.backend'),
-      ),
+    onError: (error) => toast.error(errorMessage(error, t('errors.backend'))),
   });
 
   const currencyName = (code: string) => {
@@ -95,6 +111,7 @@ function SettingsForm({ account }: { account: Account }) {
       vatCountry,
       currency,
       language: language === BROWSER ? undefined : language,
+      unitSystem,
     });
   };
 
@@ -107,7 +124,13 @@ function SettingsForm({ account }: { account: Account }) {
     <Card component="form" onSubmit={submit} sx={{ p: 3 }}>
       <Stack spacing={3}>
         <Box>
-          <Typography variant="subtitle1" fontWeight={650} sx={{ mb: 1.5 }}>
+          <Typography
+            variant="subtitle1"
+            sx={{
+              fontWeight: 650,
+              mb: 1.5,
+            }}
+          >
             {t('settings.entries')}
           </Typography>
           <VatCountrySelect
@@ -118,7 +141,13 @@ function SettingsForm({ account }: { account: Account }) {
         </Box>
 
         <Box>
-          <Typography variant="subtitle1" fontWeight={650} sx={{ mb: 1.5 }}>
+          <Typography
+            variant="subtitle1"
+            sx={{
+              fontWeight: 650,
+              mb: 1.5,
+            }}
+          >
             {t('settings.display')}
           </Typography>
           <Stack spacing={2.5}>
@@ -139,7 +168,12 @@ function SettingsForm({ account }: { account: Account }) {
                       columnGap: 1,
                     }}
                   >
-                    <Box component="span" fontWeight={600}>
+                    <Box
+                      component="span"
+                      sx={{
+                        fontWeight: 600,
+                      }}
+                    >
                       {code}
                     </Box>
                     <span>{currencyName(code)}</span>
@@ -147,6 +181,19 @@ function SettingsForm({ account }: { account: Account }) {
                       {currencySymbol(format.locale, code)}
                     </Box>
                   </Box>
+                </MenuItem>
+              ))}
+            </TextField>
+            <TextField
+              select
+              label={t('settings.units')}
+              value={unitSystem}
+              onChange={(e) => setUnitSystem(e.target.value as UnitSystem)}
+              helperText={t('settings.unitsHelp')}
+            >
+              {Object.values(UnitSystem).map((system) => (
+                <MenuItem key={system} value={system}>
+                  {t(`settings.unitSystems.${system}`)}
                 </MenuItem>
               ))}
             </TextField>
@@ -165,7 +212,12 @@ function SettingsForm({ account }: { account: Account }) {
           </Stack>
         </Box>
 
-        <Stack direction="row" justifyContent="flex-end">
+        <Stack
+          direction="row"
+          sx={{
+            justifyContent: 'flex-end',
+          }}
+        >
           <Button
             type="submit"
             variant="contained"
@@ -175,6 +227,110 @@ function SettingsForm({ account }: { account: Account }) {
           </Button>
         </Stack>
       </Stack>
+    </Card>
+  );
+}
+
+function DeleteAccount({ name }: { name: string }) {
+  const { t } = useTranslation();
+  const [open, setOpen] = useState(false);
+  const [confirmation, setConfirmation] = useState('');
+
+  const mutation = useMutation({
+    ...deleteMyselfMutation({ client: localClient }),
+    onSuccess: () => {
+      // no more requests, the next one would create the account again
+      queryClient.cancelQueries();
+      queryClient.clear();
+      clearMappings();
+      markAccountDeleted();
+      location.href = `${baseUrl}/api/auth/logout`;
+    },
+    onError: () => toast.error(t('errors.backend')),
+  });
+
+  const close = () => {
+    setOpen(false);
+    setConfirmation('');
+  };
+
+  return (
+    <Card sx={{ p: 3, mt: 3, borderColor: 'error.main' }}>
+      <Stack
+        direction={{ xs: 'column', sm: 'row' }}
+        spacing={2}
+        sx={{
+          alignItems: { sm: 'center' },
+          justifyContent: 'space-between',
+        }}
+      >
+        <Box>
+          <Typography
+            sx={{
+              fontWeight: 600,
+            }}
+          >
+            {t('settings.deleteAccount.title')}
+          </Typography>
+          <Typography
+            variant="body2"
+            sx={{
+              color: 'text.secondary',
+            }}
+          >
+            {t('settings.deleteAccount.text')}
+          </Typography>
+        </Box>
+        <Button
+          color="error"
+          variant="outlined"
+          onClick={() => setOpen(true)}
+          sx={{ flexShrink: 0 }}
+        >
+          {t('settings.deleteAccount.button')}
+        </Button>
+      </Stack>
+      <Dialog open={open} onClose={close} maxWidth="xs" fullWidth>
+        <DialogTitle>{t('settings.deleteAccount.confirmTitle')}</DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ mb: 1.5 }}>
+            {t('settings.deleteAccount.confirmText')}
+          </DialogContentText>
+          <DialogContentText sx={{ mb: 1.5 }}>
+            {t('settings.deleteAccount.identityProvider')}
+          </DialogContentText>
+          {/* the last chance to keep the data, e.g. for another instance */}
+          <Button
+            href={backupUrl}
+            size="small"
+            startIcon={<FileDownloadRounded />}
+            sx={{ mb: 2, ml: -0.5 }}
+          >
+            {t('settings.deleteAccount.backupFirst')}
+          </Button>
+          <TextField
+            label={t('settings.deleteAccount.typeName', { name })}
+            value={confirmation}
+            onChange={(e) => setConfirmation(e.target.value)}
+            autoComplete="off"
+            fullWidth
+            autoFocus
+          />
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={close} color="inherit">
+            {t('button.cancel')}
+          </Button>
+          <Button
+            variant="contained"
+            color="error"
+            disabled={confirmation.trim() !== name || mutation.isPending}
+            onClick={() => mutation.mutate({})}
+          >
+            {t('settings.deleteAccount.button')}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Card>
   );
 }

@@ -1,0 +1,14 @@
+CarLedger: https://car-ledger.{{ .Values.global.host }}
+{{- if .Values.global.keycloak.enabled }}
+
+Keycloak: https://keycloak.{{ .Values.global.host }}, admin car-ledger, password:
+  kubectl get secret {{ .Release.Name }}-keycloak-admin -n {{ .Release.Namespace }} -o jsonpath='{.data.password}' | base64 -d
+The realm car-ledger with the client of CarLedger is imported on the first start. Create the users of CarLedger
+in the realm car-ledger (they get the role user), and give the administrators the realm role admin.
+{{- end }}
+{{- if .Values.global.authentik.enabled }}
+
+authentik: https://authentik.{{ .Values.global.host }}, admin akadmin, password:
+  kubectl get secret authentik-bootstrap -n {{ .Release.Namespace }} -o jsonpath='{.data.password}' | base64 -d
+Add the users of CarLedger to the group user (or admin).
+{{- end }}

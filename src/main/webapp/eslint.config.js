@@ -24,7 +24,8 @@ export default tseslint.config(
       ecmaVersion: 2020,
       globals: globals.browser,
       parserOptions: {
-        project: ['./tsconfig.json'],
+        // the service worker has its own (webworker instead of dom)
+        project: ['./tsconfig.json', './src/sw/tsconfig.json'],
         tsconfigRootDir: import.meta.dirname,
       },
     },
@@ -52,6 +53,16 @@ export default tseslint.config(
 
       // Deprecation warning
       '@typescript-eslint/no-deprecated': 'warn',
+    },
+  },
+  // -------------------------
+  // Routes: TanStack Router defines the component next to the exported Route
+  // and keeps them refreshable itself
+  // -------------------------
+  {
+    files: ['src/routes/**/*.{ts,tsx}'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
     },
   },
   // -------------------------

@@ -25,12 +25,53 @@ public abstract class AbstractBillRepository<T extends AbstractBillEntity> imple
 		this.entityName = entityName;
 	}
 
-	public PanacheQuery<T> getBills(long carId, String username, Page page, Optional<Integer> year)
+	/**
+	 * Fields of the bill (alias <code>b</code>) that every list can be sorted by,
+	 * by their name in the API.
+	 */
+	private static final Map<String, String> BILL_SORT_FIELDS = Map.of(
+			"date", "b.date",
+			"total", "b.total",
+			"netAmount", "b.netAmount",
+			"ustAmount", "b.ustAmount",
+			"vatRate", "b.vatRate");
+
+	/**
+	 * @return the fields the bills can be sorted by: their name in the API mapped
+	 *         to the path in the query
+	 */
+	public Map<String, String> getSortFields()
+	{
+		return BILL_SORT_FIELDS;
+	}
+
+	/**
+	 * @return the start of the query, the bill has the alias <code>b</code>, the
+	 *         type specific part <code>e</code>
+	 */
+	protected String fromClause()
 	{
 		// fetch the bill directly, otherwise it is loaded by an extra select for every
 		// row
-		String query = "from " + entityName + " e join fetch e.bill b"
-				+ " where b.car.id = :carId and b.car.user.userId = :username";
+		return "from " + entityName + " e join fetch e.bill b";
+	}
+
+	/**
+	 * @param sortField
+	 *            name of the field in the API, one of {@link #getSortFields()}
+	 * @throws IllegalArgumentException
+	 *             if the bills cannot be sorted by the field
+	 */
+	public PanacheQuery<T> getBills(long carId, String username, Page page, Optional<Integer> year,
+			String sortField, boolean ascending)
+	{
+		String sortPath = getSortFields().get(sortField);
+		if (sortPath == null)
+		{
+			throw new IllegalArgumentException("Cannot sort by " + sortField);
+		}
+
+		String query = fromClause() + " where b.car.id = :carId and b.car.user.userId = :username";
 		Map<String, Object> params = new HashMap<>();
 		params.put("carId", carId);
 		params.put("username", username);
@@ -41,7 +82,21 @@ public abstract class AbstractBillRepository<T extends AbstractBillEntity> imple
 			params.put("year", year.get());
 		}
 
-		return find(query + " order by b.date desc", params).page(page);
+		// newest first within equal values and the id, so paging is stable
+		String direction = ascending ? "asc" : "desc";
+		query += " order by " + sortPath + " " + direction + " nulls last, b.date desc, b.id desc";
+
+		return find(query, params).page(page);
+	}
+
+	/**
+	 * Adds the given fields to the ones every bill can be sorted by.
+	 */
+	protected static Map<String, String> withBillSortFields(Map<String, String> fields)
+	{
+		Map<String, String> all = new HashMap<>(BILL_SORT_FIELDS);
+		all.putAll(fields);
+		return Map.copyOf(all);
 	}
 
 	/**
@@ -78,5 +133,25 @@ public abstract class AbstractBillRepository<T extends AbstractBillEntity> imple
 			typedQuery.setParameter("type", type);
 		}
 		return typedQuery.getResultList();
+	}
+
+	/**
+	 * @return all bills of the car, optionally of one year, the oldest first
+	 */
+	public List<T> listBills(long carId, String username, Optional<Integer> year)
+	{
+		String query = "from " + entityName + " e join fetch e.bill b"
+				+ " where b.car.id = :carId and b.car.user.userId = :username";
+		Map<String, Object> params = new HashMap<>();
+		params.put("carId", carId);
+		params.put("username", username);
+
+		if (year.isPresent())
+		{
+			query += " and year(b.date) = :year";
+			params.put("year", year.get());
+		}
+
+		return find(query + " order by b.date asc, b.id asc", params).list();
 	}
 }

@@ -15,7 +15,7 @@ import { toast } from 'react-toastify';
 import { RecurringBill } from '@/generated';
 import { endRecurringBillMutation } from '@/generated/@tanstack/react-query.gen';
 import { invalidateCar, localClient } from '@/utils/QueryClient';
-import { BackendError } from '@/utils/BackendError';
+import { errorMessage } from '@/utils/BackendError';
 import { toApiDate } from '@/utils/format';
 
 export interface EndRecurringDialogProps {
@@ -43,11 +43,7 @@ export default function EndRecurringDialog({
       await invalidateCar(carId);
     },
     onError: (error) => {
-      toast.error(
-        error instanceof BackendError && error.message
-          ? error.message
-          : t('errors.backend'),
-      );
+      toast.error(errorMessage(error, t('errors.backend')));
     },
   });
 

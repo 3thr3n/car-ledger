@@ -1,5 +1,5 @@
 import { expect, Page, test } from '@playwright/test';
-import { aliceApi, deleteAllCars } from './helpers';
+import { aliceApi, day, deleteAllCars } from './helpers';
 
 test.describe.serial('reminders', () => {
   let page: Page;
@@ -18,11 +18,10 @@ test.describe.serial('reminders', () => {
     carId = cars[0].id;
 
     // overdue for three days, does not repeat
-    const yesterday = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
     const added = await api.put(`/api/reminder/${carId}`, {
       data: {
         title: 'Vignette',
-        dueDate: yesterday.toISOString().slice(0, 10),
+        dueDate: day(-3),
       },
     });
     expect(added.status()).toBe(202);

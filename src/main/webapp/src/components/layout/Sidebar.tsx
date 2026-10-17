@@ -1,6 +1,7 @@
 import {
   Box,
   Button,
+  Chip,
   Divider,
   IconButton,
   List,
@@ -31,6 +32,9 @@ import { getMyCarsOptions } from '@/generated/@tanstack/react-query.gen';
 import { baseUrl, localClient } from '@/utils/QueryClient';
 import useMe from '@/hooks/useMe';
 import useSaveSettings from '@/hooks/useSaveSettings';
+import useOpenCarRequests from '@/hooks/useOpenCarRequests';
+import useVersion from '@/hooks/useVersion';
+import { reloadToNewest } from '@/utils/serviceWorker';
 import { RouterListItemButton } from '@/components/ui/links';
 import CarAvatar from '@/components/layout/CarAvatar';
 import productLogo from '@/assets/car-ledger.svg';
@@ -42,6 +46,8 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const { pathname } = useLocation();
   const { account, loggedIn, maxCars, isAdmin } = useMe();
   const settings = useSaveSettings();
+  const openRequests = useOpenCarRequests();
+  const version = useVersion();
 
   // the language of the settings wins over the one of the browser
   useEffect(() => {
@@ -59,6 +65,7 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
         vatCountry: account.vatCountry,
         currency: account.currency,
         language,
+        unitSystem: account.unitSystem,
       });
     }
   };
@@ -87,8 +94,11 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
       <Stack
         direction="row"
         spacing={1.25}
-        alignItems="center"
-        sx={{ px: 2.5, py: 2.25 }}
+        sx={{
+          alignItems: 'center',
+          px: 2.5,
+          py: 2.25,
+        }}
       >
         <Box component="img" src={productLogo} alt="" sx={{ height: 30 }} />
         <Typography
@@ -147,6 +157,23 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
                     <AdminPanelSettingsRounded fontSize="small" />
                   </ListItemIcon>
                   <ListItemText primary={t('nav.admin')} />
+                  {openRequests > 0 && (
+                    <Tooltip
+                      title={t('admin.requests.openCount', {
+                        count: openRequests,
+                      })}
+                    >
+                      <Chip
+                        size="small"
+                        color="error"
+                        label={openRequests}
+                        aria-label={t('admin.requests.openCount', {
+                          count: openRequests,
+                        })}
+                        sx={{ height: 20, fontWeight: 600 }}
+                      />
+                    </Tooltip>
+                  )}
                 </RouterListItemButton>
               )}
             </List>
@@ -179,7 +206,12 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
                   sx={{ borderRadius: 2, mb: 0.25, py: 0.75 }}
                 >
                   <ListItemIcon sx={{ minWidth: 42 }}>
-                    <CarAvatar id={car.id} name={car.name} size={28} />
+                    <CarAvatar
+                      id={car.id}
+                      name={car.name}
+                      pictureId={car.pictureId}
+                      size={28}
+                    />
                   </ListItemIcon>
                   <ListItemText
                     primary={car.name}
@@ -187,7 +219,7 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
                       count: car.amountBills ?? 0,
                     })}
                     slotProps={{
-                      primary: { noWrap: true, fontWeight: 500 },
+                      primary: { noWrap: true, sx: { fontWeight: 500 } },
                       secondary: { noWrap: true, variant: 'caption' },
                     }}
                   />
@@ -212,7 +244,13 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
 
       <Divider />
       <Stack spacing={1.5} sx={{ p: 2 }}>
-        <Stack direction="row" spacing={1} alignItems="center">
+        <Stack
+          direction="row"
+          spacing={1}
+          sx={{
+            alignItems: 'center',
+          }}
+        >
           <ToggleButtonGroup
             size="small"
             exclusive
@@ -235,12 +273,29 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
         </Stack>
 
         {loggedIn ? (
-          <Stack direction="row" spacing={1} alignItems="center">
+          <Stack
+            direction="row"
+            spacing={1}
+            sx={{
+              alignItems: 'center',
+            }}
+          >
             <Box sx={{ minWidth: 0, flexGrow: 1 }}>
-              <Typography variant="caption" color="text.secondary">
+              <Typography
+                variant="caption"
+                sx={{
+                  color: 'text.secondary',
+                }}
+              >
                 {t('nav.signedInAs')}
               </Typography>
-              <Typography variant="body2" fontWeight={600} noWrap>
+              <Typography
+                variant="body2"
+                noWrap
+                sx={{
+                  fontWeight: 600,
+                }}
+              >
                 {account?.name}
               </Typography>
             </Box>
@@ -258,6 +313,28 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
           >
             {t('button.login')}
           </Button>
+        )}
+        {loggedIn && (
+          <Stack
+            direction="row"
+            spacing={1}
+            sx={{ alignItems: 'center', justifyContent: 'space-between' }}
+            data-testid="app-version"
+          >
+            <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+              {t('app.version', { version: version.app })}
+            </Typography>
+            {version.outdated && (
+              <Button
+                size="small"
+                color="warning"
+                onClick={reloadToNewest}
+                sx={{ py: 0, minWidth: 0 }}
+              >
+                {t('app.update.available')}
+              </Button>
+            )}
+          </Stack>
         )}
       </Stack>
     </Stack>

@@ -1,9 +1,12 @@
 package de.codeflowwizardry.carledger.data.factory;
 
+import static de.codeflowwizardry.carledger.data.BillInterval.ONCE;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import de.codeflowwizardry.carledger.Utils;
 import de.codeflowwizardry.carledger.data.CarEntity;
@@ -55,23 +58,57 @@ public class RecurringBillFactory
 		recurringBillEntity.setStartDate(input.startDate());
 		recurringBillEntity.setNextDueDate(input.startDate());
 		recurringBillEntity.setEndDate(input.endDate());
-
-		List<RecurringBillPaymentEntity> payments = generateHistory(recurringBillEntity);
-
-		BigDecimal total = payments
-				.stream()
-				.map(RecurringBillPaymentEntity::getAmount)
-				.reduce(BigDecimal::add)
-				.orElse(BigDecimal.ZERO);
-
-		recurringBillEntity.setTotal(total);
+		recurringBillEntity.setTotal(BigDecimal.ZERO);
 
 		recurringBillRepository.persist(recurringBillEntity);
-		recurringBillPaymentRepository.persist(payments);
-
-		recurringBillEntity.getRecurringBillPaymentEntities().addAll(payments);
+		bookPayments(recurringBillEntity);
 
 		return recurringBillEntity;
+	}
+
+	/**
+	 * Updates the recurring bill. A changed amount, interval, start or end date
+	 * books the payments again from the start date, as if the bill was created
+	 * with these values. The name, description and category keep the payments.
+	 *
+	 * @throws WrongUserException
+	 *             if the bill does not belong to the car of the user
+	 */
+	@Transactional
+	public RecurringBillEntity update(long carId, long billId, RecurringBillInput input, String user)
+	{
+		RecurringBillEntity bill = recurringBillRepository.getById(carId, user, billId);
+		if (bill == null)
+		{
+			throw new WrongUserException();
+		}
+		Utils.requireValid(input.validate());
+
+		// a bill paid once ends with its payment, the end date is set when it is booked
+		LocalDate endDate = input.billInterval() == ONCE ? bill.getEndDate() : input.endDate();
+		boolean scheduleChanged = bill.getInterval() != input.billInterval()
+				|| !bill.getStartDate().equals(input.startDate())
+				|| !Objects.equals(bill.getEndDate(), endDate)
+				|| bill.getAmount().compareTo(input.amount()) != 0;
+
+		bill.setName(input.name());
+		bill.setDescription(input.description());
+		bill.setCategory(input.category());
+
+		if (scheduleChanged)
+		{
+			bill.setInterval(input.billInterval());
+			bill.setAmount(input.amount());
+			bill.setStartDate(input.startDate());
+			bill.setNextDueDate(input.startDate());
+			bill.setEndDate(input.billInterval() == ONCE ? null : input.endDate());
+
+			recurringBillPaymentRepository.deleteAll(bill);
+			bill.getRecurringBillPaymentEntities().clear();
+			bookPayments(bill);
+		}
+
+		return bill;
 	}
 
 	/**
@@ -105,6 +142,25 @@ public class RecurringBillFactory
 		bill.setTotal(recurringBillPaymentRepository.sumAmount(bill));
 
 		return bill;
+	}
+
+	/**
+	 * Books the payments due before today, the later ones are booked by
+	 * {@link de.codeflowwizardry.carledger.ScheduledPayments}
+	 */
+	private void bookPayments(RecurringBillEntity bill)
+	{
+		List<RecurringBillPaymentEntity> payments = generateHistory(bill);
+
+		BigDecimal total = payments
+				.stream()
+				.map(RecurringBillPaymentEntity::getAmount)
+				.reduce(BigDecimal::add)
+				.orElse(BigDecimal.ZERO);
+
+		bill.setTotal(total);
+		recurringBillPaymentRepository.persist(payments);
+		bill.getRecurringBillPaymentEntities().addAll(payments);
 	}
 
 	private List<RecurringBillPaymentEntity> generateHistory(RecurringBillEntity bill)

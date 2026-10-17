@@ -4,8 +4,16 @@ import { useMutation } from '@tanstack/react-query';
 import dayjs, { Dayjs } from 'dayjs';
 import { SubmitEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { BillCategory, BillInterval, BillType } from '@/generated';
-import { addNewRecurringBillMutation } from '@/generated/@tanstack/react-query.gen';
+import {
+  BillCategory,
+  BillInterval,
+  BillType,
+  RecurringBill,
+} from '@/generated';
+import {
+  addNewRecurringBillMutation,
+  updateRecurringBillMutation,
+} from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
 import { toApiDate, useFormat } from '@/utils/format';
 import NumberField from './NumberField';
@@ -31,18 +39,51 @@ const empty = (): RecurringState => ({
   endDate: null,
 });
 
-export default function RecurringForm({ carId }: { carId: number }) {
+const fromBill = (bill: RecurringBill): RecurringState => ({
+  name: bill.name ?? '',
+  description: bill.description ?? '',
+  category: bill.category ?? BillCategory.INSURANCE,
+  interval: bill.billInterval ?? BillInterval.MONTHLY,
+  startDate: bill.startDate ? dayjs(bill.startDate) : null,
+  // a bill paid once ends with its payment, the backend sets the end date then
+  endDate:
+    bill.endDate && bill.billInterval !== BillInterval.ONCE
+      ? dayjs(bill.endDate)
+      : null,
+  amount: bill.amount,
+});
+
+export default function RecurringForm({
+  carId,
+  bill,
+}: {
+  carId: number;
+  /** bill to edit, a new one is created without */
+  bill?: RecurringBill;
+}) {
   const { t } = useTranslation();
   const format = useFormat();
-  const [form, setForm] = useState<RecurringState>(empty);
+  const [form, setForm] = useState<RecurringState>(() =>
+    bill ? fromBill(bill) : empty(),
+  );
   const [touched, setTouched] = useState(false);
 
-  const save = useSaveBill(carId, BillType.RECURRING, () => {
-    setForm(empty());
-    setTouched(false);
-  });
-  const mutation = useMutation({
+  const save = useSaveBill(
+    carId,
+    BillType.RECURRING,
+    () => {
+      setForm(empty());
+      setTouched(false);
+    },
+    bill?.id,
+  );
+  const create = useMutation({
     ...addNewRecurringBillMutation({ client: localClient }),
+    onSuccess: save.onSuccess,
+    onError: save.onError,
+  });
+  const update = useMutation({
+    ...updateRecurringBillMutation({ client: localClient }),
     onSuccess: save.onSuccess,
     onError: save.onError,
   });
@@ -65,24 +106,34 @@ export default function RecurringForm({ carId }: { carId: number }) {
   const valid = Object.values(errors).every((e) => !e);
 
   const startsInPast = form.startDate?.isBefore(dayjs(), 'day');
+  // the backend books the payments again then, the name or category keep them
+  const original = bill && fromBill(bill);
+  const scheduleChanged =
+    !!original &&
+    (form.interval !== original.interval ||
+      form.amount !== original.amount ||
+      toApiDate(form.startDate) !== toApiDate(original.startDate) ||
+      toApiDate(form.endDate) !== toApiDate(original.endDate));
 
   const submit = (event: SubmitEvent) => {
     event.preventDefault();
     setTouched(true);
     if (!valid) return;
 
-    mutation.mutate({
-      path: { carId },
-      body: {
-        name: form.name.trim(),
-        description: form.description.trim() || undefined,
-        category: form.category,
-        billInterval: form.interval,
-        startDate: toApiDate(form.startDate),
-        endDate: form.endDate?.isValid() ? toApiDate(form.endDate) : undefined,
-        amount: form.amount,
-      },
-    });
+    const body = {
+      name: form.name.trim(),
+      description: form.description.trim() || undefined,
+      category: form.category,
+      billInterval: form.interval,
+      startDate: toApiDate(form.startDate),
+      endDate: form.endDate?.isValid() ? toApiDate(form.endDate) : undefined,
+      amount: form.amount,
+    };
+    if (bill?.id !== undefined) {
+      update.mutate({ path: { carId, billId: bill.id }, body });
+    } else {
+      create.mutate({ path: { carId }, body });
+    }
   };
 
   return (
@@ -180,13 +231,23 @@ export default function RecurringForm({ carId }: { carId: number }) {
         </Grid>
       </Grid>
 
-      {startsInPast && (
-        <Alert severity="info" variant="outlined">
-          {t('bill.recurringPastHint')}
-        </Alert>
-      )}
+      {bill
+        ? scheduleChanged && (
+            <Alert severity="info" variant="outlined">
+              {t('bill.recurringRebookHint')}
+            </Alert>
+          )
+        : startsInPast && (
+            <Alert severity="info" variant="outlined">
+              {t('bill.recurringPastHint')}
+            </Alert>
+          )}
 
-      <FormActions pending={mutation.isPending} onSaveAgain={save.markAgain} />
+      <FormActions
+        pending={create.isPending || update.isPending}
+        onSaveAgain={save.markAgain}
+        editing={!!bill}
+      />
     </Stack>
   );
 }

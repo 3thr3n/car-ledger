@@ -24,6 +24,7 @@ import DirectionsCarRounded from '@mui/icons-material/DirectionsCarRounded';
 import ReceiptLongRounded from '@mui/icons-material/ReceiptLongRounded';
 import EventRepeatRounded from '@mui/icons-material/EventRepeatRounded';
 import LockRounded from '@mui/icons-material/LockRounded';
+import MarkEmailUnreadRounded from '@mui/icons-material/MarkEmailUnreadRounded';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { deDE } from '@mui/x-data-grid/locales';
 import { keepPreviousData, useMutation, useQuery } from '@tanstack/react-query';
@@ -38,7 +39,7 @@ import {
   updateAdminAccountMutation,
 } from '@/generated/@tanstack/react-query.gen';
 import queryClient, { localClient } from '@/utils/QueryClient';
-import { BackendError } from '@/utils/BackendError';
+import { errorMessage } from '@/utils/BackendError';
 import useMe from '@/hooks/useMe';
 import { PageModel } from '@/hooks/useBillList';
 import Page from '@/components/layout/Page';
@@ -47,6 +48,7 @@ import StatTile from '@/components/ui/StatTile';
 import EmptyState from '@/components/ui/EmptyState';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import NumberField from '@/components/bill/NumberField';
+import CarRequestList from '@/components/admin/CarRequestList';
 
 /** refreshes everything shown on the page, and the own account */
 const refresh = () =>
@@ -60,9 +62,7 @@ const refresh = () =>
   });
 
 const showError = (fallback: string) => (error: Error) =>
-  toast.error(
-    error instanceof BackendError && error.message ? error.message : fallback,
-  );
+  toast.error(errorMessage(error, fallback));
 
 export default function AdminPage() {
   const { t } = useTranslation();
@@ -85,6 +85,7 @@ export default function AdminPage() {
     <Page id="AdminPage">
       <PageHeader title={t('admin.title')} subtitle={t('admin.subtitle')} />
       <AdminStats />
+      <CarRequestList />
       <AccountTable />
     </Page>
   );
@@ -109,6 +110,11 @@ function AdminStats() {
       key: 'recurringBills',
       icon: <EventRepeatRounded />,
       value: data?.recurringBills,
+    },
+    {
+      key: 'openRequests',
+      icon: <MarkEmailUnreadRounded />,
+      value: data?.openRequests,
     },
   ];
 
@@ -180,8 +186,10 @@ function AccountTable() {
         <Stack
           direction="row"
           spacing={1}
-          alignItems="center"
-          sx={{ height: '100%' }}
+          sx={{
+            alignItems: 'center',
+            height: '100%',
+          }}
         >
           <span>{row.name}</span>
           {row.name === me?.name && (
@@ -227,9 +235,11 @@ function AccountTable() {
       renderCell: ({ row }) => (
         <Stack
           direction="row"
-          alignItems="center"
-          justifyContent="flex-end"
-          sx={{ height: '100%' }}
+          sx={{
+            alignItems: 'center',
+            justifyContent: 'flex-end',
+            height: '100%',
+          }}
         >
           <Tooltip title={t('admin.edit.button')}>
             <IconButton size="small" onClick={() => setToEdit(row)}>

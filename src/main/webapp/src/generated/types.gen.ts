@@ -11,6 +11,7 @@ export type Account = {
     vatCountry?: string;
     currency?: string;
     language?: string;
+    unitSystem: UnitSystem;
 };
 
 export type AdminAccount = {
@@ -30,24 +31,73 @@ export type AdminAccountPage = {
     data?: Array<AdminAccount>;
 };
 
+export type AdminCarRequest = {
+    id: number;
+    accountId: number;
+    account: string;
+    cars: number;
+    maxCars: number;
+    grantedMaxCars?: number;
+    reason?: string;
+    state: RequestState;
+    createdAt: OffsetDateTime;
+    decidedAt?: OffsetDateTime;
+    decidedBy?: string;
+    comment?: string;
+    currentCars: number;
+    currentMaxCars: number;
+};
+
+export type AdminCarRequestPage = {
+    total?: number;
+    page?: number;
+    size?: number;
+    data?: Array<AdminCarRequest>;
+};
+
 export type AdminStats = {
     accounts?: number;
     activeAccounts?: number;
     cars?: number;
     bills?: number;
     recurringBills?: number;
+    openRequests?: number;
+};
+
+export type ApproveCarRequestInput = {
+    maxCars?: number;
+};
+
+export type Attachment = {
+    id?: number;
+    fileName?: string;
+    contentType?: string;
+    size?: number;
+    createdAt?: OffsetDateTime;
 };
 
 export type AverageStats = {
     pricePerUnit?: number;
+    chargingPricePerUnit?: number;
     distance?: number;
     fuelCostPerKm?: number;
+    chargingCostPerKm?: number;
     fuelConsumption?: number;
+    chargingConsumption?: number;
     maintenanceCost?: number;
     costPerKm?: number;
 };
 
+export type BackupSummary = {
+    cars?: number;
+    bills?: number;
+    recurringBills?: number;
+    reminders?: number;
+    files?: number;
+};
+
 export type Bill = {
+    attachments?: number;
     id?: number;
     date?: LocalDate;
     year?: number;
@@ -77,6 +127,13 @@ export type BillPagedBill = {
     page?: number;
     size?: number;
     data?: Array<Bill>;
+};
+
+export type BillPagedChargingBill = {
+    total?: number;
+    page?: number;
+    size?: number;
+    data?: Array<ChargingBill>;
 };
 
 export type BillPagedFuelBill = {
@@ -109,6 +166,7 @@ export type BillPagedRecurringBill = {
 
 export enum BillType {
     FUEL = 'FUEL',
+    CHARGING = 'CHARGING',
     MAINTENANCE = 'MAINTENANCE',
     MISCELLANEOUS = 'MISCELLANEOUS',
     RECURRING = 'RECURRING'
@@ -122,21 +180,87 @@ export type Car = {
     odometerDate?: LocalDate;
     currentOdometer: Odometer;
     amountBills?: number;
+    licensePlate?: string;
+    vin?: string;
+    purchaseDate?: LocalDate;
+    purchasePrice?: number;
+    energyType: EnergyType;
+    tankSize?: number;
+    batteryCapacity?: number;
+    pictureId?: number;
 };
 
 export type CarInput = {
     name?: string;
     year?: number;
     odometer?: number;
+    licensePlate?: string;
+    vin?: string;
+    purchaseDate?: LocalDate;
+    purchasePrice?: number;
+    energyType?: EnergyType;
+    tankSize?: number;
+    batteryCapacity?: number;
 };
 
 export type CarOverview = {
     totalRefuels?: number;
+    totalCharges?: number;
     totalMaintenanceEvents?: number;
     totalMiscellaneousEvents?: number;
     totalCost?: number;
     avgConsumption?: number;
+    avgChargingConsumption?: number;
 };
+
+export type CarRequest = {
+    id: number;
+    cars: number;
+    maxCars: number;
+    grantedMaxCars?: number;
+    reason?: string;
+    state: RequestState;
+    createdAt: OffsetDateTime;
+    decidedAt?: OffsetDateTime;
+    comment?: string;
+    outcomeSeen: boolean;
+};
+
+export type CarRequestInput = {
+    cars?: number;
+    reason?: string;
+};
+
+export type ChargingBill = {
+    attachments?: number;
+    id?: number;
+    date?: LocalDate;
+    year?: number;
+    vatRate?: number;
+    distance?: number;
+    unit?: number;
+    pricePerUnit?: number;
+    avgConsumption?: number;
+    total?: number;
+    location?: ChargingLocation;
+    stateOfCharge?: number;
+};
+
+export type ChargingBillInput = {
+    total?: number;
+    vatRate?: number;
+    date?: LocalDate;
+    distance?: number;
+    unit?: number;
+    pricePerUnit?: number;
+    location?: ChargingLocation;
+    stateOfCharge?: number;
+};
+
+export enum ChargingLocation {
+    HOME = 'HOME',
+    PUBLIC = 'PUBLIC'
+}
 
 export type CsvFields = {
     all?: Array<string>;
@@ -157,7 +281,17 @@ export type DashboardStats = {
     hiLo?: HiLoStats;
 };
 
+export enum EnergyType {
+    PETROL = 'PETROL',
+    DIESEL = 'DIESEL',
+    LPG = 'LPG',
+    CNG = 'CNG',
+    ELECTRIC = 'ELECTRIC',
+    PLUG_IN_HYBRID = 'PLUG_IN_HYBRID'
+}
+
 export type FuelBill = {
+    attachments?: number;
     id?: number;
     date?: LocalDate;
     year?: number;
@@ -187,16 +321,20 @@ export type HiLo = {
 
 export type HiLoStats = {
     pricePerUnit?: HiLo;
+    chargingPricePerUnit?: HiLo;
     distance?: HiLo;
     fuelCostPerKm?: HiLo;
     consumption?: HiLo;
+    chargingConsumption?: HiLo;
     fuelCost?: HiLo;
+    chargingCost?: HiLo;
     maintenanceCost?: HiLo;
 };
 
 export type LocalDate = string;
 
 export type MaintenanceBill = {
+    attachments?: number;
     id?: number;
     date?: LocalDate;
     year?: number;
@@ -225,6 +363,7 @@ export type MaxCarsInput = {
 };
 
 export type MiscellaneousBill = {
+    attachments?: number;
     id?: number;
     date?: LocalDate;
     year?: number;
@@ -243,15 +382,35 @@ export type MiscellaneousBillInput = {
 export type MonthStats = {
     month: string;
     fuel: number;
+    charging: number;
     maintenance: number;
     miscellaneous: number;
     recurring: number;
     total: number;
     distance: number;
     unit: number;
+    chargedUnit: number;
     pricePerUnit?: number;
+    chargingPricePerUnit?: number;
     consumption?: number;
+    chargingConsumption?: number;
     costPerKm?: number;
+};
+
+export type NotificationSettings = {
+    available?: boolean;
+    byMail?: boolean;
+    email?: string;
+    newRequests?: boolean;
+    requestDecided?: boolean;
+    reminders?: boolean;
+};
+
+export type NotificationSettingsInput = {
+    byMail?: boolean;
+    newRequests?: boolean;
+    requestDecided?: boolean;
+    reminders?: boolean;
 };
 
 export type Odometer = {
@@ -262,6 +421,18 @@ export type Odometer = {
 };
 
 export type OffsetDateTime = string;
+
+export type PushSettings = {
+    available: boolean;
+    publicKey: string;
+    browsers: number;
+};
+
+export type PushSubscriptionInput = {
+    endpoint?: string;
+    p256dh?: string;
+    auth?: string;
+};
 
 export type RecurringBill = {
     id?: number;
@@ -289,6 +460,15 @@ export type RecurringBillInput = {
     startDate?: LocalDate;
     endDate?: LocalDate;
     amount?: number;
+};
+
+export enum RecurringBillSort {
+    ACTIVE = 'ACTIVE',
+    NEXT_DUE = 'NEXT_DUE'
+}
+
+export type RejectCarRequestInput = {
+    comment?: string;
 };
 
 export type Reminder = {
@@ -327,6 +507,12 @@ export enum ReminderStatus {
     UPCOMING = 'UPCOMING'
 }
 
+export enum RequestState {
+    OPEN = 'OPEN',
+    APPROVED = 'APPROVED',
+    REJECTED = 'REJECTED'
+}
+
 export type Row = {
     rowNumber?: number;
     message?: string;
@@ -336,18 +522,37 @@ export type SettingsInput = {
     vatCountry?: string;
     currency?: string;
     language?: string;
+    unitSystem?: UnitSystem;
 };
+
+export enum SortOrder {
+    ASC = 'ASC',
+    DESC = 'DESC'
+}
 
 export type TotalStats = {
     unit?: number;
+    chargedUnit?: number;
     trackedDistance?: number;
     fuelTotal?: number;
+    chargingTotal?: number;
     maintenanceTotal?: number;
     miscellaneousTotal?: number;
     total?: number;
     fuelBills?: number;
+    chargingBills?: number;
     maintenanceBills?: number;
     miscellaneousBills?: number;
+};
+
+export enum UnitSystem {
+    METRIC = 'METRIC',
+    US = 'US',
+    UK = 'UK'
+}
+
+export type Version = {
+    version: string;
 };
 
 export type GetAdminAccountsData = {
@@ -430,6 +635,96 @@ export type UpdateAdminAccountResponses = {
 
 export type UpdateAdminAccountResponse = UpdateAdminAccountResponses[keyof UpdateAdminAccountResponses];
 
+export type GetAdminCarRequestsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        page?: number;
+        size?: number;
+        state?: RequestState;
+    };
+    url: '/api/admin/car-requests';
+};
+
+export type GetAdminCarRequestsResponses = {
+    /**
+     * Requests found.
+     */
+    200: AdminCarRequestPage;
+};
+
+export type GetAdminCarRequestsResponse = GetAdminCarRequestsResponses[keyof GetAdminCarRequestsResponses];
+
+export type ApproveCarRequestData = {
+    body: ApproveCarRequestInput;
+    path: {
+        id: number;
+    };
+    query?: never;
+    url: '/api/admin/car-requests/{id}/approve';
+};
+
+export type ApproveCarRequestErrors = {
+    /**
+     * Validation failed, please check the response
+     */
+    400: Array<unknown>;
+    /**
+     * Request not found.
+     */
+    404: unknown;
+    /**
+     * The request was decided already.
+     */
+    409: unknown;
+};
+
+export type ApproveCarRequestError = ApproveCarRequestErrors[keyof ApproveCarRequestErrors];
+
+export type ApproveCarRequestResponses = {
+    /**
+     * Request approved.
+     */
+    200: AdminCarRequest;
+};
+
+export type ApproveCarRequestResponse = ApproveCarRequestResponses[keyof ApproveCarRequestResponses];
+
+export type RejectCarRequestData = {
+    body: RejectCarRequestInput;
+    path: {
+        id: number;
+    };
+    query?: never;
+    url: '/api/admin/car-requests/{id}/reject';
+};
+
+export type RejectCarRequestErrors = {
+    /**
+     * Validation failed, please check the response
+     */
+    400: Array<unknown>;
+    /**
+     * Request not found.
+     */
+    404: unknown;
+    /**
+     * The request was decided already.
+     */
+    409: unknown;
+};
+
+export type RejectCarRequestError = RejectCarRequestErrors[keyof RejectCarRequestErrors];
+
+export type RejectCarRequestResponses = {
+    /**
+     * Request rejected.
+     */
+    200: AdminCarRequest;
+};
+
+export type RejectCarRequestResponse = RejectCarRequestResponses[keyof RejectCarRequestResponses];
+
 export type GetAdminStatsData = {
     body?: never;
     path?: never;
@@ -445,6 +740,120 @@ export type GetAdminStatsResponses = {
 };
 
 export type GetAdminStatsResponse = GetAdminStatsResponses[keyof GetAdminStatsResponses];
+
+export type GetBillAttachmentsData = {
+    body?: never;
+    path: {
+        billId: number;
+        carId: number;
+    };
+    query?: never;
+    url: '/api/attachment/{carId}/bill/{billId}';
+};
+
+export type GetBillAttachmentsErrors = {
+    /**
+     * Bill not found.
+     */
+    404: unknown;
+};
+
+export type GetBillAttachmentsResponses = {
+    /**
+     * Attachments found.
+     */
+    200: Array<Attachment>;
+};
+
+export type GetBillAttachmentsResponse = GetBillAttachmentsResponses[keyof GetBillAttachmentsResponses];
+
+export type AddBillAttachmentData = {
+    body: {
+        file?: Blob | File;
+    };
+    path: {
+        billId: number;
+        carId: number;
+    };
+    query?: never;
+    url: '/api/attachment/{carId}/bill/{billId}';
+};
+
+export type AddBillAttachmentErrors = {
+    /**
+     * File empty, too large, of another type or too many attachments
+     */
+    400: Array<unknown>;
+    /**
+     * Bill not found.
+     */
+    404: unknown;
+    /**
+     * Request larger than allowed by the server.
+     */
+    413: unknown;
+};
+
+export type AddBillAttachmentError = AddBillAttachmentErrors[keyof AddBillAttachmentErrors];
+
+export type AddBillAttachmentResponses = {
+    /**
+     * File attached.
+     */
+    201: Attachment;
+};
+
+export type AddBillAttachmentResponse = AddBillAttachmentResponses[keyof AddBillAttachmentResponses];
+
+export type DeleteAttachmentData = {
+    body?: never;
+    path: {
+        carId: number;
+        id: number;
+    };
+    query?: never;
+    url: '/api/attachment/{carId}/{id}';
+};
+
+export type DeleteAttachmentErrors = {
+    /**
+     * Attachment not found.
+     */
+    404: unknown;
+};
+
+export type DeleteAttachmentResponses = {
+    /**
+     * Attachment deleted.
+     */
+    204: void;
+};
+
+export type DeleteAttachmentResponse = DeleteAttachmentResponses[keyof DeleteAttachmentResponses];
+
+export type GetAttachmentContentData = {
+    body?: never;
+    path: {
+        carId: number;
+        id: number;
+    };
+    query?: never;
+    url: '/api/attachment/{carId}/{id}/content';
+};
+
+export type GetAttachmentContentErrors = {
+    /**
+     * Attachment not found.
+     */
+    404: unknown;
+};
+
+export type GetAttachmentContentResponses = {
+    /**
+     * File found.
+     */
+    200: unknown;
+};
 
 export type CallbackData = {
     body?: never;
@@ -525,11 +934,23 @@ export type GetAllBillsData = {
         carId: number;
     };
     query?: {
+        order?: SortOrder & unknown;
         page?: number;
         size?: number;
+        /**
+         * Field to sort by, the bills are sorted by date if equal
+         */
+        sort?: string;
         year?: number;
     };
     url: '/api/bill/{carId}/all';
+};
+
+export type GetAllBillsErrors = {
+    /**
+     * The bills cannot be sorted by the field.
+     */
+    400: unknown;
 };
 
 export type GetAllBillsResponses = {
@@ -540,6 +961,153 @@ export type GetAllBillsResponses = {
 };
 
 export type GetAllBillsResponse = GetAllBillsResponses[keyof GetAllBillsResponses];
+
+export type AddNewChargingBillData = {
+    body: ChargingBillInput;
+    path: {
+        carId: number;
+    };
+    query?: never;
+    url: '/api/bill/{carId}/charging';
+};
+
+export type AddNewChargingBillErrors = {
+    /**
+     * Validation failed, please check the response
+     */
+    400: Array<unknown>;
+    /**
+     * Car is not for your user.
+     */
+    404: unknown;
+    /**
+     * Something went wrong while saving. Please ask the server admin for help.
+     */
+    500: unknown;
+};
+
+export type AddNewChargingBillError = AddNewChargingBillErrors[keyof AddNewChargingBillErrors];
+
+export type AddNewChargingBillResponses = {
+    /**
+     * Bill created.
+     */
+    202: unknown;
+};
+
+export type GetAllChargingBillsData = {
+    body?: never;
+    path: {
+        carId: number;
+    };
+    query?: {
+        order?: SortOrder & unknown;
+        page?: number;
+        size?: number;
+        /**
+         * Field to sort by, the bills are sorted by date if equal
+         */
+        sort?: string;
+        year?: number;
+    };
+    url: '/api/bill/{carId}/charging/all';
+};
+
+export type GetAllChargingBillsErrors = {
+    /**
+     * The bills cannot be sorted by the field.
+     */
+    400: unknown;
+};
+
+export type GetAllChargingBillsResponses = {
+    /**
+     * Bills found.
+     */
+    200: BillPagedChargingBill;
+};
+
+export type GetAllChargingBillsResponse = GetAllChargingBillsResponses[keyof GetAllChargingBillsResponses];
+
+export type GetAllChargingBillYearsData = {
+    body?: never;
+    path: {
+        carId: number;
+    };
+    query?: never;
+    url: '/api/bill/{carId}/charging/years';
+};
+
+export type GetAllChargingBillYearsResponses = {
+    /**
+     * Bills found and years extracted.
+     */
+    200: Array<number>;
+};
+
+export type GetAllChargingBillYearsResponse = GetAllChargingBillYearsResponses[keyof GetAllChargingBillYearsResponses];
+
+export type GetChargingBillData = {
+    body?: never;
+    path: {
+        carId: number;
+        billId: number;
+    };
+    query?: never;
+    url: '/api/bill/{carId}/charging/{billId}';
+};
+
+export type GetChargingBillErrors = {
+    /**
+     * Bill not found for the car of your user.
+     */
+    404: unknown;
+};
+
+export type GetChargingBillResponses = {
+    /**
+     * Bill found.
+     */
+    200: ChargingBill;
+};
+
+export type GetChargingBillResponse = GetChargingBillResponses[keyof GetChargingBillResponses];
+
+export type UpdateChargingBillData = {
+    body: ChargingBillInput;
+    path: {
+        carId: number;
+        billId: number;
+    };
+    query?: never;
+    url: '/api/bill/{carId}/charging/{billId}';
+};
+
+export type UpdateChargingBillErrors = {
+    /**
+     * Validation failed, please check the response
+     */
+    400: Array<unknown>;
+    /**
+     * Bill not found for the car of your user.
+     */
+    404: unknown;
+    /**
+     * Another bill with the same date and total exists.
+     */
+    409: unknown;
+};
+
+export type UpdateChargingBillError = UpdateChargingBillErrors[keyof UpdateChargingBillErrors];
+
+export type UpdateChargingBillResponses = {
+    /**
+     * Bill updated.
+     */
+    200: ChargingBill;
+};
+
+export type UpdateChargingBillResponse = UpdateChargingBillResponses[keyof UpdateChargingBillResponses];
 
 export type AddNewFuelBillData = {
     body: FuelBillInput;
@@ -580,11 +1148,23 @@ export type GetAllFuelBillsData = {
         carId: number;
     };
     query?: {
+        order?: SortOrder & unknown;
         page?: number;
         size?: number;
+        /**
+         * Field to sort by, the bills are sorted by date if equal
+         */
+        sort?: string;
         year?: number;
     };
     url: '/api/bill/{carId}/fuel/all';
+};
+
+export type GetAllFuelBillsErrors = {
+    /**
+     * The bills cannot be sorted by the field.
+     */
+    400: unknown;
 };
 
 export type GetAllFuelBillsResponses = {
@@ -715,11 +1295,23 @@ export type GetAllMaintenanceBillsData = {
         carId: number;
     };
     query?: {
+        order?: SortOrder & unknown;
         page?: number;
         size?: number;
+        /**
+         * Field to sort by, the bills are sorted by date if equal
+         */
+        sort?: string;
         year?: number;
     };
     url: '/api/bill/{carId}/maintenance/all';
+};
+
+export type GetAllMaintenanceBillsErrors = {
+    /**
+     * The bills cannot be sorted by the field.
+     */
+    400: unknown;
 };
 
 export type GetAllMaintenanceBillsResponses = {
@@ -850,11 +1442,23 @@ export type GetAllMiscellaneousBillsData = {
         carId: number;
     };
     query?: {
+        order?: SortOrder & unknown;
         page?: number;
         size?: number;
+        /**
+         * Field to sort by, the bills are sorted by date if equal
+         */
+        sort?: string;
         year?: number;
     };
     url: '/api/bill/{carId}/miscellaneous/all';
+};
+
+export type GetAllMiscellaneousBillsErrors = {
+    /**
+     * The bills cannot be sorted by the field.
+     */
+    400: unknown;
 };
 
 export type GetAllMiscellaneousBillsResponses = {
@@ -955,6 +1559,7 @@ export type GetAllRecurringBillsData = {
         onlyRunning?: boolean;
         page?: number;
         size?: number;
+        sort?: RecurringBillSort & unknown;
     };
     url: '/api/bill/{carId}/recurring';
 };
@@ -1019,6 +1624,64 @@ export type DeleteRecurringBillResponses = {
      */
     202: unknown;
 };
+
+export type GetRecurringBillData = {
+    body?: never;
+    path: {
+        billId: number;
+        carId: number;
+    };
+    query?: never;
+    url: '/api/bill/{carId}/recurring/{billId}';
+};
+
+export type GetRecurringBillErrors = {
+    /**
+     * Bill not found for the car of your user.
+     */
+    404: unknown;
+};
+
+export type GetRecurringBillResponses = {
+    /**
+     * Bill found.
+     */
+    200: RecurringBill;
+};
+
+export type GetRecurringBillResponse = GetRecurringBillResponses[keyof GetRecurringBillResponses];
+
+export type UpdateRecurringBillData = {
+    body: RecurringBillInput;
+    path: {
+        billId: number;
+        carId: number;
+    };
+    query?: never;
+    url: '/api/bill/{carId}/recurring/{billId}';
+};
+
+export type UpdateRecurringBillErrors = {
+    /**
+     * Validation failed, please check the response
+     */
+    400: Array<unknown>;
+    /**
+     * Bill not found for the car of your user.
+     */
+    404: unknown;
+};
+
+export type UpdateRecurringBillError = UpdateRecurringBillErrors[keyof UpdateRecurringBillErrors];
+
+export type UpdateRecurringBillResponses = {
+    /**
+     * Bill updated.
+     */
+    200: RecurringBill;
+};
+
+export type UpdateRecurringBillResponse = UpdateRecurringBillResponses[keyof UpdateRecurringBillResponses];
 
 export type EndRecurringBillData = {
     body: RecurringBillEndInput;
@@ -1239,12 +1902,153 @@ export type GetMyCarOverviewResponses = {
 
 export type GetMyCarOverviewResponse = GetMyCarOverviewResponses[keyof GetMyCarOverviewResponses];
 
+export type DeleteCarPictureData = {
+    body?: never;
+    path: {
+        id: number;
+    };
+    query?: never;
+    url: '/api/car/my/{id}/picture';
+};
+
+export type DeleteCarPictureErrors = {
+    /**
+     * Car not found.
+     */
+    404: unknown;
+};
+
+export type DeleteCarPictureResponses = {
+    /**
+     * Picture removed.
+     */
+    204: void;
+};
+
+export type DeleteCarPictureResponse = DeleteCarPictureResponses[keyof DeleteCarPictureResponses];
+
+export type GetCarPictureData = {
+    body?: never;
+    path: {
+        id: number;
+    };
+    query?: never;
+    url: '/api/car/my/{id}/picture';
+};
+
+export type GetCarPictureErrors = {
+    /**
+     * Car not found or without picture.
+     */
+    404: unknown;
+};
+
+export type GetCarPictureResponses = {
+    /**
+     * Picture found.
+     */
+    200: unknown;
+};
+
+export type SetCarPictureData = {
+    body: {
+        file?: Blob | File;
+    };
+    path: {
+        id: number;
+    };
+    query?: never;
+    url: '/api/car/my/{id}/picture';
+};
+
+export type SetCarPictureErrors = {
+    /**
+     * File empty, too large or no image
+     */
+    400: Array<unknown>;
+    /**
+     * Car not found.
+     */
+    404: unknown;
+};
+
+export type SetCarPictureError = SetCarPictureErrors[keyof SetCarPictureErrors];
+
+export type SetCarPictureResponses = {
+    /**
+     * Picture saved.
+     */
+    200: Attachment;
+};
+
+export type SetCarPictureResponse = SetCarPictureResponses[keyof SetCarPictureResponses];
+
+export type ExportCsvData = {
+    body?: never;
+    path: {
+        carId: number;
+    };
+    query?: {
+        type?: BillType;
+        year?: number;
+    };
+    url: '/api/export/{carId}';
+};
+
+export type ExportCsvErrors = {
+    /**
+     * Type missing or not exportable.
+     */
+    400: unknown;
+    /**
+     * Car not found.
+     */
+    404: unknown;
+};
+
+export type ExportCsvResponses = {
+    /**
+     * The bills as CSV.
+     */
+    200: string;
+};
+
+export type ExportCsvResponse = ExportCsvResponses[keyof ExportCsvResponses];
+
+export type ExportAllExpensesCsvData = {
+    body?: never;
+    path: {
+        carId: number;
+    };
+    query?: {
+        year?: number;
+    };
+    url: '/api/export/{carId}/all';
+};
+
+export type ExportAllExpensesCsvErrors = {
+    /**
+     * Car not found.
+     */
+    404: unknown;
+};
+
+export type ExportAllExpensesCsvResponses = {
+    /**
+     * The expenses as CSV.
+     */
+    200: string;
+};
+
+export type ExportAllExpensesCsvResponse = ExportAllExpensesCsvResponses[keyof ExportAllExpensesCsvResponses];
+
 export type ImportCsvData = {
     body: {
         file?: Blob | File;
         billType?: BillType;
         order?: string;
         vat?: number;
+        unitSystem?: UnitSystem;
     };
     path: {
         carId: number;
@@ -1483,6 +2287,22 @@ export type GetMonthlyStatsResponses = {
 
 export type GetMonthlyStatsResponse = GetMonthlyStatsResponses[keyof GetMonthlyStatsResponses];
 
+export type DeleteMyselfData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/user/me';
+};
+
+export type DeleteMyselfResponses = {
+    /**
+     * Account deleted.
+     */
+    204: void;
+};
+
+export type DeleteMyselfResponse = DeleteMyselfResponses[keyof DeleteMyselfResponses];
+
 export type GetMyselfData = {
     body?: never;
     path?: never;
@@ -1498,6 +2318,242 @@ export type GetMyselfResponses = {
 };
 
 export type GetMyselfResponse = GetMyselfResponses[keyof GetMyselfResponses];
+
+export type DownloadBackupData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/user/me/backup';
+};
+
+export type DownloadBackupResponses = {
+    /**
+     * The backup.
+     */
+    200: Blob | File;
+};
+
+export type DownloadBackupResponse = DownloadBackupResponses[keyof DownloadBackupResponses];
+
+export type RestoreBackupData = {
+    body: {
+        file?: Blob | File;
+    };
+    path?: never;
+    query?: never;
+    url: '/api/user/me/backup';
+};
+
+export type RestoreBackupErrors = {
+    /**
+     * No backup, an unknown version, invalid content or more cars than allowed
+     */
+    400: Array<unknown>;
+    /**
+     * The account has cars already.
+     */
+    409: unknown;
+};
+
+export type RestoreBackupError = RestoreBackupErrors[keyof RestoreBackupErrors];
+
+export type RestoreBackupResponses = {
+    /**
+     * Restored.
+     */
+    200: BackupSummary;
+};
+
+export type RestoreBackupResponse = RestoreBackupResponses[keyof RestoreBackupResponses];
+
+export type RequestMoreCarsData = {
+    body: CarRequestInput;
+    path?: never;
+    query?: never;
+    url: '/api/user/me/car-requests';
+};
+
+export type RequestMoreCarsErrors = {
+    /**
+     * Validation failed, or the user can still add cars
+     */
+    400: Array<unknown>;
+    /**
+     * An open request exists already.
+     */
+    409: unknown;
+};
+
+export type RequestMoreCarsError = RequestMoreCarsErrors[keyof RequestMoreCarsErrors];
+
+export type RequestMoreCarsResponses = {
+    /**
+     * Request created.
+     */
+    201: CarRequest;
+};
+
+export type RequestMoreCarsResponse = RequestMoreCarsResponses[keyof RequestMoreCarsResponses];
+
+export type GetMyLatestCarRequestData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/user/me/car-requests/latest';
+};
+
+export type GetMyLatestCarRequestResponses = {
+    /**
+     * Request found.
+     */
+    200: CarRequest;
+    /**
+     * No request yet.
+     */
+    204: void;
+};
+
+export type GetMyLatestCarRequestResponse = GetMyLatestCarRequestResponses[keyof GetMyLatestCarRequestResponses];
+
+export type MarkCarRequestSeenData = {
+    body?: never;
+    path: {
+        id: number;
+    };
+    query?: never;
+    url: '/api/user/me/car-requests/{id}/seen';
+};
+
+export type MarkCarRequestSeenErrors = {
+    /**
+     * Request not found for the user.
+     */
+    404: unknown;
+};
+
+export type MarkCarRequestSeenResponses = {
+    /**
+     * Marked as seen.
+     */
+    204: void;
+};
+
+export type MarkCarRequestSeenResponse = MarkCarRequestSeenResponses[keyof MarkCarRequestSeenResponses];
+
+export type GetMyNotificationsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/user/me/notifications';
+};
+
+export type GetMyNotificationsResponses = {
+    /**
+     * Notification settings found.
+     */
+    200: NotificationSettings;
+};
+
+export type GetMyNotificationsResponse = GetMyNotificationsResponses[keyof GetMyNotificationsResponses];
+
+export type UpdateMyNotificationsData = {
+    body: NotificationSettingsInput;
+    path?: never;
+    query?: never;
+    url: '/api/user/me/notifications';
+};
+
+export type UpdateMyNotificationsErrors = {
+    /**
+     * Bad Request
+     */
+    400: unknown;
+};
+
+export type UpdateMyNotificationsResponses = {
+    /**
+     * Notification settings saved.
+     */
+    200: NotificationSettings;
+};
+
+export type UpdateMyNotificationsResponse = UpdateMyNotificationsResponses[keyof UpdateMyNotificationsResponses];
+
+export type GetMyPushData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/user/me/push';
+};
+
+export type GetMyPushResponses = {
+    /**
+     * Push settings found.
+     */
+    200: PushSettings;
+};
+
+export type GetMyPushResponse = GetMyPushResponses[keyof GetMyPushResponses];
+
+export type UnsubscribeMyPushData = {
+    body: PushSubscriptionInput;
+    path?: never;
+    query?: never;
+    url: '/api/user/me/push/subscriptions';
+};
+
+export type UnsubscribeMyPushResponses = {
+    /**
+     * Subscription removed, also when it did not exist.
+     */
+    204: void;
+};
+
+export type UnsubscribeMyPushResponse = UnsubscribeMyPushResponses[keyof UnsubscribeMyPushResponses];
+
+export type SubscribeMyPushData = {
+    body: PushSubscriptionInput;
+    path?: never;
+    query?: never;
+    url: '/api/user/me/push/subscriptions';
+};
+
+export type SubscribeMyPushErrors = {
+    /**
+     * Validation failed, please check the response
+     */
+    400: unknown;
+};
+
+export type SubscribeMyPushResponses = {
+    /**
+     * Subscription saved.
+     */
+    204: void;
+};
+
+export type SubscribeMyPushResponse = SubscribeMyPushResponses[keyof SubscribeMyPushResponses];
+
+export type TestMyPushData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/user/me/push/test';
+};
+
+export type TestMyPushErrors = {
+    /**
+     * Push is not available or no browser subscribed.
+     */
+    409: unknown;
+};
+
+export type TestMyPushResponses = {
+    /**
+     * Sent to the browsers.
+     */
+    202: unknown;
+};
 
 export type UpdateMySettingsData = {
     body: SettingsInput;
@@ -1523,3 +2579,19 @@ export type UpdateMySettingsResponses = {
 };
 
 export type UpdateMySettingsResponse = UpdateMySettingsResponses[keyof UpdateMySettingsResponses];
+
+export type GetVersionData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/version';
+};
+
+export type GetVersionResponses = {
+    /**
+     * Version of the server.
+     */
+    200: Version;
+};
+
+export type GetVersionResponse = GetVersionResponses[keyof GetVersionResponses];

@@ -24,14 +24,23 @@ export default function Section({
       {(title || action) && (
         <Stack
           direction="row"
-          alignItems="center"
           spacing={2}
-          sx={{ px: 2.5, pt: 2, pb: flush ? 1 : 0 }}
+          sx={{
+            alignItems: 'center',
+            px: 2.5,
+            pt: 2,
+            pb: flush ? 1 : 0,
+          }}
         >
           <Box sx={{ flexGrow: 1, minWidth: 0 }}>
             {title && <Typography variant="h6">{title}</Typography>}
             {subtitle && (
-              <Typography variant="body2" color="text.secondary">
+              <Typography
+                variant="body2"
+                sx={{
+                  color: 'text.secondary',
+                }}
+              >
                 {subtitle}
               </Typography>
             )}

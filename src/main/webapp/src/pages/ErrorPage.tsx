@@ -31,15 +31,24 @@ export default function ErrorPage({ error, loginError }: ErrorPageProps) {
   return (
     <Stack
       id="ErrorPage"
-      alignItems="center"
-      justifyContent="center"
-      textAlign="center"
       spacing={2}
-      sx={{ flexGrow: 1, py: 10, px: 2 }}
+      sx={{
+        alignItems: 'center',
+        justifyContent: 'center',
+        textAlign: 'center',
+        flexGrow: 1,
+        py: 10,
+        px: 2,
+      }}
     >
       <ErrorOutlineRounded color="error" sx={{ fontSize: 56 }} />
       <Typography variant="h4">{t('errors.title')}</Typography>
-      <Typography color="text.secondary" maxWidth={440}>
+      <Typography
+        sx={{
+          color: 'text.secondary',
+          maxWidth: 440,
+        }}
+      >
         {message}
       </Typography>
       <Stack direction="row" spacing={1}>

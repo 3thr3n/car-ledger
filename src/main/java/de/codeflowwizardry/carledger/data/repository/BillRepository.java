@@ -12,9 +12,6 @@ import java.util.stream.Collectors;
 import de.codeflowwizardry.carledger.data.BillEntity;
 import de.codeflowwizardry.carledger.data.BillType;
 import de.codeflowwizardry.carledger.exception.DbDeletionException;
-import io.quarkus.hibernate.orm.panache.PanacheQuery;
-import io.quarkus.panache.common.Page;
-import io.quarkus.panache.common.Parameters;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 
@@ -26,21 +23,18 @@ public class BillRepository extends AbstractBillRepository<BillEntity>
 		super("bill");
 	}
 
+	private static final Map<String, String> SORT_FIELDS = withBillSortFields(Map.of("type", "b.type"));
+
 	@Override
-	public PanacheQuery<BillEntity> getBills(long carId, String username, Page page, Optional<Integer> year)
+	public Map<String, String> getSortFields()
 	{
-		String query = "car.id = :carId and car.user.userId = :username";
-		Map<String, Object> params = new HashMap<>();
-		params.put("carId", carId);
-		params.put("username", username);
+		return SORT_FIELDS;
+	}
 
-		if (year.isPresent())
-		{
-			query += " and year(date) = :year";
-			params.put("year", year.get());
-		}
-
-		return find(query + " order by date desc", params).page(page);
+	@Override
+	protected String fromClause()
+	{
+		return "from bill b";
 	}
 
 	/**
@@ -55,28 +49,10 @@ public class BillRepository extends AbstractBillRepository<BillEntity>
 
 		String query = "from bill b"
 				+ " left join fetch b.fuelBill"
+				+ " left join fetch b.chargingBill"
 				+ " left join fetch b.maintenanceBill"
 				+ " left join fetch b.miscellaneousBill"
-				+ " where b.car.user.userId = :userId";
-		params.put("userId", username);
-
-		if (carId != ALL_CARS)
-		{
-			query += " and b.car.id = :carId";
-			params.put("carId", carId);
-		}
-
-		if (from.isPresent())
-		{
-			query += " and b.date >= :from";
-			params.put("from", from.get());
-		}
-
-		if (to.isPresent())
-		{
-			query += " and b.date <= :to";
-			params.put("to", to.get());
-		}
+				+ where(carId, username, from, to, params);
 
 		return find(query + " order by b.date desc", params).list();
 	}
@@ -114,13 +90,15 @@ public class BillRepository extends AbstractBillRepository<BillEntity>
 	}
 
 	/**
-	 * @return average consumption of all fuel bills of a car, which have a
+	 * @param energy
+	 *            the refuels in l/100km or the charges in kWh/100km
+	 * @return average consumption of all refuels or charges of a car, which have a
 	 *         consumption
 	 */
-	public BigDecimal averageConsumption(long carId, String username)
+	public BigDecimal averageConsumption(long carId, String username, Energy energy)
 	{
 		Object[] sumAndCount = getEntityManager()
-				.createQuery("select sum(f.avgConsumption), count(f) from FuelBillEntity f"
+				.createQuery("select sum(f.avgConsumption), count(f) from " + energy.entity + " f"
 						+ " where f.bill.car.id = :carId and f.bill.car.user.userId = :userId"
 						+ " and f.avgConsumption > 0", Object[].class)
 				.setParameter("carId", carId)
@@ -155,54 +133,34 @@ public class BillRepository extends AbstractBillRepository<BillEntity>
 	}
 
 	/**
-	 * Liters and distance per month. Consumption and price only use refuels with a
-	 * distance, the others would distort them.
+	 * Liters or kWh and distance per month and car. Consumption and price only use
+	 * refuels or charges with a distance, the others would distort them.
 	 *
 	 * @param carId
 	 *            or {@link CarRepository#ALL_CARS}
-	 * @return months without refuels are missing
+	 * @return months without refuels or charges are missing
 	 */
-	public List<MonthFuel> sumFuelPerMonth(long carId, String username, Optional<LocalDate> from,
-			Optional<LocalDate> to)
+	public List<MonthEnergy> sumEnergyPerMonth(long carId, String username, Optional<LocalDate> from,
+			Optional<LocalDate> to, Energy energy)
 	{
 		Map<String, Object> params = new HashMap<>();
-		String query = "select year(b.date), month(b.date), sum(f.unit), sum(coalesce(f.distance, 0)),"
+		String query = "select year(b.date), month(b.date), b.car.id, sum(f.unit), sum(coalesce(f.distance, 0)),"
 				+ " sum(case when f.distance > 0 then f.unit else 0 end),"
 				+ " sum(f.pricePerUnit * f.unit)"
-				+ " from bill b join b.fuelBill f"
+				+ " from bill b join b." + energy.association + " f"
 				+ where(carId, username, from, to, params)
-				+ " group by year(b.date), month(b.date)";
+				+ " group by year(b.date), month(b.date), b.car.id";
 
 		return rows(query, params).stream()
-				.map(row -> new MonthFuel(month(row), (BigDecimal) row[2], (BigDecimal) row[3],
-						(BigDecimal) row[4], (BigDecimal) row[5]))
+				.map(row -> new MonthEnergy(month(row), (Long) row[2], (BigDecimal) row[3], (BigDecimal) row[4],
+						(BigDecimal) row[5], (BigDecimal) row[6]))
 				.toList();
 	}
 
 	private static String where(long carId, String username, Optional<LocalDate> from, Optional<LocalDate> to,
 			Map<String, Object> params)
 	{
-		String where = " where b.car.user.userId = :userId";
-		params.put("userId", username);
-
-		if (carId != ALL_CARS)
-		{
-			where += " and b.car.id = :carId";
-			params.put("carId", carId);
-		}
-
-		if (from.isPresent())
-		{
-			where += " and b.date >= :from";
-			params.put("from", from.get());
-		}
-
-		if (to.isPresent())
-		{
-			where += " and b.date <= :to";
-			params.put("to", to.get());
-		}
-		return where;
+		return PeriodFilter.where("b.car", "b.date", carId, username, from, to, params);
 	}
 
 	private List<Object[]> rows(String query, Map<String, Object> params)
@@ -221,7 +179,7 @@ public class BillRepository extends AbstractBillRepository<BillEntity>
 	public void delete(long carId, long billId, String username)
 	{
 		Optional<BillEntity> any = find("id = :billId and car.id = :carId and car.user.userId = :userId",
-				Parameters.with("carId", carId).and("userId", username).and("billId", billId))
+				Map.of("carId", carId, "userId", username, "billId", billId))
 				.firstResultOptional();
 
 		if (any.isEmpty())
@@ -241,13 +199,31 @@ public class BillRepository extends AbstractBillRepository<BillEntity>
 	}
 
 	/**
+	 * @param unit
+	 *            liters or kWh
 	 * @param unitWithDistance
-	 *            liters of the refuels with a distance
+	 *            liters or kWh of the refuels or charges with a distance
 	 * @param pricedUnit
-	 *            sum of price per liter (cent) times liters
+	 *            sum of price per unit (cent) times unit
 	 */
-	public record MonthFuel(YearMonth month, BigDecimal unit, BigDecimal distance, BigDecimal unitWithDistance,
-			BigDecimal pricedUnit)
+	public record MonthEnergy(YearMonth month, long carId, BigDecimal unit, BigDecimal distance,
+			BigDecimal unitWithDistance, BigDecimal pricedUnit)
 	{
+	}
+
+	/**
+	 * Refuels in liters or charges in kWh
+	 */
+	public enum Energy {
+		FUEL("FuelBillEntity", "fuelBill"), CHARGING("ChargingBillEntity", "chargingBill");
+
+		private final String entity;
+		private final String association;
+
+		Energy(String entity, String association)
+		{
+			this.entity = entity;
+			this.association = association;
+		}
 	}
 }

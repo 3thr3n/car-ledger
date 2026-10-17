@@ -1,5 +1,4 @@
 import { Grid, Stack, TextField } from '@mui/material';
-import { DatePicker } from '@mui/x-date-pickers';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import dayjs, { Dayjs } from 'dayjs';
 import { SubmitEvent, useState } from 'react';
@@ -12,10 +11,12 @@ import {
 } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
 import { hasValue, toApiDate, useFormat } from '@/utils/format';
+import { odometerToApi, odometerToField, Units } from '@/utils/units';
 import useVatCountry from '@/hooks/useVatCountry';
 import NumberField from './NumberField';
-import VatCountrySelect from './VatCountrySelect';
+import DateVatFields from './DateVatFields';
 import FormActions from './FormActions';
+import BillAttachments from './BillAttachments';
 import useSaveBill from './useSaveBill';
 
 const MAX = 1_000_000;
@@ -36,11 +37,13 @@ const empty = (): MaintenanceState => ({
   description: '',
 });
 
-const fromBill = (bill: MaintenanceBill): MaintenanceState => ({
+const fromBill = (bill: MaintenanceBill, units: Units): MaintenanceState => ({
   date: dayjs(bill.date),
   workshop: bill.workshop ?? '',
   description: bill.description ?? '',
-  odometer: hasValue(bill.odometer) ? bill.odometer : undefined,
+  odometer: hasValue(bill.odometer)
+    ? odometerToField(units, bill.odometer)
+    : undefined,
   laborCost: hasValue(bill.laborCost) ? bill.laborCost : undefined,
   partsCost: hasValue(bill.partsCost) ? bill.partsCost : undefined,
   total: bill.total,
@@ -61,14 +64,19 @@ export default function MaintenanceForm({
   );
   const vat = useVatCountry(bill?.vatRate);
   const [form, setForm] = useState<MaintenanceState>(() =>
-    bill ? fromBill(bill) : empty(),
+    bill ? fromBill(bill, format.units) : empty(),
   );
   const [touched, setTouched] = useState(false);
 
-  const save = useSaveBill(carId, BillType.MAINTENANCE, () => {
-    setForm(empty());
-    setTouched(false);
-  });
+  const save = useSaveBill(
+    carId,
+    BillType.MAINTENANCE,
+    () => {
+      setForm(empty());
+      setTouched(false);
+    },
+    bill?.id,
+  );
   const create = useMutation({
     ...addNewMaintenanceBillMutation({ client: localClient }),
     onSuccess: save.onSuccess,
@@ -106,7 +114,7 @@ export default function MaintenanceForm({
       total,
       workshop: form.workshop.trim() || undefined,
       description: form.description.trim() || undefined,
-      odometer: form.odometer,
+      odometer: odometerToApi(format.units, form.odometer),
       laborCost: form.laborCost,
       partsCost: form.partsCost,
     };
@@ -120,24 +128,12 @@ export default function MaintenanceForm({
   return (
     <Stack component="form" onSubmit={submit} noValidate spacing={2.5}>
       <Grid container spacing={2}>
-        <Grid size={{ xs: 12, sm: 6 }}>
-          <DatePicker
-            label={t('bill.fields.date')}
-            value={form.date}
-            onChange={(date) => set({ date })}
-            disableFuture
-            slotProps={{
-              textField: {
-                required: true,
-                error: touched && !!errors.date,
-                helperText: touched && errors.date,
-              },
-            }}
-          />
-        </Grid>
-        <Grid size={{ xs: 12, sm: 6 }}>
-          <VatCountrySelect value={vat.country} onChange={vat.setCountry} />
-        </Grid>
+        <DateVatFields
+          date={form.date}
+          onDateChange={(date) => set({ date })}
+          vat={vat}
+          error={touched ? errors.date : undefined}
+        />
         <Grid size={{ xs: 12, sm: 6 }}>
           <TextField
             label={t('bill.fields.workshop')}
@@ -151,12 +147,12 @@ export default function MaintenanceForm({
             value={form.odometer}
             onChange={(odometer) => set({ odometer })}
             decimalScale={0}
-            suffix=" km"
+            suffix={` ${format.units.distance.label}`}
             max={10_000_000}
             helperText={
               car &&
               t('bill.currentOdometer', {
-                km: format.unit(car.currentOdometer.value, 'km', 0),
+                km: format.distance(car.currentOdometer.value),
               })
             }
           />
@@ -206,6 +202,8 @@ export default function MaintenanceForm({
           />
         </Grid>
       </Grid>
+
+      <BillAttachments {...save.attachments} />
 
       <FormActions
         pending={create.isPending || update.isPending}

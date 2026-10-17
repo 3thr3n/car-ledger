@@ -6,7 +6,7 @@ import { useFormat } from '@/utils/format';
 export default function useReminderText() {
   const { t } = useTranslation();
   const format = useFormat();
-  const km = (value: number) => format.unit(value, 'km', 0);
+  const km = (value: number) => format.distance(value);
 
   const dateText = (reminder: Reminder) => {
     if (!reminder.dueDate || reminder.daysLeft == null) return undefined;

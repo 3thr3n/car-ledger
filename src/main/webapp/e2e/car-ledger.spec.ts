@@ -1,4 +1,5 @@
 import { expect, Page, test } from '@playwright/test';
+import { readFile } from 'node:fs/promises';
 import { deleteAllCars, money } from './helpers';
 
 /**
@@ -40,11 +41,68 @@ test.describe.serial('car ledger', () => {
     await expect(page.getByText('42,000 km')).toBeVisible();
   });
 
+  test('adds plate, VIN and purchase price to the car', async () => {
+    await page.goto(`${carUrl}/edit`);
+
+    await field(/^License plate/).fill('M-E2E 42');
+    await field(/^VIN/).fill('wvw zzz1kz 6w00000i');
+    await page.getByRole('button', { name: 'Save' }).click();
+    await expect(
+      page.getByText('17 letters and digits, without I, O and Q'),
+    ).toBeVisible();
+
+    await field(/^VIN/).fill('wvw zzz1kz 6w000001');
+    await expect(page.getByText('17 of 17 characters')).toBeVisible();
+    await field(/^Purchase price/).fill('18500');
+    await page.getByRole('button', { name: 'Save' }).click();
+
+    await expect(page).toHaveURL(/\/car\/\d+$/);
+    await expect(page.getByText(/^M-E2E 42 · Built/)).toBeVisible();
+    const details = page.locator('.MuiCard-root', {
+      hasText: 'Purchase price',
+    });
+    await expect(details).toContainText('WVWZZZ1KZ6W000001');
+    await expect(details).toContainText(money(18500));
+    // no entries yet, the cost of ownership is the purchase
+    await expect(details).toContainText(`Purchase and costs${money(18500)}`);
+  });
+
+  test('sets the energy type with tank and battery', async () => {
+    await page.goto(`${carUrl}/edit`);
+    await expect(field(/^Tank size/)).toBeVisible();
+    await expect(field(/^Battery capacity/)).toHaveCount(0);
+
+    // an electric car has no tank
+    await page.getByRole('combobox', { name: /^Energy/ }).click();
+    await page.getByRole('option', { name: 'Electric' }).click();
+    await expect(field(/^Tank size/)).toHaveCount(0);
+    await expect(field(/^Battery capacity/)).toBeVisible();
+
+    await page.getByRole('combobox', { name: /^Energy/ }).click();
+    await page.getByRole('option', { name: 'Plug-in hybrid' }).click();
+    await field(/^Tank size/).fill('50');
+    await field(/^Battery capacity/).fill('10.4');
+    await page.getByRole('button', { name: 'Save' }).click();
+
+    await expect(page).toHaveURL(/\/car\/\d+$/);
+    await expect(page.getByText(/· Plug-in hybrid ·/)).toBeVisible();
+    const details = page.locator('.MuiCard-root', { hasText: 'Battery' });
+    await expect(details).toContainText('Tank50.0 l');
+    await expect(details).toContainText('Battery10.4 kWh');
+  });
+
   test('adds a refuel and calculates the price', async () => {
     await page.goto(`${carUrl}/bill/add?type=FUEL`);
 
+    // a typo, more than the tank of 50 l holds
+    await field(/^Liters/).fill('400');
+    await expect(
+      page.getByText('400.00 l is more than the tank holds (50.0 l)'),
+    ).toBeVisible();
+    await field(/^Liters/).fill('');
     await field(/^Total/).fill('70');
     await field(/^Liters/).fill('40');
+    await expect(page.getByText(/more than the tank holds/)).toHaveCount(0);
     await expect(page.getByText('Calculated: 175.0 ct/l')).toBeVisible();
     await field(/^Distance/).fill('640');
     await expect(page.getByText('Consumption: 6.25 l/100km')).toBeVisible();
@@ -99,6 +157,35 @@ test.describe.serial('car ledger', () => {
     );
   });
 
+  test('adds a charge of the plug-in hybrid in kWh', async () => {
+    await page.goto(carUrl);
+    await page.getByRole('tab', { name: 'Charging' }).click();
+    await expect(page).toHaveURL(/\/bill\/charging$/);
+    await expect(page.getByText('No Charging entries yet')).toBeVisible();
+
+    await page.goto(`${carUrl}/bill/add?type=CHARGING`);
+    // a typo, more than the battery of 10.4 kWh holds
+    await field(/^kWh/).fill('40');
+    await expect(
+      page.getByText(/40.00 kWh is more than the battery holds \(10.4 kWh\)/),
+    ).toBeVisible();
+    await field(/^kWh/).fill('9');
+    await expect(page.getByText(/more than the battery holds/)).toHaveCount(0);
+    await field(/^Total/).fill('2.7');
+    await expect(page.getByText('Calculated: 30.0 ct/kWh')).toBeVisible();
+    await field(/^Distance/).fill('50');
+    await expect(page.getByText('Consumption: 18.00 kWh/100km')).toBeVisible();
+    await page.getByRole('combobox', { name: /^Location/ }).click();
+    await page.getByRole('option', { name: 'Home' }).click();
+    await page.getByRole('button', { name: 'Save', exact: true }).click();
+
+    await expect(page).toHaveURL(/\/bill\/charging$/);
+    const row = page.getByRole('row', { name: /30\.0 ct\/kWh/ });
+    await expect(row).toContainText('18.00 kWh/100km');
+    await expect(row).toContainText('Home');
+    await expect(row).toContainText(money(2.7));
+  });
+
   test('adds a recurring cost and ends it', async () => {
     await page.goto(`${carUrl}/bill/add?type=RECURRING`);
 
@@ -117,6 +204,29 @@ test.describe.serial('car ledger', () => {
 
     await expect(row).toContainText('Finished');
     await expect(row.getByRole('button', { name: 'End' })).toHaveCount(0);
+  });
+
+  test('fixes the name of a recurring cost', async () => {
+    await page
+      .getByRole('row', { name: /E2E Insurance/ })
+      .getByRole('button', { name: 'Edit' })
+      .click();
+
+    await expect(field(/^Name/)).toHaveValue('E2E Insurance');
+    await field(/^Name/).fill('E2E Car insurance');
+    // only a changed amount, interval or date books the payments again
+    const rebook = page.getByText('The payments are booked again');
+    await expect(rebook).toHaveCount(0);
+    await field(/^Amount/).fill('40');
+    await expect(rebook).toBeVisible();
+    await field(/^Amount/).fill('39.9');
+    await expect(rebook).toHaveCount(0);
+    await page.getByRole('button', { name: 'Save', exact: true }).click();
+
+    await expect(page).toHaveURL(/\/bill\/recurring$/);
+    const row = page.getByRole('row', { name: /E2E Car insurance/ });
+    await expect(row).toContainText('Finished');
+    await expect(row).toContainText(money(39.9));
   });
 
   const uploadCsv = (name: string, lines: string[]) =>
@@ -183,21 +293,107 @@ test.describe.serial('car ledger', () => {
     await expect(visibleButton('Continue')).toBeEnabled();
   });
 
+  test('exports the refuels as CSV in the format of the import', async () => {
+    await page.goto(`${carUrl}/bill/fuel`);
+
+    const download = page.waitForEvent('download');
+    await page.getByRole('link', { name: 'Export CSV' }).click();
+    const file = await download;
+
+    expect(file.suggestedFilename()).toBe('e2e-golf-fuel.csv');
+    const lines = (await readFile(await file.path(), 'utf8'))
+      .trim()
+      .split('\n');
+    expect(lines[0]).toBe(
+      'date,total,vatRate,unit,pricePerUnit,distance,estimateConsumption',
+    );
+    // the refuel added today and the two imported ones, the oldest first
+    const dates = lines.slice(1).map((line) => line.split(',')[0]);
+    expect(dates).toHaveLength(3);
+    expect(dates.slice(0, 2)).toEqual(['2026-01-10', '2026-02-07']);
+    expect([...dates].sort()).toEqual(dates);
+  });
+
+  test('exports and imports the charges as CSV', async () => {
+    await page.goto(`${carUrl}/bill/charging`);
+
+    const download = page.waitForEvent('download');
+    await page.getByRole('link', { name: 'Export CSV' }).click();
+    const file = await download;
+
+    expect(file.suggestedFilename()).toBe('e2e-golf-charging.csv');
+    const lines = (await readFile(await file.path(), 'utf8'))
+      .trim()
+      .split('\n');
+    expect(lines).toEqual([
+      'date,total,vatRate,unit,pricePerUnit,distance,location,stateOfCharge',
+      expect.stringMatching(
+        /^\d{4}-\d{2}-\d{2},2\.70,19,9\.00,30\.00,50\.00,HOME,$/,
+      ),
+    ]);
+
+    await page.goto(`${carUrl}/bill/import?type=CHARGING`);
+    await visibleButton('Continue').click();
+    await uploadCsv('charges.csv', [
+      'date,unit,pricePerUnit,distance,location',
+      '2026-03-15,18,35,100,public',
+    ]);
+    // the header names the fields, they are assigned at once
+    await expect(column(/^kWh/)).toHaveText('unit');
+    await expect(column(/^Price per kWh/)).toHaveText('pricePerUnit');
+    await expect(column(/^Location/)).toHaveText('location');
+    await visibleButton('Continue').click();
+    await visibleButton('Start import').click();
+
+    await expect(page.getByText('1 entry imported')).toBeVisible();
+  });
+
+  test('exports all expenses of the car for spreadsheets', async () => {
+    await page.goto(carUrl);
+
+    const download = page.waitForEvent('download');
+    await page.getByRole('link', { name: 'Export all' }).click();
+    const file = await download;
+
+    expect(file.suggestedFilename()).toBe('e2e-golf-all.csv');
+    const lines = (await readFile(await file.path(), 'utf8'))
+      .trim()
+      .split('\n');
+    expect(lines[0]).toBe(
+      'date,type,description,category,total,netAmount,vatAmount,vatRate,quantity,unit,distance',
+    );
+    const types = new Set(lines.slice(1).map((line) => line.split(',')[1]));
+    expect([...types].sort()).toEqual(['CHARGING', 'FUEL', 'MAINTENANCE']);
+    // the oldest first
+    const dates = lines.slice(1).map((line) => line.split(',')[0]);
+    expect([...dates].sort()).toEqual(dates);
+  });
+
   test('shows the costs on the dashboard', async () => {
     await page.goto('/dashboard');
 
     await expect(page.getByText('Cost breakdown')).toBeVisible();
     // 70 + 2 imported refuels (71.75 + 66.60) + 125.50 maintenance
-    await expect(page.getByText(money(333.85)).first()).toBeVisible();
+    // + 2.70 + 6.30 imported charging
+    await expect(page.getByText(money(342.85)).first()).toBeVisible();
     await expect(page.getByText('3 entries')).toBeVisible();
+    // the consumption in kWh is the hint of the one in liters
+    await expect(page.getByText('18.00 kWh/100km electric')).toBeVisible();
 
     // the imported refuels of January and February are in the monthly chart
     const chart = page.locator('.MuiCard-root', { hasText: 'Costs per month' });
-    await expect(chart.locator('.MuiBarElement-root').first()).toBeVisible();
+    await expect(chart.locator('.MuiBarChart-element').first()).toBeVisible();
     await expect(chart.getByText('Jan 26')).toBeVisible();
+    // the tooltip names the total of the month above the split by type
+    await chart.locator('.MuiBarChart-element').first().hover();
+    await expect(
+      page.getByText(`January 2026 · Total ${money(71.75)}`),
+    ).toBeVisible();
     await chart.getByRole('button', { name: 'Fuel', exact: true }).click();
     await expect(chart.getByText('Fuel price')).toBeVisible();
     await expect(chart.getByText('No refuels in this period')).toHaveCount(0);
+    await chart.getByRole('button', { name: 'Charging', exact: true }).click();
+    await expect(chart.getByText('Electricity price')).toBeVisible();
   });
 
   test('deletes an entry from the ledger', async () => {

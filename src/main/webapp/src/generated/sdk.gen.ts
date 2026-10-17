@@ -2,7 +2,7 @@
 
 import { type Client, type ClientMeta, formDataBodySerializer, type Options as Options2, type RequestResult, type TDataShape } from './client';
 import { client } from './client.gen';
-import type { AddNewFuelBillData, AddNewFuelBillErrors, AddNewFuelBillResponses, AddNewMaintenanceBillData, AddNewMaintenanceBillErrors, AddNewMaintenanceBillResponses, AddNewMiscellaneousBillData, AddNewMiscellaneousBillErrors, AddNewMiscellaneousBillResponses, AddNewRecurringBillData, AddNewRecurringBillErrors, AddNewRecurringBillResponses, AddReminderData, AddReminderErrors, AddReminderResponses, CallbackData, CallbackResponses, CompleteReminderData, CompleteReminderErrors, CompleteReminderResponses, CreateCarData, CreateCarErrors, CreateCarResponses, DeleteAdminAccountData, DeleteAdminAccountErrors, DeleteAdminAccountResponses, DeleteBillData, DeleteBillErrors, DeleteBillResponses, DeleteMyCarData, DeleteMyCarErrors, DeleteMyCarResponses, DeleteRecurringBillData, DeleteRecurringBillErrors, DeleteRecurringBillResponses, DeleteReminderData, DeleteReminderErrors, DeleteReminderResponses, EndRecurringBillData, EndRecurringBillErrors, EndRecurringBillResponses, GetAdminAccountsData, GetAdminAccountsResponses, GetAdminStatsData, GetAdminStatsResponses, GetAllBillsData, GetAllBillsResponses, GetAllBillYearsData, GetAllBillYearsResponses, GetAllFuelBillsData, GetAllFuelBillsResponses, GetAllFuelBillYearsData, GetAllFuelBillYearsResponses, GetAllMaintenanceBillsData, GetAllMaintenanceBillsResponses, GetAllMaintenanceBillYearsData, GetAllMaintenanceBillYearsResponses, GetAllMiscellaneousBillsData, GetAllMiscellaneousBillsResponses, GetAllMiscellaneousBillYearsData, GetAllMiscellaneousBillYearsResponses, GetAllRecurringBillsData, GetAllRecurringBillsResponses, GetCsvFieldsData, GetCsvFieldsResponses, GetDashboardStatsData, GetDashboardStatsResponses, GetFuelBillData, GetFuelBillErrors, GetFuelBillResponses, GetMaintenanceBillData, GetMaintenanceBillErrors, GetMaintenanceBillResponses, GetMiscellaneousBillData, GetMiscellaneousBillErrors, GetMiscellaneousBillResponses, GetMonthlyStatsData, GetMonthlyStatsResponses, GetMyCarData, GetMyCarErrors, GetMyCarOverviewData, GetMyCarOverviewErrors, GetMyCarOverviewResponses, GetMyCarResponses, GetMyCarsData, GetMyCarsResponses, GetMyselfData, GetMyselfResponses, GetRemindersData, GetRemindersResponses, ImportCsvData, ImportCsvErrors, ImportCsvResponses, LoginData, LoginErrorData, LoginErrorResponses, LoginResponses, LogoutCallbackData, LogoutCallbackResponses, LogoutData, LogoutResponses, UpdateAdminAccountData, UpdateAdminAccountErrors, UpdateAdminAccountResponses, UpdateFuelBillData, UpdateFuelBillErrors, UpdateFuelBillResponses, UpdateMaintenanceBillData, UpdateMaintenanceBillErrors, UpdateMaintenanceBillResponses, UpdateMiscellaneousBillData, UpdateMiscellaneousBillErrors, UpdateMiscellaneousBillResponses, UpdateMyCarData, UpdateMyCarErrors, UpdateMyCarResponses, UpdateMySettingsData, UpdateMySettingsErrors, UpdateMySettingsResponses, UpdateReminderData, UpdateReminderErrors, UpdateReminderResponses } from './types.gen';
+import type { AddBillAttachmentData, AddBillAttachmentErrors, AddBillAttachmentResponses, AddNewChargingBillData, AddNewChargingBillErrors, AddNewChargingBillResponses, AddNewFuelBillData, AddNewFuelBillErrors, AddNewFuelBillResponses, AddNewMaintenanceBillData, AddNewMaintenanceBillErrors, AddNewMaintenanceBillResponses, AddNewMiscellaneousBillData, AddNewMiscellaneousBillErrors, AddNewMiscellaneousBillResponses, AddNewRecurringBillData, AddNewRecurringBillErrors, AddNewRecurringBillResponses, AddReminderData, AddReminderErrors, AddReminderResponses, ApproveCarRequestData, ApproveCarRequestErrors, ApproveCarRequestResponses, CallbackData, CallbackResponses, CompleteReminderData, CompleteReminderErrors, CompleteReminderResponses, CreateCarData, CreateCarErrors, CreateCarResponses, DeleteAdminAccountData, DeleteAdminAccountErrors, DeleteAdminAccountResponses, DeleteAttachmentData, DeleteAttachmentErrors, DeleteAttachmentResponses, DeleteBillData, DeleteBillErrors, DeleteBillResponses, DeleteCarPictureData, DeleteCarPictureErrors, DeleteCarPictureResponses, DeleteMyCarData, DeleteMyCarErrors, DeleteMyCarResponses, DeleteMyselfData, DeleteMyselfResponses, DeleteRecurringBillData, DeleteRecurringBillErrors, DeleteRecurringBillResponses, DeleteReminderData, DeleteReminderErrors, DeleteReminderResponses, DownloadBackupData, DownloadBackupResponses, EndRecurringBillData, EndRecurringBillErrors, EndRecurringBillResponses, ExportAllExpensesCsvData, ExportAllExpensesCsvErrors, ExportAllExpensesCsvResponses, ExportCsvData, ExportCsvErrors, ExportCsvResponses, GetAdminAccountsData, GetAdminAccountsResponses, GetAdminCarRequestsData, GetAdminCarRequestsResponses, GetAdminStatsData, GetAdminStatsResponses, GetAllBillsData, GetAllBillsErrors, GetAllBillsResponses, GetAllBillYearsData, GetAllBillYearsResponses, GetAllChargingBillsData, GetAllChargingBillsErrors, GetAllChargingBillsResponses, GetAllChargingBillYearsData, GetAllChargingBillYearsResponses, GetAllFuelBillsData, GetAllFuelBillsErrors, GetAllFuelBillsResponses, GetAllFuelBillYearsData, GetAllFuelBillYearsResponses, GetAllMaintenanceBillsData, GetAllMaintenanceBillsErrors, GetAllMaintenanceBillsResponses, GetAllMaintenanceBillYearsData, GetAllMaintenanceBillYearsResponses, GetAllMiscellaneousBillsData, GetAllMiscellaneousBillsErrors, GetAllMiscellaneousBillsResponses, GetAllMiscellaneousBillYearsData, GetAllMiscellaneousBillYearsResponses, GetAllRecurringBillsData, GetAllRecurringBillsResponses, GetAttachmentContentData, GetAttachmentContentErrors, GetAttachmentContentResponses, GetBillAttachmentsData, GetBillAttachmentsErrors, GetBillAttachmentsResponses, GetCarPictureData, GetCarPictureErrors, GetCarPictureResponses, GetChargingBillData, GetChargingBillErrors, GetChargingBillResponses, GetCsvFieldsData, GetCsvFieldsResponses, GetDashboardStatsData, GetDashboardStatsResponses, GetFuelBillData, GetFuelBillErrors, GetFuelBillResponses, GetMaintenanceBillData, GetMaintenanceBillErrors, GetMaintenanceBillResponses, GetMiscellaneousBillData, GetMiscellaneousBillErrors, GetMiscellaneousBillResponses, GetMonthlyStatsData, GetMonthlyStatsResponses, GetMyCarData, GetMyCarErrors, GetMyCarOverviewData, GetMyCarOverviewErrors, GetMyCarOverviewResponses, GetMyCarResponses, GetMyCarsData, GetMyCarsResponses, GetMyLatestCarRequestData, GetMyLatestCarRequestResponses, GetMyNotificationsData, GetMyNotificationsResponses, GetMyPushData, GetMyPushResponses, GetMyselfData, GetMyselfResponses, GetRecurringBillData, GetRecurringBillErrors, GetRecurringBillResponses, GetRemindersData, GetRemindersResponses, GetVersionData, GetVersionResponses, ImportCsvData, ImportCsvErrors, ImportCsvResponses, LoginData, LoginErrorData, LoginErrorResponses, LoginResponses, LogoutCallbackData, LogoutCallbackResponses, LogoutData, LogoutResponses, MarkCarRequestSeenData, MarkCarRequestSeenErrors, MarkCarRequestSeenResponses, RejectCarRequestData, RejectCarRequestErrors, RejectCarRequestResponses, RequestMoreCarsData, RequestMoreCarsErrors, RequestMoreCarsResponses, RestoreBackupData, RestoreBackupErrors, RestoreBackupResponses, SetCarPictureData, SetCarPictureErrors, SetCarPictureResponses, SubscribeMyPushData, SubscribeMyPushErrors, SubscribeMyPushResponses, TestMyPushData, TestMyPushErrors, TestMyPushResponses, UnsubscribeMyPushData, UnsubscribeMyPushResponses, UpdateAdminAccountData, UpdateAdminAccountErrors, UpdateAdminAccountResponses, UpdateChargingBillData, UpdateChargingBillErrors, UpdateChargingBillResponses, UpdateFuelBillData, UpdateFuelBillErrors, UpdateFuelBillResponses, UpdateMaintenanceBillData, UpdateMaintenanceBillErrors, UpdateMaintenanceBillResponses, UpdateMiscellaneousBillData, UpdateMiscellaneousBillErrors, UpdateMiscellaneousBillResponses, UpdateMyCarData, UpdateMyCarErrors, UpdateMyCarResponses, UpdateMyNotificationsData, UpdateMyNotificationsErrors, UpdateMyNotificationsResponses, UpdateMySettingsData, UpdateMySettingsErrors, UpdateMySettingsResponses, UpdateRecurringBillData, UpdateRecurringBillErrors, UpdateRecurringBillResponses, UpdateReminderData, UpdateReminderErrors, UpdateReminderResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -47,11 +47,82 @@ export const updateAdminAccount = <ThrowOnError extends boolean = false>(options
 });
 
 /**
+ * Get Car Requests
+ *
+ * Requests for more cars, the open ones by age, the decided ones newest first; pages starting at 1
+ */
+export const getAdminCarRequests = <ThrowOnError extends boolean = false>(options?: Options<GetAdminCarRequestsData, ThrowOnError>): RequestResult<GetAdminCarRequestsResponses, unknown, ThrowOnError> => (options?.client ?? client).get<GetAdminCarRequestsResponses, unknown, ThrowOnError>({ url: '/api/admin/car-requests', ...options });
+
+/**
+ * Approve
+ *
+ * Approves the request and raises the car limit of the account
+ */
+export const approveCarRequest = <ThrowOnError extends boolean = false>(options: Options<ApproveCarRequestData, ThrowOnError>): RequestResult<ApproveCarRequestResponses, ApproveCarRequestErrors, ThrowOnError> => (options.client ?? client).post<ApproveCarRequestResponses, ApproveCarRequestErrors, ThrowOnError>({
+    url: '/api/admin/car-requests/{id}/approve',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Reject
+ *
+ * Rejects the request, the comment is shown to the user
+ */
+export const rejectCarRequest = <ThrowOnError extends boolean = false>(options: Options<RejectCarRequestData, ThrowOnError>): RequestResult<RejectCarRequestResponses, RejectCarRequestErrors, ThrowOnError> => (options.client ?? client).post<RejectCarRequestResponses, RejectCarRequestErrors, ThrowOnError>({
+    url: '/api/admin/car-requests/{id}/reject',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
  * Get Stats
  *
  * Usage of the whole installation
  */
 export const getAdminStats = <ThrowOnError extends boolean = false>(options?: Options<GetAdminStatsData, ThrowOnError>): RequestResult<GetAdminStatsResponses, unknown, ThrowOnError> => (options?.client ?? client).get<GetAdminStatsResponses, unknown, ThrowOnError>({ url: '/api/admin/stats', ...options });
+
+/**
+ * Get Bill Attachments
+ *
+ * Attachments of the bill, oldest first
+ */
+export const getBillAttachments = <ThrowOnError extends boolean = false>(options: Options<GetBillAttachmentsData, ThrowOnError>): RequestResult<GetBillAttachmentsResponses, GetBillAttachmentsErrors, ThrowOnError> => (options.client ?? client).get<GetBillAttachmentsResponses, GetBillAttachmentsErrors, ThrowOnError>({ url: '/api/attachment/{carId}/bill/{billId}', ...options });
+
+/**
+ * Add Bill Attachment
+ *
+ * Attaches a JPEG, PNG, WebP or PDF file to the bill
+ */
+export const addBillAttachment = <ThrowOnError extends boolean = false>(options: Options<AddBillAttachmentData, ThrowOnError>): RequestResult<AddBillAttachmentResponses, AddBillAttachmentErrors, ThrowOnError> => (options.client ?? client).post<AddBillAttachmentResponses, AddBillAttachmentErrors, ThrowOnError>({
+    ...formDataBodySerializer,
+    url: '/api/attachment/{carId}/bill/{billId}',
+    ...options,
+    headers: {
+        'Content-Type': null,
+        ...options.headers
+    }
+});
+
+/**
+ * Delete Attachment
+ *
+ * Removes the attachment with its file
+ */
+export const deleteAttachment = <ThrowOnError extends boolean = false>(options: Options<DeleteAttachmentData, ThrowOnError>): RequestResult<DeleteAttachmentResponses, DeleteAttachmentErrors, ThrowOnError> => (options.client ?? client).delete<DeleteAttachmentResponses, DeleteAttachmentErrors, ThrowOnError>({ url: '/api/attachment/{carId}/{id}', ...options });
+
+/**
+ * Get Attachment Content
+ *
+ * The file, shown inline by the browser
+ */
+export const getAttachmentContent = <ThrowOnError extends boolean = false>(options: Options<GetAttachmentContentData, ThrowOnError>): RequestResult<GetAttachmentContentResponses, GetAttachmentContentErrors, ThrowOnError> => (options.client ?? client).get<GetAttachmentContentResponses, GetAttachmentContentErrors, ThrowOnError>({ url: '/api/attachment/{carId}/{id}/content', ...options });
 
 /**
  * Callback
@@ -93,7 +164,54 @@ export const logoutCallback = <ThrowOnError extends boolean = false>(options?: O
  *
  * Gets all bills for specified car, Pages starting at 1
  */
-export const getAllBills = <ThrowOnError extends boolean = false>(options: Options<GetAllBillsData, ThrowOnError>): RequestResult<GetAllBillsResponses, unknown, ThrowOnError> => (options.client ?? client).get<GetAllBillsResponses, unknown, ThrowOnError>({ url: '/api/bill/{carId}/all', ...options });
+export const getAllBills = <ThrowOnError extends boolean = false>(options: Options<GetAllBillsData, ThrowOnError>): RequestResult<GetAllBillsResponses, GetAllBillsErrors, ThrowOnError> => (options.client ?? client).get<GetAllBillsResponses, GetAllBillsErrors, ThrowOnError>({ url: '/api/bill/{carId}/all', ...options });
+
+/**
+ * Add New Bill
+ */
+export const addNewChargingBill = <ThrowOnError extends boolean = false>(options: Options<AddNewChargingBillData, ThrowOnError>): RequestResult<AddNewChargingBillResponses, AddNewChargingBillErrors, ThrowOnError> => (options.client ?? client).put<AddNewChargingBillResponses, AddNewChargingBillErrors, ThrowOnError>({
+    url: '/api/bill/{carId}/charging',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Get All My Bills
+ *
+ * Gets all bills for specified car, Pages starting at 1
+ */
+export const getAllChargingBills = <ThrowOnError extends boolean = false>(options: Options<GetAllChargingBillsData, ThrowOnError>): RequestResult<GetAllChargingBillsResponses, GetAllChargingBillsErrors, ThrowOnError> => (options.client ?? client).get<GetAllChargingBillsResponses, GetAllChargingBillsErrors, ThrowOnError>({ url: '/api/bill/{carId}/charging/all', ...options });
+
+/**
+ * Get All My Bills
+ *
+ * Gets all years of bills for specified car
+ */
+export const getAllChargingBillYears = <ThrowOnError extends boolean = false>(options: Options<GetAllChargingBillYearsData, ThrowOnError>): RequestResult<GetAllChargingBillYearsResponses, unknown, ThrowOnError> => (options.client ?? client).get<GetAllChargingBillYearsResponses, unknown, ThrowOnError>({ url: '/api/bill/{carId}/charging/years', ...options });
+
+/**
+ * Get Bill
+ *
+ * Gets one bill of the car
+ */
+export const getChargingBill = <ThrowOnError extends boolean = false>(options: Options<GetChargingBillData, ThrowOnError>): RequestResult<GetChargingBillResponses, GetChargingBillErrors, ThrowOnError> => (options.client ?? client).get<GetChargingBillResponses, GetChargingBillErrors, ThrowOnError>({ url: '/api/bill/{carId}/charging/{billId}', ...options });
+
+/**
+ * Update Bill
+ *
+ * Updates a bill, calculated values are calculated again
+ */
+export const updateChargingBill = <ThrowOnError extends boolean = false>(options: Options<UpdateChargingBillData, ThrowOnError>): RequestResult<UpdateChargingBillResponses, UpdateChargingBillErrors, ThrowOnError> => (options.client ?? client).post<UpdateChargingBillResponses, UpdateChargingBillErrors, ThrowOnError>({
+    url: '/api/bill/{carId}/charging/{billId}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Add New Bill
@@ -112,7 +230,7 @@ export const addNewFuelBill = <ThrowOnError extends boolean = false>(options: Op
  *
  * Gets all bills for specified car, Pages starting at 1
  */
-export const getAllFuelBills = <ThrowOnError extends boolean = false>(options: Options<GetAllFuelBillsData, ThrowOnError>): RequestResult<GetAllFuelBillsResponses, unknown, ThrowOnError> => (options.client ?? client).get<GetAllFuelBillsResponses, unknown, ThrowOnError>({ url: '/api/bill/{carId}/fuel/all', ...options });
+export const getAllFuelBills = <ThrowOnError extends boolean = false>(options: Options<GetAllFuelBillsData, ThrowOnError>): RequestResult<GetAllFuelBillsResponses, GetAllFuelBillsErrors, ThrowOnError> => (options.client ?? client).get<GetAllFuelBillsResponses, GetAllFuelBillsErrors, ThrowOnError>({ url: '/api/bill/{carId}/fuel/all', ...options });
 
 /**
  * Get All My Bills
@@ -159,7 +277,7 @@ export const addNewMaintenanceBill = <ThrowOnError extends boolean = false>(opti
  *
  * Gets all bills for specified car, Pages starting at 1
  */
-export const getAllMaintenanceBills = <ThrowOnError extends boolean = false>(options: Options<GetAllMaintenanceBillsData, ThrowOnError>): RequestResult<GetAllMaintenanceBillsResponses, unknown, ThrowOnError> => (options.client ?? client).get<GetAllMaintenanceBillsResponses, unknown, ThrowOnError>({ url: '/api/bill/{carId}/maintenance/all', ...options });
+export const getAllMaintenanceBills = <ThrowOnError extends boolean = false>(options: Options<GetAllMaintenanceBillsData, ThrowOnError>): RequestResult<GetAllMaintenanceBillsResponses, GetAllMaintenanceBillsErrors, ThrowOnError> => (options.client ?? client).get<GetAllMaintenanceBillsResponses, GetAllMaintenanceBillsErrors, ThrowOnError>({ url: '/api/bill/{carId}/maintenance/all', ...options });
 
 /**
  * Get All My Bills
@@ -206,7 +324,7 @@ export const addNewMiscellaneousBill = <ThrowOnError extends boolean = false>(op
  *
  * Gets all bills for specified car, Pages starting at 1
  */
-export const getAllMiscellaneousBills = <ThrowOnError extends boolean = false>(options: Options<GetAllMiscellaneousBillsData, ThrowOnError>): RequestResult<GetAllMiscellaneousBillsResponses, unknown, ThrowOnError> => (options.client ?? client).get<GetAllMiscellaneousBillsResponses, unknown, ThrowOnError>({ url: '/api/bill/{carId}/miscellaneous/all', ...options });
+export const getAllMiscellaneousBills = <ThrowOnError extends boolean = false>(options: Options<GetAllMiscellaneousBillsData, ThrowOnError>): RequestResult<GetAllMiscellaneousBillsResponses, GetAllMiscellaneousBillsErrors, ThrowOnError> => (options.client ?? client).get<GetAllMiscellaneousBillsResponses, GetAllMiscellaneousBillsErrors, ThrowOnError>({ url: '/api/bill/{carId}/miscellaneous/all', ...options });
 
 /**
  * Get All My Bills
@@ -259,6 +377,27 @@ export const addNewRecurringBill = <ThrowOnError extends boolean = false>(option
  * Delete Recurring Bill
  */
 export const deleteRecurringBill = <ThrowOnError extends boolean = false>(options: Options<DeleteRecurringBillData, ThrowOnError>): RequestResult<DeleteRecurringBillResponses, DeleteRecurringBillErrors, ThrowOnError> => (options.client ?? client).delete<DeleteRecurringBillResponses, DeleteRecurringBillErrors, ThrowOnError>({ url: '/api/bill/{carId}/recurring/{billId}', ...options });
+
+/**
+ * Get Recurring Bill
+ *
+ * Gets one recurring bill of the car
+ */
+export const getRecurringBill = <ThrowOnError extends boolean = false>(options: Options<GetRecurringBillData, ThrowOnError>): RequestResult<GetRecurringBillResponses, GetRecurringBillErrors, ThrowOnError> => (options.client ?? client).get<GetRecurringBillResponses, GetRecurringBillErrors, ThrowOnError>({ url: '/api/bill/{carId}/recurring/{billId}', ...options });
+
+/**
+ * Update Recurring Bill
+ *
+ * Updates a recurring bill, a changed amount, interval or date books the payments again
+ */
+export const updateRecurringBill = <ThrowOnError extends boolean = false>(options: Options<UpdateRecurringBillData, ThrowOnError>): RequestResult<UpdateRecurringBillResponses, UpdateRecurringBillErrors, ThrowOnError> => (options.client ?? client).post<UpdateRecurringBillResponses, UpdateRecurringBillErrors, ThrowOnError>({
+    url: '/api/bill/{carId}/recurring/{billId}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * End Recurring Bill
@@ -333,6 +472,49 @@ export const updateMyCar = <ThrowOnError extends boolean = false>(options: Optio
  * Get My Car Overview
  */
 export const getMyCarOverview = <ThrowOnError extends boolean = false>(options: Options<GetMyCarOverviewData, ThrowOnError>): RequestResult<GetMyCarOverviewResponses, GetMyCarOverviewErrors, ThrowOnError> => (options.client ?? client).get<GetMyCarOverviewResponses, GetMyCarOverviewErrors, ThrowOnError>({ url: '/api/car/my/{id}/overview', ...options });
+
+/**
+ * Delete Picture
+ *
+ * Removes the picture, the generated avatar is shown again
+ */
+export const deleteCarPicture = <ThrowOnError extends boolean = false>(options: Options<DeleteCarPictureData, ThrowOnError>): RequestResult<DeleteCarPictureResponses, DeleteCarPictureErrors, ThrowOnError> => (options.client ?? client).delete<DeleteCarPictureResponses, DeleteCarPictureErrors, ThrowOnError>({ url: '/api/car/my/{id}/picture', ...options });
+
+/**
+ * Get Picture
+ *
+ * The picture; its URL carries the pictureId of the car, so it can be cached
+ */
+export const getCarPicture = <ThrowOnError extends boolean = false>(options: Options<GetCarPictureData, ThrowOnError>): RequestResult<GetCarPictureResponses, GetCarPictureErrors, ThrowOnError> => (options.client ?? client).get<GetCarPictureResponses, GetCarPictureErrors, ThrowOnError>({ url: '/api/car/my/{id}/picture', ...options });
+
+/**
+ * Set Picture
+ *
+ * Replaces the picture of the car with a JPEG, PNG or WebP image
+ */
+export const setCarPicture = <ThrowOnError extends boolean = false>(options: Options<SetCarPictureData, ThrowOnError>): RequestResult<SetCarPictureResponses, SetCarPictureErrors, ThrowOnError> => (options.client ?? client).put<SetCarPictureResponses, SetCarPictureErrors, ThrowOnError>({
+    ...formDataBodySerializer,
+    url: '/api/car/my/{id}/picture',
+    ...options,
+    headers: {
+        'Content-Type': null,
+        ...options.headers
+    }
+});
+
+/**
+ * Export Csv
+ *
+ * Exports the bills of one type as CSV, in the format of the import: the header names the fields of the import, ISO dates, a dot as decimal separator. The oldest bill comes first.
+ */
+export const exportCsv = <ThrowOnError extends boolean = false>(options: Options<ExportCsvData, ThrowOnError>): RequestResult<ExportCsvResponses, ExportCsvErrors, ThrowOnError> => (options.client ?? client).get<ExportCsvResponses, ExportCsvErrors, ThrowOnError>({ url: '/api/export/{carId}', ...options });
+
+/**
+ * Export All Expenses
+ *
+ * Exports all expenses of the car as one CSV, for spreadsheets: every bill and the payments of the recurring costs, the oldest first, ISO dates and a dot as decimal separator. Not meant to be imported again.
+ */
+export const exportAllExpensesCsv = <ThrowOnError extends boolean = false>(options: Options<ExportAllExpensesCsvData, ThrowOnError>): RequestResult<ExportAllExpensesCsvResponses, ExportAllExpensesCsvErrors, ThrowOnError> => (options.client ?? client).get<ExportAllExpensesCsvResponses, ExportAllExpensesCsvErrors, ThrowOnError>({ url: '/api/export/{carId}/all', ...options });
 
 /**
  * Import Fuel Csv
@@ -423,9 +605,129 @@ export const getDashboardStats = <ThrowOnError extends boolean = false>(options:
 export const getMonthlyStats = <ThrowOnError extends boolean = false>(options: Options<GetMonthlyStatsData, ThrowOnError>): RequestResult<GetMonthlyStatsResponses, unknown, ThrowOnError> => (options.client ?? client).get<GetMonthlyStatsResponses, unknown, ThrowOnError>({ url: '/api/stats/{carId}/monthly', ...options });
 
 /**
+ * Delete Me
+ *
+ * Deletes the own account with all its cars, entries, recurring costs and reminders. The account at the identity provider stays.
+ */
+export const deleteMyself = <ThrowOnError extends boolean = false>(options?: Options<DeleteMyselfData, ThrowOnError>): RequestResult<DeleteMyselfResponses, unknown, ThrowOnError> => (options?.client ?? client).delete<DeleteMyselfResponses, unknown, ThrowOnError>({ url: '/api/user/me', ...options });
+
+/**
  * Get Me
  */
 export const getMyself = <ThrowOnError extends boolean = false>(options?: Options<GetMyselfData, ThrowOnError>): RequestResult<GetMyselfResponses, unknown, ThrowOnError> => (options?.client ?? client).get<GetMyselfResponses, unknown, ThrowOnError>({ url: '/api/user/me', ...options });
+
+/**
+ * Download
+ *
+ * All own data as ZIP: settings, cars, entries, recurring costs, reminders and the files
+ */
+export const downloadBackup = <ThrowOnError extends boolean = false>(options?: Options<DownloadBackupData, ThrowOnError>): RequestResult<DownloadBackupResponses, unknown, ThrowOnError> => (options?.client ?? client).get<DownloadBackupResponses, unknown, ThrowOnError>({ url: '/api/user/me/backup', ...options });
+
+/**
+ * Restore
+ *
+ * Restores a backup into the own account, which must not have cars yet
+ */
+export const restoreBackup = <ThrowOnError extends boolean = false>(options: Options<RestoreBackupData, ThrowOnError>): RequestResult<RestoreBackupResponses, RestoreBackupErrors, ThrowOnError> => (options.client ?? client).post<RestoreBackupResponses, RestoreBackupErrors, ThrowOnError>({
+    ...formDataBodySerializer,
+    url: '/api/user/me/backup',
+    ...options,
+    headers: {
+        'Content-Type': null,
+        ...options.headers
+    }
+});
+
+/**
+ * Request More Cars
+ *
+ * Requests more cars than the limit of the account allows
+ */
+export const requestMoreCars = <ThrowOnError extends boolean = false>(options: Options<RequestMoreCarsData, ThrowOnError>): RequestResult<RequestMoreCarsResponses, RequestMoreCarsErrors, ThrowOnError> => (options.client ?? client).post<RequestMoreCarsResponses, RequestMoreCarsErrors, ThrowOnError>({
+    url: '/api/user/me/car-requests',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Get Latest
+ *
+ * The newest own request for more cars
+ */
+export const getMyLatestCarRequest = <ThrowOnError extends boolean = false>(options?: Options<GetMyLatestCarRequestData, ThrowOnError>): RequestResult<GetMyLatestCarRequestResponses, unknown, ThrowOnError> => (options?.client ?? client).get<GetMyLatestCarRequestResponses, unknown, ThrowOnError>({ url: '/api/user/me/car-requests/latest', ...options });
+
+/**
+ * Mark Seen
+ *
+ * The decision was shown to the user, it is not shown again
+ */
+export const markCarRequestSeen = <ThrowOnError extends boolean = false>(options: Options<MarkCarRequestSeenData, ThrowOnError>): RequestResult<MarkCarRequestSeenResponses, MarkCarRequestSeenErrors, ThrowOnError> => (options.client ?? client).post<MarkCarRequestSeenResponses, MarkCarRequestSeenErrors, ThrowOnError>({ url: '/api/user/me/car-requests/{id}/seen', ...options });
+
+/**
+ * Get Notifications
+ *
+ * Notifications of the own account by e-mail
+ */
+export const getMyNotifications = <ThrowOnError extends boolean = false>(options?: Options<GetMyNotificationsData, ThrowOnError>): RequestResult<GetMyNotificationsResponses, unknown, ThrowOnError> => (options?.client ?? client).get<GetMyNotificationsResponses, unknown, ThrowOnError>({ url: '/api/user/me/notifications', ...options });
+
+/**
+ * Update Notifications
+ *
+ * Turns the notifications of the own account by e-mail on or off
+ */
+export const updateMyNotifications = <ThrowOnError extends boolean = false>(options: Options<UpdateMyNotificationsData, ThrowOnError>): RequestResult<UpdateMyNotificationsResponses, UpdateMyNotificationsErrors, ThrowOnError> => (options.client ?? client).put<UpdateMyNotificationsResponses, UpdateMyNotificationsErrors, ThrowOnError>({
+    url: '/api/user/me/notifications',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Get Push
+ *
+ * Whether the server sends push messages, its key for the subscription and the number of own browsers
+ */
+export const getMyPush = <ThrowOnError extends boolean = false>(options?: Options<GetMyPushData, ThrowOnError>): RequestResult<GetMyPushResponses, unknown, ThrowOnError> => (options?.client ?? client).get<GetMyPushResponses, unknown, ThrowOnError>({ url: '/api/user/me/push', ...options });
+
+/**
+ * Unsubscribe
+ *
+ * Removes the browser from the receivers of the notifications
+ */
+export const unsubscribeMyPush = <ThrowOnError extends boolean = false>(options: Options<UnsubscribeMyPushData, ThrowOnError>): RequestResult<UnsubscribeMyPushResponses, unknown, ThrowOnError> => (options.client ?? client).delete<UnsubscribeMyPushResponses, unknown, ThrowOnError>({
+    url: '/api/user/me/push/subscriptions',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Subscribe
+ *
+ * Adds the browser to the receivers of the notifications, again with new keys
+ */
+export const subscribeMyPush = <ThrowOnError extends boolean = false>(options: Options<SubscribeMyPushData, ThrowOnError>): RequestResult<SubscribeMyPushResponses, SubscribeMyPushErrors, ThrowOnError> => (options.client ?? client).put<SubscribeMyPushResponses, SubscribeMyPushErrors, ThrowOnError>({
+    url: '/api/user/me/push/subscriptions',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Test
+ *
+ * Sends a notification to every own browser
+ */
+export const testMyPush = <ThrowOnError extends boolean = false>(options?: Options<TestMyPushData, ThrowOnError>): RequestResult<TestMyPushResponses, TestMyPushErrors, ThrowOnError> => (options?.client ?? client).post<TestMyPushResponses, TestMyPushErrors, ThrowOnError>({ url: '/api/user/me/push/test', ...options });
 
 /**
  * Update Settings
@@ -440,3 +742,10 @@ export const updateMySettings = <ThrowOnError extends boolean = false>(options: 
         ...options.headers
     }
 });
+
+/**
+ * Get Version
+ *
+ * Version of the server, e.g. 0.5.0 or 0.5.0-dev.531
+ */
+export const getVersion = <ThrowOnError extends boolean = false>(options?: Options<GetVersionData, ThrowOnError>): RequestResult<GetVersionResponses, unknown, ThrowOnError> => (options?.client ?? client).get<GetVersionResponses, unknown, ThrowOnError>({ url: '/api/version', ...options });

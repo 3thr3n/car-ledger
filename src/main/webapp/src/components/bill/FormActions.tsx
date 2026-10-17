@@ -20,8 +20,10 @@ export default function FormActions({
     <Stack
       direction={{ xs: 'column-reverse', sm: 'row' }}
       spacing={1}
-      justifyContent="flex-end"
-      sx={{ pt: 1 }}
+      sx={{
+        justifyContent: 'flex-end',
+        pt: 1,
+      }}
     >
       <Button color="inherit" onClick={() => router.history.back()}>
         {t('button.cancel')}

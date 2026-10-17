@@ -1,23 +1,52 @@
 import { Box, Stack, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { HiLo, HiLoStats } from '@/generated';
-import { EMPTY, hasValue, useFormat } from '@/utils/format';
+import { EMPTY, Formatter, hasValue, useFormat } from '@/utils/format';
 import Section from '@/components/ui/Section';
 
 interface Row {
   key: keyof HiLoStats;
-  unit: string;
-  digits: number;
-  money?: boolean;
+  /** a value of the API in the units of the account */
+  format: (format: Formatter, value: number) => string;
+  /** only shown with refuels or with charges */
+  energy?: 'fuel' | 'charging';
+  /** the lowest value of the API is the highest one shown, e.g. mpg */
+  inverse?: (format: Formatter) => boolean;
 }
 
+const money = (format: Formatter, value: number) => format.money(value);
+
 const rows: Row[] = [
-  { key: 'pricePerUnit', unit: 'ct/l', digits: 1 },
-  { key: 'consumption', unit: 'l/100km', digits: 2 },
-  { key: 'fuelCostPerKm', unit: 'ct/km', digits: 2 },
-  { key: 'distance', unit: 'km', digits: 0 },
-  { key: 'fuelCost', unit: '€', digits: 2, money: true },
-  { key: 'maintenanceCost', unit: '€', digits: 2, money: true },
+  {
+    key: 'pricePerUnit',
+    format: (f, value) => f.fuelPrice(value),
+    energy: 'fuel',
+  },
+  {
+    key: 'consumption',
+    format: (f, value) => f.consumption(value),
+    energy: 'fuel',
+    inverse: (f) => f.units.consumption.label === 'mpg',
+  },
+  {
+    key: 'fuelCostPerKm',
+    format: (f, value) => f.costPerDistance(value),
+    energy: 'fuel',
+  },
+  { key: 'distance', format: (f, value) => f.distance(value), energy: 'fuel' },
+  { key: 'fuelCost', format: money, energy: 'fuel' },
+  {
+    key: 'chargingPricePerUnit',
+    format: (f, value) => f.unit(value, 'ct/kWh', 1),
+    energy: 'charging',
+  },
+  {
+    key: 'chargingConsumption',
+    format: (f, value) => f.chargingConsumption(value),
+    energy: 'charging',
+  },
+  { key: 'chargingCost', format: money, energy: 'charging' },
+  { key: 'maintenanceCost', format: money },
 ];
 
 /**
@@ -26,13 +55,21 @@ const rows: Row[] = [
 export default function RangeList({ hiLo }: { hiLo: HiLoStats }) {
   const { t } = useTranslation();
   const format = useFormat();
+  const charged = hasValue(hiLo.chargingPricePerUnit?.max);
+  // without any charges the fuel rows stay, also when they are still empty
+  const refueled = hasValue(hiLo.pricePerUnit?.max) || !charged;
+  const shown = rows.filter(
+    (row) =>
+      !row.energy ||
+      (row.energy === 'fuel' && refueled) ||
+      (row.energy === 'charging' && charged),
+  );
 
   const value = (range: HiLo | undefined, side: 'min' | 'max', row: Row) => {
-    const number = range?.[side];
+    const inverse = row.inverse?.(format);
+    const number = range?.[inverse ? (side === 'min' ? 'max' : 'min') : side];
     if (number === undefined || number === null) return EMPTY;
-    return row.money
-      ? format.money(number)
-      : format.unit(number, row.unit, row.digits);
+    return row.format(format, number);
   };
 
   return (
@@ -41,7 +78,7 @@ export default function RangeList({ hiLo }: { hiLo: HiLoStats }) {
       subtitle={t('dashboard.range.subtitle')}
     >
       <Stack spacing={2}>
-        {rows.map((row) => {
+        {shown.map((row) => {
           const { key } = row;
           const range = hiLo[key];
           const hasRange = range?.min !== undefined && hasValue(range?.max);
@@ -50,17 +87,29 @@ export default function RangeList({ hiLo }: { hiLo: HiLoStats }) {
             <Box key={key}>
               <Typography
                 variant="body2"
-                color="text.secondary"
-                sx={{ mb: 0.5 }}
+                sx={{
+                  color: 'text.secondary',
+                  mb: 0.5,
+                }}
               >
-                {t(`dashboard.range.${key}`)}
+                {t(`dashboard.range.${key}`, {
+                  context: format.units.distance.context,
+                })}
               </Typography>
-              <Stack direction="row" alignItems="center" spacing={1.5}>
+              <Stack
+                direction="row"
+                spacing={1.5}
+                sx={{
+                  alignItems: 'center',
+                }}
+              >
                 <Typography
                   variant="body2"
-                  fontWeight={600}
                   className="tabular"
-                  sx={{ minWidth: 92 }}
+                  sx={{
+                    fontWeight: 600,
+                    minWidth: 92,
+                  }}
                 >
                   {value(range, 'min', row)}
                 </Typography>
@@ -77,9 +126,12 @@ export default function RangeList({ hiLo }: { hiLo: HiLoStats }) {
                 />
                 <Typography
                   variant="body2"
-                  fontWeight={600}
                   className="tabular"
-                  sx={{ minWidth: 92, textAlign: 'right' }}
+                  sx={{
+                    fontWeight: 600,
+                    minWidth: 92,
+                    textAlign: 'right',
+                  }}
                 >
                   {value(range, 'max', row)}
                 </Typography>

@@ -10,6 +10,7 @@ import org.apache.commons.lang3.StringUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.codeflowwizardry.carledger.exception.CsvImportException;
 
 public class CsvColumnMapping
 {
@@ -45,7 +46,7 @@ public class CsvColumnMapping
 
 		if (!missingFields.isEmpty())
 		{
-			throw new IllegalArgumentException(
+			throw new CsvImportException(
 					"Missing required field mappings: " + String.join(", ", missingFields));
 		}
 	}
@@ -54,7 +55,7 @@ public class CsvColumnMapping
 	{
 		if (StringUtils.isBlank(json))
 		{
-			throw new IllegalArgumentException("CSV column mapping cannot be empty!");
+			throw new CsvImportException("CSV column mapping cannot be empty!");
 		}
 
 		ObjectMapper mapper = new ObjectMapper();

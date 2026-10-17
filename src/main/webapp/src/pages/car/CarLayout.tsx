@@ -16,8 +16,8 @@ import { useTranslation } from 'react-i18next';
 import { getMyCarOptions } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
 import { BackendError } from '@/utils/BackendError';
-import { BillType } from '@/generated';
-import { billTypes } from '@/utils/billTypes';
+import { BillType, EnergyType } from '@/generated';
+import { billTypes, billTypesFor } from '@/utils/billTypes';
 import CarAvatar from '@/components/layout/CarAvatar';
 import OdometerValue from '@/components/ui/OdometerValue';
 import {
@@ -28,16 +28,15 @@ import {
 import NotFoundPage from '@/pages/NotFoundPage';
 import ErrorPage from '@/pages/ErrorPage';
 
-const tabs = [
-  { key: 'overview', to: '/car/$id' },
-  ...[
-    BillType.FUEL,
-    BillType.MAINTENANCE,
-    BillType.MISCELLANEOUS,
-    BillType.RECURRING,
-  ].map((type) => ({ key: type, to: billTypes[type].listRoute })),
-  { key: 'reminders', to: '/car/$id/reminders' },
-] as const;
+/** the entry types of the car between the overview and the reminders */
+const tabsFor = (energyType?: EnergyType) => [
+  { key: 'overview', to: '/car/$id' } as const,
+  ...billTypesFor(energyType).map((meta) => ({
+    key: meta.type,
+    to: meta.listRoute,
+  })),
+  { key: 'reminders', to: '/car/$id/reminders' } as const,
+];
 
 export default function CarLayout({ id }: { id: number }) {
   const { t } = useTranslation();
@@ -97,27 +96,44 @@ export default function CarLayout({ id }: { id: number }) {
             <Stack
               direction={{ xs: 'column', sm: 'row' }}
               spacing={2}
-              alignItems={{ xs: 'flex-start', sm: 'center' }}
-              sx={{ mb: 2.5 }}
+              sx={{
+                alignItems: { xs: 'flex-start', sm: 'center' },
+                mb: 2.5,
+              }}
             >
               <Stack
                 direction="row"
                 spacing={2}
-                alignItems="center"
-                sx={{ flexGrow: 1, minWidth: 0 }}
+                sx={{
+                  alignItems: 'center',
+                  flexGrow: 1,
+                  minWidth: 0,
+                }}
               >
-                <CarAvatar id={car?.id} name={car?.name} size={52} />
+                <CarAvatar
+                  id={car?.id}
+                  name={car?.name}
+                  pictureId={car?.pictureId}
+                  size={52}
+                />
                 <Box sx={{ minWidth: 0 }}>
                   <Typography variant="h4" component="h1" noWrap>
                     {isLoading ? <Skeleton width={220} /> : car?.name}
                   </Typography>
-                  <Typography color="text.secondary">
+                  <Typography
+                    sx={{
+                      color: 'text.secondary',
+                    }}
+                  >
                     {isLoading ? (
                       <Skeleton width={160} />
                     ) : (
                       <>
+                        {car?.licensePlate && `${car.licensePlate} · `}
                         {car?.year &&
                           `${t('car.built', { year: car.year })} · `}
+                        {car?.energyType &&
+                          `${t(`car.energyTypes.${car.energyType}`)} · `}
                         <OdometerValue odometer={car?.currentOdometer} />
                       </>
                     )}
@@ -160,7 +176,7 @@ export default function CarLayout({ id }: { id: number }) {
               allowScrollButtonsMobile
               sx={{ mb: 3, borderBottom: 1, borderColor: 'divider' }}
             >
-              {tabs.map((tab) => (
+              {tabsFor(car?.energyType).map((tab) => (
                 <RouterTab
                   key={tab.key}
                   value={tab.key}

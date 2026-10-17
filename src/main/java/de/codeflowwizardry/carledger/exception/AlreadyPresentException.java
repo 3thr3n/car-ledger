@@ -6,4 +6,9 @@ public class AlreadyPresentException extends CarLedgerException
 	{
 		super(message, cause);
 	}
+
+	public AlreadyPresentException(String message)
+	{
+		super(message);
+	}
 }

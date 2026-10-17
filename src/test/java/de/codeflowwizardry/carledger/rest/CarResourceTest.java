@@ -14,11 +14,17 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import de.codeflowwizardry.carledger.data.AccountEntity;
+import de.codeflowwizardry.carledger.data.BillCategory;
+import de.codeflowwizardry.carledger.data.BillInterval;
 import de.codeflowwizardry.carledger.data.CarEntity;
+import de.codeflowwizardry.carledger.data.RecurringBillEntity;
+import de.codeflowwizardry.carledger.data.RecurringBillPaymentEntity;
 import de.codeflowwizardry.carledger.data.factory.FuelBillFactory;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.BillRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
+import de.codeflowwizardry.carledger.data.repository.RecurringBillPaymentRepository;
+import de.codeflowwizardry.carledger.data.repository.RecurringBillRepository;
 import de.codeflowwizardry.carledger.rest.car.fuel.FuelBillInput;
 import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
@@ -43,6 +49,12 @@ class CarResourceTest
 
 	@Inject
 	BillRepository billRepository;
+
+	@Inject
+	RecurringBillRepository recurringBillRepository;
+
+	@Inject
+	RecurringBillPaymentRepository recurringBillPaymentRepository;
 
 	long carId = 0;
 
@@ -108,6 +120,44 @@ class CarResourceTest
 	@TestSecurity(user = "peter", roles = {
 			"user"
 	})
+	void shouldAddRecurringPaymentsToTheTotalCostOfTheOverview()
+	{
+		QuarkusTransaction.requiringNew().run(() -> {
+			RecurringBillEntity insurance = new RecurringBillEntity(carRepository.findById(carId, "peter"));
+			insurance.setName("Insurance");
+			insurance.setCategory(BillCategory.FINANCE);
+			insurance.setInterval(BillInterval.MONTHLY);
+			insurance.setAmount(BigDecimal.valueOf(40));
+			insurance.setStartDate(LocalDate.now().minusMonths(1));
+			insurance.setNextDueDate(LocalDate.now().plusMonths(1));
+			insurance.setTotal(BigDecimal.valueOf(80));
+			recurringBillRepository.persist(insurance);
+
+			for (int month = 0; month < 2; month++)
+			{
+				RecurringBillPaymentEntity payment = new RecurringBillPaymentEntity(insurance);
+				payment.setDueDate(LocalDate.now().minusMonths(month));
+				payment.setPaidDate(payment.getDueDate());
+				payment.setAmount(BigDecimal.valueOf(40));
+				recurringBillPaymentRepository.persist(payment);
+			}
+		});
+
+		given()
+				.when()
+				.pathParam("id", carId)
+				.get("{id}/overview")
+				.then()
+				.statusCode(200)
+				.body("totalRefuels", is(1))
+				// 79.96 refuel + 2 * 40 insurance
+				.body("totalCost", is(159.96F));
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
 	void shouldGetFailGettingCar()
 	{
 		given()
@@ -158,6 +208,184 @@ class CarResourceTest
 				.put()
 				.then()
 				.statusCode(201);
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldSaveAndClearTheDetails()
+	{
+		given()
+				.body("""
+						{ "name": "Normal car", "year": 2019, "odometer": 0, "licensePlate": " M-AB 123 ",
+						  "vin": "wvw zzz1kz-6w000001", "purchaseDate": "2020-03-01", "purchasePrice": 18500.5 }
+						""")
+				.contentType(ContentType.JSON)
+				.when()
+				.post("{id}", carId)
+				.then()
+				.statusCode(200)
+				.body("licensePlate", is("M-AB 123"))
+				.body("vin", is("WVWZZZ1KZ6W000001"))
+				.body("purchaseDate", is("2020-03-01"))
+				.body("purchasePrice", is(18500.5F));
+
+		given()
+				.body("""
+						{ "name": "Normal car", "year": 2019, "odometer": 0, "licensePlate": " ", "vin": "" }
+						""")
+				.contentType(ContentType.JSON)
+				.when()
+				.post("{id}", carId)
+				.then()
+				.statusCode(200)
+				.body("licensePlate", Matchers.nullValue())
+				.body("vin", Matchers.nullValue())
+				.body("purchaseDate", Matchers.nullValue())
+				.body("purchasePrice", Matchers.nullValue());
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldCreateACarWithAShortVinBefore1981()
+	{
+		given()
+				.body("""
+						{ "name": "Second car", "year": 1975, "odometer": 0, "vin": "1180012345" }
+						""")
+				.contentType(ContentType.JSON)
+				.when()
+				.put()
+				.then()
+				.statusCode(201);
+
+		assertEquals("1180012345", vinOf("Second car"));
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldRejectInvalidDetails()
+	{
+		String future = LocalDate.now().plusDays(1).toString();
+		given()
+				.body("""
+						{ "name": "Normal car", "year": 2019, "odometer": 0, "licensePlate": "ABCDEFGHIJKLMNOPQRSTU",
+						  "vin": "WVWZZZ1KZ6W00000I", "purchaseDate": "%s", "purchasePrice": -1 }
+						""".formatted(future))
+				.contentType(ContentType.JSON)
+				.when()
+				.post("{id}", carId)
+				.then()
+				.statusCode(400)
+				.body("size()", is(4));
+
+		// a VIN of 17 characters is required since 1981
+		given()
+				.body("""
+						{ "name": "Second car", "year": 2019, "odometer": 0, "vin": "1180012345" }
+						""")
+				.contentType(ContentType.JSON)
+				.when()
+				.put()
+				.then()
+				.statusCode(400)
+				.body("[0]", Matchers.containsString("17"));
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldBeAPetrolCarWithoutAnEnergyType()
+	{
+		given()
+				.when()
+				.get("{id}", carId)
+				.then()
+				.statusCode(200)
+				.body("energyType", is("PETROL"))
+				.body("tankSize", Matchers.nullValue())
+				.body("batteryCapacity", Matchers.nullValue());
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldKeepOnlyTheSizesTheEnergyTypeHas()
+	{
+		// a plug-in hybrid has both
+		given()
+				.body("""
+						{ "name": "Normal car", "year": 2022, "odometer": 0, "energyType": "PLUG_IN_HYBRID",
+						  "tankSize": 42.5, "batteryCapacity": 19.7 }
+						""")
+				.contentType(ContentType.JSON)
+				.when()
+				.post("{id}", carId)
+				.then()
+				.statusCode(200)
+				.body("energyType", is("PLUG_IN_HYBRID"))
+				.body("tankSize", is(42.5F))
+				.body("batteryCapacity", is(19.7F));
+
+		// an electric car has no tank, a diesel no battery
+		given()
+				.body("""
+						{ "name": "Normal car", "year": 2022, "odometer": 0, "energyType": "ELECTRIC",
+						  "tankSize": 42.5, "batteryCapacity": 77.4 }
+						""")
+				.contentType(ContentType.JSON)
+				.when()
+				.post("{id}", carId)
+				.then()
+				.statusCode(200)
+				.body("tankSize", Matchers.nullValue())
+				.body("batteryCapacity", is(77.4F));
+
+		given()
+				.body("""
+						{ "name": "Normal car", "year": 2022, "odometer": 0, "energyType": "DIESEL",
+						  "tankSize": 50.5, "batteryCapacity": 77.4 }
+						""")
+				.contentType(ContentType.JSON)
+				.when()
+				.post("{id}", carId)
+				.then()
+				.statusCode(200)
+				.body("energyType", is("DIESEL"))
+				.body("tankSize", is(50.5F))
+				.body("batteryCapacity", Matchers.nullValue());
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldRejectImpossibleSizes()
+	{
+		given()
+				.body("""
+						{ "name": "Normal car", "year": 2022, "odometer": 0, "energyType": "PLUG_IN_HYBRID",
+						  "tankSize": 0, "batteryCapacity": 501 }
+						""")
+				.contentType(ContentType.JSON)
+				.when()
+				.post("{id}", carId)
+				.then()
+				.statusCode(400)
+				.body("size()", is(2));
+	}
+
+	@Transactional
+	String vinOf(String name)
+	{
+		return carRepository.find("name", name).firstResult().getVin();
 	}
 
 	@Test

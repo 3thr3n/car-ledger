@@ -1,11 +1,12 @@
 name: Java CI
 
+# develop gets the pull requests and publishes the dev builds, main only the released states (see README)
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "develop", "main" ]
     tags: [ "*" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "develop", "main" ]
 
 env:
   REGISTRY: ghcr.io
@@ -20,8 +21,41 @@ jobs:
       contents: read
       packages: write
 
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      image-tag: ${{ steps.version.outputs.image-tag }}
+
     steps:
-      - uses: actions/checkout@v4
+      # with the history and the tags, for the versions of the charts
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      # One version for the app, the image and the charts car-ledger and stack: a tag (e.g. 0.2.0) has to match the
+      # version of Chart.yaml and is used as it is, every other build is <version of Chart.yaml>-dev.<run number>.
+      # The charts keycloak and authentik have their own versions, raised when they change.
+      # Checked before anything is published.
+      - name: Version
+        id: version
+        env:
+          RUN_NUMBER: ${{ github.run_number }}
+        run: |
+          BASE=$(sed -n 's/^version: *//p' helm/car-ledger/Chart.yaml)
+          if [ "$GITHUB_REF_TYPE" = tag ]; then
+            if [ "$GITHUB_REF_NAME" != "$BASE" ]; then
+              echo "::error::The tag $GITHUB_REF_NAME differs from the version $BASE of helm/car-ledger/Chart.yaml"
+              exit 1
+            fi
+            helm/check-chart-versions.sh
+            VERSION="$BASE"
+            IMAGE_TAG="$GITHUB_REF_NAME"
+          else
+            VERSION="$BASE-dev.$RUN_NUMBER"
+            IMAGE_TAG="$RUN_NUMBER"
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "image-tag=$IMAGE_TAG" >> "$GITHUB_OUTPUT"
+
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
@@ -31,12 +65,15 @@ jobs:
 
       # Quinoa builds the frontend with the Node.js on the path, not the default one of the runner
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 24
 
+      # the version is shown at the start of the app
       - name: Build with Maven
-        run: mvn -B verify
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: mvn -B verify -Drevision="$VERSION"
 
       # the build writes the OpenAPI spec of the backend to the frontend, the client is generated from it
       - name: Check the API spec and client are up to date
@@ -70,7 +107,7 @@ jobs:
             type=ref,event=branch
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v4
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -88,36 +125,101 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
-  # The chart of this build: version <major>.<minor>.<run number> of Chart.yaml, its default image is the one
-  # pushed above, so a published chart never points to an older image.
+  # The charts of this build, their default image is the one pushed above, so a published chart never points to an
+  # older image. Builds of develop publish the prerelease <version of Chart.yaml>-dev.<run number>, which helm only
+  # installs with --devel or an explicit --version. A tag (e.g. 0.2.0, has to match the version of Chart.yaml)
+  # publishes the charts in that version with the image of the tag, and creates the GitHub release.
+  # car-ledger and stack carry the version of the build; the stack bundles the other charts
+  # of the same commit. keycloak and authentik are published by a release in their own version, once.
   chart:
     needs: build
-    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && github.actor != 'dependabot[bot]' }}
+    if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref_type == 'tag') && github.actor != 'dependabot[bot]' }}
     runs-on: ubuntu-latest
 
     permissions:
-      contents: read
+      contents: write
       packages: write
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - name: Package the chart
-        id: package
-        env:
-          IMAGE_TAG: ${{ github.run_number }}
-        run: |
-          BASE=$(sed -n 's/^version: *//p' helm/car-ledger/Chart.yaml)
-          VERSION="${BASE%.*}.${IMAGE_TAG}"
-          helm dependency update helm/car-ledger
-          helm package helm/car-ledger --version "$VERSION" --app-version "$IMAGE_TAG" --destination chart-dist
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "file=$(ls chart-dist/*.tgz)" >> "$GITHUB_OUTPUT"
-
-      - name: Push the chart
+      - name: Log in to the registry
         env:
           TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: echo "$TOKEN" | helm registry login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+      # the version of the build job, checked there against the tag
+      - name: Package the charts
+        id: package
+        env:
+          VERSION: ${{ needs.build.outputs.version }}
+          IMAGE_TAG: ${{ needs.build.outputs.image-tag }}
+          CHARTS: oci://${{ env.REGISTRY }}/${{ github.repository }}
         run: |
-          echo "$TOKEN" | helm registry login ghcr.io -u "${{ github.actor }}" --password-stdin
-          helm push "${{ steps.package.outputs.file }}" "oci://${{ env.REGISTRY }}/${{ github.repository }}"
-          echo "Chart ${{ steps.package.outputs.version }} with image ${{ github.run_number }}" >> "$GITHUB_STEP_SUMMARY"
+          # the version and the image also for the copy in the stack
+          sed -i "s/^version:.*/version: $VERSION/; s/^appVersion:.*/appVersion: \"$IMAGE_TAG\"/" \
+            helm/car-ledger/Chart.yaml helm/stack/Chart.yaml
+          for chart in car-ledger keycloak authentik stack; do
+            helm dependency update "helm/$chart"
+          done
+          helm package helm/car-ledger helm/stack --destination chart-dist
+          # keycloak and authentik: by a release, if their version is not published yet
+          OTHERS=""
+          if [ "$GITHUB_REF_TYPE" = tag ]; then
+            for chart in keycloak authentik; do
+              CHART_VERSION=$(sed -n 's/^version: *//p' "helm/$chart/Chart.yaml")
+              if helm show chart "$CHARTS/$chart" --version "$CHART_VERSION" > /dev/null 2>&1; then
+                echo "$chart $CHART_VERSION is already published"
+              else
+                helm package "helm/$chart" --destination chart-dist
+              fi
+              OTHERS="$OTHERS| $chart | \`$CHARTS/$chart\` version \`$CHART_VERSION\` |"$'\n'
+            done
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "image-tag=$IMAGE_TAG" >> "$GITHUB_OUTPUT"
+          { echo "others<<EOF"; printf '%s' "$OTHERS"; echo "EOF"; } >> "$GITHUB_OUTPUT"
+
+      - name: Push the charts
+        run: |
+          for file in chart-dist/*.tgz; do
+            helm push "$file" "oci://${{ env.REGISTRY }}/${{ github.repository }}"
+            echo "Chart $(basename "$file" .tgz) with image ${{ steps.package.outputs.image-tag }}" >> "$GITHUB_STEP_SUMMARY"
+          done
+
+      # a release created in the GitHub UI (which pushes the tag) gets the versions and the charts as well
+      - name: Create the release
+        if: ${{ github.ref_type == 'tag' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
+          IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.package.outputs.image-tag }}
+          CHARTS: oci://${{ env.REGISTRY }}/${{ github.repository }}
+          VERSION: ${{ steps.package.outputs.version }}
+          OTHERS: ${{ steps.package.outputs.others }}
+        run: |
+          cat > artifacts.md <<NOTES
+          ## Artifacts
+
+          | | |
+          |---|---|
+          | Image | \`$IMAGE\` |
+          | Helm chart | \`$CHARTS/car-ledger\` version \`$VERSION\` |
+          | Stack (the app with Keycloak or authentik) | \`$CHARTS/stack\` version \`$VERSION\` |
+          $OTHERS
+
+          \`\`\`bash
+          helm install car-ledger $CHARTS/car-ledger --version $VERSION --set ingress.host=example.com
+          # or everything in one release, e.g. with authentik
+          helm install car-ledger $CHARTS/stack --version $VERSION --set global.host=example.com \\
+            --set global.authentik.enabled=true
+          \`\`\`
+          NOTES
+          if gh release view "$TAG" > /dev/null 2>&1; then
+            gh release view "$TAG" --json body --jq .body > existing.md
+            cat artifacts.md existing.md > notes.md
+            gh release edit "$TAG" --notes-file notes.md
+            gh release upload "$TAG" chart-dist/*.tgz --clobber
+          else
+            gh release create "$TAG" chart-dist/*.tgz --title "Version $TAG" --notes-file artifacts.md --generate-notes
+          fi

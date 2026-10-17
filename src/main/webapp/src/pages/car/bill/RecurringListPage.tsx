@@ -8,6 +8,7 @@ import {
 } from '@mui/material';
 import EventBusyRounded from '@mui/icons-material/EventBusyRounded';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BillType, RecurringBill } from '@/generated';
@@ -23,6 +24,7 @@ import EndRecurringDialog from '@/components/bill/EndRecurringDialog';
 
 export default function RecurringListPage({ carId }: { carId: number }) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [onlyRunning, setOnlyRunning] = useState(false);
   const [pageModel, setPageModel] = useState<PageModel>({
     page: 0,
@@ -50,11 +52,20 @@ export default function RecurringListPage({ carId }: { carId: number }) {
       <Stack
         direction={{ xs: 'column', sm: 'row' }}
         spacing={1}
-        alignItems={{ sm: 'center' }}
-        justifyContent="space-between"
-        sx={{ px: 2.5, pt: 1.5, pb: 1 }}
+        sx={{
+          alignItems: { sm: 'center' },
+          justifyContent: 'space-between',
+          px: 2.5,
+          pt: 1.5,
+          pb: 1,
+        }}
       >
-        <Typography variant="body2" color="text.secondary">
+        <Typography
+          variant="body2"
+          sx={{
+            color: 'text.secondary',
+          }}
+        >
           {t('bill.recurringInfo')}
         </Typography>
         <FormControlLabel
@@ -72,6 +83,7 @@ export default function RecurringListPage({ carId }: { carId: number }) {
         />
       </Stack>
       <BillTable
+        carId={carId}
         rows={data?.data ?? []}
         total={data?.total ?? 0}
         columns={columns}
@@ -80,6 +92,13 @@ export default function RecurringListPage({ carId }: { carId: number }) {
         onPageModelChange={setPageModel}
         loading={isLoading || isFetching}
         onDelete={onDelete}
+        onEdit={(row) =>
+          navigate({
+            to: '/car/$id/bill/$billId/edit',
+            params: { id: `${carId}`, billId: `${row.id}` },
+            search: { type: BillType.RECURRING },
+          })
+        }
         rowActions={(row) =>
           !row.finished && (
             <Tooltip title={t('bill.end.button')}>

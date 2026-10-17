@@ -1,25 +1,41 @@
 import { Box, ButtonBase, Card, Grid, Stack, Typography } from '@mui/material';
+import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { BillType } from '@/generated';
-import { billTypeList } from '@/utils/billTypes';
+import { getMyCarOptions } from '@/generated/@tanstack/react-query.gen';
+import { localClient } from '@/utils/QueryClient';
+import { useFormat } from '@/utils/format';
+import { billTypesFor } from '@/utils/billTypes';
 import PageHeader from '@/components/ui/PageHeader';
 import FuelForm from '@/components/bill/FuelForm';
+import ChargingForm from '@/components/bill/ChargingForm';
 import MaintenanceForm from '@/components/bill/MaintenanceForm';
 import MiscellaneousForm from '@/components/bill/MiscellaneousForm';
 import RecurringForm from '@/components/bill/RecurringForm';
 
 export interface AddBillPageProps {
   carId: number;
-  type: BillType;
+  /** the first type of the car without one */
+  type?: BillType;
   onTypeChange: (type: BillType) => void;
 }
 
 export default function AddBillPage({
   carId,
-  type,
+  type: requestedType,
   onTypeChange,
 }: AddBillPageProps) {
   const { t } = useTranslation();
+  const { units } = useFormat();
+  // loaded by the layout of the car already
+  const { data: car } = useQuery(
+    getMyCarOptions({ client: localClient, path: { id: carId } }),
+  );
+  // an electric car is not refueled, a petrol car not charged
+  const types = billTypesFor(car?.energyType);
+  const type = types.some((meta) => meta.type === requestedType)
+    ? requestedType!
+    : types[0].type;
 
   return (
     <Box id="AddBillPage" sx={{ maxWidth: 860 }}>
@@ -29,10 +45,13 @@ export default function AddBillPage({
       />
 
       <Grid container spacing={1.5} sx={{ mb: 3 }} role="radiogroup">
-        {billTypeList.map((meta) => {
+        {types.map((meta) => {
           const selected = meta.type === type;
           return (
-            <Grid key={meta.type} size={{ xs: 6, sm: 3 }}>
+            <Grid
+              key={meta.type}
+              size={{ xs: 6, sm: types.length > 4 ? 12 / 5 : 3 }}
+            >
               <ButtonBase
                 role="radio"
                 aria-checked={selected}
@@ -52,7 +71,13 @@ export default function AddBillPage({
                   transition: 'border-color .15s, background-color .15s',
                 })}
               >
-                <Stack direction="row" spacing={1.25} alignItems="center">
+                <Stack
+                  direction="row"
+                  spacing={1.25}
+                  sx={{
+                    alignItems: 'center',
+                  }}
+                >
                   <Box
                     sx={(theme) => ({
                       display: 'grid',
@@ -66,7 +91,11 @@ export default function AddBillPage({
                   >
                     {meta.icon}
                   </Box>
-                  <Typography fontWeight={600}>
+                  <Typography
+                    sx={{
+                      fontWeight: 600,
+                    }}
+                  >
                     {t(`bill.types.${meta.type}`)}
                   </Typography>
                 </Stack>
@@ -77,11 +106,23 @@ export default function AddBillPage({
       </Grid>
 
       <Card sx={{ p: { xs: 2, sm: 3 } }}>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 2.5 }}>
-          {t(`bill.add.describe.${type}`)}
+        <Typography
+          variant="body2"
+          sx={{
+            color: 'text.secondary',
+            mb: 2.5,
+          }}
+        >
+          {t(`bill.add.describe.${type}`, {
+            // only the refuels name the volume
+            context: type === BillType.FUEL ? units.volume.context : undefined,
+          })}
         </Typography>
         {/* keyed, so switching the type starts with a fresh form */}
         {type === BillType.FUEL && <FuelForm key={type} carId={carId} />}
+        {type === BillType.CHARGING && (
+          <ChargingForm key={type} carId={carId} />
+        )}
         {type === BillType.MAINTENANCE && (
           <MaintenanceForm key={type} carId={carId} />
         )}

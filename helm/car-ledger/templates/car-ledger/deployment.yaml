@@ -28,26 +28,26 @@ spec:
               containerPort: 9000
           env:
             - name: QUARKUS_OIDC_AUTH_SERVER_URL
-            {{ if .Values.carLedger.auth.url }}
-              value: {{ .Values.carLedger.auth.url }}
-            {{ else }}
-              value: "https://keycloak.{{ .Values.ingress.host }}/realms/car-ledger"
-            {{ end }}
+              value: {{ include "carLedger.authUrl" . | quote }}
             - name: QUARKUS_OIDC_CLIENT_ID
-              value: {{ .Values.carLedger.auth.clientId }}
+              value: {{ include "carLedger.authClientId" . | quote }}
             - name: QUARKUS_OIDC_CREDENTIALS_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.carLedger.auth.existingSecret }}
+                  name: {{ include "carLedger.authSecret" . }}
                   key: {{ .Values.carLedger.auth.secretKeys.clientSecret }}
             - name: QUARKUS_OIDC_AUTHENTICATION_SCOPES
               value: {{ .Values.carLedger.auth.scopes }}
+            {{- with .Values.carLedger.auth.audience }}
+            - name: QUARKUS_OIDC_TOKEN_AUDIENCE
+              value: {{ . | quote }}
+            {{- end }}
             # encrypts the PKCE state cookie during the login, has to be the same for all replicas
             # (at least 16 chars, 32 recommended)
             - name: QUARKUS_OIDC_AUTHENTICATION_STATE_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.carLedger.auth.existingSecret }}
+                  name: {{ include "carLedger.authSecret" . }}
                   key: {{ .Values.carLedger.auth.secretKeys.stateSecret }}
             - name: QUARKUS_INFINISPAN_CLIENT_HOSTS
               value: {{ .Values.carLedger.infinispan.hosts }}
@@ -74,29 +74,90 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.carLedger.postgres.auth.secret }}
                   key: {{ .Values.carLedger.postgres.auth.secretPasswordKey }}
+            - name: CARLEDGER_ATTACHMENTS_MAX_SIZE
+              value: {{ .Values.carLedger.attachments.maxSize | quote }}
+            - name: CARLEDGER_ATTACHMENTS_MAX_PER_BILL
+              value: {{ .Values.carLedger.attachments.maxPerBill | quote }}
+            - name: QUARKUS_HTTP_LIMITS_MAX_BODY_SIZE
+              value: {{ .Values.carLedger.attachments.maxRequestSize | quote }}
+            {{- with .Values.carLedger.push }}
+            {{- if .enabled }}
+            - name: CARLEDGER_PUSH_ENABLED
+              value: "true"
+            - name: CARLEDGER_PUSH_SUBJECT
+              value: {{ .subject | default (printf "https://car-ledger.%s" (include "carLedger.host" $)) | quote }}
+            {{- if .allowedHosts }}
+            - name: CARLEDGER_PUSH_ALLOWED_HOSTS
+              value: {{ join "," .allowedHosts | quote }}
+            {{- end }}
+            - name: CARLEDGER_PUSH_PRIVATE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .existingSecret | default "car-ledger-push" }}
+                  key: {{ .privateKeyKey }}
+            {{- end }}
+            {{- end }}
+            {{- with .Values.carLedger.mail }}
+            {{- if .host }}
+            - name: CARLEDGER_MAIL_ENABLED
+              value: "true"
+            - name: CARLEDGER_MAIL_APP_URL
+              value: {{ .appUrl | default (printf "https://car-ledger.%s" (include "carLedger.host" $)) | quote }}
+            - name: CARLEDGER_MAIL_REMINDERS_CRON
+              value: {{ .remindersCron | quote }}
+            - name: QUARKUS_MAILER_HOST
+              value: {{ .host | quote }}
+            - name: QUARKUS_MAILER_PORT
+              value: {{ .port | quote }}
+            - name: QUARKUS_MAILER_START_TLS
+              value: {{ .startTls | quote }}
+            - name: QUARKUS_MAILER_TLS
+              value: {{ .tls | quote }}
+            - name: QUARKUS_MAILER_FROM
+              value: {{ .from | default (printf "car-ledger@%s" (include "carLedger.host" $)) | quote }}
+            {{- if .username }}
+            - name: QUARKUS_MAILER_USERNAME
+              value: {{ .username | quote }}
+            - name: QUARKUS_MAILER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ required "carLedger.mail.existingSecret is needed with carLedger.mail.username" .existingSecret }}
+                  key: {{ .passwordKey }}
+            {{- end }}
+            {{- end }}
+            {{- end }}
+            {{- with .Values.carLedger.webhook }}
+            {{- if .url }}
+            - name: CARLEDGER_WEBHOOK_URL
+              value: {{ .url | quote }}
+            {{- if .existingSecret }}
+            - name: CARLEDGER_WEBHOOK_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .existingSecret }}
+                  key: {{ .secretKey }}
+            {{- end }}
+            {{- if .events }}
+            - name: CARLEDGER_WEBHOOK_EVENTS
+              value: {{ join "," .events | quote }}
+            {{- end }}
+            {{- end }}
+            {{- end }}
+          # liveness and readiness start after the startup probe succeeded
+          startupProbe:
+            httpGet:
+              port: management
+              path: /q/health/started
+            {{- toYaml .Values.carLedger.startupProbe | nindent 12 }}
           livenessProbe:
             httpGet:
               port: management
               path: /q/health/live
-            failureThreshold: 3
-            periodSeconds: 20
-            successThreshold: 1
-            timeoutSeconds: 2
+            {{- toYaml .Values.carLedger.livenessProbe | nindent 12 }}
           readinessProbe:
             httpGet:
               port: management
               path: /q/health
-            failureThreshold: 10
-            periodSeconds: 5
-            initialDelaySeconds: 15
-            successThreshold: 1
-            timeoutSeconds: 1
+            {{- toYaml .Values.carLedger.readinessProbe | nindent 12 }}
           resources:
-            requests:
-              cpu: 100m
-              memory: 256Mi
-              ephemeral-storage: 100Mi
-            limits:
-              cpu: 350m
-              memory: 768Mi
-              ephemeral-storage: 500Mi
+            {{- toYaml .Values.carLedger.resources | nindent 12 }}

@@ -1,6 +1,9 @@
 package de.codeflowwizardry.carledger.rest.car;
 
-import java.io.File;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 import java.io.IOException;
 import io.quarkus.security.identity.SecurityIdentity;
 
@@ -8,6 +11,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.jboss.resteasy.reactive.PartType;
 import org.jboss.resteasy.reactive.RestForm;
@@ -19,10 +23,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import de.codeflowwizardry.carledger.csv.CsvColumnMapping;
 import de.codeflowwizardry.carledger.csv.CsvImportResult;
 import de.codeflowwizardry.carledger.csv.CsvImportService;
+import de.codeflowwizardry.carledger.csv.importer.ChargingBillCsvImporter;
 import de.codeflowwizardry.carledger.csv.importer.FuelBillCsvImporter;
 import de.codeflowwizardry.carledger.csv.importer.MaintenanceBillCsvImporter;
 import de.codeflowwizardry.carledger.csv.importer.MiscellaneousBillCsvImporter;
 import de.codeflowwizardry.carledger.data.BillType;
+import de.codeflowwizardry.carledger.data.UnitSystem;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import de.codeflowwizardry.carledger.exception.WrongUserException;
@@ -32,6 +38,7 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import de.codeflowwizardry.carledger.exception.CsvImportException;
 
 @Path("import/{carId}")
 public class ImportResource extends AbstractResource
@@ -65,10 +72,11 @@ public class ImportResource extends AbstractResource
 	@APIResponse(responseCode = "500", description = "- CSV was not set\n- Something went wrong while importing. Please ask the server admin for help.")
 	public Response importFuelCsv(
 			@PathParam("carId") long carId,
-			@RestForm("file") @PartType("text/csv") File csv,
+			@RestForm("file") @PartType("text/csv") InputStream csv,
 			@RestForm("billType") BillType billType,
 			@RestForm("order") @PartType(MediaType.TEXT_PLAIN) String columnMappingJson,
 			@RestForm("vat") @PartType(MediaType.APPLICATION_JSON) Integer vat,
+			@Parameter(description = "Units of the file, metric without one") @RestForm("unitSystem") UnitSystem unitSystem,
 			@QueryParam("skipHeader") boolean skipHeader)
 	{
 		ObjectUtils.requireNonEmpty(csv, "CSV ('file') needs to be set!");
@@ -92,7 +100,7 @@ public class ImportResource extends AbstractResource
 				(file, mapping) -> csvImportService
 						.importBills(file, mapping, carId, context.getName(),
 								skipHeader ? 1 : 0,
-								vat, billType));
+								vat, unitSystem, billType));
 	}
 
 	@GET
@@ -116,6 +124,11 @@ public class ImportResource extends AbstractResource
 				Response
 						.ok(new CsvFields(FuelBillCsvImporter.getAllFields(), FuelBillCsvImporter.getRequiredFields()))
 						.build();
+			case CHARGING ->
+				Response
+						.ok(new CsvFields(ChargingBillCsvImporter.getAllFields(),
+								ChargingBillCsvImporter.getRequiredFields()))
+						.build();
 			case MAINTENANCE ->
 				Response
 						.ok(new CsvFields(MaintenanceBillCsvImporter.getAllFields(),
@@ -126,38 +139,51 @@ public class ImportResource extends AbstractResource
 						.ok(new CsvFields(MiscellaneousBillCsvImporter.getAllFields(),
 								MiscellaneousBillCsvImporter.getRequiredFields()))
 						.build();
-			case RECURRING -> throw new BadRequestException("Nothing here to do!");
+			case RECURRING -> throw new BadRequestException(
+					Response.status(400).entity(CsvImportService.notImportable(importType)).build());
 		};
 	}
 
-	private Response processImport(File csv, String columnMappingJson, ImportFunction importFunction)
+	/**
+	 * The upload is read as stream: no path of the request reaches the file
+	 * system
+	 */
+	private Response processImport(InputStream csv, String columnMappingJson, ImportFunction importFunction)
 	{
-		try
+		try (Reader reader = new InputStreamReader(csv, StandardCharsets.UTF_8))
 		{
 			CsvColumnMapping mapping = CsvColumnMapping.fromJson(columnMappingJson);
 
-			CsvImportResult result = importFunction.apply(csv, mapping);
+			CsvImportResult result = importFunction.apply(reader, mapping);
 
 			return Response.ok().entity(result).build();
 
 		}
-		catch (IllegalArgumentException | JsonProcessingException e)
+		catch (JsonProcessingException e)
 		{
-			// invalid or incomplete column mapping
-			LOG.warn("Invalid CSV import request: {}", e.getMessage());
-			return Response.status(400).entity(e.getMessage()).build();
+			// the message of the parser names its internals
+			LOG.warn("Invalid column mapping: {}", e.getMessage());
+			return Response.status(400).entity("Column mapping is invalid").build();
+		}
+		catch (CsvImportException e)
+		{
+			// e.g. an incomplete column mapping
+			LOG.warn("Invalid CSV import request: {}", e.getUserMessage());
+			return Response.status(400).entity(e.getUserMessage()).build();
 		}
 		catch (Exception e)
 		{
 			LOG.error("Error processing CSV", e);
-			return Response.status(500).entity(e.getMessage()).build();
+			return Response.status(500)
+					.entity("Something went wrong while importing. Please ask the server admin for help.")
+					.build();
 		}
 	}
 
 	@FunctionalInterface
 	private interface ImportFunction
 	{
-		CsvImportResult apply(File file, CsvColumnMapping mapping) throws IOException;
+		CsvImportResult apply(Reader csv, CsvColumnMapping mapping) throws IOException;
 	}
 
 }

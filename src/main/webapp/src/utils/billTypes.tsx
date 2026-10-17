@@ -1,12 +1,14 @@
-import { BillType } from '@/generated';
+import { BillType, EnergyType } from '@/generated';
+import { hasBattery, hasTank } from '@/utils/energy';
 import LocalGasStationRounded from '@mui/icons-material/LocalGasStationRounded';
+import EvStationRounded from '@mui/icons-material/EvStationRounded';
 import BuildRounded from '@mui/icons-material/BuildRounded';
 import ReceiptLongRounded from '@mui/icons-material/ReceiptLongRounded';
 import EventRepeatRounded from '@mui/icons-material/EventRepeatRounded';
 import { ReactElement } from 'react';
 
 export type BillPaletteKey =
-  'fuel' | 'maintenance' | 'miscellaneous' | 'recurring';
+  'fuel' | 'charging' | 'maintenance' | 'miscellaneous' | 'recurring';
 
 export interface BillTypeMeta {
   type: BillType;
@@ -14,6 +16,7 @@ export interface BillTypeMeta {
   /** list of this type below a car */
   listRoute:
     | '/car/$id/bill/fuel'
+    | '/car/$id/bill/charging'
     | '/car/$id/bill/maintenance'
     | '/car/$id/bill/miscellaneous'
     | '/car/$id/bill/recurring';
@@ -28,6 +31,13 @@ export const billTypes: Record<BillType, BillTypeMeta> = {
     color: 'fuel',
     listRoute: '/car/$id/bill/fuel',
     icon: <LocalGasStationRounded fontSize="small" />,
+    importable: true,
+  },
+  [BillType.CHARGING]: {
+    type: BillType.CHARGING,
+    color: 'charging',
+    listRoute: '/car/$id/bill/charging',
+    icon: <EvStationRounded fontSize="small" />,
     importable: true,
   },
   [BillType.MAINTENANCE]: {
@@ -54,6 +64,18 @@ export const billTypes: Record<BillType, BillTypeMeta> = {
 };
 
 export const billTypeList = Object.values(billTypes);
+
+/**
+ * The entry types of a car: refuels with a tank, charges with a battery, the
+ * others always
+ */
+export function billTypesFor(energyType?: EnergyType): BillTypeMeta[] {
+  return billTypeList.filter(
+    (meta) =>
+      (meta.type !== BillType.FUEL || hasTank(energyType)) &&
+      (meta.type !== BillType.CHARGING || hasBattery(energyType)),
+  );
+}
 
 export function isBillType(value: unknown): value is BillType {
   return (

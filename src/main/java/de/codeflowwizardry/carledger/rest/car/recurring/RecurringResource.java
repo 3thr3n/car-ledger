@@ -46,14 +46,15 @@ public class RecurringResource extends AbstractResource
 	public BillPaged<RecurringBill> getAllRecurringBills(@PathParam("carId") long carId,
 			@QueryParam("page") @DefaultValue("1") int page,
 			@QueryParam("size") @DefaultValue("10") int size,
-			@QueryParam("onlyRunning") boolean running)
+			@QueryParam("onlyRunning") boolean running,
+			@QueryParam("sort") @DefaultValue("ACTIVE") RecurringBillSort sort)
 	{
 		page = toPageNumber(page);
 		size = toPageSize(size);
 		Page queryPage = new Page(page - 1, size);
 
 		PanacheQuery<RecurringBillEntity> all = recurringBillRepository.getAll(carId, context.getName(), queryPage,
-				running);
+				running, sort == RecurringBillSort.NEXT_DUE);
 
 		return new BillPaged<>(all.count(), page, size, RecurringBill.convert(all.list()));
 	}
@@ -69,6 +70,36 @@ public class RecurringResource extends AbstractResource
 	{
 		RecurringBillEntity recurringBillEntity = recurringBillFactory.create(carId, input, context.getName());
 		return Response.accepted(RecurringBill.convert(recurringBillEntity)).build();
+	}
+
+	@GET
+	@Path("{billId: \\d+}")
+	@Produces(MediaType.APPLICATION_JSON)
+	@Operation(operationId = "getRecurringBill", description = "Gets one recurring bill of the car")
+	@APIResponse(responseCode = "200", description = "Bill found.")
+	@APIResponse(responseCode = "404", description = "Bill not found for the car of your user.")
+	public RecurringBill getRecurringBill(@PathParam("carId") long carId, @PathParam("billId") long billId)
+	{
+		RecurringBillEntity bill = recurringBillRepository.getById(carId, context.getName(), billId);
+		if (bill == null)
+		{
+			throw new NotFoundException("Bill not found");
+		}
+		return RecurringBill.convert(bill);
+	}
+
+	@POST
+	@Path("{billId: \\d+}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	@Operation(operationId = "updateRecurringBill", description = "Updates a recurring bill, a changed amount, interval or date books the payments again")
+	@APIResponse(responseCode = "200", description = "Bill updated.")
+	@APIResponse(responseCode = "400", description = "Validation failed, please check the response", content = @Content(schema = @Schema(implementation = List.class)))
+	@APIResponse(responseCode = "404", description = "Bill not found for the car of your user.")
+	public RecurringBill updateRecurringBill(@PathParam("carId") long carId, @PathParam("billId") long billId,
+			RecurringBillInput input)
+	{
+		return RecurringBill.convert(recurringBillFactory.update(carId, billId, input, context.getName()));
 	}
 
 	@DELETE

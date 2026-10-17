@@ -33,3 +33,14 @@ export const money = (value: number) =>
   new Intl.NumberFormat('en-US', { style: 'currency', currency: 'EUR' }).format(
     value,
   );
+
+/**
+ * Date in the local time zone, as the app uses it, `offset` days from today.
+ * `toISOString` would give the date in UTC, a day off around midnight.
+ */
+export const day = (offset = 0) => {
+  const date = new Date();
+  date.setDate(date.getDate() + offset);
+  const pad = (value: number) => String(value).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+};

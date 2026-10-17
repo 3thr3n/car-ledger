@@ -3,8 +3,8 @@
 import { type DefaultError, type InfiniteData, infiniteQueryOptions, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen';
-import { addNewFuelBill, addNewMaintenanceBill, addNewMiscellaneousBill, addNewRecurringBill, addReminder, callback, completeReminder, createCar, deleteAdminAccount, deleteBill, deleteMyCar, deleteRecurringBill, deleteReminder, endRecurringBill, getAdminAccounts, getAdminStats, getAllBills, getAllBillYears, getAllFuelBills, getAllFuelBillYears, getAllMaintenanceBills, getAllMaintenanceBillYears, getAllMiscellaneousBills, getAllMiscellaneousBillYears, getAllRecurringBills, getCsvFields, getDashboardStats, getFuelBill, getMaintenanceBill, getMiscellaneousBill, getMonthlyStats, getMyCar, getMyCarOverview, getMyCars, getMyself, getReminders, importCsv, login, loginError, logout, logoutCallback, type Options, updateAdminAccount, updateFuelBill, updateMaintenanceBill, updateMiscellaneousBill, updateMyCar, updateMySettings, updateReminder } from '../sdk.gen';
-import type { AddNewFuelBillData, AddNewFuelBillError, AddNewMaintenanceBillData, AddNewMaintenanceBillError, AddNewMiscellaneousBillData, AddNewMiscellaneousBillError, AddNewRecurringBillData, AddNewRecurringBillError, AddNewRecurringBillResponse, AddReminderData, AddReminderError, AddReminderResponse, CallbackData, CompleteReminderData, CompleteReminderError, CompleteReminderResponse, CreateCarData, DeleteAdminAccountData, DeleteAdminAccountResponse, DeleteBillData, DeleteBillResponse, DeleteMyCarData, DeleteMyCarResponse, DeleteRecurringBillData, DeleteReminderData, DeleteReminderResponse, EndRecurringBillData, EndRecurringBillError, EndRecurringBillResponse, GetAdminAccountsData, GetAdminAccountsResponse, GetAdminStatsData, GetAdminStatsResponse, GetAllBillsData, GetAllBillsResponse, GetAllBillYearsData, GetAllBillYearsResponse, GetAllFuelBillsData, GetAllFuelBillsResponse, GetAllFuelBillYearsData, GetAllFuelBillYearsResponse, GetAllMaintenanceBillsData, GetAllMaintenanceBillsResponse, GetAllMaintenanceBillYearsData, GetAllMaintenanceBillYearsResponse, GetAllMiscellaneousBillsData, GetAllMiscellaneousBillsResponse, GetAllMiscellaneousBillYearsData, GetAllMiscellaneousBillYearsResponse, GetAllRecurringBillsData, GetAllRecurringBillsResponse, GetCsvFieldsData, GetCsvFieldsResponse, GetDashboardStatsData, GetDashboardStatsResponse, GetFuelBillData, GetFuelBillResponse, GetMaintenanceBillData, GetMaintenanceBillResponse, GetMiscellaneousBillData, GetMiscellaneousBillResponse, GetMonthlyStatsData, GetMonthlyStatsResponse, GetMyCarData, GetMyCarOverviewData, GetMyCarOverviewResponse, GetMyCarResponse, GetMyCarsData, GetMyCarsResponse, GetMyselfData, GetMyselfResponse, GetRemindersData, GetRemindersResponse, ImportCsvData, LoginData, LoginErrorData, LogoutCallbackData, LogoutData, UpdateAdminAccountData, UpdateAdminAccountError, UpdateAdminAccountResponse, UpdateFuelBillData, UpdateFuelBillError, UpdateFuelBillResponse, UpdateMaintenanceBillData, UpdateMaintenanceBillError, UpdateMaintenanceBillResponse, UpdateMiscellaneousBillData, UpdateMiscellaneousBillError, UpdateMiscellaneousBillResponse, UpdateMyCarData, UpdateMySettingsData, UpdateMySettingsError, UpdateMySettingsResponse, UpdateReminderData, UpdateReminderError, UpdateReminderResponse } from '../types.gen';
+import { addBillAttachment, addNewChargingBill, addNewFuelBill, addNewMaintenanceBill, addNewMiscellaneousBill, addNewRecurringBill, addReminder, approveCarRequest, callback, completeReminder, createCar, deleteAdminAccount, deleteAttachment, deleteBill, deleteCarPicture, deleteMyCar, deleteMyself, deleteRecurringBill, deleteReminder, downloadBackup, endRecurringBill, exportAllExpensesCsv, exportCsv, getAdminAccounts, getAdminCarRequests, getAdminStats, getAllBills, getAllBillYears, getAllChargingBills, getAllChargingBillYears, getAllFuelBills, getAllFuelBillYears, getAllMaintenanceBills, getAllMaintenanceBillYears, getAllMiscellaneousBills, getAllMiscellaneousBillYears, getAllRecurringBills, getAttachmentContent, getBillAttachments, getCarPicture, getChargingBill, getCsvFields, getDashboardStats, getFuelBill, getMaintenanceBill, getMiscellaneousBill, getMonthlyStats, getMyCar, getMyCarOverview, getMyCars, getMyLatestCarRequest, getMyNotifications, getMyPush, getMyself, getRecurringBill, getReminders, getVersion, importCsv, login, loginError, logout, logoutCallback, markCarRequestSeen, type Options, rejectCarRequest, requestMoreCars, restoreBackup, setCarPicture, subscribeMyPush, testMyPush, unsubscribeMyPush, updateAdminAccount, updateChargingBill, updateFuelBill, updateMaintenanceBill, updateMiscellaneousBill, updateMyCar, updateMyNotifications, updateMySettings, updateRecurringBill, updateReminder } from '../sdk.gen';
+import type { AddBillAttachmentData, AddBillAttachmentError, AddBillAttachmentResponse, AddNewChargingBillData, AddNewChargingBillError, AddNewFuelBillData, AddNewFuelBillError, AddNewMaintenanceBillData, AddNewMaintenanceBillError, AddNewMiscellaneousBillData, AddNewMiscellaneousBillError, AddNewRecurringBillData, AddNewRecurringBillError, AddNewRecurringBillResponse, AddReminderData, AddReminderError, AddReminderResponse, ApproveCarRequestData, ApproveCarRequestError, ApproveCarRequestResponse, CallbackData, CompleteReminderData, CompleteReminderError, CompleteReminderResponse, CreateCarData, DeleteAdminAccountData, DeleteAdminAccountResponse, DeleteAttachmentData, DeleteAttachmentResponse, DeleteBillData, DeleteBillResponse, DeleteCarPictureData, DeleteCarPictureResponse, DeleteMyCarData, DeleteMyCarResponse, DeleteMyselfData, DeleteMyselfResponse, DeleteRecurringBillData, DeleteReminderData, DeleteReminderResponse, DownloadBackupData, DownloadBackupResponse, EndRecurringBillData, EndRecurringBillError, EndRecurringBillResponse, ExportAllExpensesCsvData, ExportAllExpensesCsvResponse, ExportCsvData, ExportCsvResponse, GetAdminAccountsData, GetAdminAccountsResponse, GetAdminCarRequestsData, GetAdminCarRequestsResponse, GetAdminStatsData, GetAdminStatsResponse, GetAllBillsData, GetAllBillsResponse, GetAllBillYearsData, GetAllBillYearsResponse, GetAllChargingBillsData, GetAllChargingBillsResponse, GetAllChargingBillYearsData, GetAllChargingBillYearsResponse, GetAllFuelBillsData, GetAllFuelBillsResponse, GetAllFuelBillYearsData, GetAllFuelBillYearsResponse, GetAllMaintenanceBillsData, GetAllMaintenanceBillsResponse, GetAllMaintenanceBillYearsData, GetAllMaintenanceBillYearsResponse, GetAllMiscellaneousBillsData, GetAllMiscellaneousBillsResponse, GetAllMiscellaneousBillYearsData, GetAllMiscellaneousBillYearsResponse, GetAllRecurringBillsData, GetAllRecurringBillsResponse, GetAttachmentContentData, GetBillAttachmentsData, GetBillAttachmentsResponse, GetCarPictureData, GetChargingBillData, GetChargingBillResponse, GetCsvFieldsData, GetCsvFieldsResponse, GetDashboardStatsData, GetDashboardStatsResponse, GetFuelBillData, GetFuelBillResponse, GetMaintenanceBillData, GetMaintenanceBillResponse, GetMiscellaneousBillData, GetMiscellaneousBillResponse, GetMonthlyStatsData, GetMonthlyStatsResponse, GetMyCarData, GetMyCarOverviewData, GetMyCarOverviewResponse, GetMyCarResponse, GetMyCarsData, GetMyCarsResponse, GetMyLatestCarRequestData, GetMyLatestCarRequestResponse, GetMyNotificationsData, GetMyNotificationsResponse, GetMyPushData, GetMyPushResponse, GetMyselfData, GetMyselfResponse, GetRecurringBillData, GetRecurringBillResponse, GetRemindersData, GetRemindersResponse, GetVersionData, GetVersionResponse, ImportCsvData, LoginData, LoginErrorData, LogoutCallbackData, LogoutData, MarkCarRequestSeenData, MarkCarRequestSeenResponse, RejectCarRequestData, RejectCarRequestError, RejectCarRequestResponse, RequestMoreCarsData, RequestMoreCarsError, RequestMoreCarsResponse, RestoreBackupData, RestoreBackupError, RestoreBackupResponse, SetCarPictureData, SetCarPictureError, SetCarPictureResponse, SubscribeMyPushData, SubscribeMyPushResponse, TestMyPushData, UnsubscribeMyPushData, UnsubscribeMyPushResponse, UpdateAdminAccountData, UpdateAdminAccountError, UpdateAdminAccountResponse, UpdateChargingBillData, UpdateChargingBillError, UpdateChargingBillResponse, UpdateFuelBillData, UpdateFuelBillError, UpdateFuelBillResponse, UpdateMaintenanceBillData, UpdateMaintenanceBillError, UpdateMaintenanceBillResponse, UpdateMiscellaneousBillData, UpdateMiscellaneousBillError, UpdateMiscellaneousBillResponse, UpdateMyCarData, UpdateMyNotificationsData, UpdateMyNotificationsResponse, UpdateMySettingsData, UpdateMySettingsError, UpdateMySettingsResponse, UpdateRecurringBillData, UpdateRecurringBillError, UpdateRecurringBillResponse, UpdateReminderData, UpdateReminderError, UpdateReminderResponse } from '../types.gen';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -158,6 +158,96 @@ export const updateAdminAccountMutation = (options?: Partial<Options<UpdateAdmin
     return mutationOptions;
 };
 
+export const getAdminCarRequestsQueryKey = (options?: Options<GetAdminCarRequestsData>) => createQueryKey('getAdminCarRequests', options);
+
+/**
+ * Get Car Requests
+ *
+ * Requests for more cars, the open ones by age, the decided ones newest first; pages starting at 1
+ */
+export const getAdminCarRequestsOptions = (options?: Options<GetAdminCarRequestsData>) => queryOptions<GetAdminCarRequestsResponse, DefaultError, GetAdminCarRequestsResponse, ReturnType<typeof getAdminCarRequestsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getAdminCarRequests({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getAdminCarRequestsQueryKey(options)
+});
+
+export const getAdminCarRequestsInfiniteQueryKey = (options?: Options<GetAdminCarRequestsData>): QueryKey<Options<GetAdminCarRequestsData>> => createQueryKey('getAdminCarRequests', options, true);
+
+/**
+ * Get Car Requests
+ *
+ * Requests for more cars, the open ones by age, the decided ones newest first; pages starting at 1
+ */
+export const getAdminCarRequestsInfiniteOptions = (options?: Options<GetAdminCarRequestsData>) => {
+    const opts = infiniteQueryOptions<GetAdminCarRequestsResponse, DefaultError, InfiniteData<GetAdminCarRequestsResponse>, QueryKey<Options<GetAdminCarRequestsData>>, number | Pick<QueryKey<Options<GetAdminCarRequestsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<GetAdminCarRequestsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    page: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await getAdminCarRequests({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: getAdminCarRequestsInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
+
+/**
+ * Approve
+ *
+ * Approves the request and raises the car limit of the account
+ */
+export const approveCarRequestMutation = (options?: Partial<Options<ApproveCarRequestData>>): UseMutationOptions<ApproveCarRequestResponse, ApproveCarRequestError, Options<ApproveCarRequestData>> => {
+    const mutationOptions: UseMutationOptions<ApproveCarRequestResponse, ApproveCarRequestError, Options<ApproveCarRequestData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await approveCarRequest({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Reject
+ *
+ * Rejects the request, the comment is shown to the user
+ */
+export const rejectCarRequestMutation = (options?: Partial<Options<RejectCarRequestData>>): UseMutationOptions<RejectCarRequestResponse, RejectCarRequestError, Options<RejectCarRequestData>> => {
+    const mutationOptions: UseMutationOptions<RejectCarRequestResponse, RejectCarRequestError, Options<RejectCarRequestData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await rejectCarRequest({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
 export const getAdminStatsQueryKey = (options?: Options<GetAdminStatsData>) => createQueryKey('getAdminStats', options);
 
 /**
@@ -176,6 +266,84 @@ export const getAdminStatsOptions = (options?: Options<GetAdminStatsData>) => qu
         return data;
     },
     queryKey: getAdminStatsQueryKey(options)
+});
+
+export const getBillAttachmentsQueryKey = (options: Options<GetBillAttachmentsData>) => createQueryKey('getBillAttachments', options);
+
+/**
+ * Get Bill Attachments
+ *
+ * Attachments of the bill, oldest first
+ */
+export const getBillAttachmentsOptions = (options: Options<GetBillAttachmentsData>) => queryOptions<GetBillAttachmentsResponse, DefaultError, GetBillAttachmentsResponse, ReturnType<typeof getBillAttachmentsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getBillAttachments({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getBillAttachmentsQueryKey(options)
+});
+
+/**
+ * Add Bill Attachment
+ *
+ * Attaches a JPEG, PNG, WebP or PDF file to the bill
+ */
+export const addBillAttachmentMutation = (options?: Partial<Options<AddBillAttachmentData>>): UseMutationOptions<AddBillAttachmentResponse, AddBillAttachmentError, Options<AddBillAttachmentData>> => {
+    const mutationOptions: UseMutationOptions<AddBillAttachmentResponse, AddBillAttachmentError, Options<AddBillAttachmentData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await addBillAttachment({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Delete Attachment
+ *
+ * Removes the attachment with its file
+ */
+export const deleteAttachmentMutation = (options?: Partial<Options<DeleteAttachmentData>>): UseMutationOptions<DeleteAttachmentResponse, DefaultError, Options<DeleteAttachmentData>> => {
+    const mutationOptions: UseMutationOptions<DeleteAttachmentResponse, DefaultError, Options<DeleteAttachmentData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await deleteAttachment({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const getAttachmentContentQueryKey = (options: Options<GetAttachmentContentData>) => createQueryKey('getAttachmentContent', options);
+
+/**
+ * Get Attachment Content
+ *
+ * The file, shown inline by the browser
+ */
+export const getAttachmentContentOptions = (options: Options<GetAttachmentContentData>) => queryOptions<unknown, DefaultError, unknown, ReturnType<typeof getAttachmentContentQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getAttachmentContent({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getAttachmentContentQueryKey(options)
 });
 
 export const callbackQueryKey = (options?: Options<CallbackData>) => createQueryKey('callback', options);
@@ -328,6 +496,134 @@ export const getAllBillsInfiniteOptions = (options: Options<GetAllBillsData>) =>
         queryKey: getAllBillsInfiniteQueryKey(options)
     });
     return opts as Omit<typeof opts, 'initialData'>;
+};
+
+/**
+ * Add New Bill
+ */
+export const addNewChargingBillMutation = (options?: Partial<Options<AddNewChargingBillData>>): UseMutationOptions<unknown, AddNewChargingBillError, Options<AddNewChargingBillData>> => {
+    const mutationOptions: UseMutationOptions<unknown, AddNewChargingBillError, Options<AddNewChargingBillData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await addNewChargingBill({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const getAllChargingBillsQueryKey = (options: Options<GetAllChargingBillsData>) => createQueryKey('getAllChargingBills', options);
+
+/**
+ * Get All My Bills
+ *
+ * Gets all bills for specified car, Pages starting at 1
+ */
+export const getAllChargingBillsOptions = (options: Options<GetAllChargingBillsData>) => queryOptions<GetAllChargingBillsResponse, DefaultError, GetAllChargingBillsResponse, ReturnType<typeof getAllChargingBillsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getAllChargingBills({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getAllChargingBillsQueryKey(options)
+});
+
+export const getAllChargingBillsInfiniteQueryKey = (options: Options<GetAllChargingBillsData>): QueryKey<Options<GetAllChargingBillsData>> => createQueryKey('getAllChargingBills', options, true);
+
+/**
+ * Get All My Bills
+ *
+ * Gets all bills for specified car, Pages starting at 1
+ */
+export const getAllChargingBillsInfiniteOptions = (options: Options<GetAllChargingBillsData>) => {
+    const opts = infiniteQueryOptions<GetAllChargingBillsResponse, DefaultError, InfiniteData<GetAllChargingBillsResponse>, QueryKey<Options<GetAllChargingBillsData>>, number | Pick<QueryKey<Options<GetAllChargingBillsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<GetAllChargingBillsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    page: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await getAllChargingBills({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: getAllChargingBillsInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
+
+export const getAllChargingBillYearsQueryKey = (options: Options<GetAllChargingBillYearsData>) => createQueryKey('getAllChargingBillYears', options);
+
+/**
+ * Get All My Bills
+ *
+ * Gets all years of bills for specified car
+ */
+export const getAllChargingBillYearsOptions = (options: Options<GetAllChargingBillYearsData>) => queryOptions<GetAllChargingBillYearsResponse, DefaultError, GetAllChargingBillYearsResponse, ReturnType<typeof getAllChargingBillYearsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getAllChargingBillYears({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getAllChargingBillYearsQueryKey(options)
+});
+
+export const getChargingBillQueryKey = (options: Options<GetChargingBillData>) => createQueryKey('getChargingBill', options);
+
+/**
+ * Get Bill
+ *
+ * Gets one bill of the car
+ */
+export const getChargingBillOptions = (options: Options<GetChargingBillData>) => queryOptions<GetChargingBillResponse, DefaultError, GetChargingBillResponse, ReturnType<typeof getChargingBillQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getChargingBill({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getChargingBillQueryKey(options)
+});
+
+/**
+ * Update Bill
+ *
+ * Updates a bill, calculated values are calculated again
+ */
+export const updateChargingBillMutation = (options?: Partial<Options<UpdateChargingBillData>>): UseMutationOptions<UpdateChargingBillResponse, UpdateChargingBillError, Options<UpdateChargingBillData>> => {
+    const mutationOptions: UseMutationOptions<UpdateChargingBillResponse, UpdateChargingBillError, Options<UpdateChargingBillData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await updateChargingBill({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
 };
 
 /**
@@ -800,6 +1096,45 @@ export const deleteRecurringBillMutation = (options?: Partial<Options<DeleteRecu
     return mutationOptions;
 };
 
+export const getRecurringBillQueryKey = (options: Options<GetRecurringBillData>) => createQueryKey('getRecurringBill', options);
+
+/**
+ * Get Recurring Bill
+ *
+ * Gets one recurring bill of the car
+ */
+export const getRecurringBillOptions = (options: Options<GetRecurringBillData>) => queryOptions<GetRecurringBillResponse, DefaultError, GetRecurringBillResponse, ReturnType<typeof getRecurringBillQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getRecurringBill({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getRecurringBillQueryKey(options)
+});
+
+/**
+ * Update Recurring Bill
+ *
+ * Updates a recurring bill, a changed amount, interval or date books the payments again
+ */
+export const updateRecurringBillMutation = (options?: Partial<Options<UpdateRecurringBillData>>): UseMutationOptions<UpdateRecurringBillResponse, UpdateRecurringBillError, Options<UpdateRecurringBillData>> => {
+    const mutationOptions: UseMutationOptions<UpdateRecurringBillResponse, UpdateRecurringBillError, Options<UpdateRecurringBillData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await updateRecurringBill({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
 /**
  * End Recurring Bill
  *
@@ -963,6 +1298,104 @@ export const getMyCarOverviewOptions = (options: Options<GetMyCarOverviewData>) 
         return data;
     },
     queryKey: getMyCarOverviewQueryKey(options)
+});
+
+/**
+ * Delete Picture
+ *
+ * Removes the picture, the generated avatar is shown again
+ */
+export const deleteCarPictureMutation = (options?: Partial<Options<DeleteCarPictureData>>): UseMutationOptions<DeleteCarPictureResponse, DefaultError, Options<DeleteCarPictureData>> => {
+    const mutationOptions: UseMutationOptions<DeleteCarPictureResponse, DefaultError, Options<DeleteCarPictureData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await deleteCarPicture({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const getCarPictureQueryKey = (options: Options<GetCarPictureData>) => createQueryKey('getCarPicture', options);
+
+/**
+ * Get Picture
+ *
+ * The picture; its URL carries the pictureId of the car, so it can be cached
+ */
+export const getCarPictureOptions = (options: Options<GetCarPictureData>) => queryOptions<unknown, DefaultError, unknown, ReturnType<typeof getCarPictureQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getCarPicture({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getCarPictureQueryKey(options)
+});
+
+/**
+ * Set Picture
+ *
+ * Replaces the picture of the car with a JPEG, PNG or WebP image
+ */
+export const setCarPictureMutation = (options?: Partial<Options<SetCarPictureData>>): UseMutationOptions<SetCarPictureResponse, SetCarPictureError, Options<SetCarPictureData>> => {
+    const mutationOptions: UseMutationOptions<SetCarPictureResponse, SetCarPictureError, Options<SetCarPictureData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await setCarPicture({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const exportCsvQueryKey = (options: Options<ExportCsvData>) => createQueryKey('exportCsv', options);
+
+/**
+ * Export Csv
+ *
+ * Exports the bills of one type as CSV, in the format of the import: the header names the fields of the import, ISO dates, a dot as decimal separator. The oldest bill comes first.
+ */
+export const exportCsvOptions = (options: Options<ExportCsvData>) => queryOptions<ExportCsvResponse, DefaultError, ExportCsvResponse, ReturnType<typeof exportCsvQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await exportCsv({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: exportCsvQueryKey(options)
+});
+
+export const exportAllExpensesCsvQueryKey = (options: Options<ExportAllExpensesCsvData>) => createQueryKey('exportAllExpensesCsv', options);
+
+/**
+ * Export All Expenses
+ *
+ * Exports all expenses of the car as one CSV, for spreadsheets: every bill and the payments of the recurring costs, the oldest first, ISO dates and a dot as decimal separator. Not meant to be imported again.
+ */
+export const exportAllExpensesCsvOptions = (options: Options<ExportAllExpensesCsvData>) => queryOptions<ExportAllExpensesCsvResponse, DefaultError, ExportAllExpensesCsvResponse, ReturnType<typeof exportAllExpensesCsvQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await exportAllExpensesCsv({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: exportAllExpensesCsvQueryKey(options)
 });
 
 /**
@@ -1136,6 +1569,25 @@ export const getMonthlyStatsOptions = (options: Options<GetMonthlyStatsData>) =>
     queryKey: getMonthlyStatsQueryKey(options)
 });
 
+/**
+ * Delete Me
+ *
+ * Deletes the own account with all its cars, entries, recurring costs and reminders. The account at the identity provider stays.
+ */
+export const deleteMyselfMutation = (options?: Partial<Options<DeleteMyselfData>>): UseMutationOptions<DeleteMyselfResponse, DefaultError, Options<DeleteMyselfData>> => {
+    const mutationOptions: UseMutationOptions<DeleteMyselfResponse, DefaultError, Options<DeleteMyselfData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await deleteMyself({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
 export const getMyselfQueryKey = (options?: Options<GetMyselfData>) => createQueryKey('getMyself', options);
 
 /**
@@ -1153,6 +1605,219 @@ export const getMyselfOptions = (options?: Options<GetMyselfData>) => queryOptio
     },
     queryKey: getMyselfQueryKey(options)
 });
+
+export const downloadBackupQueryKey = (options?: Options<DownloadBackupData>) => createQueryKey('downloadBackup', options);
+
+/**
+ * Download
+ *
+ * All own data as ZIP: settings, cars, entries, recurring costs, reminders and the files
+ */
+export const downloadBackupOptions = (options?: Options<DownloadBackupData>) => queryOptions<DownloadBackupResponse, DefaultError, DownloadBackupResponse, ReturnType<typeof downloadBackupQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await downloadBackup({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: downloadBackupQueryKey(options)
+});
+
+/**
+ * Restore
+ *
+ * Restores a backup into the own account, which must not have cars yet
+ */
+export const restoreBackupMutation = (options?: Partial<Options<RestoreBackupData>>): UseMutationOptions<RestoreBackupResponse, RestoreBackupError, Options<RestoreBackupData>> => {
+    const mutationOptions: UseMutationOptions<RestoreBackupResponse, RestoreBackupError, Options<RestoreBackupData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await restoreBackup({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Request More Cars
+ *
+ * Requests more cars than the limit of the account allows
+ */
+export const requestMoreCarsMutation = (options?: Partial<Options<RequestMoreCarsData>>): UseMutationOptions<RequestMoreCarsResponse, RequestMoreCarsError, Options<RequestMoreCarsData>> => {
+    const mutationOptions: UseMutationOptions<RequestMoreCarsResponse, RequestMoreCarsError, Options<RequestMoreCarsData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await requestMoreCars({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const getMyLatestCarRequestQueryKey = (options?: Options<GetMyLatestCarRequestData>) => createQueryKey('getMyLatestCarRequest', options);
+
+/**
+ * Get Latest
+ *
+ * The newest own request for more cars
+ */
+export const getMyLatestCarRequestOptions = (options?: Options<GetMyLatestCarRequestData>) => queryOptions<GetMyLatestCarRequestResponse, DefaultError, GetMyLatestCarRequestResponse, ReturnType<typeof getMyLatestCarRequestQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getMyLatestCarRequest({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getMyLatestCarRequestQueryKey(options)
+});
+
+/**
+ * Mark Seen
+ *
+ * The decision was shown to the user, it is not shown again
+ */
+export const markCarRequestSeenMutation = (options?: Partial<Options<MarkCarRequestSeenData>>): UseMutationOptions<MarkCarRequestSeenResponse, DefaultError, Options<MarkCarRequestSeenData>> => {
+    const mutationOptions: UseMutationOptions<MarkCarRequestSeenResponse, DefaultError, Options<MarkCarRequestSeenData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await markCarRequestSeen({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const getMyNotificationsQueryKey = (options?: Options<GetMyNotificationsData>) => createQueryKey('getMyNotifications', options);
+
+/**
+ * Get Notifications
+ *
+ * Notifications of the own account by e-mail
+ */
+export const getMyNotificationsOptions = (options?: Options<GetMyNotificationsData>) => queryOptions<GetMyNotificationsResponse, DefaultError, GetMyNotificationsResponse, ReturnType<typeof getMyNotificationsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getMyNotifications({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getMyNotificationsQueryKey(options)
+});
+
+/**
+ * Update Notifications
+ *
+ * Turns the notifications of the own account by e-mail on or off
+ */
+export const updateMyNotificationsMutation = (options?: Partial<Options<UpdateMyNotificationsData>>): UseMutationOptions<UpdateMyNotificationsResponse, DefaultError, Options<UpdateMyNotificationsData>> => {
+    const mutationOptions: UseMutationOptions<UpdateMyNotificationsResponse, DefaultError, Options<UpdateMyNotificationsData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await updateMyNotifications({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const getMyPushQueryKey = (options?: Options<GetMyPushData>) => createQueryKey('getMyPush', options);
+
+/**
+ * Get Push
+ *
+ * Whether the server sends push messages, its key for the subscription and the number of own browsers
+ */
+export const getMyPushOptions = (options?: Options<GetMyPushData>) => queryOptions<GetMyPushResponse, DefaultError, GetMyPushResponse, ReturnType<typeof getMyPushQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getMyPush({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getMyPushQueryKey(options)
+});
+
+/**
+ * Unsubscribe
+ *
+ * Removes the browser from the receivers of the notifications
+ */
+export const unsubscribeMyPushMutation = (options?: Partial<Options<UnsubscribeMyPushData>>): UseMutationOptions<UnsubscribeMyPushResponse, DefaultError, Options<UnsubscribeMyPushData>> => {
+    const mutationOptions: UseMutationOptions<UnsubscribeMyPushResponse, DefaultError, Options<UnsubscribeMyPushData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await unsubscribeMyPush({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Subscribe
+ *
+ * Adds the browser to the receivers of the notifications, again with new keys
+ */
+export const subscribeMyPushMutation = (options?: Partial<Options<SubscribeMyPushData>>): UseMutationOptions<SubscribeMyPushResponse, DefaultError, Options<SubscribeMyPushData>> => {
+    const mutationOptions: UseMutationOptions<SubscribeMyPushResponse, DefaultError, Options<SubscribeMyPushData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await subscribeMyPush({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Test
+ *
+ * Sends a notification to every own browser
+ */
+export const testMyPushMutation = (options?: Partial<Options<TestMyPushData>>): UseMutationOptions<unknown, DefaultError, Options<TestMyPushData>> => {
+    const mutationOptions: UseMutationOptions<unknown, DefaultError, Options<TestMyPushData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await testMyPush({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 /**
  * Update Settings
@@ -1172,3 +1837,23 @@ export const updateMySettingsMutation = (options?: Partial<Options<UpdateMySetti
     };
     return mutationOptions;
 };
+
+export const getVersionQueryKey = (options?: Options<GetVersionData>) => createQueryKey('getVersion', options);
+
+/**
+ * Get Version
+ *
+ * Version of the server, e.g. 0.5.0 or 0.5.0-dev.531
+ */
+export const getVersionOptions = (options?: Options<GetVersionData>) => queryOptions<GetVersionResponse, DefaultError, GetVersionResponse, ReturnType<typeof getVersionQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getVersion({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getVersionQueryKey(options)
+});

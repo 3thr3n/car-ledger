@@ -1,9 +1,12 @@
-import { Box, Divider, Grid, Stack, Typography } from '@mui/material';
+import { Box, Button, Divider, Grid, Stack, Typography } from '@mui/material';
+import FileDownloadRounded from '@mui/icons-material/FileDownloadRounded';
 import PaymentsRounded from '@mui/icons-material/PaymentsRounded';
 import LocalGasStationRounded from '@mui/icons-material/LocalGasStationRounded';
 import BuildRounded from '@mui/icons-material/BuildRounded';
 import ReceiptLongRounded from '@mui/icons-material/ReceiptLongRounded';
 import WaterDropRounded from '@mui/icons-material/WaterDropRounded';
+import EvStationRounded from '@mui/icons-material/EvStationRounded';
+import BoltRounded from '@mui/icons-material/BoltRounded';
 import ArrowForwardRounded from '@mui/icons-material/ArrowForwardRounded';
 import { useQuery } from '@tanstack/react-query';
 import dayjs from 'dayjs';
@@ -12,12 +15,14 @@ import { useNavigate } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 import {
   getAllRecurringBillsOptions,
+  getMyCarOptions,
   getMyCarOverviewOptions,
   getRemindersOptions,
 } from '@/generated/@tanstack/react-query.gen';
-import { localClient } from '@/utils/QueryClient';
-import { BillType } from '@/generated';
+import { baseUrl, localClient } from '@/utils/QueryClient';
+import { BillType, RecurringBillSort } from '@/generated';
 import { toApiDate, useFormat } from '@/utils/format';
+import { hasBattery, hasTank } from '@/utils/energy';
 import useBillList from '@/hooks/useBillList';
 import StatTile from '@/components/ui/StatTile';
 import Section from '@/components/ui/Section';
@@ -29,6 +34,7 @@ import { useLedgerColumns } from '@/components/bill/columns';
 import useDeleteBill from '@/components/bill/useDeleteBill';
 import MonthlyChart from '@/components/dashboard/LazyMonthlyChart';
 import ReminderList from '@/components/reminder/ReminderList';
+import CarDetails from '@/components/car/CarDetails';
 
 /** the chart of the overview shows the current and the 11 months before */
 const lastTwelveMonths = () => ({
@@ -45,6 +51,11 @@ export default function CarOverviewPage({ id }: { id: number }) {
     getMyCarOverviewOptions({ client: localClient, path: { id } }),
   );
 
+  // loaded by the layout of the car already
+  const { data: car } = useQuery(
+    getMyCarOptions({ client: localClient, path: { id } }),
+  );
+
   const ledger = useBillList('all', id, 10);
   const { columns, mobileRow } = useLedgerColumns();
   const onDelete = useDeleteBill(id);
@@ -54,13 +65,48 @@ export default function CarOverviewPage({ id }: { id: number }) {
     getAllRecurringBillsOptions({
       client: localClient,
       path: { carId: id },
-      query: { onlyRunning: true, page: 1, size: 5 },
+      // the next due payment on top
+      query: {
+        onlyRunning: true,
+        sort: RecurringBillSort.NEXT_DUE,
+        page: 1,
+        size: 5,
+      },
     }),
   );
 
   const { data: reminders } = useQuery(
     getRemindersOptions({ client: localClient, path: { carId: id } }),
   );
+
+  const fuelTiles = [
+    {
+      key: 'avgConsumption',
+      icon: <WaterDropRounded />,
+      color: 'fuel',
+      value: format.consumption(overview?.avgConsumption),
+    },
+    {
+      key: 'refuels',
+      icon: <LocalGasStationRounded />,
+      color: 'fuel',
+      value: overview?.totalRefuels ?? 0,
+    },
+  ] as const;
+  const chargingTiles = [
+    {
+      key: 'avgChargingConsumption',
+      icon: <BoltRounded />,
+      color: 'charging',
+      value: format.chargingConsumption(overview?.avgChargingConsumption),
+    },
+    {
+      key: 'charges',
+      icon: <EvStationRounded />,
+      color: 'charging',
+      value: overview?.totalCharges ?? 0,
+    },
+  ] as const;
 
   const tiles = [
     {
@@ -69,18 +115,8 @@ export default function CarOverviewPage({ id }: { id: number }) {
       color: 'primary',
       value: format.money(overview?.totalCost),
     },
-    {
-      key: 'avgConsumption',
-      icon: <WaterDropRounded />,
-      color: 'fuel',
-      value: format.unit(overview?.avgConsumption, 'l/100km'),
-    },
-    {
-      key: 'refuels',
-      icon: <LocalGasStationRounded />,
-      color: 'fuel',
-      value: overview?.totalRefuels ?? 0,
-    },
+    ...(hasTank(car?.energyType) ? fuelTiles : []),
+    ...(hasBattery(car?.energyType) ? chargingTiles : []),
     {
       key: 'maintenance',
       icon: <BuildRounded />,
@@ -101,7 +137,12 @@ export default function CarOverviewPage({ id }: { id: number }) {
         {tiles.map((tile, index) => (
           <Grid
             key={tile.key}
-            size={{ xs: index === 0 ? 12 : 6, sm: 4, lg: 'grow' }}
+            // a plug-in hybrid has 7 tiles, too many for one row
+            size={{
+              xs: index === 0 ? 12 : 6,
+              sm: 4,
+              lg: tiles.length > 5 ? 3 : 'grow',
+            }}
           >
             <StatTile
               loading={isLoading}
@@ -118,6 +159,7 @@ export default function CarOverviewPage({ id }: { id: number }) {
       <MonthlyChart
         carId={id}
         {...lastTwelveMonths()}
+        energyTypes={car && [car.energyType]}
         subtitle={t('dashboard.filter.period.last12')}
       />
 
@@ -128,14 +170,26 @@ export default function CarOverviewPage({ id }: { id: number }) {
             title={t('car.overview.ledger')}
             subtitle={t('car.overview.ledgerSubtitle')}
             action={
-              <RouterButton
-                to="/dashboard"
-                search={{ car: id }}
-                size="small"
-                endIcon={<ArrowForwardRounded />}
-              >
-                {t('car.overview.toDashboard')}
-              </RouterButton>
+              <Stack direction="row" spacing={1}>
+                {/* every entry and the recurring payments, for spreadsheets */}
+                {ledger.total > 0 && (
+                  <Button
+                    href={`${baseUrl}/api/export/${id}/all${ledger.year === undefined ? '' : `?year=${ledger.year}`}`}
+                    size="small"
+                    startIcon={<FileDownloadRounded />}
+                  >
+                    {t('car.overview.exportAll')}
+                  </Button>
+                )}
+                <RouterButton
+                  to="/dashboard"
+                  search={{ car: id }}
+                  size="small"
+                  endIcon={<ArrowForwardRounded />}
+                >
+                  {t('car.overview.toDashboard')}
+                </RouterButton>
+              </Stack>
             }
           >
             <Box sx={{ px: 2.5, pb: 1.5 }}>
@@ -146,12 +200,15 @@ export default function CarOverviewPage({ id }: { id: number }) {
               />
             </Box>
             <BillTable
+              carId={id}
               rows={ledger.rows}
               total={ledger.total}
               columns={columns}
               mobileRow={mobileRow}
               pageModel={ledger.pageModel}
               onPageModelChange={ledger.setPageModel}
+              sortModel={ledger.sortModel}
+              onSortModelChange={ledger.setSortModel}
               loading={ledger.isLoading || ledger.isFetching}
               onDelete={onDelete}
               onEdit={(row) =>
@@ -231,20 +288,37 @@ export default function CarOverviewPage({ id }: { id: number }) {
                       <Stack
                         direction="row"
                         spacing={2}
-                        alignItems="center"
-                        sx={{ py: 1.25 }}
+                        sx={{
+                          alignItems: 'center',
+                          py: 1.25,
+                        }}
                       >
                         <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-                          <Typography fontWeight={600} noWrap>
+                          <Typography
+                            noWrap
+                            sx={{
+                              fontWeight: 600,
+                            }}
+                          >
                             {bill.name}
                           </Typography>
-                          <Typography variant="body2" color="text.secondary">
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              color: 'text.secondary',
+                            }}
+                          >
                             {t('car.overview.nextDue', {
                               date: format.date(bill.nextDueDate),
                             })}
                           </Typography>
                         </Box>
-                        <Typography fontWeight={600} className="tabular">
+                        <Typography
+                          className="tabular"
+                          sx={{
+                            fontWeight: 600,
+                          }}
+                        >
                           {format.money(bill.amount)}
                         </Typography>
                       </Stack>
@@ -269,6 +343,7 @@ export default function CarOverviewPage({ id }: { id: number }) {
                 />
               )}
             </Section>
+            {car && <CarDetails car={car} totalCost={overview?.totalCost} />}
           </Stack>
         </Grid>
       </Grid>

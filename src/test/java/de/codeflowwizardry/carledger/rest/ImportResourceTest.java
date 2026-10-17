@@ -2,6 +2,8 @@ package de.codeflowwizardry.carledger.rest;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -212,6 +214,24 @@ class ImportResourceTest
 				.post("/api/import/" + carEntity.getId())
 				.then()
 				.statusCode(400);
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldNotExposeTheParserMessageOfAnInvalidMapping()
+	{
+		given().contentType(ContentType.MULTIPART)
+				.multiPart("file", "import.csv", getFile("csv/maintenance_import_1.csv"), "text/csv")
+				.multiPart("order", "{ \"date\": ")
+				.multiPart("billType", "MAINTENANCE")
+				.multiPart("vat", 19)
+				.when()
+				.post("/api/import/" + carEntity.getId())
+				.then()
+				.statusCode(400)
+				.body(is("Column mapping is invalid"));
 	}
 
 	@Test
@@ -494,6 +514,105 @@ class ImportResourceTest
 				.get("/api/import/" + carEntity.getId() + "/fields")
 				.then()
 				.statusCode(200);
+
+		given()
+				.queryParam("importType", "CHARGING")
+				.when()
+				.get("/api/import/" + carEntity.getId() + "/fields")
+				.then()
+				.statusCode(200)
+				.body("required", containsInAnyOrder("date", "unit", "pricePerUnit"))
+				.body("all", hasItems("location", "stateOfCharge"));
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldConvertAFileInUsUnits()
+	{
+		given().contentType(ContentType.MULTIPART)
+				.multiPart("file", "import.csv", """
+						2026-03-01,10,3.459,300,30
+						""".getBytes(java.nio.charset.StandardCharsets.UTF_8), "text/csv")
+				.multiPart("order", """
+						{ "date": 0, "unit": 1, "pricePerUnit": 2, "distance": 3, "estimateConsumption": 4 }
+						""")
+				.multiPart("billType", "FUEL")
+				.multiPart("vat", 19)
+				.multiPart("unitSystem", "US")
+				.when()
+				.post("/api/import/" + carEntity.getId())
+				.then()
+				.statusCode(200)
+				.body("successCount", is(1));
+
+		// 10 gallons for $3.459, 300 miles, 30 mpg: stored in liters, cent per liter,
+		// km and l/100km
+		given()
+				.when()
+				.get("/api/bill/" + carEntity.getId() + "/fuel/all")
+				.then()
+				.statusCode(200)
+				.body("data[0].unit", is(37.85F))
+				.body("data[0].pricePerUnit", is(91.38F))
+				.body("data[0].distance", is(482.8F))
+				.body("data[0].estimateConsumption", is(7.84F))
+				.body("data[0].total", is(34.59F));
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldReportAnUnknownChargingLocation()
+	{
+		given().contentType(ContentType.MULTIPART)
+				.multiPart("file", "import.csv", """
+						2026-03-01,40,30,garage
+						2026-03-02,40,30,home
+						""".getBytes(java.nio.charset.StandardCharsets.UTF_8), "text/csv")
+				.multiPart("order", """
+						{ "date": 0, "unit": 1, "pricePerUnit": 2, "location": 3 }
+						""")
+				.multiPart("billType", "CHARGING")
+				.multiPart("vat", 19)
+				.when()
+				.post("/api/import/" + carEntity.getId())
+				.then()
+				.statusCode(200)
+				.body("successCount", is(1))
+				.body("errorCount", is(1))
+				.body("errors[0].message",
+						is("Could not parse 'garage' for field 'location', expected one of [HOME, PUBLIC]"));
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldExplainWhyATypeCannotBeImported()
+	{
+		given()
+				.queryParam("importType", "RECURRING")
+				.when()
+				.get("/api/import/" + carEntity.getId() + "/fields")
+				.then()
+				.statusCode(400)
+				.body(is("Recurring costs cannot be imported, their payments are booked automatically!"));
+
+		given().contentType(ContentType.MULTIPART)
+				.multiPart("file", "import.csv", getFile("csv/maintenance_import_1.csv"), "text/csv")
+				.multiPart("order", """
+						{ "date": 0, "total": 1 }
+						""")
+				.multiPart("billType", "RECURRING")
+				.multiPart("vat", 19)
+				.when()
+				.post("/api/import/" + carEntity.getId())
+				.then()
+				.statusCode(400)
+				.body(is("Recurring costs cannot be imported, their payments are booked automatically!"));
 	}
 
 	@AfterEach

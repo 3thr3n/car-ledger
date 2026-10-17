@@ -14,12 +14,13 @@ import { useMutation } from '@tanstack/react-query';
 import dayjs, { Dayjs } from 'dayjs';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { odometerToApi, odometerToField } from '@/utils/units';
 import { toast } from 'react-toastify';
 import { Reminder } from '@/generated';
 import { completeReminderMutation } from '@/generated/@tanstack/react-query.gen';
 import { invalidateCar, localClient } from '@/utils/QueryClient';
-import { BackendError } from '@/utils/BackendError';
-import { toApiDate } from '@/utils/format';
+import { errorMessage } from '@/utils/BackendError';
+import { toApiDate, useFormat } from '@/utils/format';
 import NumberField from '@/components/bill/NumberField';
 import useReminderText from './useReminderText';
 
@@ -55,8 +56,9 @@ function DoneForm({
   const { t } = useTranslation();
   const text = useReminderText();
   const [date, setDate] = useState<Dayjs | null>(dayjs());
+  const { units } = useFormat();
   const [odometer, setOdometer] = useState<number | undefined>(
-    reminder.odometer,
+    odometerToField(units, reminder.odometer),
   );
   const repeat = text.repeatText(reminder);
 
@@ -67,12 +69,7 @@ function DoneForm({
       onClose();
       await invalidateCar(reminder.carId);
     },
-    onError: (error) =>
-      toast.error(
-        error instanceof BackendError && error.message
-          ? error.message
-          : t('errors.backend'),
-      ),
+    onError: (error) => toast.error(errorMessage(error, t('errors.backend'))),
   });
 
   return (
@@ -85,11 +82,20 @@ function DoneForm({
           <Stack
             direction="row"
             spacing={1}
-            alignItems="center"
-            sx={{ mb: 1, '& svg': { fontSize: 18 } }}
+            sx={{
+              alignItems: 'center',
+              mb: 1,
+              '& svg': { fontSize: 18 },
+            }}
           >
             <RepeatRounded color="primary" />
-            <Typography fontWeight={600}>{repeat}</Typography>
+            <Typography
+              sx={{
+                fontWeight: 600,
+              }}
+            >
+              {repeat}
+            </Typography>
           </Stack>
         )}
         <DialogContentText sx={{ mb: 2.5 }}>
@@ -110,7 +116,7 @@ function DoneForm({
                 value={odometer}
                 onChange={setOdometer}
                 decimalScale={0}
-                suffix=" km"
+                suffix={` ${units.distance.label}`}
                 max={10_000_000}
               />
             )}
@@ -129,7 +135,7 @@ function DoneForm({
               path: { carId: reminder.carId, id: reminder.id },
               body: {
                 date: repeat ? toApiDate(date) : undefined,
-                odometer: repeat ? odometer : undefined,
+                odometer: repeat ? odometerToApi(units, odometer) : undefined,
               },
             })
           }

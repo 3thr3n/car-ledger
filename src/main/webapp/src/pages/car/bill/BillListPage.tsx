@@ -1,4 +1,5 @@
-import { Box } from '@mui/material';
+import { Box, Button, Stack } from '@mui/material';
+import FileDownloadRounded from '@mui/icons-material/FileDownloadRounded';
 import { GridColDef, GridValidRowModel } from '@mui/x-data-grid';
 import { useNavigate } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
@@ -9,26 +10,43 @@ import YearFilter from '@/components/ui/YearFilter';
 import { RouterButton } from '@/components/ui/links';
 import BillTable, { MobileRow } from '@/components/bill/BillTable';
 import {
+  useChargingColumns,
   useFuelColumns,
   useMaintenanceColumns,
   useMiscellaneousColumns,
 } from '@/components/bill/columns';
 import useDeleteBill from '@/components/bill/useDeleteBill';
+import { baseUrl } from '@/utils/QueryClient';
+import { billTypes } from '@/utils/billTypes';
 
-type ListType = BillType.FUEL | BillType.MAINTENANCE | BillType.MISCELLANEOUS;
+type ListType =
+  | BillType.FUEL
+  | BillType.CHARGING
+  | BillType.MAINTENANCE
+  | BillType.MISCELLANEOUS;
 
 const kinds = {
   [BillType.FUEL]: 'fuel',
+  [BillType.CHARGING]: 'charging',
   [BillType.MAINTENANCE]: 'maintenance',
   [BillType.MISCELLANEOUS]: 'miscellaneous',
 } as const;
 
+/** the bills of the list as CSV, in the format of the import */
+function exportUrl(carId: number, type: ListType, year?: number) {
+  const query = new URLSearchParams({ type });
+  if (year !== undefined) query.set('year', `${year}`);
+  return `${baseUrl}/api/export/${carId}?${query}`;
+}
+
 function useColumns(type: ListType) {
   const fuel = useFuelColumns();
+  const charging = useChargingColumns();
   const maintenance = useMaintenanceColumns();
   const miscellaneous = useMiscellaneousColumns();
   const all = {
     [BillType.FUEL]: fuel,
+    [BillType.CHARGING]: charging,
     [BillType.MAINTENANCE]: maintenance,
     [BillType.MISCELLANEOUS]: miscellaneous,
   };
@@ -54,20 +72,41 @@ export default function BillListPage({
 
   return (
     <Section flush>
-      <Box sx={{ px: 2.5, pt: 2, pb: 1.5 }}>
-        <YearFilter
-          years={list.years}
-          value={list.year}
-          onChange={list.setYear}
-        />
-      </Box>
+      <Stack
+        direction="row"
+        spacing={1.5}
+        sx={{ px: 2.5, pt: 2, pb: 1.5, alignItems: 'center' }}
+      >
+        <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+          <YearFilter
+            years={list.years}
+            value={list.year}
+            onChange={list.setYear}
+          />
+        </Box>
+        {/* the export has the format of the import */}
+        {list.total > 0 && billTypes[type].importable && (
+          <Button
+            href={exportUrl(carId, type, list.year)}
+            variant="outlined"
+            size="small"
+            startIcon={<FileDownloadRounded />}
+            sx={{ flexShrink: 0 }}
+          >
+            {t('button.export')}
+          </Button>
+        )}
+      </Stack>
       <BillTable
+        carId={carId}
         rows={list.rows}
         total={list.total}
         columns={columns}
         mobileRow={mobileRow}
         pageModel={list.pageModel}
         onPageModelChange={list.setPageModel}
+        sortModel={list.sortModel}
+        onSortModelChange={list.setSortModel}
         loading={list.isLoading || list.isFetching}
         onDelete={onDelete}
         onEdit={(row) =>

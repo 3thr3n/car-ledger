@@ -1,4 +1,5 @@
 import {
+  Alert,
   Box,
   Button,
   Card,
@@ -10,9 +11,13 @@ import {
 import ArrowForwardRounded from '@mui/icons-material/ArrowForwardRounded';
 import UploadFileRounded from '@mui/icons-material/UploadFileRounded';
 import InsightsRounded from '@mui/icons-material/InsightsRounded';
-import { ReactNode } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import useMe from '@/hooks/useMe';
+import {
+  forgetAccountDeleted,
+  wasAccountDeleted,
+} from '@/utils/accountDeleted';
 import { baseUrl } from '@/utils/QueryClient';
 import { RouterButton } from '@/components/ui/links';
 import { billTypes, BillPaletteKey } from '@/utils/billTypes';
@@ -57,13 +62,24 @@ export default function LandingPage() {
   const { t } = useTranslation();
   const { loggedIn } = useMe();
 
+  // read once, a toast would fire before the toast container is ready
+  const [accountDeleted] = useState(wasAccountDeleted);
+  useEffect(forgetAccountDeleted, []);
+
   return (
     <Box id="LandingPage" sx={{ py: { xs: 5, md: 10 } }}>
       <Container maxWidth="md">
+        {accountDeleted && !loggedIn && (
+          <Alert severity="success" sx={{ mb: 4 }}>
+            {t('settings.deleteAccount.done')}
+          </Alert>
+        )}
         <Stack
           spacing={3}
-          alignItems="flex-start"
-          sx={{ mb: { xs: 6, md: 9 } }}
+          sx={{
+            alignItems: 'flex-start',
+            mb: { xs: 6, md: 9 },
+          }}
         >
           <Typography variant="overline" color="primary">
             {t('landing.eyebrow')}
@@ -81,8 +97,11 @@ export default function LandingPage() {
           <Typography
             variant="h6"
             component="p"
-            color="text.secondary"
-            sx={{ fontWeight: 400, maxWidth: 560 }}
+            sx={{
+              color: 'text.secondary',
+              fontWeight: 400,
+              maxWidth: 560,
+            }}
           >
             {t('landing.subtitle')}
           </Typography>
@@ -125,10 +144,20 @@ export default function LandingPage() {
                 >
                   {feature.icon}
                 </Box>
-                <Typography variant="subtitle1" fontWeight={650}>
+                <Typography
+                  variant="subtitle1"
+                  sx={{
+                    fontWeight: 650,
+                  }}
+                >
                   {t(`landing.features.${feature.key}.title`)}
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color: 'text.secondary',
+                  }}
+                >
                   {t(`landing.features.${feature.key}.text`)}
                 </Typography>
               </Card>
@@ -138,8 +167,11 @@ export default function LandingPage() {
 
         <Typography
           variant="body2"
-          color="text.secondary"
-          sx={{ mt: 6, textAlign: 'center' }}
+          sx={{
+            color: 'text.secondary',
+            mt: 6,
+            textAlign: 'center',
+          }}
         >
           {t('app.openSource')}{' '}
           <Box

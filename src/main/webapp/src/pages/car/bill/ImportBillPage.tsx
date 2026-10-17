@@ -26,12 +26,17 @@ import Papa from 'papaparse';
 import { ChangeEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
-import { BillType, CsvImportResult, importCsv } from '@/generated';
-import { getCsvFieldsOptions } from '@/generated/@tanstack/react-query.gen';
+import { BillType, CsvImportResult, importCsv, UnitSystem } from '@/generated';
+import {
+  getCsvFieldsOptions,
+  getMyCarOptions,
+} from '@/generated/@tanstack/react-query.gen';
 import { invalidateCar, localClient } from '@/utils/QueryClient';
-import { BackendError } from '@/utils/BackendError';
-import { billTypeList, billTypes } from '@/utils/billTypes';
+import { errorMessage } from '@/utils/BackendError';
+import { billTypes, billTypesFor } from '@/utils/billTypes';
 import useVatCountry from '@/hooks/useVatCountry';
+import { useFormat } from '@/utils/format';
+import { unitsOf } from '@/utils/units';
 import {
   loadMapping,
   restoreMapping,
@@ -42,9 +47,17 @@ import PageHeader from '@/components/ui/PageHeader';
 import VatCountrySelect from '@/components/bill/VatCountrySelect';
 import { RouterButton } from '@/components/ui/links';
 
-type ImportType = BillType.FUEL | BillType.MAINTENANCE | BillType.MISCELLANEOUS;
+type ImportType =
+  | BillType.FUEL
+  | BillType.CHARGING
+  | BillType.MAINTENANCE
+  | BillType.MISCELLANEOUS;
 
-const importTypes = billTypeList.filter((meta) => meta.importable);
+/** the fields of a charge are in kWh, not in liters */
+const chargingLabels: Record<string, string> = {
+  unit: 'chargedUnit',
+  pricePerUnit: 'chargingPricePerUnit',
+};
 
 export interface ImportBillPageProps {
   carId: number;
@@ -56,14 +69,31 @@ export default function ImportBillPage({
   initialType,
 }: ImportBillPageProps) {
   const { t } = useTranslation();
+  const format = useFormat();
   const vat = useVatCountry();
 
   const [step, setStep] = useState(0);
-  const [type, setType] = useState<ImportType>(
-    initialType && billTypes[initialType].importable
-      ? (initialType as ImportType)
-      : BillType.FUEL,
+  // loaded by the layout of the car already
+  const { data: car } = useQuery(
+    getMyCarOptions({ client: localClient, path: { id: carId } }),
   );
+  // an electric car is not refueled, a petrol car not charged
+  const importTypes = billTypesFor(car?.energyType).filter(
+    (meta) => meta.importable,
+  );
+  const [selectedType, setType] = useState<BillType | undefined>(initialType);
+  const type = (
+    importTypes.some((meta) => meta.type === selectedType)
+      ? selectedType
+      : importTypes[0].type
+  ) as ImportType;
+  // the file is in these units, an export of CarLedger always in metric ones
+  const [unitSystem, setUnitSystem] = useState(format.units.system);
+  const fieldLabel = (field: string) =>
+    t(
+      `bill.fields.${(type === BillType.CHARGING && chargingLabels[field]) || field}`,
+      { defaultValue: field, context: unitsOf(unitSystem).volume.context },
+    );
   const [file, setFile] = useState<File>();
   const [headers, setHeaders] = useState<string[]>([]);
   const [mapping, setMapping] = useState<Record<string, number>>({});
@@ -92,6 +122,7 @@ export default function ImportBillPage({
           billType: type,
           order: JSON.stringify(mapping),
           vat: vat.vatRate,
+          unitSystem,
         },
         throwOnError: true,
       });
@@ -105,11 +136,7 @@ export default function ImportBillPage({
       await invalidateCar(carId);
     },
     onError: (error) => {
-      toast.error(
-        error instanceof BackendError && error.message
-          ? error.message
-          : t('import.failed'),
-      );
+      toast.error(errorMessage(error, t('import.failed')));
     },
   });
 
@@ -162,7 +189,13 @@ export default function ImportBillPage({
           <Step>
             <StepLabel>{t('import.steps.type')}</StepLabel>
             <StepContent>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              <Typography
+                variant="body2"
+                sx={{
+                  color: 'text.secondary',
+                  mb: 2,
+                }}
+              >
                 {t('import.typeHint')}
               </Typography>
               <ToggleButtonGroup
@@ -182,6 +215,21 @@ export default function ImportBillPage({
                   </ToggleButton>
                 ))}
               </ToggleButtonGroup>
+              <TextField
+                select
+                size="small"
+                label={t('import.units')}
+                value={unitSystem}
+                onChange={(e) => setUnitSystem(e.target.value as UnitSystem)}
+                helperText={t('import.unitsHelp')}
+                sx={{ display: 'flex', maxWidth: 420, mb: 2 }}
+              >
+                {Object.values(UnitSystem).map((system) => (
+                  <MenuItem key={system} value={system}>
+                    {t(`settings.unitSystems.${system}`)}
+                  </MenuItem>
+                ))}
+              </TextField>
               <Box>
                 <Button variant="contained" onClick={() => setStep(1)}>
                   {t('button.continue')}
@@ -199,7 +247,13 @@ export default function ImportBillPage({
               {t('import.steps.file')}
             </StepLabel>
             <StepContent>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+              <Typography
+                variant="body2"
+                sx={{
+                  color: 'text.secondary',
+                  mb: 1,
+                }}
+              >
                 {t('import.fileHint')}
               </Typography>
               {allFields.length > 0 && (
@@ -207,15 +261,17 @@ export default function ImportBillPage({
                   direction="row"
                   spacing={0.75}
                   useFlexGap
-                  flexWrap="wrap"
-                  sx={{ mb: 2 }}
+                  sx={{
+                    flexWrap: 'wrap',
+                    mb: 2,
+                  }}
                 >
                   {allFields.map((field) => (
                     <Chip
                       key={field}
                       size="small"
                       variant="outlined"
-                      label={`${t(`bill.fields.${field}`, { defaultValue: field })}${required.includes(field) ? ' *' : ''}`}
+                      label={`${fieldLabel(field)}${required.includes(field) ? ' *' : ''}`}
                     />
                   ))}
                 </Stack>
@@ -242,7 +298,13 @@ export default function ImportBillPage({
           <Step>
             <StepLabel>{t('import.steps.mapping')}</StepLabel>
             <StepContent>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              <Typography
+                variant="body2"
+                sx={{
+                  color: 'text.secondary',
+                  mb: 2,
+                }}
+              >
                 {t('import.mappingHint', { count: headers.length })}
               </Typography>
               {restored && (
@@ -256,7 +318,7 @@ export default function ImportBillPage({
                     key={field}
                     select
                     size="small"
-                    label={t(`bill.fields.${field}`, { defaultValue: field })}
+                    label={fieldLabel(field)}
                     required={required.includes(field)}
                     value={mapping[field] ?? -1}
                     onChange={(e) => {
@@ -283,11 +345,7 @@ export default function ImportBillPage({
               {missing.length > 0 && (
                 <Alert severity="warning" variant="outlined" sx={{ mb: 2 }}>
                   {t('import.missingRequired', {
-                    fields: missing
-                      .map((field) =>
-                        t(`bill.fields.${field}`, { defaultValue: field }),
-                      )
-                      .join(', '),
+                    fields: missing.map(fieldLabel).join(', '),
                   })}
                 </Alert>
               )}
@@ -365,9 +423,20 @@ function ImportSummary({ result }: { result: CsvImportResult }) {
 
   return (
     <Box>
-      <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1.5 }}>
+      <Stack
+        direction="row"
+        spacing={1}
+        sx={{
+          alignItems: 'center',
+          mb: 1.5,
+        }}
+      >
         <CheckCircleRounded color="success" />
-        <Typography fontWeight={600}>
+        <Typography
+          sx={{
+            fontWeight: 600,
+          }}
+        >
           {t('import.result.success', { count: result.successCount ?? 0 })}
         </Typography>
       </Stack>
@@ -398,7 +467,7 @@ function ImportSummary({ result }: { result: CsvImportResult }) {
                       primary: {
                         color:
                           row.severity === 'error' ? 'error' : 'text.secondary',
-                        fontWeight: 600,
+                        sx: { fontWeight: 600 },
                       },
                     }}
                   />

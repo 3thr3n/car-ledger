@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -16,9 +17,12 @@ import de.codeflowwizardry.carledger.data.AccountEntity;
 import de.codeflowwizardry.carledger.data.CarEntity;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.BillRepository;
+import de.codeflowwizardry.carledger.data.repository.BillRepository.Energy;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
+import de.codeflowwizardry.carledger.data.repository.RecurringBillPaymentRepository;
 import de.codeflowwizardry.carledger.exception.WrongUserException;
 import de.codeflowwizardry.carledger.rest.records.Car;
+import de.codeflowwizardry.carledger.Utils;
 import de.codeflowwizardry.carledger.rest.records.CarInput;
 import de.codeflowwizardry.carledger.rest.records.CarOverview;
 import de.codeflowwizardry.carledger.rest.records.Odometer;
@@ -33,15 +37,18 @@ public class CarResource extends AbstractResource
 {
 	private final CarRepository carRepository;
 	private final BillRepository billRepository;
+	private final RecurringBillPaymentRepository recurringBillPaymentRepository;
 	private final OdometerService odometerService;
 
 	@Inject
 	public CarResource(SecurityIdentity identity, AccountRepository accountRepository, CarRepository carRepository,
-			BillRepository billRepository, OdometerService odometerService)
+			BillRepository billRepository, RecurringBillPaymentRepository recurringBillPaymentRepository,
+			OdometerService odometerService)
 	{
 		super(identity, accountRepository);
 		this.carRepository = carRepository;
 		this.billRepository = billRepository;
+		this.recurringBillPaymentRepository = recurringBillPaymentRepository;
 		this.odometerService = odometerService;
 	}
 
@@ -80,8 +87,11 @@ public class CarResource extends AbstractResource
 	public CarOverview getMyCarOverview(@PathParam("id") Long id)
 	{
 		findCar(id);
+		// the total contains the payments of the recurring costs, like the dashboard
 		return CarOverview.convert(billRepository.summarizeByType(id, context.getName()),
-				billRepository.averageConsumption(id, context.getName()));
+				recurringBillPaymentRepository.sumAmount(id, context.getName(), Optional.empty(), Optional.empty()),
+				billRepository.averageConsumption(id, context.getName(), Energy.FUEL),
+				billRepository.averageConsumption(id, context.getName(), Energy.CHARGING));
 	}
 
 	@POST
@@ -102,6 +112,8 @@ public class CarResource extends AbstractResource
 					.build();
 		}
 
+		Utils.requireValid(carpojo.validateDetails());
+
 		CarEntity carEntity = findCar(id);
 		carEntity.setName(carpojo.name());
 		if (carEntity.getOdometer() != carpojo.odometer())
@@ -111,6 +123,7 @@ public class CarResource extends AbstractResource
 			carEntity.setOdometerDate(LocalDate.now());
 		}
 		carEntity.setManufactureYear(carpojo.year());
+		setDetails(carEntity, carpojo);
 
 		carRepository.persist(carEntity);
 
@@ -132,7 +145,7 @@ public class CarResource extends AbstractResource
 		{
 			return Response
 					.status(400)
-					.entity("Max cars already reached! Delete one car or ask the administrator for an increase.")
+					.entity("Max cars already reached! Delete one car or request more cars in the garage.")
 					.build();
 		}
 
@@ -144,10 +157,13 @@ public class CarResource extends AbstractResource
 					.build();
 		}
 
+		Utils.requireValid(carpojo.validateDetails());
+
 		CarEntity carEntity = new CarEntity();
 		carEntity.setName(carpojo.name());
 		carEntity.setManufactureYear(carpojo.year());
 		carEntity.setOdometer(carpojo.odometer());
+		setDetails(carEntity, carpojo);
 		carEntity.setUser(accountEntity);
 
 		carRepository.persist(carEntity);
@@ -174,6 +190,17 @@ public class CarResource extends AbstractResource
 		// the pending update is flushed before the odometer queries
 		return Car.convert(carEntity, billRepository.count("car.id", carEntity.getId()),
 				odometerService.current(carEntity.getId(), context.getName()).get(carEntity.getId()));
+	}
+
+	private static void setDetails(CarEntity carEntity, CarInput input)
+	{
+		carEntity.setLicensePlate(input.normalizedLicensePlate());
+		carEntity.setVin(input.normalizedVin());
+		carEntity.setPurchaseDate(input.purchaseDate());
+		carEntity.setPurchasePrice(input.purchasePrice());
+		carEntity.setEnergyType(input.energyTypeOrDefault());
+		carEntity.setTankSize(input.normalizedTankSize());
+		carEntity.setBatteryCapacity(input.normalizedBatteryCapacity());
 	}
 
 	private boolean isInputInvalid(CarInput carInput)

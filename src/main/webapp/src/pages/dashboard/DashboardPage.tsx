@@ -2,12 +2,14 @@ import { Grid, Stack } from '@mui/material';
 import PaymentsRounded from '@mui/icons-material/PaymentsRounded';
 import SpeedRounded from '@mui/icons-material/SpeedRounded';
 import LocalGasStationRounded from '@mui/icons-material/LocalGasStationRounded';
+import EvStationRounded from '@mui/icons-material/EvStationRounded';
 import RouteRounded from '@mui/icons-material/RouteRounded';
 import InsightsRounded from '@mui/icons-material/InsightsRounded';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import {
   getDashboardStatsOptions,
+  getMyCarsOptions,
   getRemindersOptions,
 } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
@@ -26,6 +28,7 @@ import RangeList from '@/components/dashboard/RangeList';
 import MonthlyChart from '@/components/dashboard/LazyMonthlyChart';
 import Section from '@/components/ui/Section';
 import ReminderList from '@/components/reminder/ReminderList';
+import InstallHint from '@/components/install/InstallHint';
 import ErrorPage from '@/pages/ErrorPage';
 
 export interface DashboardPageProps {
@@ -60,6 +63,12 @@ export default function DashboardPage({
     }),
   );
 
+  // the energy types of the shown cars, loaded by the filter already
+  const { data: cars } = useQuery(getMyCarsOptions({ client: localClient }));
+  const energyTypes = cars
+    ?.filter((car) => search.car === undefined || car.id === search.car)
+    .map((car) => car.energyType);
+
   if (isError) {
     return <ErrorPage error={error} />;
   }
@@ -67,6 +76,11 @@ export default function DashboardPage({
   const total = data?.total ?? {};
   const average = data?.average ?? {};
   const isEmpty = !isLoading && !hasValue(total.total);
+  // only charges: the consumption is in kWh, with both kWh is the hint
+  const onlyCharged =
+    hasValue(average.chargingConsumption) && !hasValue(average.fuelConsumption);
+  const fuelVolume = format.volume(total.unit, 1);
+  const chargedVolume = format.unit(total.chargedUnit, 'kWh', 0);
 
   return (
     <Page id="DashboardPage">
@@ -74,12 +88,15 @@ export default function DashboardPage({
         title={t('dashboard.title')}
         subtitle={t('dashboard.subtitle')}
       />
+      <InstallHint />
       <DashboardFilter search={search} onChange={onSearchChange} />
 
       {!!dueReminders?.length && (
         <Section
           title={t('dashboard.reminders.title')}
-          subtitle={t('dashboard.reminders.subtitle')}
+          subtitle={t('dashboard.reminders.subtitle', {
+            context: format.units.distance.context,
+          })}
           sx={{ mb: 2 }}
         >
           <ReminderList compact showCar reminders={dueReminders} />
@@ -101,19 +118,41 @@ export default function DashboardPage({
             emphasis
             loading={isLoading}
             icon={<SpeedRounded />}
-            label={t('dashboard.kpi.costPerKm')}
-            value={format.unit(average.costPerKm, 'ct/km')}
+            label={t('dashboard.kpi.costPerKm', {
+              context: format.units.distance.context,
+            })}
+            value={format.costPerDistance(average.costPerKm)}
           />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
-          <StatTile
-            emphasis
-            loading={isLoading}
-            color="fuel"
-            icon={<LocalGasStationRounded />}
-            label={t('dashboard.kpi.consumption')}
-            value={format.unit(average.fuelConsumption, 'l/100km')}
-          />
+          {onlyCharged ? (
+            <StatTile
+              emphasis
+              loading={isLoading}
+              color="charging"
+              icon={<EvStationRounded />}
+              label={t('dashboard.kpi.consumption')}
+              value={format.chargingConsumption(average.chargingConsumption)}
+            />
+          ) : (
+            <StatTile
+              emphasis
+              loading={isLoading}
+              color="fuel"
+              icon={<LocalGasStationRounded />}
+              label={t('dashboard.kpi.consumption')}
+              value={format.consumption(average.fuelConsumption)}
+              hint={
+                hasValue(average.chargingConsumption)
+                  ? t('dashboard.kpi.chargingConsumption', {
+                      value: format.chargingConsumption(
+                        average.chargingConsumption,
+                      ),
+                    })
+                  : undefined
+              }
+            />
+          )}
         </Grid>
         <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
           <StatTile
@@ -121,10 +160,17 @@ export default function DashboardPage({
             loading={isLoading}
             icon={<RouteRounded />}
             label={t('dashboard.kpi.distance')}
-            value={format.unit(total.trackedDistance, 'km', 0)}
-            hint={t('dashboard.kpi.fuelVolume', {
-              value: format.unit(total.unit, 'l', 1),
-            })}
+            value={format.distance(total.trackedDistance)}
+            hint={
+              hasValue(total.chargedUnit)
+                ? hasValue(total.unit)
+                  ? t('dashboard.kpi.bothVolumes', {
+                      fuel: fuelVolume,
+                      charged: chargedVolume,
+                    })
+                  : t('dashboard.kpi.chargedVolume', { value: chargedVolume })
+                : t('dashboard.kpi.fuelVolume', { value: fuelVolume })
+            }
           />
         </Grid>
       </Grid>
@@ -148,6 +194,7 @@ export default function DashboardPage({
                 carId={search.car ?? ALL_CARS}
                 from={search.from}
                 to={search.to}
+                energyTypes={energyTypes}
               />
             </Grid>
             <Grid size={{ xs: 12, lg: 7 }}>

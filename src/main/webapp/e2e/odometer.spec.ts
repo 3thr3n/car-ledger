@@ -1,10 +1,5 @@
 import { APIRequestContext, expect, test } from '@playwright/test';
-import { aliceApi, deleteAllCars } from './helpers';
-
-const day = (offset: number) =>
-  new Date(Date.now() + offset * 24 * 60 * 60 * 1000)
-    .toISOString()
-    .slice(0, 10);
+import { aliceApi, day, deleteAllCars } from './helpers';
 
 test.describe.serial('odometer', () => {
   let api: APIRequestContext;
@@ -62,6 +57,19 @@ test.describe.serial('odometer', () => {
 
     await page.goto(`/car/${carId}/bill/add?type=MAINTENANCE`);
     await expect(page.getByText('Currently about 31,400 km')).toBeVisible();
+  });
+
+  test('leaves out charging for a petrol car', async ({ page }) => {
+    // the refuel and the maintenance of the test before are the costs
+    await page.goto(`/car/${carId}`);
+    const chart = page.locator('.MuiCard-root', { hasText: 'Costs per month' });
+    await expect(chart.getByText('Maintenance', { exact: true })).toBeVisible();
+    await expect(chart.getByText('Charging', { exact: true })).toHaveCount(0);
+
+    await page.goto('/dashboard');
+    const split = page.locator('.MuiCard-root', { hasText: 'Cost breakdown' });
+    await expect(split.getByText('Fuel', { exact: false })).toBeVisible();
+    await expect(split.getByText(/^Charging/)).toHaveCount(0);
   });
 
   test('keeps the reading when the car is saved unchanged', async ({

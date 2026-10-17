@@ -20,13 +20,27 @@ export default function CostSplit({ total }: { total: TotalStats }) {
   const format = useFormat();
 
   const fuel = num(total.fuelTotal) ?? 0;
+  const charging = num(total.chargingTotal) ?? 0;
   const maintenance = num(total.maintenanceTotal) ?? 0;
   const miscellaneous = num(total.miscellaneousTotal) ?? 0;
   const sum = num(total.total) ?? 0;
-  const recurring = Math.max(0, sum - fuel - maintenance - miscellaneous);
+  const recurring = Math.max(
+    0,
+    sum - fuel - charging - maintenance - miscellaneous,
+  );
 
   const parts: Part[] = [
     { type: BillType.FUEL, amount: fuel, count: total.fuelBills },
+    // only cars with charges, e.g. not for petrol cars
+    ...(total.chargingBills
+      ? [
+          {
+            type: BillType.CHARGING,
+            amount: charging,
+            count: total.chargingBills,
+          },
+        ]
+      : []),
     {
       type: BillType.MAINTENANCE,
       amount: maintenance,
@@ -79,8 +93,10 @@ export default function CostSplit({ total }: { total: TotalStats }) {
           <Stack
             key={part.type}
             direction="row"
-            alignItems="center"
             spacing={1.5}
+            sx={{
+              alignItems: 'center',
+            }}
           >
             <Box
               sx={{
@@ -97,7 +113,9 @@ export default function CostSplit({ total }: { total: TotalStats }) {
                 <Typography
                   component="span"
                   variant="body2"
-                  color="text.secondary"
+                  sx={{
+                    color: 'text.secondary',
+                  }}
                 >
                   {' · '}
                   {t('dashboard.split.count', { count: part.count })}
@@ -106,17 +124,23 @@ export default function CostSplit({ total }: { total: TotalStats }) {
             </Typography>
             <Typography
               variant="body2"
-              color="text.secondary"
               className="tabular"
-              sx={{ width: 48, textAlign: 'right' }}
+              sx={{
+                color: 'text.secondary',
+                width: 48,
+                textAlign: 'right',
+              }}
             >
               {format.number(share(part.amount), 0)} %
             </Typography>
             <Typography
               variant="body2"
-              fontWeight={600}
               className="tabular"
-              sx={{ minWidth: 96, textAlign: 'right' }}
+              sx={{
+                fontWeight: 600,
+                minWidth: 96,
+                textAlign: 'right',
+              }}
             >
               {format.money(part.amount)}
             </Typography>

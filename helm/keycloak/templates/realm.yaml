@@ -1,0 +1,64 @@
+{{- /*
+The realm car-ledger, imported on the first start of Keycloak (--import-realm, an existing realm is kept as it is).
+Without the host name of CarLedger the ConfigMap is empty and nothing is imported, the realm is set up by hand.
+The access tokens of the client carLedger name it as audience: CarLedger accepts only tokens for itself.
+*/}}
+{{- $hostname := include "carLedgerKeycloak.carLedgerHostname" . }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  # mounted by keycloakx at /opt/keycloak/data/import (keycloak.extraVolumes)
+  name: {{ include "carLedgerKeycloak.prefix" . }}-realm
+  labels:
+    app.kubernetes.io/name: keycloak
+    app.kubernetes.io/instance: {{ .Release.Name }}
+{{- if $hostname }}
+{{- $carLedger := printf "%s://%s" (ternary "https" "http" .Values.keycloak.tls) $hostname }}
+{{- /* offline_access and uma_authorization are listed, as the default role refers to them */}}
+{{- $realm := dict
+      "realm" "car-ledger"
+      "enabled" true
+      "roles" (dict "realm" (list
+        (dict "name" "offline_access" "description" "${role_offline-access}")
+        (dict "name" "uma_authorization" "description" "${role_uma_authorization}")
+        (dict "name" "user" "description" "CarLedger: uses the app")
+        (dict "name" "admin" "description" "CarLedger: uses the app and opens the administration")
+        (dict "name" "default-roles-car-ledger" "description" "${role_default-roles}" "composite" true
+          "composites" (dict
+            "realm" (list "offline_access" "uma_authorization" "user")
+            "client" (dict "account" (list "view-profile" "manage-account"))))))
+      "defaultRole" (dict "name" "default-roles-car-ledger")
+      "clients" (list (dict
+        "clientId" "carLedger"
+        "name" "CarLedger"
+        "enabled" true
+        "protocol" "openid-connect"
+        "publicClient" false
+        "clientAuthenticatorType" "client-secret"
+        "secret" "${CAR_LEDGER_CLIENT_SECRET}"
+        "standardFlowEnabled" true
+        "implicitFlowEnabled" false
+        "directAccessGrantsEnabled" false
+        "serviceAccountsEnabled" false
+        "rootUrl" $carLedger
+        "baseUrl" "/"
+        "redirectUris" (list (printf "%s/api/auth/callback" $carLedger))
+        "attributes" (dict
+          "pkce.code.challenge.method" "S256"
+          "post.logout.redirect.uris" (printf "%s/api/auth/logout-callback" $carLedger))
+        "protocolMappers" (list (dict
+          "name" "audience carLedger"
+          "protocol" "openid-connect"
+          "protocolMapper" "oidc-audience-mapper"
+          "config" (dict
+            "included.client.audience" "carLedger"
+            "id.token.claim" "false"
+            "access.token.claim" "true"
+            "introspection.token.claim" "true"))))) }}
+data:
+  # ${CAR_LEDGER_CLIENT_SECRET} is replaced by Keycloak with the variable of the secret keycloak
+  car-ledger.json: |
+    {{- toPrettyJson $realm | nindent 4 }}
+{{- else }}
+data: {}
+{{- end }}

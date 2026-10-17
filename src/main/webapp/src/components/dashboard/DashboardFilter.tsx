@@ -10,6 +10,7 @@ import { useQuery } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import { lazy, Suspense, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import CarAvatar from '@/components/layout/CarAvatar';
 import { getMyCarsOptions } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
 import { toApiDate } from '@/utils/format';
@@ -73,8 +74,10 @@ export default function DashboardFilter({
     <Stack
       direction={{ xs: 'column', md: 'row' }}
       spacing={1.5}
-      alignItems={{ xs: 'stretch', md: 'center' }}
-      sx={{ mb: 3 }}
+      sx={{
+        alignItems: { xs: 'stretch', md: 'center' },
+        mb: 3,
+      }}
     >
       <TextField
         select
@@ -90,7 +93,15 @@ export default function DashboardFilter({
         <MenuItem value={-1}>{t('dashboard.filter.allCars')}</MenuItem>
         {cars?.map((car) => (
           <MenuItem key={car.id} value={car.id}>
-            {car.name}
+            <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+              <CarAvatar
+                id={car.id}
+                name={car.name}
+                pictureId={car.pictureId}
+                size={20}
+              />
+              <span>{car.name}</span>
+            </Stack>
           </MenuItem>
         ))}
       </TextField>

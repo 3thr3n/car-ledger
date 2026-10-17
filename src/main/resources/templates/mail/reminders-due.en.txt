@@ -1,0 +1,11 @@
+{#if count == 1}Reminder due: {first.title} ({first.car}){#else}{count} reminders are due{/if}
+{#for r in reminders}
+- {r.car}: {r.title}{#if r.note} ({r.note}){/if}
+  {#if r.date}{#if r.daysLeft < 0}overdue since {r.date}{#else if r.daysLeft == 0}due today{#else}due on {r.date}, in {r.daysLeft} {#if r.daysLeft == 1}day{#else}days{/if}{/if}{/if}{#if r.date && r.odometer} · {/if}{#if r.odometer}{#if r.distanceLeft <= 0}due at {r.odometer} {unit}, reached{#else}due at {r.odometer} {unit}, {r.distanceLeftText} {unit} left{/if}{/if}
+{/for}
+
+{#if link}Your reminders: {link}
+{/if}
+--
+You can turn off these mails in the settings{#if settingsLink}:
+{settingsLink}{#else}.{/if}

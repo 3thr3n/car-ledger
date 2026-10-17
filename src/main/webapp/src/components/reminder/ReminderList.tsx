@@ -35,11 +35,19 @@ function Detail({ icon, children }: { icon: ReactNode; children: ReactNode }) {
     <Stack
       direction="row"
       spacing={0.75}
-      alignItems="center"
-      sx={{ color: 'text.secondary', '& svg': { fontSize: 16 } }}
+      sx={{
+        alignItems: 'center',
+        color: 'text.secondary',
+        '& svg': { fontSize: 16 },
+      }}
     >
       {icon}
-      <Typography variant="body2" color="inherit">
+      <Typography
+        variant="body2"
+        sx={{
+          color: 'inherit',
+        }}
+      >
         {children}
       </Typography>
     </Stack>
@@ -70,20 +78,30 @@ export default function ReminderList({
             <Stack
               direction="row"
               spacing={1.5}
-              alignItems="flex-start"
-              sx={{ py: 1.5 }}
               data-testid="reminder"
+              sx={{
+                alignItems: 'flex-start',
+                py: 1.5,
+              }}
             >
               <Box sx={{ flexGrow: 1, minWidth: 0 }}>
                 <Stack
                   direction="row"
                   spacing={1}
-                  alignItems="center"
                   useFlexGap
-                  flexWrap="wrap"
-                  sx={{ mb: 0.5 }}
+                  sx={{
+                    alignItems: 'center',
+                    flexWrap: 'wrap',
+                    mb: 0.5,
+                  }}
                 >
-                  <Typography fontWeight={600}>{reminder.title}</Typography>
+                  <Typography
+                    sx={{
+                      fontWeight: 600,
+                    }}
+                  >
+                    {reminder.title}
+                  </Typography>
                   <ReminderStatusChip status={reminder.status} />
                 </Stack>
                 {showCar && (

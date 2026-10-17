@@ -126,19 +126,26 @@ class StatsResourceTest
 	DashboardStats expected = new DashboardStats(
 			new TotalStats(
 					BigDecimal.valueOf(76.0).setScale(2, RoundingMode.HALF_UP),
+					// no charges
+					BigDecimal.valueOf(0).setScale(2, RoundingMode.HALF_UP),
 					BigDecimal.valueOf(1380.0).setScale(2, RoundingMode.HALF_UP),
 					BigDecimal.valueOf(149.08),
+					BigDecimal.valueOf(0).setScale(2, RoundingMode.HALF_UP),
 					BigDecimal.valueOf(0).setScale(2, RoundingMode.HALF_UP),
 					BigDecimal.valueOf(0).setScale(2, RoundingMode.HALF_UP),
 					BigDecimal.valueOf(149.08),
 					3,
 					0,
+					0,
 					0),
 			new AverageStats(
 					BigDecimal.valueOf(195.6),
+					BigDecimal.valueOf(0).setScale(1, RoundingMode.HALF_UP),
 					BigDecimal.valueOf(460.00).setScale(2, RoundingMode.HALF_UP),
 					BigDecimal.valueOf(10.73),
+					BigDecimal.valueOf(0).setScale(2, RoundingMode.HALF_UP),
 					BigDecimal.valueOf(5.48),
+					BigDecimal.valueOf(0).setScale(2, RoundingMode.HALF_UP),
 					BigDecimal.valueOf(0).setScale(2, RoundingMode.HALF_UP),
 					BigDecimal.valueOf(10.80).setScale(2, RoundingMode.HALF_UP)),
 			new HiLoStats(
@@ -146,6 +153,8 @@ class StatsResourceTest
 							BigDecimal.valueOf(189.9).setScale(1, RoundingMode.HALF_UP),
 							BigDecimal.valueOf(199.9).setScale(1, RoundingMode.HALF_UP),
 							0),
+					new HiLo(BigDecimal.valueOf(0).setScale(1, RoundingMode.HALF_UP),
+							BigDecimal.valueOf(0).setScale(1, RoundingMode.HALF_UP), 0),
 					new HiLo(
 							BigDecimal.valueOf(400.00).setScale(2, RoundingMode.HALF_UP),
 							BigDecimal.valueOf(500.00).setScale(2, RoundingMode.HALF_UP),
@@ -158,10 +167,14 @@ class StatsResourceTest
 							BigDecimal.valueOf(5.00).setScale(2, RoundingMode.HALF_UP),
 							BigDecimal.valueOf(5.83).setScale(2, RoundingMode.HALF_UP),
 							0),
+					new HiLo(BigDecimal.valueOf(0).setScale(2, RoundingMode.HALF_UP),
+							BigDecimal.valueOf(0).setScale(2, RoundingMode.HALF_UP), 0),
 					new HiLo(
 							BigDecimal.valueOf(37.98).setScale(2, RoundingMode.HALF_UP),
 							BigDecimal.valueOf(55.97).setScale(2, RoundingMode.HALF_UP),
 							0),
+					new HiLo(BigDecimal.valueOf(0).setScale(2, RoundingMode.HALF_UP),
+							BigDecimal.valueOf(0).setScale(2, RoundingMode.HALF_UP), 0),
 					new HiLo(
 							BigDecimal.valueOf(0).setScale(2, RoundingMode.HALF_UP),
 							BigDecimal.valueOf(0).setScale(2, RoundingMode.HALF_UP),

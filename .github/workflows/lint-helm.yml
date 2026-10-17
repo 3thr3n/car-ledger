@@ -1,0 +1,36 @@
+name: Lint charts
+on: [push]
+
+# only reads the repository, the token gets no write access
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      # with the history and the tags, for the versions of the charts
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Dependencies
+        run: |
+          for chart in car-ledger keycloak authentik stack; do
+            helm dependency update "helm/$chart"
+          done
+
+      - name: Lint
+        run: |
+          helm lint helm/car-ledger --set ingress.host=example.com
+          helm lint helm/keycloak --set keycloak.hostname=keycloak.example.com
+          helm lint helm/authentik --set hostname=authentik.example.com --set carLedger.hostname=car-ledger.example.com
+          for providers in "" "--set global.keycloak.enabled=true" "--set global.authentik.enabled=true"; do
+            helm lint helm/stack --set global.host=example.com $providers
+          done
+
+      # a changed chart keycloak or authentik needs a new version to be published. Not for the updates of
+      # dependabot, raise the version before the release (which checks it as well)
+      - name: Versions
+        if: ${{ github.actor != 'dependabot[bot]' }}
+        run: helm/check-chart-versions.sh

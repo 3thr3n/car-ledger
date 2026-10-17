@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
+import de.codeflowwizardry.carledger.exception.CsvImportException;
 
 class CsvFieldExtractorsTest
 {
@@ -48,7 +49,7 @@ class CsvFieldExtractorsTest
 	@Test
 	void shouldFailForInvalidNumber()
 	{
-		assertThrows(IllegalArgumentException.class, () -> parse("abc"));
-		assertThrows(IllegalArgumentException.class, () -> parse("1,2.3,4"));
+		assertThrows(CsvImportException.class, () -> parse("abc"));
+		assertThrows(CsvImportException.class, () -> parse("1,2.3,4"));
 	}
 }

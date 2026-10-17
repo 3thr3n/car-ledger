@@ -30,7 +30,8 @@ public class ReminderService
 	/** a reminder is due soon this many km before its odometer */
 	public static final int SOON_KM = 1000;
 
-	private static final Comparator<Reminder> BY_URGENCY = Comparator
+	/** overdue first, then the ones due soon, the nearest first */
+	public static final Comparator<Reminder> BY_URGENCY = Comparator
 			.comparing(Reminder::status)
 			.thenComparing(Reminder::daysLeft, Comparator.nullsLast(Comparator.naturalOrder()))
 			.thenComparing(Reminder::kmLeft, Comparator.nullsLast(Comparator.naturalOrder()))
@@ -162,7 +163,7 @@ public class ReminderService
 		return convert(entity, currentOdometer(entity, username), LocalDate.now());
 	}
 
-	static Reminder convert(ReminderEntity entity, int odometer, LocalDate today)
+	public static Reminder convert(ReminderEntity entity, int odometer, LocalDate today)
 	{
 		Long daysLeft = entity.getDueDate() == null ? null : ChronoUnit.DAYS.between(today, entity.getDueDate());
 		Integer kmLeft = entity.getDueOdometer() == null ? null : entity.getDueOdometer() - odometer;

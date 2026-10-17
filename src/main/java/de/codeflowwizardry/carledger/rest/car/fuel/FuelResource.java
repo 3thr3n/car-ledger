@@ -4,6 +4,7 @@ import io.quarkus.security.identity.SecurityIdentity;
 import java.util.List;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
@@ -15,6 +16,7 @@ import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.FuelBillRepository;
 import de.codeflowwizardry.carledger.rest.car.AbstractBillResource;
 import de.codeflowwizardry.carledger.rest.records.BillPaged;
+import de.codeflowwizardry.carledger.rest.records.SortOrder;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
@@ -48,12 +50,15 @@ public class FuelResource extends AbstractBillResource<FuelBillRepository, FuelB
 	@Path("all")
 	@Operation(operationId = "getAllFuelBills", description = "Gets all bills for specified car, Pages starting at 1")
 	@APIResponse(responseCode = "200", description = "Bills found.")
+	@APIResponse(responseCode = "400", description = "The bills cannot be sorted by the field.")
 	public BillPaged<FuelBill> getAllMyBills(@PathParam("carId") long carId,
 			@QueryParam("page") @DefaultValue("1") int page,
 			@QueryParam("size") @DefaultValue("10") int size,
-			@QueryParam("year") Integer year)
+			@QueryParam("year") Integer year,
+			@Parameter(description = "Field to sort by, the bills are sorted by date if equal") @QueryParam("sort") @DefaultValue("date") String sort,
+			@QueryParam("order") @DefaultValue("DESC") SortOrder order)
 	{
-		return super.getAllMyBills(carId, page, size, year, FuelBill::convert);
+		return super.getAllMyBills(carId, page, size, year, sort, order, FuelBill::convert);
 	}
 
 	@PUT

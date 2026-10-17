@@ -6,7 +6,7 @@ import { localClient } from '@/utils/QueryClient';
  * The logged-in account. `loggedIn` is false while loading or when the session is missing.
  */
 export default function useMe() {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isFetched } = useQuery({
     ...getMyselfOptions({ client: localClient }),
     refetchInterval: 5 * 60 * 1000,
     refetchIntervalInBackground: true,
@@ -16,6 +16,8 @@ export default function useMe() {
     account: data,
     loggedIn: !!data,
     isLoading,
+    /** answered once, with the account or without a session; stays on a refetch */
+    isFetched,
     maxCars: data?.maxCars ?? 0,
     isAdmin: data?.admin ?? false,
   };

@@ -23,8 +23,12 @@
           },
           "language" : {
             "type" : "string"
+          },
+          "unitSystem" : {
+            "$ref" : "#/components/schemas/UnitSystem"
           }
-        }
+        },
+        "required" : [ "unitSystem" ]
       },
       "AdminAccount" : {
         "type" : "object",
@@ -79,6 +83,85 @@
           }
         }
       },
+      "AdminCarRequest" : {
+        "type" : "object",
+        "required" : [ "id", "accountId", "account", "cars", "maxCars", "state", "createdAt", "currentCars", "currentMaxCars" ],
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "accountId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "account" : {
+            "type" : "string"
+          },
+          "cars" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "maxCars" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "grantedMaxCars" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "reason" : {
+            "type" : "string"
+          },
+          "state" : {
+            "$ref" : "#/components/schemas/RequestState"
+          },
+          "createdAt" : {
+            "type" : "string",
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          },
+          "decidedAt" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          },
+          "decidedBy" : {
+            "type" : "string"
+          },
+          "comment" : {
+            "type" : "string"
+          },
+          "currentCars" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "currentMaxCars" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "AdminCarRequestPage" : {
+        "type" : "object",
+        "properties" : {
+          "total" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "page" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "data" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/AdminCarRequest"
+            }
+          }
+        }
+      },
       "AdminStats" : {
         "type" : "object",
         "properties" : {
@@ -101,6 +184,41 @@
           "recurringBills" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "openRequests" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      },
+      "ApproveCarRequestInput" : {
+        "type" : "object",
+        "properties" : {
+          "maxCars" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "Attachment" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "fileName" : {
+            "type" : "string"
+          },
+          "contentType" : {
+            "type" : "string"
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "createdAt" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
           }
         }
       },
@@ -110,13 +228,22 @@
           "pricePerUnit" : {
             "type" : "number"
           },
+          "chargingPricePerUnit" : {
+            "type" : "number"
+          },
           "distance" : {
             "type" : "number"
           },
           "fuelCostPerKm" : {
             "type" : "number"
           },
+          "chargingCostPerKm" : {
+            "type" : "number"
+          },
           "fuelConsumption" : {
+            "type" : "number"
+          },
+          "chargingConsumption" : {
             "type" : "number"
           },
           "maintenanceCost" : {
@@ -127,9 +254,38 @@
           }
         }
       },
+      "BackupSummary" : {
+        "type" : "object",
+        "properties" : {
+          "cars" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "bills" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "recurringBills" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "reminders" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "files" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
       "Bill" : {
         "type" : "object",
         "properties" : {
+          "attachments" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "id" : {
             "type" : "integer",
             "format" : "int64"
@@ -186,6 +342,29 @@
             "type" : "array",
             "items" : {
               "$ref" : "#/components/schemas/Bill"
+            }
+          }
+        }
+      },
+      "BillPagedChargingBill" : {
+        "type" : "object",
+        "properties" : {
+          "total" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "page" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "data" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ChargingBill"
             }
           }
         }
@@ -284,7 +463,7 @@
       },
       "BillType" : {
         "type" : "string",
-        "enum" : [ "FUEL", "MAINTENANCE", "MISCELLANEOUS", "RECURRING" ]
+        "enum" : [ "FUEL", "CHARGING", "MAINTENANCE", "MISCELLANEOUS", "RECURRING" ]
       },
       "Car" : {
         "type" : "object",
@@ -313,9 +492,34 @@
           "amountBills" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "licensePlate" : {
+            "type" : "string"
+          },
+          "vin" : {
+            "type" : "string"
+          },
+          "purchaseDate" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          },
+          "purchasePrice" : {
+            "type" : "number"
+          },
+          "energyType" : {
+            "$ref" : "#/components/schemas/EnergyType"
+          },
+          "tankSize" : {
+            "type" : "number"
+          },
+          "batteryCapacity" : {
+            "type" : "number"
+          },
+          "pictureId" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         },
-        "required" : [ "currentOdometer" ]
+        "required" : [ "currentOdometer", "energyType" ]
       },
       "CarInput" : {
         "type" : "object",
@@ -330,6 +534,27 @@
           "odometer" : {
             "type" : "integer",
             "format" : "int32"
+          },
+          "licensePlate" : {
+            "type" : "string"
+          },
+          "vin" : {
+            "type" : "string"
+          },
+          "purchaseDate" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          },
+          "purchasePrice" : {
+            "type" : "number"
+          },
+          "energyType" : {
+            "$ref" : "#/components/schemas/EnergyType"
+          },
+          "tankSize" : {
+            "type" : "number"
+          },
+          "batteryCapacity" : {
+            "type" : "number"
           }
         }
       },
@@ -337,6 +562,10 @@
         "type" : "object",
         "properties" : {
           "totalRefuels" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalCharges" : {
             "type" : "integer",
             "format" : "int64"
           },
@@ -353,8 +582,145 @@
           },
           "avgConsumption" : {
             "type" : "number"
+          },
+          "avgChargingConsumption" : {
+            "type" : "number"
           }
         }
+      },
+      "CarRequest" : {
+        "type" : "object",
+        "required" : [ "id", "cars", "maxCars", "state", "createdAt", "outcomeSeen" ],
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "cars" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "maxCars" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "grantedMaxCars" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "reason" : {
+            "type" : "string"
+          },
+          "state" : {
+            "$ref" : "#/components/schemas/RequestState"
+          },
+          "createdAt" : {
+            "type" : "string",
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          },
+          "decidedAt" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          },
+          "comment" : {
+            "type" : "string"
+          },
+          "outcomeSeen" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "CarRequestInput" : {
+        "type" : "object",
+        "properties" : {
+          "cars" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "reason" : {
+            "type" : "string"
+          }
+        }
+      },
+      "ChargingBill" : {
+        "type" : "object",
+        "properties" : {
+          "attachments" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "date" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          },
+          "year" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "vatRate" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "distance" : {
+            "type" : "number"
+          },
+          "unit" : {
+            "type" : "number"
+          },
+          "pricePerUnit" : {
+            "type" : "number"
+          },
+          "avgConsumption" : {
+            "type" : "number"
+          },
+          "total" : {
+            "type" : "number"
+          },
+          "location" : {
+            "$ref" : "#/components/schemas/ChargingLocation"
+          },
+          "stateOfCharge" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "ChargingBillInput" : {
+        "type" : "object",
+        "properties" : {
+          "total" : {
+            "type" : "number"
+          },
+          "vatRate" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "date" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          },
+          "distance" : {
+            "type" : "number"
+          },
+          "unit" : {
+            "type" : "number"
+          },
+          "pricePerUnit" : {
+            "type" : "number"
+          },
+          "location" : {
+            "$ref" : "#/components/schemas/ChargingLocation"
+          },
+          "stateOfCharge" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "ChargingLocation" : {
+        "type" : "string",
+        "enum" : [ "HOME", "PUBLIC" ]
       },
       "CsvFields" : {
         "type" : "object",
@@ -418,9 +784,17 @@
           }
         }
       },
+      "EnergyType" : {
+        "type" : "string",
+        "enum" : [ "PETROL", "DIESEL", "LPG", "CNG", "ELECTRIC", "PLUG_IN_HYBRID" ]
+      },
       "FuelBill" : {
         "type" : "object",
         "properties" : {
+          "attachments" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "id" : {
             "type" : "integer",
             "format" : "int64"
@@ -500,6 +874,9 @@
           "pricePerUnit" : {
             "$ref" : "#/components/schemas/HiLo"
           },
+          "chargingPricePerUnit" : {
+            "$ref" : "#/components/schemas/HiLo"
+          },
           "distance" : {
             "$ref" : "#/components/schemas/HiLo"
           },
@@ -509,7 +886,13 @@
           "consumption" : {
             "$ref" : "#/components/schemas/HiLo"
           },
+          "chargingConsumption" : {
+            "$ref" : "#/components/schemas/HiLo"
+          },
           "fuelCost" : {
+            "$ref" : "#/components/schemas/HiLo"
+          },
+          "chargingCost" : {
             "$ref" : "#/components/schemas/HiLo"
           },
           "maintenanceCost" : {
@@ -525,6 +908,10 @@
       "MaintenanceBill" : {
         "type" : "object",
         "properties" : {
+          "attachments" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "id" : {
             "type" : "integer",
             "format" : "int64"
@@ -604,6 +991,10 @@
       "MiscellaneousBill" : {
         "type" : "object",
         "properties" : {
+          "attachments" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "id" : {
             "type" : "integer",
             "format" : "int64"
@@ -647,13 +1038,16 @@
       },
       "MonthStats" : {
         "type" : "object",
-        "required" : [ "month", "fuel", "maintenance", "miscellaneous", "recurring", "total", "distance", "unit" ],
+        "required" : [ "month", "fuel", "charging", "maintenance", "miscellaneous", "recurring", "total", "distance", "unit", "chargedUnit" ],
         "properties" : {
           "month" : {
             "type" : "string",
             "examples" : [ "2026-03" ]
           },
           "fuel" : {
+            "type" : "number"
+          },
+          "charging" : {
             "type" : "number"
           },
           "maintenance" : {
@@ -674,14 +1068,63 @@
           "unit" : {
             "type" : "number"
           },
+          "chargedUnit" : {
+            "type" : "number"
+          },
           "pricePerUnit" : {
+            "type" : "number"
+          },
+          "chargingPricePerUnit" : {
             "type" : "number"
           },
           "consumption" : {
             "type" : "number"
           },
+          "chargingConsumption" : {
+            "type" : "number"
+          },
           "costPerKm" : {
             "type" : "number"
+          }
+        }
+      },
+      "NotificationSettings" : {
+        "type" : "object",
+        "properties" : {
+          "available" : {
+            "type" : "boolean"
+          },
+          "byMail" : {
+            "type" : "boolean"
+          },
+          "email" : {
+            "type" : "string"
+          },
+          "newRequests" : {
+            "type" : "boolean"
+          },
+          "requestDecided" : {
+            "type" : "boolean"
+          },
+          "reminders" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "NotificationSettingsInput" : {
+        "type" : "object",
+        "properties" : {
+          "byMail" : {
+            "type" : "boolean"
+          },
+          "newRequests" : {
+            "type" : "boolean"
+          },
+          "requestDecided" : {
+            "type" : "boolean"
+          },
+          "reminders" : {
+            "type" : "boolean"
           }
         }
       },
@@ -711,6 +1154,36 @@
         "type" : "string",
         "format" : "date-time",
         "examples" : [ "2022-03-10T12:15:50-04:00" ]
+      },
+      "PushSettings" : {
+        "type" : "object",
+        "required" : [ "available", "publicKey", "browsers" ],
+        "properties" : {
+          "available" : {
+            "type" : "boolean"
+          },
+          "publicKey" : {
+            "type" : "string"
+          },
+          "browsers" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      },
+      "PushSubscriptionInput" : {
+        "type" : "object",
+        "properties" : {
+          "endpoint" : {
+            "type" : "string"
+          },
+          "p256dh" : {
+            "type" : "string"
+          },
+          "auth" : {
+            "type" : "string"
+          }
+        }
       },
       "RecurringBill" : {
         "type" : "object",
@@ -782,6 +1255,18 @@
           },
           "amount" : {
             "type" : "number"
+          }
+        }
+      },
+      "RecurringBillSort" : {
+        "type" : "string",
+        "enum" : [ "ACTIVE", "NEXT_DUE" ]
+      },
+      "RejectCarRequestInput" : {
+        "type" : "object",
+        "properties" : {
+          "comment" : {
+            "type" : "string"
           }
         }
       },
@@ -880,6 +1365,10 @@
         "type" : "string",
         "enum" : [ "OVERDUE", "DUE_SOON", "UPCOMING" ]
       },
+      "RequestState" : {
+        "type" : "string",
+        "enum" : [ "OPEN", "APPROVED", "REJECTED" ]
+      },
       "Row" : {
         "type" : "object",
         "properties" : {
@@ -903,8 +1392,15 @@
           },
           "language" : {
             "type" : "string"
+          },
+          "unitSystem" : {
+            "$ref" : "#/components/schemas/UnitSystem"
           }
         }
+      },
+      "SortOrder" : {
+        "type" : "string",
+        "enum" : [ "ASC", "DESC" ]
       },
       "TotalStats" : {
         "type" : "object",
@@ -912,10 +1408,16 @@
           "unit" : {
             "type" : "number"
           },
+          "chargedUnit" : {
+            "type" : "number"
+          },
           "trackedDistance" : {
             "type" : "number"
           },
           "fuelTotal" : {
+            "type" : "number"
+          },
+          "chargingTotal" : {
             "type" : "number"
           },
           "maintenanceTotal" : {
@@ -931,6 +1433,10 @@
             "type" : "integer",
             "format" : "int32"
           },
+          "chargingBills" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
           "maintenanceBills" : {
             "type" : "integer",
             "format" : "int32"
@@ -938,6 +1444,19 @@
           "miscellaneousBills" : {
             "type" : "integer",
             "format" : "int32"
+          }
+        }
+      },
+      "UnitSystem" : {
+        "type" : "string",
+        "enum" : [ "METRIC", "US", "UK" ]
+      },
+      "Version" : {
+        "type" : "object",
+        "required" : [ "version" ],
+        "properties" : {
+          "version" : {
+            "type" : "string"
           }
         }
       }
@@ -1072,6 +1591,161 @@
         "tags" : [ "Admin Resource" ]
       }
     },
+    "/api/admin/car-requests" : {
+      "get" : {
+        "description" : "Requests for more cars, the open ones by age, the decided ones newest first; pages starting at 1",
+        "operationId" : "getAdminCarRequests",
+        "parameters" : [ {
+          "name" : "page",
+          "in" : "query",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 1
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
+          }
+        }, {
+          "name" : "state",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/RequestState"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Requests found.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AdminCarRequestPage"
+                }
+              }
+            }
+          }
+        },
+        "summary" : "Get Car Requests",
+        "tags" : [ "Admin Car Request Resource" ]
+      }
+    },
+    "/api/admin/car-requests/{id}/approve" : {
+      "post" : {
+        "description" : "Approves the request and raises the car limit of the account",
+        "operationId" : "approveCarRequest",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ApproveCarRequestInput"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Request approved.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AdminCarRequest"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed, please check the response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Request not found."
+          },
+          "409" : {
+            "description" : "The request was decided already."
+          }
+        },
+        "summary" : "Approve",
+        "tags" : [ "Admin Car Request Resource" ]
+      }
+    },
+    "/api/admin/car-requests/{id}/reject" : {
+      "post" : {
+        "description" : "Rejects the request, the comment is shown to the user",
+        "operationId" : "rejectCarRequest",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/RejectCarRequestInput"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Request rejected.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AdminCarRequest"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed, please check the response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Request not found."
+          },
+          "409" : {
+            "description" : "The request was decided already."
+          }
+        },
+        "summary" : "Reject",
+        "tags" : [ "Admin Car Request Resource" ]
+      }
+    },
     "/api/admin/stats" : {
       "get" : {
         "description" : "Usage of the whole installation",
@@ -1090,6 +1764,189 @@
         },
         "summary" : "Get Stats",
         "tags" : [ "Admin Resource" ]
+      }
+    },
+    "/api/attachment/{carId}/bill/{billId}" : {
+      "get" : {
+        "description" : "Attachments of the bill, oldest first",
+        "operationId" : "getBillAttachments",
+        "parameters" : [ {
+          "name" : "billId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Attachments found.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/Attachment"
+                  }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Bill not found."
+          }
+        },
+        "summary" : "Get Bill Attachments",
+        "tags" : [ "Attachment Resource" ]
+      },
+      "post" : {
+        "description" : "Attaches a JPEG, PNG, WebP or PDF file to the bill",
+        "operationId" : "addBillAttachment",
+        "parameters" : [ {
+          "name" : "billId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "multipart/form-data" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "file" : {
+                    "type" : "string",
+                    "format" : "binary"
+                  }
+                }
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "File attached.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Attachment"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "File empty, too large, of another type or too many attachments",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Bill not found."
+          },
+          "413" : {
+            "description" : "Request larger than allowed by the server."
+          }
+        },
+        "summary" : "Add Bill Attachment",
+        "tags" : [ "Attachment Resource" ]
+      }
+    },
+    "/api/attachment/{carId}/{id}" : {
+      "delete" : {
+        "description" : "Removes the attachment with its file",
+        "operationId" : "deleteAttachment",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "Attachment deleted."
+          },
+          "404" : {
+            "description" : "Attachment not found."
+          }
+        },
+        "summary" : "Delete Attachment",
+        "tags" : [ "Attachment Resource" ]
+      }
+    },
+    "/api/attachment/{carId}/{id}/content" : {
+      "get" : {
+        "description" : "The file, shown inline by the browser",
+        "operationId" : "getAttachmentContent",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "File found.",
+            "content" : {
+              "image/jpeg" : { },
+              "image/png" : { },
+              "image/webp" : { },
+              "application/pdf" : { }
+            }
+          },
+          "404" : {
+            "description" : "Attachment not found."
+          }
+        },
+        "summary" : "Get Attachment Content",
+        "tags" : [ "Attachment Resource" ]
       }
     },
     "/api/auth/callback" : {
@@ -1215,6 +2072,16 @@
             "format" : "int64"
           }
         }, {
+          "name" : "order",
+          "in" : "query",
+          "schema" : {
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/SortOrder"
+            }, {
+              "default" : "DESC"
+            } ]
+          }
+        }, {
           "name" : "page",
           "in" : "query",
           "schema" : {
@@ -1229,6 +2096,14 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 10
+          }
+        }, {
+          "description" : "Field to sort by, the bills are sorted by date if equal",
+          "name" : "sort",
+          "in" : "query",
+          "schema" : {
+            "type" : "string",
+            "default" : "date"
           }
         }, {
           "name" : "year",
@@ -1248,10 +2123,305 @@
                 }
               }
             }
+          },
+          "400" : {
+            "description" : "The bills cannot be sorted by the field."
           }
         },
         "summary" : "Get All My Bills",
         "tags" : [ "Bill Resource" ]
+      }
+    },
+    "/api/bill/{carId}/charging" : {
+      "parameters" : [ {
+        "name" : "carId",
+        "in" : "path",
+        "required" : true,
+        "schema" : {
+          "type" : "integer",
+          "format" : "int64"
+        }
+      } ],
+      "put" : {
+        "operationId" : "addNewChargingBill",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ChargingBillInput"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "202" : {
+            "description" : "Bill created."
+          },
+          "404" : {
+            "description" : "Car is not for your user."
+          },
+          "400" : {
+            "description" : "Validation failed, please check the response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Something went wrong while saving. Please ask the server admin for help."
+          }
+        },
+        "summary" : "Add New Bill",
+        "tags" : [ "Charging Resource" ]
+      }
+    },
+    "/api/bill/{carId}/charging/all" : {
+      "parameters" : [ {
+        "name" : "carId",
+        "in" : "path",
+        "required" : true,
+        "schema" : {
+          "type" : "integer",
+          "format" : "int64"
+        }
+      } ],
+      "get" : {
+        "description" : "Gets all bills for specified car, Pages starting at 1",
+        "operationId" : "getAllChargingBills",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "order",
+          "in" : "query",
+          "schema" : {
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/SortOrder"
+            }, {
+              "default" : "DESC"
+            } ]
+          }
+        }, {
+          "name" : "page",
+          "in" : "query",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 1
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 10
+          }
+        }, {
+          "description" : "Field to sort by, the bills are sorted by date if equal",
+          "name" : "sort",
+          "in" : "query",
+          "schema" : {
+            "type" : "string",
+            "default" : "date"
+          }
+        }, {
+          "name" : "year",
+          "in" : "query",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Bills found.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/BillPagedChargingBill"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "The bills cannot be sorted by the field."
+          }
+        },
+        "summary" : "Get All My Bills",
+        "tags" : [ "Charging Resource" ]
+      }
+    },
+    "/api/bill/{carId}/charging/years" : {
+      "parameters" : [ {
+        "name" : "carId",
+        "in" : "path",
+        "required" : true,
+        "schema" : {
+          "type" : "integer",
+          "format" : "int64"
+        }
+      } ],
+      "get" : {
+        "description" : "Gets all years of bills for specified car",
+        "operationId" : "getAllChargingBillYears",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Bills found and years extracted.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "type" : "integer",
+                    "format" : "int32"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary" : "Get All My Bills",
+        "tags" : [ "Charging Resource" ]
+      }
+    },
+    "/api/bill/{carId}/charging/{billId}" : {
+      "parameters" : [ {
+        "name" : "carId",
+        "in" : "path",
+        "required" : true,
+        "schema" : {
+          "type" : "integer",
+          "format" : "int64"
+        }
+      } ],
+      "post" : {
+        "description" : "Updates a bill, calculated values are calculated again",
+        "operationId" : "updateChargingBill",
+        "parameters" : [ {
+          "name" : "billId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ChargingBillInput"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Bill updated.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ChargingBill"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed, please check the response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Bill not found for the car of your user."
+          },
+          "409" : {
+            "description" : "Another bill with the same date and total exists."
+          }
+        },
+        "summary" : "Update Bill",
+        "tags" : [ "Charging Resource" ]
+      },
+      "get" : {
+        "description" : "Gets one bill of the car",
+        "operationId" : "getChargingBill",
+        "parameters" : [ {
+          "name" : "billId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Bill found.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ChargingBill"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Bill not found for the car of your user."
+          }
+        },
+        "summary" : "Get Bill",
+        "tags" : [ "Charging Resource" ]
       }
     },
     "/api/bill/{carId}/fuel" : {
@@ -1333,6 +2503,16 @@
             "format" : "int64"
           }
         }, {
+          "name" : "order",
+          "in" : "query",
+          "schema" : {
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/SortOrder"
+            }, {
+              "default" : "DESC"
+            } ]
+          }
+        }, {
           "name" : "page",
           "in" : "query",
           "schema" : {
@@ -1347,6 +2527,14 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 10
+          }
+        }, {
+          "description" : "Field to sort by, the bills are sorted by date if equal",
+          "name" : "sort",
+          "in" : "query",
+          "schema" : {
+            "type" : "string",
+            "default" : "date"
           }
         }, {
           "name" : "year",
@@ -1366,6 +2554,9 @@
                 }
               }
             }
+          },
+          "400" : {
+            "description" : "The bills cannot be sorted by the field."
           }
         },
         "summary" : "Get All My Bills",
@@ -1604,6 +2795,16 @@
             "format" : "int64"
           }
         }, {
+          "name" : "order",
+          "in" : "query",
+          "schema" : {
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/SortOrder"
+            }, {
+              "default" : "DESC"
+            } ]
+          }
+        }, {
           "name" : "page",
           "in" : "query",
           "schema" : {
@@ -1618,6 +2819,14 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 10
+          }
+        }, {
+          "description" : "Field to sort by, the bills are sorted by date if equal",
+          "name" : "sort",
+          "in" : "query",
+          "schema" : {
+            "type" : "string",
+            "default" : "date"
           }
         }, {
           "name" : "year",
@@ -1637,6 +2846,9 @@
                 }
               }
             }
+          },
+          "400" : {
+            "description" : "The bills cannot be sorted by the field."
           }
         },
         "summary" : "Get All My Bills",
@@ -1875,6 +3087,16 @@
             "format" : "int64"
           }
         }, {
+          "name" : "order",
+          "in" : "query",
+          "schema" : {
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/SortOrder"
+            }, {
+              "default" : "DESC"
+            } ]
+          }
+        }, {
           "name" : "page",
           "in" : "query",
           "schema" : {
@@ -1889,6 +3111,14 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 10
+          }
+        }, {
+          "description" : "Field to sort by, the bills are sorted by date if equal",
+          "name" : "sort",
+          "in" : "query",
+          "schema" : {
+            "type" : "string",
+            "default" : "date"
           }
         }, {
           "name" : "year",
@@ -1908,6 +3138,9 @@
                 }
               }
             }
+          },
+          "400" : {
+            "description" : "The bills cannot be sorted by the field."
           }
         },
         "summary" : "Get All My Bills",
@@ -2101,6 +3334,16 @@
             "format" : "int32",
             "default" : 10
           }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "schema" : {
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/RecurringBillSort"
+            }, {
+              "default" : "ACTIVE"
+            } ]
+          }
         } ],
         "responses" : {
           "200" : {
@@ -2168,6 +3411,103 @@
       }
     },
     "/api/bill/{carId}/recurring/{billId}" : {
+      "post" : {
+        "description" : "Updates a recurring bill, a changed amount, interval or date books the payments again",
+        "operationId" : "updateRecurringBill",
+        "parameters" : [ {
+          "name" : "billId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/RecurringBillInput"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Bill updated.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RecurringBill"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed, please check the response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Bill not found for the car of your user."
+          }
+        },
+        "summary" : "Update Recurring Bill",
+        "tags" : [ "Recurring Resource" ]
+      },
+      "get" : {
+        "description" : "Gets one recurring bill of the car",
+        "operationId" : "getRecurringBill",
+        "parameters" : [ {
+          "name" : "billId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Bill found.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RecurringBill"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Bill not found for the car of your user."
+          }
+        },
+        "summary" : "Get Recurring Bill",
+        "tags" : [ "Recurring Resource" ]
+      },
       "delete" : {
         "operationId" : "deleteRecurringBill",
         "parameters" : [ {
@@ -2517,6 +3857,203 @@
         "tags" : [ "Car Resource" ]
       }
     },
+    "/api/car/my/{id}/picture" : {
+      "put" : {
+        "description" : "Replaces the picture of the car with a JPEG, PNG or WebP image",
+        "operationId" : "setCarPicture",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "multipart/form-data" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "file" : {
+                    "type" : "string",
+                    "format" : "binary"
+                  }
+                }
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Picture saved.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Attachment"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "File empty, too large or no image",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Car not found."
+          }
+        },
+        "summary" : "Set Picture",
+        "tags" : [ "Car Picture Resource" ]
+      },
+      "get" : {
+        "description" : "The picture; its URL carries the pictureId of the car, so it can be cached",
+        "operationId" : "getCarPicture",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Picture found.",
+            "content" : {
+              "image/jpeg" : { },
+              "image/png" : { },
+              "image/webp" : { }
+            }
+          },
+          "404" : {
+            "description" : "Car not found or without picture."
+          }
+        },
+        "summary" : "Get Picture",
+        "tags" : [ "Car Picture Resource" ]
+      },
+      "delete" : {
+        "description" : "Removes the picture, the generated avatar is shown again",
+        "operationId" : "deleteCarPicture",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "Picture removed."
+          },
+          "404" : {
+            "description" : "Car not found."
+          }
+        },
+        "summary" : "Delete Picture",
+        "tags" : [ "Car Picture Resource" ]
+      }
+    },
+    "/api/export/{carId}" : {
+      "get" : {
+        "description" : "Exports the bills of one type as CSV, in the format of the import: the header names the fields of the import, ISO dates, a dot as decimal separator. The oldest bill comes first.",
+        "operationId" : "exportCsv",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "type",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/BillType"
+          }
+        }, {
+          "name" : "year",
+          "in" : "query",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "The bills as CSV.",
+            "content" : {
+              "text/csv" : {
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Type missing or not exportable."
+          },
+          "404" : {
+            "description" : "Car not found."
+          }
+        },
+        "summary" : "Export Csv",
+        "tags" : [ "Export Resource" ]
+      }
+    },
+    "/api/export/{carId}/all" : {
+      "get" : {
+        "description" : "Exports all expenses of the car as one CSV, for spreadsheets: every bill and the payments of the recurring costs, the oldest first, ISO dates and a dot as decimal separator. Not meant to be imported again.",
+        "operationId" : "exportAllExpensesCsv",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "year",
+          "in" : "query",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "The expenses as CSV.",
+            "content" : {
+              "text/csv" : {
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Car not found."
+          }
+        },
+        "summary" : "Export All Expenses",
+        "tags" : [ "Export Resource" ]
+      }
+    },
     "/api/import/{carId}" : {
       "post" : {
         "description" : "This is the description for the import of an csv of your fuel entities.<br />\n<br />\nYou need to add the csv and the order in the csv (starts with 0).<br />\nseparator between columns is ',' (comma)\n",
@@ -2555,6 +4092,9 @@
                   "vat" : {
                     "type" : "integer",
                     "format" : "int32"
+                  },
+                  "unitSystem" : {
+                    "$ref" : "#/components/schemas/UnitSystem"
                   }
                 }
               },
@@ -2973,6 +4513,318 @@
         },
         "summary" : "Get Me",
         "tags" : [ "Account Resource" ]
+      },
+      "delete" : {
+        "description" : "Deletes the own account with all its cars, entries, recurring costs and reminders. The account at the identity provider stays.",
+        "operationId" : "deleteMyself",
+        "responses" : {
+          "204" : {
+            "description" : "Account deleted."
+          }
+        },
+        "summary" : "Delete Me",
+        "tags" : [ "Account Resource" ]
+      }
+    },
+    "/api/user/me/backup" : {
+      "post" : {
+        "description" : "Restores a backup into the own account, which must not have cars yet",
+        "operationId" : "restoreBackup",
+        "requestBody" : {
+          "content" : {
+            "multipart/form-data" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "file" : {
+                    "type" : "string",
+                    "format" : "binary"
+                  }
+                }
+              },
+              "encoding" : {
+                "file" : {
+                  "contentType" : "application/zip"
+                }
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Restored.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/BackupSummary"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "No backup, an unknown version, invalid content or more cars than allowed",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "The account has cars already."
+          }
+        },
+        "summary" : "Restore",
+        "tags" : [ "Backup Resource" ]
+      },
+      "get" : {
+        "description" : "All own data as ZIP: settings, cars, entries, recurring costs, reminders and the files",
+        "operationId" : "downloadBackup",
+        "responses" : {
+          "200" : {
+            "description" : "The backup.",
+            "content" : {
+              "application/zip" : {
+                "schema" : {
+                  "format" : "binary",
+                  "type" : "string"
+                }
+              }
+            }
+          }
+        },
+        "summary" : "Download",
+        "tags" : [ "Backup Resource" ]
+      }
+    },
+    "/api/user/me/car-requests" : {
+      "post" : {
+        "description" : "Requests more cars than the limit of the account allows",
+        "operationId" : "requestMoreCars",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CarRequestInput"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Request created.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CarRequest"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed, or the user can still add cars",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "An open request exists already."
+          }
+        },
+        "summary" : "Request More Cars",
+        "tags" : [ "Car Request Resource" ]
+      }
+    },
+    "/api/user/me/car-requests/latest" : {
+      "get" : {
+        "description" : "The newest own request for more cars",
+        "operationId" : "getMyLatestCarRequest",
+        "responses" : {
+          "200" : {
+            "description" : "Request found.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CarRequest"
+                }
+              }
+            }
+          },
+          "204" : {
+            "description" : "No request yet."
+          }
+        },
+        "summary" : "Get Latest",
+        "tags" : [ "Car Request Resource" ]
+      }
+    },
+    "/api/user/me/car-requests/{id}/seen" : {
+      "post" : {
+        "description" : "The decision was shown to the user, it is not shown again",
+        "operationId" : "markCarRequestSeen",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "Marked as seen."
+          },
+          "404" : {
+            "description" : "Request not found for the user."
+          }
+        },
+        "summary" : "Mark Seen",
+        "tags" : [ "Car Request Resource" ]
+      }
+    },
+    "/api/user/me/notifications" : {
+      "put" : {
+        "description" : "Turns the notifications of the own account by e-mail on or off",
+        "operationId" : "updateMyNotifications",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/NotificationSettingsInput"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Notification settings saved.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/NotificationSettings"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Bad Request"
+          }
+        },
+        "summary" : "Update Notifications",
+        "tags" : [ "Account Resource" ]
+      },
+      "get" : {
+        "description" : "Notifications of the own account by e-mail",
+        "operationId" : "getMyNotifications",
+        "responses" : {
+          "200" : {
+            "description" : "Notification settings found.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/NotificationSettings"
+                }
+              }
+            }
+          }
+        },
+        "summary" : "Get Notifications",
+        "tags" : [ "Account Resource" ]
+      }
+    },
+    "/api/user/me/push" : {
+      "get" : {
+        "description" : "Whether the server sends push messages, its key for the subscription and the number of own browsers",
+        "operationId" : "getMyPush",
+        "responses" : {
+          "200" : {
+            "description" : "Push settings found.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PushSettings"
+                }
+              }
+            }
+          }
+        },
+        "summary" : "Get Push",
+        "tags" : [ "Push Resource" ]
+      }
+    },
+    "/api/user/me/push/subscriptions" : {
+      "delete" : {
+        "description" : "Removes the browser from the receivers of the notifications",
+        "operationId" : "unsubscribeMyPush",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PushSubscriptionInput"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "204" : {
+            "description" : "Subscription removed, also when it did not exist."
+          }
+        },
+        "summary" : "Unsubscribe",
+        "tags" : [ "Push Resource" ]
+      },
+      "put" : {
+        "description" : "Adds the browser to the receivers of the notifications, again with new keys",
+        "operationId" : "subscribeMyPush",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PushSubscriptionInput"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "204" : {
+            "description" : "Subscription saved."
+          },
+          "400" : {
+            "description" : "Validation failed, please check the response",
+            "content" : { }
+          }
+        },
+        "summary" : "Subscribe",
+        "tags" : [ "Push Resource" ]
+      }
+    },
+    "/api/user/me/push/test" : {
+      "post" : {
+        "description" : "Sends a notification to every own browser",
+        "operationId" : "testMyPush",
+        "responses" : {
+          "202" : {
+            "description" : "Sent to the browsers."
+          },
+          "409" : {
+            "description" : "Push is not available or no browser subscribed."
+          }
+        },
+        "summary" : "Test",
+        "tags" : [ "Push Resource" ]
       }
     },
     "/api/user/me/settings" : {
@@ -3015,11 +4867,31 @@
         "summary" : "Update Settings",
         "tags" : [ "Account Resource" ]
       }
+    },
+    "/api/version" : {
+      "get" : {
+        "description" : "Version of the server, e.g. 0.5.0 or 0.5.0-dev.531",
+        "operationId" : "getVersion",
+        "responses" : {
+          "200" : {
+            "description" : "Version of the server.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Version"
+                }
+              }
+            }
+          }
+        },
+        "summary" : "Get Version",
+        "tags" : [ "Version Resource" ]
+      }
     }
   },
   "info" : {
     "title" : "car-ledger API",
-    "version" : "0.1.0-SNAPSHOT"
+    "version" : "1"
   },
   "servers" : [ {
     "url" : "http://localhost:8080",
