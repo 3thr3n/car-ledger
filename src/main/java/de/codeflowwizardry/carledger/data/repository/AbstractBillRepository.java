@@ -7,6 +7,7 @@ import java.util.Optional;
 
 import de.codeflowwizardry.carledger.data.AbstractBillEntity;
 import de.codeflowwizardry.carledger.data.BillType;
+import de.codeflowwizardry.carledger.data.repository.CarAccess.Action;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import io.quarkus.panache.common.Page;
@@ -71,10 +72,10 @@ public abstract class AbstractBillRepository<T extends AbstractBillEntity> imple
 			throw new IllegalArgumentException("Cannot sort by " + sortField);
 		}
 
-		String query = fromClause() + " where b.car.id = :carId and b.car.user.userId = :username";
+		String query = fromClause() + " where b.car.id = :carId and " + CarAccess.condition("b.car", Action.READ);
 		Map<String, Object> params = new HashMap<>();
 		params.put("carId", carId);
-		params.put("username", username);
+		params.put(CarAccess.USER, username);
 
 		if (year.isPresent())
 		{
@@ -100,13 +101,14 @@ public abstract class AbstractBillRepository<T extends AbstractBillEntity> imple
 	}
 
 	/**
-	 * @return the bill, if it belongs to the car of the user
+	 * @return the bill, if it belongs to the car and the user may do the action
+	 *         with the car
 	 */
-	public Optional<T> findBill(long carId, long billId, String username)
+	public Optional<T> findBill(long carId, long billId, String username, Action action)
 	{
 		return find("from " + entityName + " e join fetch e.bill b"
-				+ " where b.id = :billId and b.car.id = :carId and b.car.user.userId = :username",
-				Map.of("billId", billId, "carId", carId, "username", username))
+				+ " where b.id = :billId and b.car.id = :carId and " + CarAccess.condition("b.car", action),
+				Map.of("billId", billId, "carId", carId, CarAccess.USER, username))
 				.firstResultOptional();
 	}
 
@@ -118,7 +120,7 @@ public abstract class AbstractBillRepository<T extends AbstractBillEntity> imple
 	public List<Integer> getBillYears(long carId, String username, BillType type)
 	{
 		String query = "select distinct year(b.date) from bill b"
-				+ " where b.car.id = :carId and b.car.user.userId = :username";
+				+ " where b.car.id = :carId and " + CarAccess.condition("b.car", Action.READ);
 		if (type != null)
 		{
 			query += " and b.type = :type";
@@ -127,7 +129,7 @@ public abstract class AbstractBillRepository<T extends AbstractBillEntity> imple
 		var typedQuery = getEntityManager()
 				.createQuery(query + " order by year(b.date) desc", Integer.class)
 				.setParameter("carId", carId)
-				.setParameter("username", username);
+				.setParameter(CarAccess.USER, username);
 		if (type != null)
 		{
 			typedQuery.setParameter("type", type);
@@ -141,10 +143,10 @@ public abstract class AbstractBillRepository<T extends AbstractBillEntity> imple
 	public List<T> listBills(long carId, String username, Optional<Integer> year)
 	{
 		String query = "from " + entityName + " e join fetch e.bill b"
-				+ " where b.car.id = :carId and b.car.user.userId = :username";
+				+ " where b.car.id = :carId and " + CarAccess.condition("b.car", Action.READ);
 		Map<String, Object> params = new HashMap<>();
 		params.put("carId", carId);
-		params.put("username", username);
+		params.put(CarAccess.USER, username);
 
 		if (year.isPresent())
 		{

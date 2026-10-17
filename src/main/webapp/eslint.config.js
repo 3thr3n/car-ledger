@@ -24,7 +24,8 @@ export default tseslint.config(
       ecmaVersion: 2020,
       globals: globals.browser,
       parserOptions: {
-        project: ['./tsconfig.json'],
+        // the service worker has its own (webworker instead of dom)
+        project: ['./tsconfig.json', './src/sw/tsconfig.json'],
         tsconfigRootDir: import.meta.dirname,
       },
     },

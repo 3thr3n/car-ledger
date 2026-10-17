@@ -4,6 +4,7 @@ import react from '@vitejs/plugin-react';
 import tanstackRouter from '@tanstack/router-plugin/vite';
 import path from 'path';
 import yaml from '@modyfi/vite-plugin-yaml';
+import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
   plugins: [
@@ -12,14 +13,77 @@ export default defineConfig({
     tanstackRouter({ target: 'react', autoCodeSplitting: true }),
     react(),
     yaml(),
+    // installable app: manifest, icons and the service worker of src/sw, only
+    // in the build (the dev server and the e2e tests run without it)
+    VitePWA({
+      strategies: 'injectManifest',
+      srcDir: 'src/sw',
+      filename: 'sw.ts',
+      // registered in src/utils/serviceWorker.ts, a new version asks before reloading
+      injectRegister: false,
+      registerType: 'prompt',
+      // .json: the server knows its content type, not the one of .webmanifest
+      manifestFilename: 'manifest.json',
+      injectManifest: {
+        globPatterns: ['**/*.{js,css,html,svg,png,ico,woff2}'],
+        // the spec of the API is no part of the app, the flags are loaded when
+        // the list of the countries is opened
+        globIgnores: ['openapi.json', 'assets/flags/**'],
+      },
+      manifest: {
+        name: 'CarLedger',
+        short_name: 'CarLedger',
+        description: 'Track fuel, maintenance and recurring costs of your cars',
+        lang: 'en',
+        start_url: '/dashboard',
+        scope: '/',
+        display: 'standalone',
+        background_color: '#f5f6f8',
+        theme_color: '#0f766e',
+        icons: [
+          { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
+          { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
+          {
+            src: '/icons/maskable-512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable',
+          },
+        ],
+        // long press on the icon: the form of a new refuel (or charge) of the
+        // last used car
+        shortcuts: [
+          {
+            name: 'Add refuel',
+            short_name: 'Refuel',
+            url: '/refuel',
+            icons: [
+              {
+                src: '/icons/icon-192.png',
+                sizes: '192x192',
+                type: 'image/png',
+              },
+            ],
+          },
+        ],
+      },
+    }),
   ],
   test: {
     // the playwright specs in e2e/ run separately
     include: ['src/**/*.test.{ts,tsx}'],
   },
   build: {
+    // the flags stay files, loaded when shown, instead of data URIs in the code
+    assetsInlineLimit: (file) =>
+      file.includes('flag-icons') ? false : undefined,
     rolldownOptions: {
       output: {
+        // the flags of the countries apart, see globIgnores
+        assetFileNames: (asset) =>
+          asset.originalFileNames?.some((name) => name.includes('flag-icons'))
+            ? 'assets/flags/[name]-[hash][extname]'
+            : 'assets/[name]-[hash][extname]',
         // libraries the app always loads completely, in an own chunk that stays
         // cached between releases. Not @mui/material: parts of it are only used
         // by lazy routes and would end up in the first load.

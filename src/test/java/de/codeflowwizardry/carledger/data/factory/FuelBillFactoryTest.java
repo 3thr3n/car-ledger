@@ -14,6 +14,7 @@ import org.mockito.Mockito;
 import de.codeflowwizardry.carledger.data.AccountEntity;
 import de.codeflowwizardry.carledger.data.CarEntity;
 import de.codeflowwizardry.carledger.data.FuelBillEntity;
+import de.codeflowwizardry.carledger.data.repository.CarAccess.Action;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import de.codeflowwizardry.carledger.rest.car.fuel.FuelBillInput;
 import de.codeflowwizardry.carledger.rest.processors.TestEntityManager;
@@ -95,7 +96,7 @@ class FuelBillFactoryTest
 
 		CarRepository carRepository = new CarRepository() {
 			@Override
-			public CarEntity findById(Long id, String user)
+			public CarEntity findById(Long id, String user, Action action)
 			{
 				return carEntity;
 			}
@@ -133,7 +134,7 @@ class FuelBillFactoryTest
 
 		CarRepository carRepository = new CarRepository() {
 			@Override
-			public CarEntity findById(Long id, String user)
+			public CarEntity findById(Long id, String user, Action action)
 			{
 				return carEntity;
 			}

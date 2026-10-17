@@ -10,7 +10,7 @@
 
     <properties>
         <revision>dev</revision>
-        <compiler-plugin.version>3.15.0</compiler-plugin.version>
+        <compiler-plugin.version>3.16.0</compiler-plugin.version>
         <maven.compiler.release>21</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -19,7 +19,7 @@
         <quarkus.platform.version>3.40.1</quarkus.platform.version>
         <skipITs>true</skipITs>
         <surefire-plugin.version>3.6.0</surefire-plugin.version>
-        <jacoco.version>0.8.14</jacoco.version>
+        <jacoco.version>0.8.15</jacoco.version>
         <!-- set by the jacoco agent, empty when it is skipped -->
         <argLine></argLine>
     </properties>
@@ -92,6 +92,11 @@
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-scheduler</artifactId>
         </dependency>
+        <!-- notifications by e-mail, the texts are Qute templates -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-mailer</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>io.quarkiverse.quinoa</groupId>
@@ -131,6 +136,12 @@
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-test-security</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- claims of the token in tests, e.g. the e-mail address -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-test-security-oidc</artifactId>
             <scope>test</scope>
         </dependency>
         <!-- access tokens of the Keycloak dev service, for the calls of service accounts -->

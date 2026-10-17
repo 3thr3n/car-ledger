@@ -1,0 +1,2 @@
+{#if approved}Your car request was approved{#else}Your car request was rejected{/if}
+{#if approved}You can now have {grantedMaxCars} cars.{#else if comment}"{comment}"{#else}Your request for {cars} more {#if cars == 1}car{#else}cars{/if} was rejected.{/if}

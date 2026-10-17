@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.*;
 
+import de.codeflowwizardry.carledger.data.repository.CarAccess;
+import de.codeflowwizardry.carledger.data.repository.CarAccess.Action;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import de.codeflowwizardry.carledger.rest.records.Odometer;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -41,13 +43,15 @@ public class OdometerService
 	public Map<Long, Odometer> current(long carId, String username)
 	{
 		Map<Long, List<Reading>> readings = new HashMap<>();
-		for (Object[] row : query("select c.id, c.odometerDate, c.odometer from Car c where c.user.userId = :userId",
+		for (Object[] row : query(
+				"select c.id, c.odometerDate, c.odometer from Car c where " + CarAccess.condition("c", Action.READ),
 				"c", carId, username))
 		{
 			add(readings, row);
 		}
 		for (Object[] row : query("select b.car.id, b.date, m.odometer from MaintenanceBillEntity m join m.bill b"
-				+ " where b.car.user.userId = :userId and m.odometer is not null", "b.car", carId, username))
+				+ " where " + CarAccess.condition("b.car", Action.READ) + " and m.odometer is not null", "b.car", carId,
+				username))
 		{
 			add(readings, row);
 		}
@@ -71,7 +75,8 @@ public class OdometerService
 	{
 		Map<Long, NavigableMap<LocalDate, BigDecimal>> driven = new HashMap<>();
 		for (Object[] row : query("select b.car.id, b.date, sum(f.distance) from " + entity + " f join f.bill b"
-				+ " where b.car.user.userId = :userId and f.distance > 0", "b.car", carId, username,
+				+ " where " + CarAccess.condition("b.car", Action.READ) + " and f.distance > 0", "b.car", carId,
+				username,
 				" group by b.car.id, b.date"))
 		{
 			driven.computeIfAbsent((Long) row[0], id -> new TreeMap<>()).put((LocalDate) row[1],
@@ -125,7 +130,7 @@ public class OdometerService
 			query += " and " + carPath + ".id = :carId";
 		}
 		TypedQuery<Object[]> typedQuery = entityManager.createQuery(query + suffix, Object[].class)
-				.setParameter("userId", username);
+				.setParameter(CarAccess.USER, username);
 		if (carId != CarRepository.ALL_CARS)
 		{
 			typedQuery.setParameter("carId", carId);

@@ -1088,6 +1088,46 @@
           }
         }
       },
+      "NotificationSettings" : {
+        "type" : "object",
+        "properties" : {
+          "available" : {
+            "type" : "boolean"
+          },
+          "byMail" : {
+            "type" : "boolean"
+          },
+          "email" : {
+            "type" : "string"
+          },
+          "newRequests" : {
+            "type" : "boolean"
+          },
+          "requestDecided" : {
+            "type" : "boolean"
+          },
+          "reminders" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "NotificationSettingsInput" : {
+        "type" : "object",
+        "properties" : {
+          "byMail" : {
+            "type" : "boolean"
+          },
+          "newRequests" : {
+            "type" : "boolean"
+          },
+          "requestDecided" : {
+            "type" : "boolean"
+          },
+          "reminders" : {
+            "type" : "boolean"
+          }
+        }
+      },
       "Odometer" : {
         "type" : "object",
         "required" : [ "value", "reading", "readingDate", "driven" ],
@@ -1114,6 +1154,36 @@
         "type" : "string",
         "format" : "date-time",
         "examples" : [ "2022-03-10T12:15:50-04:00" ]
+      },
+      "PushSettings" : {
+        "type" : "object",
+        "required" : [ "available", "publicKey", "browsers" ],
+        "properties" : {
+          "available" : {
+            "type" : "boolean"
+          },
+          "publicKey" : {
+            "type" : "string"
+          },
+          "browsers" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      },
+      "PushSubscriptionInput" : {
+        "type" : "object",
+        "properties" : {
+          "endpoint" : {
+            "type" : "string"
+          },
+          "p256dh" : {
+            "type" : "string"
+          },
+          "auth" : {
+            "type" : "string"
+          }
+        }
       },
       "RecurringBill" : {
         "type" : "object",
@@ -1380,6 +1450,15 @@
       "UnitSystem" : {
         "type" : "string",
         "enum" : [ "METRIC", "US", "UK" ]
+      },
+      "Version" : {
+        "type" : "object",
+        "required" : [ "version" ],
+        "properties" : {
+          "version" : {
+            "type" : "string"
+          }
+        }
       }
     },
     "securitySchemes" : {
@@ -4613,6 +4692,141 @@
         "tags" : [ "Car Request Resource" ]
       }
     },
+    "/api/user/me/notifications" : {
+      "put" : {
+        "description" : "Turns the notifications of the own account by e-mail on or off",
+        "operationId" : "updateMyNotifications",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/NotificationSettingsInput"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Notification settings saved.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/NotificationSettings"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Bad Request"
+          }
+        },
+        "summary" : "Update Notifications",
+        "tags" : [ "Account Resource" ]
+      },
+      "get" : {
+        "description" : "Notifications of the own account by e-mail",
+        "operationId" : "getMyNotifications",
+        "responses" : {
+          "200" : {
+            "description" : "Notification settings found.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/NotificationSettings"
+                }
+              }
+            }
+          }
+        },
+        "summary" : "Get Notifications",
+        "tags" : [ "Account Resource" ]
+      }
+    },
+    "/api/user/me/push" : {
+      "get" : {
+        "description" : "Whether the server sends push messages, its key for the subscription and the number of own browsers",
+        "operationId" : "getMyPush",
+        "responses" : {
+          "200" : {
+            "description" : "Push settings found.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PushSettings"
+                }
+              }
+            }
+          }
+        },
+        "summary" : "Get Push",
+        "tags" : [ "Push Resource" ]
+      }
+    },
+    "/api/user/me/push/subscriptions" : {
+      "delete" : {
+        "description" : "Removes the browser from the receivers of the notifications",
+        "operationId" : "unsubscribeMyPush",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PushSubscriptionInput"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "204" : {
+            "description" : "Subscription removed, also when it did not exist."
+          }
+        },
+        "summary" : "Unsubscribe",
+        "tags" : [ "Push Resource" ]
+      },
+      "put" : {
+        "description" : "Adds the browser to the receivers of the notifications, again with new keys",
+        "operationId" : "subscribeMyPush",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PushSubscriptionInput"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "204" : {
+            "description" : "Subscription saved."
+          },
+          "400" : {
+            "description" : "Validation failed, please check the response",
+            "content" : { }
+          }
+        },
+        "summary" : "Subscribe",
+        "tags" : [ "Push Resource" ]
+      }
+    },
+    "/api/user/me/push/test" : {
+      "post" : {
+        "description" : "Sends a notification to every own browser",
+        "operationId" : "testMyPush",
+        "responses" : {
+          "202" : {
+            "description" : "Sent to the browsers."
+          },
+          "409" : {
+            "description" : "Push is not available or no browser subscribed."
+          }
+        },
+        "summary" : "Test",
+        "tags" : [ "Push Resource" ]
+      }
+    },
     "/api/user/me/settings" : {
       "put" : {
         "description" : "Updates the settings of the own account",
@@ -4652,6 +4866,26 @@
         },
         "summary" : "Update Settings",
         "tags" : [ "Account Resource" ]
+      }
+    },
+    "/api/version" : {
+      "get" : {
+        "description" : "Version of the server, e.g. 0.5.0 or 0.5.0-dev.531",
+        "operationId" : "getVersion",
+        "responses" : {
+          "200" : {
+            "description" : "Version of the server.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Version"
+                }
+              }
+            }
+          }
+        },
+        "summary" : "Get Version",
+        "tags" : [ "Version Resource" ]
       }
     }
   },

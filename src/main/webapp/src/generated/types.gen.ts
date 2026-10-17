@@ -397,6 +397,22 @@ export type MonthStats = {
     costPerKm?: number;
 };
 
+export type NotificationSettings = {
+    available?: boolean;
+    byMail?: boolean;
+    email?: string;
+    newRequests?: boolean;
+    requestDecided?: boolean;
+    reminders?: boolean;
+};
+
+export type NotificationSettingsInput = {
+    byMail?: boolean;
+    newRequests?: boolean;
+    requestDecided?: boolean;
+    reminders?: boolean;
+};
+
 export type Odometer = {
     value: number;
     reading: number;
@@ -405,6 +421,18 @@ export type Odometer = {
 };
 
 export type OffsetDateTime = string;
+
+export type PushSettings = {
+    available: boolean;
+    publicKey: string;
+    browsers: number;
+};
+
+export type PushSubscriptionInput = {
+    endpoint?: string;
+    p256dh?: string;
+    auth?: string;
+};
 
 export type RecurringBill = {
     id?: number;
@@ -522,6 +550,10 @@ export enum UnitSystem {
     US = 'US',
     UK = 'UK'
 }
+
+export type Version = {
+    version: string;
+};
 
 export type GetAdminAccountsData = {
     body?: never;
@@ -2408,6 +2440,121 @@ export type MarkCarRequestSeenResponses = {
 
 export type MarkCarRequestSeenResponse = MarkCarRequestSeenResponses[keyof MarkCarRequestSeenResponses];
 
+export type GetMyNotificationsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/user/me/notifications';
+};
+
+export type GetMyNotificationsResponses = {
+    /**
+     * Notification settings found.
+     */
+    200: NotificationSettings;
+};
+
+export type GetMyNotificationsResponse = GetMyNotificationsResponses[keyof GetMyNotificationsResponses];
+
+export type UpdateMyNotificationsData = {
+    body: NotificationSettingsInput;
+    path?: never;
+    query?: never;
+    url: '/api/user/me/notifications';
+};
+
+export type UpdateMyNotificationsErrors = {
+    /**
+     * Bad Request
+     */
+    400: unknown;
+};
+
+export type UpdateMyNotificationsResponses = {
+    /**
+     * Notification settings saved.
+     */
+    200: NotificationSettings;
+};
+
+export type UpdateMyNotificationsResponse = UpdateMyNotificationsResponses[keyof UpdateMyNotificationsResponses];
+
+export type GetMyPushData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/user/me/push';
+};
+
+export type GetMyPushResponses = {
+    /**
+     * Push settings found.
+     */
+    200: PushSettings;
+};
+
+export type GetMyPushResponse = GetMyPushResponses[keyof GetMyPushResponses];
+
+export type UnsubscribeMyPushData = {
+    body: PushSubscriptionInput;
+    path?: never;
+    query?: never;
+    url: '/api/user/me/push/subscriptions';
+};
+
+export type UnsubscribeMyPushResponses = {
+    /**
+     * Subscription removed, also when it did not exist.
+     */
+    204: void;
+};
+
+export type UnsubscribeMyPushResponse = UnsubscribeMyPushResponses[keyof UnsubscribeMyPushResponses];
+
+export type SubscribeMyPushData = {
+    body: PushSubscriptionInput;
+    path?: never;
+    query?: never;
+    url: '/api/user/me/push/subscriptions';
+};
+
+export type SubscribeMyPushErrors = {
+    /**
+     * Validation failed, please check the response
+     */
+    400: unknown;
+};
+
+export type SubscribeMyPushResponses = {
+    /**
+     * Subscription saved.
+     */
+    204: void;
+};
+
+export type SubscribeMyPushResponse = SubscribeMyPushResponses[keyof SubscribeMyPushResponses];
+
+export type TestMyPushData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/user/me/push/test';
+};
+
+export type TestMyPushErrors = {
+    /**
+     * Push is not available or no browser subscribed.
+     */
+    409: unknown;
+};
+
+export type TestMyPushResponses = {
+    /**
+     * Sent to the browsers.
+     */
+    202: unknown;
+};
+
 export type UpdateMySettingsData = {
     body: SettingsInput;
     path?: never;
@@ -2432,3 +2579,19 @@ export type UpdateMySettingsResponses = {
 };
 
 export type UpdateMySettingsResponse = UpdateMySettingsResponses[keyof UpdateMySettingsResponses];
+
+export type GetVersionData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/version';
+};
+
+export type GetVersionResponses = {
+    /**
+     * Version of the server.
+     */
+    200: Version;
+};
+
+export type GetVersionResponse = GetVersionResponses[keyof GetVersionResponses];

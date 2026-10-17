@@ -3,6 +3,14 @@ app:
   loading: "Loading"
   language: "Language"
   openSource: "CarLedger is open source — find it on"
+  version: "CarLedger {{version}}"
+  versions: "Version of the app {{app}}, of the server {{server}}"
+  update:
+    text: "A new version of CarLedger is available."
+    reload: "Reload"
+    available: "Update available"
+    outdated: "This device still runs an older version of the app than the server."
+    current: "The app is up to date."
 
 theme:
   light: "Light theme"
@@ -432,6 +440,52 @@ import:
     errors_one: "{{count}} error"
     errors_other: "{{count}} errors"
     row: "Row {{row}}"
+
+install:
+  install: "Install"
+  hint:
+    title: "Use CarLedger like an app"
+    text: "Add it to your home screen: it starts faster and opens without the bar of the browser."
+    showMe: "Show me how"
+    later: "Not now"
+  section:
+    title: "App"
+    text: "CarLedger can be added to the home screen of your phone or installed on your computer, it then starts like an app."
+    installed: "You are using CarLedger as installed app."
+  steps:
+    ios: "In Safari, tap Share (the square with the arrow) and then “Add to Home Screen”."
+    firefoxAndroid: "Open the menu ⋮ of Firefox and tap “Add to Home screen” (in some versions “Install”)."
+    android: "Open the menu ⋮ of the browser and tap “Install app” or “Add to Home screen”. In Chrome, a long press on the icon then offers “Add refuel”."
+    desktop: "In Chrome or Edge, click the install icon on the right of the address bar. Firefox and Safari on the computer cannot install it."
+
+notifications:
+  title: "Notifications"
+  byMail: "By e-mail"
+  sentTo: "Sent to {{email}}, the address of your login."
+  noEmail: "Your login has no e-mail address. Add one at your identity provider and log in again."
+  unavailable: "This CarLedger does not send e-mails, the administrator can set it up."
+  push:
+    label: "Push on this device"
+    loading: "…"
+    unavailable: "This CarLedger does not send push notifications."
+    unsupported: "This browser cannot receive push notifications here. Open the installed app or another browser."
+    install: "On the iPhone and iPad, push notifications only reach the app on the home screen: add CarLedger there (Settings → App) and open it from there."
+    denied: "The notifications are blocked in this browser. Allow them in the settings of the site and try again."
+    off_one: "Off on this device. One other device receives them."
+    off_other: "Off on this device. {{count}} devices receive them."
+    off_zero: "Off on this device."
+    on_one: "This device receives them."
+    on_other: "{{count}} devices receive them, this one included."
+    turningOn: "Turning on… the first time the browser can take a moment."
+    test: "Send a test"
+    testSent: "Test sent, it should arrive in a few seconds"
+    failed: "Push notifications could not be turned on"
+  topics: "Notify me about:"
+  noChannel: "Turn on e-mail or push first, then choose what to be notified about:"
+  reminders: "Reminders of my cars that are due soon (once a day)"
+  requestDecided: "When my request for more cars is decided"
+  newRequests: "New requests for more cars (as administrator)"
+  saved: "Notifications saved"
 
 backup:
   title: "Backup"

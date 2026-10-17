@@ -3,6 +3,14 @@ app:
   loading: "Wird geladen"
   language: "Sprache"
   openSource: "CarLedger ist Open Source — zu finden auf"
+  version: "CarLedger {{version}}"
+  versions: "Version der App {{app}}, des Servers {{server}}"
+  update:
+    text: "Eine neue Version von CarLedger ist verfügbar."
+    reload: "Neu laden"
+    available: "Update verfügbar"
+    outdated: "Auf diesem Gerät läuft noch eine ältere Version der App als auf dem Server."
+    current: "Die App ist aktuell."
 
 theme:
   light: "Helles Design"
@@ -432,6 +440,52 @@ import:
     errors_one: "{{count}} Fehler"
     errors_other: "{{count}} Fehler"
     row: "Zeile {{row}}"
+
+install:
+  install: "Installieren"
+  hint:
+    title: "Nutze CarLedger wie eine App"
+    text: "Lege es auf deinen Startbildschirm: Es startet schneller und öffnet sich ohne die Leiste des Browsers."
+    showMe: "Zeig mir wie"
+    later: "Nicht jetzt"
+  section:
+    title: "App"
+    text: "CarLedger kann auf den Startbildschirm deines Handys gelegt oder auf deinem Computer installiert werden und startet dann wie eine App."
+    installed: "Du nutzt CarLedger als installierte App."
+  steps:
+    ios: "Tippe in Safari auf Teilen (das Quadrat mit dem Pfeil) und dann auf „Zum Home-Bildschirm“."
+    firefoxAndroid: "Öffne das Menü ⋮ von Firefox und tippe auf „Zum Startbildschirm hinzufügen“ (in manchen Versionen „Installieren“)."
+    android: "Öffne das Menü ⋮ des Browsers und tippe auf „App installieren“ oder „Zum Startbildschirm hinzufügen“. In Chrome bietet ein langes Drücken auf das Symbol dann „Add refuel“ (neuer Tankvorgang)."
+    desktop: "Klicke in Chrome oder Edge auf das Installieren-Symbol rechts in der Adressleiste. Firefox und Safari auf dem Computer können es nicht installieren."
+
+notifications:
+  title: "Benachrichtigungen"
+  byMail: "Per E-Mail"
+  sentTo: "Gesendet an {{email}}, die Adresse deiner Anmeldung."
+  noEmail: "Deine Anmeldung hat keine E-Mail-Adresse. Trage eine beim Identitätsanbieter ein und melde dich erneut an."
+  unavailable: "Dieses CarLedger versendet keine E-Mails, der Administrator kann es einrichten."
+  push:
+    label: "Push auf diesem Gerät"
+    loading: "…"
+    unavailable: "Dieses CarLedger versendet keine Push-Benachrichtigungen."
+    unsupported: "Dieser Browser kann hier keine Push-Benachrichtigungen empfangen. Öffne die installierte App oder einen anderen Browser."
+    install: "Auf iPhone und iPad erreichen Push-Benachrichtigungen nur die App auf dem Home-Bildschirm: Lege CarLedger dort ab (Einstellungen → App) und öffne es von dort."
+    denied: "Die Benachrichtigungen sind in diesem Browser blockiert. Erlaube sie in den Einstellungen der Seite und versuche es erneut."
+    off_one: "Auf diesem Gerät aus. Ein anderes Gerät bekommt sie."
+    off_other: "Auf diesem Gerät aus. {{count}} Geräte bekommen sie."
+    off_zero: "Auf diesem Gerät aus."
+    on_one: "Dieses Gerät bekommt sie."
+    on_other: "{{count}} Geräte bekommen sie, dieses eingeschlossen."
+    turningOn: "Wird eingeschaltet… beim ersten Mal kann der Browser einen Moment brauchen."
+    test: "Test senden"
+    testSent: "Test gesendet, er sollte in wenigen Sekunden ankommen"
+    failed: "Push-Benachrichtigungen konnten nicht eingeschaltet werden"
+  topics: "Benachrichtige mich über:"
+  noChannel: "Schalte erst E-Mail oder Push ein und wähle dann, worüber du benachrichtigt wirst:"
+  reminders: "Bald fällige Erinnerungen meiner Fahrzeuge (einmal am Tag)"
+  requestDecided: "Wenn über meine Anfrage für mehr Fahrzeuge entschieden wurde"
+  newRequests: "Neue Anfragen für mehr Fahrzeuge (als Administrator)"
+  saved: "Benachrichtigungen gespeichert"
 
 backup:
   title: "Sicherung"

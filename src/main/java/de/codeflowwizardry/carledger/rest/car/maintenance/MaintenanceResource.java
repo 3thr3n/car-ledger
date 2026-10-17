@@ -13,6 +13,7 @@ import de.codeflowwizardry.carledger.data.BillType;
 import de.codeflowwizardry.carledger.data.MaintenanceBillEntity;
 import de.codeflowwizardry.carledger.data.factory.MaintenanceBillFactory;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
+import de.codeflowwizardry.carledger.data.repository.CarAccess.Action;
 import de.codeflowwizardry.carledger.data.repository.MaintenanceBillRepository;
 import de.codeflowwizardry.carledger.rest.car.AbstractBillResource;
 import de.codeflowwizardry.carledger.rest.records.BillPaged;
@@ -86,7 +87,7 @@ public class MaintenanceResource
 	@APIResponse(responseCode = "404", description = "Bill not found for the car of your user.")
 	public MaintenanceBill getBill(@PathParam("carId") long carId, @PathParam("billId") long billId)
 	{
-		return MaintenanceBill.convert(findMyBill(carId, billId));
+		return MaintenanceBill.convert(findMyBill(carId, billId, Action.READ));
 	}
 
 	@POST
@@ -102,6 +103,6 @@ public class MaintenanceResource
 	public MaintenanceBill updateBill(@PathParam("carId") long carId, @PathParam("billId") long billId,
 			MaintenanceBillInput input)
 	{
-		return MaintenanceBill.convert(maintenanceBillFactory.update(findMyBill(carId, billId), input));
+		return MaintenanceBill.convert(maintenanceBillFactory.update(findMyBill(carId, billId, Action.WRITE), input));
 	}
 }

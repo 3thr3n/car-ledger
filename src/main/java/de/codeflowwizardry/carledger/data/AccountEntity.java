@@ -46,6 +46,51 @@ public class AccountEntity
 	@Column(name = "last_seen")
 	private OffsetDateTime lastSeen;
 
+	/**
+	 * Address for the notifications, the claim "email" of the last login
+	 */
+	@Column(name = "email", length = 320)
+	private String email;
+
+	/**
+	 * Whether the last login had the role admin: the roles are only known from
+	 * the token, the notifications for the administrators need them without one
+	 */
+	@Column(name = "admin", nullable = false)
+	private boolean admin;
+
+	/**
+	 * Language of the browser at the last visit, EN or DE: the mails use it
+	 * without a language in the settings
+	 */
+	@Column(name = "browser_language", length = 2)
+	private String browserLanguage;
+
+	/**
+	 * Mail an administrator about new requests
+	 */
+	@Column(name = "notify_new_requests", nullable = false)
+	private boolean notifyNewRequests = true;
+
+	/**
+	 * Mail the user when an own request was decided
+	 */
+	@Column(name = "notify_request_decided", nullable = false)
+	private boolean notifyRequestDecided = true;
+
+	/**
+	 * The notifications by mail, the other channel are the browsers that
+	 * subscribed
+	 */
+	@Column(name = "notify_by_mail", nullable = false)
+	private boolean notifyByMail = true;
+
+	/**
+	 * Mail the reminders of the cars once they are due soon
+	 */
+	@Column(name = "notify_reminders", nullable = false)
+	private boolean notifyReminders = true;
+
 	public Long getId()
 	{
 		return id;
@@ -114,6 +159,88 @@ public class AccountEntity
 	public void setLastSeen(OffsetDateTime lastSeen)
 	{
 		this.lastSeen = lastSeen;
+	}
+
+	public String getEmail()
+	{
+		return email;
+	}
+
+	public void setEmail(String email)
+	{
+		this.email = email;
+	}
+
+	public boolean isAdmin()
+	{
+		return admin;
+	}
+
+	public void setAdmin(boolean admin)
+	{
+		this.admin = admin;
+	}
+
+	public String getBrowserLanguage()
+	{
+		return browserLanguage;
+	}
+
+	public void setBrowserLanguage(String browserLanguage)
+	{
+		this.browserLanguage = browserLanguage;
+	}
+
+	/**
+	 * @return the language of the settings, else the one of the browser, else EN
+	 */
+	public String getMailLanguage()
+	{
+		if (language != null)
+		{
+			return language;
+		}
+		return browserLanguage != null ? browserLanguage : "EN";
+	}
+
+	public boolean isNotifyNewRequests()
+	{
+		return notifyNewRequests;
+	}
+
+	public void setNotifyNewRequests(boolean notifyNewRequests)
+	{
+		this.notifyNewRequests = notifyNewRequests;
+	}
+
+	public boolean isNotifyRequestDecided()
+	{
+		return notifyRequestDecided;
+	}
+
+	public void setNotifyRequestDecided(boolean notifyRequestDecided)
+	{
+		this.notifyRequestDecided = notifyRequestDecided;
+	}
+
+	public boolean isNotifyByMail()
+	{
+		return notifyByMail;
+	}
+
+	public void setNotifyByMail(boolean notifyByMail)
+	{
+		this.notifyByMail = notifyByMail;
+	}
+
+	public boolean isNotifyReminders()
+	{
+		return notifyReminders;
+	}
+
+	public void setNotifyReminders(boolean notifyReminders)
+	{
+		this.notifyReminders = notifyReminders;
 	}
 
 	public UnitSystem getUnitSystem()

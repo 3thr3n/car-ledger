@@ -1,0 +1,2 @@
+Notifications are on
+This device gets the notifications of CarLedger.

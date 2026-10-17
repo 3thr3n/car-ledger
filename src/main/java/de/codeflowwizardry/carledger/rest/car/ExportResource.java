@@ -20,6 +20,7 @@ import de.codeflowwizardry.carledger.data.repository.AbstractBillRepository;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import de.codeflowwizardry.carledger.data.repository.BillRepository;
+import de.codeflowwizardry.carledger.data.repository.CarAccess.Action;
 import de.codeflowwizardry.carledger.data.repository.ChargingBillRepository;
 import de.codeflowwizardry.carledger.data.repository.FuelBillRepository;
 import de.codeflowwizardry.carledger.data.repository.MaintenanceBillRepository;
@@ -74,7 +75,7 @@ public class ExportResource extends AbstractResource
 			@QueryParam("type") BillType type,
 			@QueryParam("year") Integer year)
 	{
-		CarEntity car = carRepository.findById(carId, context.getName());
+		CarEntity car = carRepository.findById(carId, context.getName(), Action.READ);
 		if (car == null)
 		{
 			throw new WrongUserException();
@@ -112,7 +113,7 @@ public class ExportResource extends AbstractResource
 	@APIResponse(responseCode = "404", description = "Car not found.")
 	public Response exportAllExpenses(@PathParam("carId") long carId, @QueryParam("year") Integer year)
 	{
-		CarEntity car = carRepository.findById(carId, context.getName());
+		CarEntity car = carRepository.findById(carId, context.getName(), Action.READ);
 		if (car == null)
 		{
 			throw new WrongUserException();

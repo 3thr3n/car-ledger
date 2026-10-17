@@ -159,6 +159,7 @@ export default function CarOverviewPage({ id }: { id: number }) {
       <MonthlyChart
         carId={id}
         {...lastTwelveMonths()}
+        energyTypes={car && [car.energyType]}
         subtitle={t('dashboard.filter.period.last12')}
       />
 

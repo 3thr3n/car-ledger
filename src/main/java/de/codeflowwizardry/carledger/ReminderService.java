@@ -9,6 +9,7 @@ import java.util.Optional;
 
 import de.codeflowwizardry.carledger.data.CarEntity;
 import de.codeflowwizardry.carledger.data.ReminderEntity;
+import de.codeflowwizardry.carledger.data.repository.CarAccess.Action;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import de.codeflowwizardry.carledger.data.repository.ReminderRepository;
 import de.codeflowwizardry.carledger.exception.WrongUserException;
@@ -30,7 +31,8 @@ public class ReminderService
 	/** a reminder is due soon this many km before its odometer */
 	public static final int SOON_KM = 1000;
 
-	private static final Comparator<Reminder> BY_URGENCY = Comparator
+	/** overdue first, then the ones due soon, the nearest first */
+	public static final Comparator<Reminder> BY_URGENCY = Comparator
 			.comparing(Reminder::status)
 			.thenComparing(Reminder::daysLeft, Comparator.nullsLast(Comparator.naturalOrder()))
 			.thenComparing(Reminder::kmLeft, Comparator.nullsLast(Comparator.naturalOrder()))
@@ -74,7 +76,7 @@ public class ReminderService
 	{
 		Utils.requireValid(input.validate());
 
-		CarEntity car = carRepository.findById(carId, username);
+		CarEntity car = carRepository.findById(carId, username, Action.WRITE);
 		if (car == null)
 		{
 			throw new WrongUserException();
@@ -137,7 +139,7 @@ public class ReminderService
 
 	private ReminderEntity find(long carId, long id, String username)
 	{
-		return reminderRepository.find(carId, id, username)
+		return reminderRepository.find(carId, id, username, Action.WRITE)
 				.orElseThrow(() -> new NotFoundException("Reminder not found"));
 	}
 
@@ -162,7 +164,7 @@ public class ReminderService
 		return convert(entity, currentOdometer(entity, username), LocalDate.now());
 	}
 
-	static Reminder convert(ReminderEntity entity, int odometer, LocalDate today)
+	public static Reminder convert(ReminderEntity entity, int odometer, LocalDate today)
 	{
 		Long daysLeft = entity.getDueDate() == null ? null : ChronoUnit.DAYS.between(today, entity.getDueDate());
 		Integer kmLeft = entity.getDueOdometer() == null ? null : entity.getDueOdometer() - odometer;

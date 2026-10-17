@@ -140,3 +140,9 @@ postgresql:
     limits:
       cpu: 500m
       memory: 512Mi
+
+# only the server reaches its PostgreSQL; needs a network plugin that enforces NetworkPolicies
+networkPolicy:
+  enabled: true
+  # further sources, e.g. a backup tool: entries of NetworkPolicy ingress "from"
+  extraFrom: []

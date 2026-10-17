@@ -33,6 +33,11 @@ spending and usage patterns.
   and pictures) as one ZIP and restores it into an account without cars, e.g. on another installation.
 - **Car Requests:** Users who reached their car limit request more cars in the app, administrators approve or reject
   them on the administration page.
+- **Installable app:** On the phone, CarLedger can be added to the home screen and starts like an app; a long press
+  on its icon offers *Add refuel*, the form of a new refuel (or charge) of the last opened car.
+- **Notifications by e-mail and push:** Users get notified about the reminders of their cars that became due (once a
+  day), administrators about new car requests, users about the decision. By e-mail and as push message on every device
+  where it is turned on; each one can be turned off in the settings.
 - **Webhooks:** Events like a new car request are sent as signed HTTP requests to other tools or your own scripts,
   see [docs/WEBHOOKS.md](docs/WEBHOOKS.md).
 - **CSV Import:** Import multiple receipts at once using a CSV file, making it quick to upload historical or bulk data.
@@ -208,15 +213,15 @@ For using the helm chart, you can add this as a dependency and update the values
 ```yaml
 dependencies:
   - name: car-ledger
-    version: "0.4.x"
+    version: "0.5.x"
     repository: oci://ghcr.io/3thr3n/car-ledger
 ```
 
 Up to 0.3.x, the chart was named `helm` (`oci://ghcr.io/3thr3n/car-ledger/helm`), it is `car-ledger` since 0.4.0.
 
 Every [release](https://github.com/3thr3n/car-ledger/releases) publishes the chart and the image in its version (e.g.
-`0.3.0`), the release notes name both. Builds of `develop` are published as prereleases (`0.4.0-dev.<run number>`,
-chart and image of the same build), a range takes them only with a prerelease suffix (e.g. `>=0.4.0-0`).
+`0.5.0`), the release notes name both. Builds of `develop` are published as prereleases (`0.6.0-dev.<run number>`,
+chart and image of the same build), a range takes them only with a prerelease suffix (e.g. `>=0.6.0-0`).
 
 The login uses OpenID Connect: `helm/keycloak` deploys Keycloak with the realm of CarLedger, `helm/authentik` deploys authentik with CarLedger
 already set up, any other provider works as well.

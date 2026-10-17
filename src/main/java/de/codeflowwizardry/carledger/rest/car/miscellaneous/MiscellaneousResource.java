@@ -13,6 +13,7 @@ import de.codeflowwizardry.carledger.data.BillType;
 import de.codeflowwizardry.carledger.data.MiscellaneousBillEntity;
 import de.codeflowwizardry.carledger.data.factory.MiscellaneousBillFactory;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
+import de.codeflowwizardry.carledger.data.repository.CarAccess.Action;
 import de.codeflowwizardry.carledger.data.repository.MiscellaneousBillRepository;
 import de.codeflowwizardry.carledger.rest.car.AbstractBillResource;
 import de.codeflowwizardry.carledger.rest.records.BillPaged;
@@ -86,7 +87,7 @@ public class MiscellaneousResource
 	@APIResponse(responseCode = "404", description = "Bill not found for the car of your user.")
 	public MiscellaneousBill getBill(@PathParam("carId") long carId, @PathParam("billId") long billId)
 	{
-		return MiscellaneousBill.convert(findMyBill(carId, billId));
+		return MiscellaneousBill.convert(findMyBill(carId, billId, Action.READ));
 	}
 
 	@POST
@@ -102,6 +103,7 @@ public class MiscellaneousResource
 	public MiscellaneousBill updateBill(@PathParam("carId") long carId, @PathParam("billId") long billId,
 			MiscellaneousBillInput input)
 	{
-		return MiscellaneousBill.convert(miscellaneousBillFactory.update(findMyBill(carId, billId), input));
+		return MiscellaneousBill
+				.convert(miscellaneousBillFactory.update(findMyBill(carId, billId, Action.WRITE), input));
 	}
 }

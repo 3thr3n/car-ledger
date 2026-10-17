@@ -34,6 +34,12 @@ public class ReminderEntity
 	@Column(name = "rm_interval_km")
 	private Integer intervalKm;
 
+	/**
+	 * The due date and odometer it was mailed for, see {@link #dueKey()}
+	 */
+	@Column(name = "rm_notified_for", length = 40)
+	private String notifiedFor;
+
 	protected ReminderEntity()
 	{
 	}
@@ -111,6 +117,20 @@ public class ReminderEntity
 	public void setIntervalKm(Integer intervalKm)
 	{
 		this.intervalKm = intervalKm;
+	}
+
+	public String getNotifiedFor()
+	{
+		return notifiedFor;
+	}
+
+	/**
+	 * @return the due date and odometer, e.g. "2026-12-01|120000": a mail is sent
+	 *         once per due, a reminder that was done or changed is mailed again
+	 */
+	public String dueKey()
+	{
+		return (dueDate == null ? "" : dueDate.toString()) + "|" + (dueOdometer == null ? "" : dueOdometer);
 	}
 
 	/**
