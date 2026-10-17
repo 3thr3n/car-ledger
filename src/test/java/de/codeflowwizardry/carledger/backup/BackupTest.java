@@ -15,8 +15,10 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -30,6 +32,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import de.codeflowwizardry.carledger.ReminderService;
+import de.codeflowwizardry.carledger.TripService;
 import de.codeflowwizardry.carledger.attachment.AttachmentService;
 import de.codeflowwizardry.carledger.data.AccountEntity;
 import de.codeflowwizardry.carledger.data.BillCategory;
@@ -37,6 +40,7 @@ import de.codeflowwizardry.carledger.data.BillInterval;
 import de.codeflowwizardry.carledger.data.CarEntity;
 import de.codeflowwizardry.carledger.data.ChargingLocation;
 import de.codeflowwizardry.carledger.data.EnergyType;
+import de.codeflowwizardry.carledger.data.TripType;
 import de.codeflowwizardry.carledger.data.factory.ChargingBillFactory;
 import de.codeflowwizardry.carledger.data.factory.FuelBillFactory;
 import de.codeflowwizardry.carledger.data.factory.MaintenanceBillFactory;
@@ -50,6 +54,8 @@ import de.codeflowwizardry.carledger.rest.car.maintenance.MaintenanceBillInput;
 import de.codeflowwizardry.carledger.rest.car.miscellaneous.MiscellaneousBillInput;
 import de.codeflowwizardry.carledger.rest.car.recurring.RecurringBillInput;
 import de.codeflowwizardry.carledger.rest.car.reminder.ReminderInput;
+import de.codeflowwizardry.carledger.rest.car.trip.TripFinishInput;
+import de.codeflowwizardry.carledger.rest.car.trip.TripStartInput;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
 import io.restassured.http.ContentType;
@@ -87,6 +93,8 @@ class BackupTest
 	@Inject
 	ReminderService reminderService;
 	@Inject
+	TripService tripService;
+	@Inject
 	AttachmentService attachmentService;
 	@Inject
 	ObjectMapper mapper;
@@ -115,6 +123,14 @@ class BackupTest
 		reminderService.create(carId, new ReminderInput("Service", "Oil", LocalDate.of(2026, 5, 1), 60_000, 12,
 				15_000), "peter");
 		attachmentService.setCarPicture(carId, "peter", "golf.png", PNG);
+
+		UUID business = UUID.randomUUID();
+		tripService.start(carId, business, new TripStartInput(TripType.BUSINESS, 41_500,
+				OffsetDateTime.parse("2025-03-02T08:00:00+01:00"), "Munich", null, null, false), "peter");
+		tripService.finish(carId, business, new TripFinishInput(41_620,
+				OffsetDateTime.parse("2025-03-02T10:30:00+01:00"), null, "Customer visit", "ACME", false), "peter");
+		tripService.start(carId, UUID.randomUUID(), new TripStartInput(TripType.PRIVATE, 41_700,
+				OffsetDateTime.parse("2025-03-05T17:00:00+01:00"), null, null, null, false), "peter");
 	}
 
 	@Transactional
@@ -227,6 +243,14 @@ class BackupTest
 		assertArrayEquals(PNG, entries.get(car.get("picture").get("path").asText()));
 		assertEquals(2, car.get("recurringBills").get(0).get("payments").size());
 		assertEquals(15_000, car.get("reminders").get(0).get("intervalKm").asInt());
+		// oldest first, without the ids
+		assertEquals(2, car.get("trips").size());
+		JsonNode trip = car.get("trips").get(0);
+		assertEquals("BUSINESS", trip.get("type").asText());
+		assertEquals(41_620, trip.get("endOdometer").asInt());
+		assertEquals("ACME", trip.get("businessPartner").asText());
+		assertTrue(trip.get("id") == null);
+		assertTrue(car.get("trips").get(1).get("endOdometer").isNull());
 	}
 
 	@Test
@@ -241,6 +265,7 @@ class BackupTest
 				.body("bills", is(4))
 				.body("recurringBills", is(1))
 				.body("reminders", is(1))
+				.body("trips", is(2))
 				.body("files", is(3));
 
 		long restored = given().when().get("/api/car/my").then().statusCode(200)
@@ -264,9 +289,46 @@ class BackupTest
 				.body("data[0].total", is(90.0F));
 		given().when().get("/api/reminder/{carId}", restored).then()
 				.body("[0].title", is("Service"));
+		// the latest first, marked as restored, the times of the backup
+		given().when().get("/api/trip/{carId}", restored).then()
+				.body("total", is(2))
+				.body("data.restored", contains(true, true))
+				.body("data[0].endOdometer", is((Object) null))
+				.body("data[1].distance", is(120))
+				.body("data[1].purpose", is("Customer visit"))
+				.body("data[1].endedAt", is("2025-03-02T09:30:00Z"));
+		given().when().get("/api/trip/{carId}/current", restored).then()
+				.body("open.startOdometer", is(41_700));
 		byte[] picture = given().when().get("/api/car/my/{id}/picture", restored).then().statusCode(200)
 				.extract().asByteArray();
 		assertArrayEquals(PNG, picture);
+	}
+
+	@Test
+	void shouldRestoreABackupWithoutTrips() throws IOException
+	{
+		Map<String, byte[]> entries = unzip(download());
+		deleteCar();
+		ObjectNode json = (ObjectNode) mapper.readTree(entries.get("backup.json"));
+		((ObjectNode) json.withArray("cars").get(0)).remove("trips");
+		entries.put("backup.json", mapper.writeValueAsBytes(json));
+
+		restore(zip(entries)).statusCode(200).body("trips", is(0));
+	}
+
+	@Test
+	void shouldRestoreNothingWithTwoOpenTrips() throws IOException
+	{
+		Map<String, byte[]> entries = unzip(download());
+		deleteCar();
+		ObjectNode json = (ObjectNode) mapper.readTree(entries.get("backup.json"));
+		var trips = ((ObjectNode) json.withArray("cars").get(0)).withArray("trips");
+		trips.add(trips.get(1).deepCopy());
+		entries.put("backup.json", mapper.writeValueAsBytes(json));
+
+		restore(zip(entries)).statusCode(400)
+				.body("[0]", is("A car of the backup has more than one open trip!"));
+		given().when().get("/api/car/my").then().body("size()", is(0));
 	}
 
 	@Test
