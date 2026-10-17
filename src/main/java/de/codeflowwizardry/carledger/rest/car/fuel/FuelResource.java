@@ -13,6 +13,7 @@ import de.codeflowwizardry.carledger.data.BillType;
 import de.codeflowwizardry.carledger.data.FuelBillEntity;
 import de.codeflowwizardry.carledger.data.factory.FuelBillFactory;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
+import de.codeflowwizardry.carledger.data.repository.CarAccess.Action;
 import de.codeflowwizardry.carledger.data.repository.FuelBillRepository;
 import de.codeflowwizardry.carledger.rest.car.AbstractBillResource;
 import de.codeflowwizardry.carledger.rest.records.BillPaged;
@@ -83,7 +84,7 @@ public class FuelResource extends AbstractBillResource<FuelBillRepository, FuelB
 	@APIResponse(responseCode = "404", description = "Bill not found for the car of your user.")
 	public FuelBill getBill(@PathParam("carId") long carId, @PathParam("billId") long billId)
 	{
-		return FuelBill.convert(findMyBill(carId, billId));
+		return FuelBill.convert(findMyBill(carId, billId, Action.READ));
 	}
 
 	@POST
@@ -99,6 +100,6 @@ public class FuelResource extends AbstractBillResource<FuelBillRepository, FuelB
 	public FuelBill updateBill(@PathParam("carId") long carId, @PathParam("billId") long billId,
 			FuelBillInput input)
 	{
-		return FuelBill.convert(fuelBillFactory.update(findMyBill(carId, billId), input));
+		return FuelBill.convert(fuelBillFactory.update(findMyBill(carId, billId, Action.WRITE), input));
 	}
 }

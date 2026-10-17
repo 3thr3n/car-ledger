@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import de.codeflowwizardry.carledger.data.RecurringBillEntity;
+import de.codeflowwizardry.carledger.data.repository.CarAccess.Action;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import io.quarkus.panache.common.Page;
@@ -30,9 +31,9 @@ public class RecurringBillRepository implements PanacheRepository<RecurringBillE
 			boolean byNextDue)
 	{
 		Map<String, Object> params = new HashMap<>();
-		String query = "car.id = :carId and car.user.userId = :username";
+		String query = "car.id = :carId and " + CarAccess.condition("car", Action.READ);
 		params.put("carId", carId);
-		params.put("username", name);
+		params.put(CarAccess.USER, name);
 
 		if (running)
 		{
@@ -62,17 +63,21 @@ public class RecurringBillRepository implements PanacheRepository<RecurringBillE
 				.getResultList();
 	}
 
-	public RecurringBillEntity getById(long carId, String name, long billId)
+	/**
+	 * @return the bill, if the user may do the action with its car, otherwise
+	 *         <code>null</code>
+	 */
+	public RecurringBillEntity getById(long carId, String name, long billId, Action action)
 	{
-		return find("id = :id and car.id = :carId and car.user.userId = :username",
-				Map.of("id", billId, "carId", carId, "username", name)).firstResult();
+		return find("id = :id and car.id = :carId and " + CarAccess.condition("car", action),
+				Map.of("id", billId, "carId", carId, CarAccess.USER, name)).firstResult();
 	}
 
 	@Transactional
 	public boolean deleteById(long carId, long billId, String name)
 	{
-		long delete = delete("id = :id and car.id = :carId and car.user.userId = :username",
-				Map.of("id", billId, "carId", carId, "username", name));
+		long delete = delete("id = :id and car.id = :carId and " + CarAccess.condition("car", Action.WRITE),
+				Map.of("id", billId, "carId", carId, CarAccess.USER, name));
 
 		return delete == 1;
 	}

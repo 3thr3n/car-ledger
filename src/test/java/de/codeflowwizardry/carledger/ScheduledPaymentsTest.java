@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import de.codeflowwizardry.carledger.data.*;
 import de.codeflowwizardry.carledger.data.factory.RecurringBillFactory;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
+import de.codeflowwizardry.carledger.data.repository.CarAccess.Action;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import de.codeflowwizardry.carledger.data.repository.RecurringBillPaymentRepository;
 import de.codeflowwizardry.carledger.data.repository.RecurringBillRepository;
@@ -75,7 +76,7 @@ class ScheduledPaymentsTest
 	{
 		return QuarkusTransaction.requiringNew().call(() -> {
 			RecurringBillEntity recurringBillEntity = new RecurringBillEntity(carRepository.findById(carEntity.getId(),
-					"peter"));
+					"peter", Action.WRITE));
 			recurringBillEntity.setAmount(BigDecimal.valueOf(480));
 			recurringBillEntity.setCategory(BillCategory.FINANCE);
 			recurringBillEntity.setInterval(interval);

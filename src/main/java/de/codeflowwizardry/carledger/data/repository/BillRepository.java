@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 
 import de.codeflowwizardry.carledger.data.BillEntity;
 import de.codeflowwizardry.carledger.data.BillType;
+import de.codeflowwizardry.carledger.data.repository.CarAccess.Action;
 import de.codeflowwizardry.carledger.exception.DbDeletionException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
@@ -64,9 +65,10 @@ public class BillRepository extends AbstractBillRepository<BillEntity>
 	{
 		return getEntityManager()
 				.createQuery(
-						"select b.car.id, count(b) from bill b where b.car.user.userId = :userId group by b.car.id",
+						"select b.car.id, count(b) from bill b where " + CarAccess.condition("b.car", Action.READ)
+								+ " group by b.car.id",
 						Object[].class)
-				.setParameter("userId", username)
+				.setParameter(CarAccess.USER, username)
 				.getResultList()
 				.stream()
 				.collect(Collectors.toMap(row -> (Long) row[0], row -> (Long) row[1]));
@@ -80,9 +82,10 @@ public class BillRepository extends AbstractBillRepository<BillEntity>
 	{
 		return getEntityManager()
 				.createQuery("select b.type, count(b), sum(b.total) from bill b"
-						+ " where b.car.id = :carId and b.car.user.userId = :userId group by b.type", Object[].class)
+						+ " where b.car.id = :carId and " + CarAccess.condition("b.car", Action.READ)
+						+ " group by b.type", Object[].class)
 				.setParameter("carId", carId)
-				.setParameter("userId", username)
+				.setParameter(CarAccess.USER, username)
 				.getResultList()
 				.stream()
 				.map(row -> new BillTypeSummary((BillType) row[0], (Long) row[1], (BigDecimal) row[2]))
@@ -99,10 +102,10 @@ public class BillRepository extends AbstractBillRepository<BillEntity>
 	{
 		Object[] sumAndCount = getEntityManager()
 				.createQuery("select sum(f.avgConsumption), count(f) from " + energy.entity + " f"
-						+ " where f.bill.car.id = :carId and f.bill.car.user.userId = :userId"
+						+ " where f.bill.car.id = :carId and " + CarAccess.condition("f.bill.car", Action.READ)
 						+ " and f.avgConsumption > 0", Object[].class)
 				.setParameter("carId", carId)
-				.setParameter("userId", username)
+				.setParameter(CarAccess.USER, username)
 				.getSingleResult();
 
 		long count = (Long) sumAndCount[1];
@@ -178,8 +181,9 @@ public class BillRepository extends AbstractBillRepository<BillEntity>
 	@Transactional
 	public void delete(long carId, long billId, String username)
 	{
-		Optional<BillEntity> any = find("id = :billId and car.id = :carId and car.user.userId = :userId",
-				Map.of("carId", carId, "userId", username, "billId", billId))
+		Optional<BillEntity> any = find(
+				"id = :billId and car.id = :carId and " + CarAccess.condition("car", Action.WRITE),
+				Map.of("carId", carId, CarAccess.USER, username, "billId", billId))
 				.firstResultOptional();
 
 		if (any.isEmpty())

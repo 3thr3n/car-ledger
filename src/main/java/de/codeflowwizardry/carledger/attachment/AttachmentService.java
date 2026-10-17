@@ -14,6 +14,8 @@ import de.codeflowwizardry.carledger.data.BillEntity;
 import de.codeflowwizardry.carledger.data.CarEntity;
 import de.codeflowwizardry.carledger.data.repository.AttachmentRepository;
 import de.codeflowwizardry.carledger.data.repository.BillRepository;
+import de.codeflowwizardry.carledger.data.repository.CarAccess;
+import de.codeflowwizardry.carledger.data.repository.CarAccess.Action;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import io.quarkus.runtime.configuration.MemorySize;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -54,7 +56,7 @@ public class AttachmentService
 	@Transactional
 	public List<AttachmentEntity> listForBill(long carId, long billId, String userId)
 	{
-		findBill(carId, billId, userId);
+		findBill(carId, billId, userId, Action.READ);
 		return attachmentRepository.listForBill(carId, billId, userId);
 	}
 
@@ -70,7 +72,7 @@ public class AttachmentService
 	@Transactional
 	public AttachmentEntity addToBill(long carId, long billId, String userId, String fileName, byte[] content)
 	{
-		BillEntity bill = findBill(carId, billId, userId);
+		BillEntity bill = findBill(carId, billId, userId, Action.WRITE);
 
 		List<String> errors = new ArrayList<>();
 		if (attachmentRepository.countForBill(billId) >= maxPerBill)
@@ -93,7 +95,7 @@ public class AttachmentService
 	@Transactional
 	public AttachmentEntity setCarPicture(long carId, String userId, String fileName, byte[] content)
 	{
-		CarEntity car = findCar(carId, userId);
+		CarEntity car = findCar(carId, userId, Action.MANAGE);
 		FileType type = requireValid(content, true, new ArrayList<>());
 
 		Long previous = car.getPictureId();
@@ -113,7 +115,7 @@ public class AttachmentService
 	@Transactional
 	public Content loadCarPicture(long carId, String userId)
 	{
-		CarEntity car = findCar(carId, userId);
+		CarEntity car = findCar(carId, userId, Action.READ);
 		if (car.getPictureId() == null)
 		{
 			throw new NotFoundException("The car has no picture");
@@ -130,7 +132,7 @@ public class AttachmentService
 	@Transactional
 	public void removeCarPicture(long carId, String userId)
 	{
-		CarEntity car = findCar(carId, userId);
+		CarEntity car = findCar(carId, userId, Action.MANAGE);
 		Long picture = car.getPictureId();
 		car.setPictureId(null);
 		if (picture != null)
@@ -231,7 +233,7 @@ public class AttachmentService
 	@Transactional
 	public Content load(long carId, long id, String userId)
 	{
-		AttachmentEntity attachment = find(carId, id, userId);
+		AttachmentEntity attachment = find(carId, id, userId, Action.READ);
 		return new Content(attachment, storageOf(attachment).load(attachment));
 	}
 
@@ -242,7 +244,7 @@ public class AttachmentService
 	@Transactional
 	public void delete(long carId, long id, String userId)
 	{
-		remove(find(carId, id, userId));
+		remove(find(carId, id, userId, Action.WRITE));
 	}
 
 	/**
@@ -261,23 +263,23 @@ public class AttachmentService
 		return StringUtils.truncate(name, MAX_FILE_NAME);
 	}
 
-	private AttachmentEntity find(long carId, long id, String userId)
+	private AttachmentEntity find(long carId, long id, String userId, Action action)
 	{
-		return attachmentRepository.findForUser(carId, id, userId)
+		return attachmentRepository.findForUser(carId, id, userId, action)
 				.orElseThrow(() -> new NotFoundException("Attachment not found"));
 	}
 
-	private BillEntity findBill(long carId, long billId, String userId)
+	private BillEntity findBill(long carId, long billId, String userId, Action action)
 	{
-		return billRepository.find("id = :billId and car.id = :carId and car.user.userId = :userId",
-				Map.of("billId", billId, "carId", carId, "userId", userId))
+		return billRepository.find("id = :billId and car.id = :carId and " + CarAccess.condition("car", action),
+				Map.of("billId", billId, "carId", carId, CarAccess.USER, userId))
 				.firstResultOptional()
 				.orElseThrow(() -> new NotFoundException("Bill not found"));
 	}
 
-	private CarEntity findCar(long carId, String userId)
+	private CarEntity findCar(long carId, String userId, Action action)
 	{
-		CarEntity car = carRepository.findById(carId, userId);
+		CarEntity car = carRepository.findById(carId, userId, action);
 		if (car == null)
 		{
 			throw new NotFoundException("Car not found");

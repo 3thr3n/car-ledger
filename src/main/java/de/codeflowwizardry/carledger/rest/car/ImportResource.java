@@ -30,6 +30,7 @@ import de.codeflowwizardry.carledger.csv.importer.MiscellaneousBillCsvImporter;
 import de.codeflowwizardry.carledger.data.BillType;
 import de.codeflowwizardry.carledger.data.UnitSystem;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
+import de.codeflowwizardry.carledger.data.repository.CarAccess.Action;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import de.codeflowwizardry.carledger.exception.WrongUserException;
 import de.codeflowwizardry.carledger.rest.AbstractResource;
@@ -86,7 +87,7 @@ public class ImportResource extends AbstractResource
 			throw new BadRequestException(Response.status(400).entity("Vat rate cannot be null!").build());
 		}
 
-		if (carRepository.findById(carId, context.getName()) == null)
+		if (carRepository.findById(carId, context.getName(), Action.WRITE) == null)
 		{
 			throw new WrongUserException();
 		}

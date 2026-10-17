@@ -9,6 +9,7 @@ import java.util.Optional;
 
 import de.codeflowwizardry.carledger.data.CarEntity;
 import de.codeflowwizardry.carledger.data.ReminderEntity;
+import de.codeflowwizardry.carledger.data.repository.CarAccess.Action;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import de.codeflowwizardry.carledger.data.repository.ReminderRepository;
 import de.codeflowwizardry.carledger.exception.WrongUserException;
@@ -75,7 +76,7 @@ public class ReminderService
 	{
 		Utils.requireValid(input.validate());
 
-		CarEntity car = carRepository.findById(carId, username);
+		CarEntity car = carRepository.findById(carId, username, Action.WRITE);
 		if (car == null)
 		{
 			throw new WrongUserException();
@@ -138,7 +139,7 @@ public class ReminderService
 
 	private ReminderEntity find(long carId, long id, String username)
 	{
-		return reminderRepository.find(carId, id, username)
+		return reminderRepository.find(carId, id, username, Action.WRITE)
 				.orElseThrow(() -> new NotFoundException("Reminder not found"));
 	}
 

@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import de.codeflowwizardry.carledger.data.RecurringBillEntity;
 import de.codeflowwizardry.carledger.data.factory.RecurringBillFactory;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
+import de.codeflowwizardry.carledger.data.repository.CarAccess.Action;
 import de.codeflowwizardry.carledger.data.repository.RecurringBillRepository;
 import de.codeflowwizardry.carledger.rest.AbstractResource;
 import de.codeflowwizardry.carledger.rest.records.BillPaged;
@@ -80,7 +81,7 @@ public class RecurringResource extends AbstractResource
 	@APIResponse(responseCode = "404", description = "Bill not found for the car of your user.")
 	public RecurringBill getRecurringBill(@PathParam("carId") long carId, @PathParam("billId") long billId)
 	{
-		RecurringBillEntity bill = recurringBillRepository.getById(carId, context.getName(), billId);
+		RecurringBillEntity bill = recurringBillRepository.getById(carId, context.getName(), billId, Action.READ);
 		if (bill == null)
 		{
 			throw new NotFoundException("Bill not found");
