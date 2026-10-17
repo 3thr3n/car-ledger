@@ -213,15 +213,15 @@ For using the helm chart, you can add this as a dependency and update the values
 ```yaml
 dependencies:
   - name: car-ledger
-    version: "0.4.x"
+    version: "0.5.x"
     repository: oci://ghcr.io/3thr3n/car-ledger
 ```
 
 Up to 0.3.x, the chart was named `helm` (`oci://ghcr.io/3thr3n/car-ledger/helm`), it is `car-ledger` since 0.4.0.
 
 Every [release](https://github.com/3thr3n/car-ledger/releases) publishes the chart and the image in its version (e.g.
-`0.4.0`), the release notes name both. Builds of `develop` are published as prereleases (`0.5.0-dev.<run number>`,
-chart and image of the same build), a range takes them only with a prerelease suffix (e.g. `>=0.5.0-0`).
+`0.5.0`), the release notes name both. Builds of `develop` are published as prereleases (`0.6.0-dev.<run number>`,
+chart and image of the same build), a range takes them only with a prerelease suffix (e.g. `>=0.6.0-0`).
 
 The login uses OpenID Connect: `helm/keycloak` deploys Keycloak with the realm of CarLedger, `helm/authentik` deploys authentik with CarLedger
 already set up, any other provider works as well.
