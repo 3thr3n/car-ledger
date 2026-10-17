@@ -1,0 +1,17 @@
+{#if approved}Deine Fahrzeug-Anfrage wurde genehmigt{#else}Deine Fahrzeug-Anfrage wurde abgelehnt{/if}
+{#if approved}
+Deine Anfrage für {cars} {#if cars == 1}weiteres Fahrzeug{#else}weitere Fahrzeuge{/if} wurde genehmigt: Du kannst jetzt {grantedMaxCars} Fahrzeuge haben.
+{#else}
+Deine Anfrage für {cars} {#if cars == 1}weiteres Fahrzeug{#else}weitere Fahrzeuge{/if} wurde abgelehnt.
+{#if comment}
+Kommentar: „{comment}“
+{/if}
+{/if}
+{#if link}
+
+Deine Fahrzeuge: {link}
+{/if}
+
+--
+Du kannst diese Mails in den Einstellungen abschalten{#if settingsLink}:
+{settingsLink}{#else}.{/if}

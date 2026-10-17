@@ -57,4 +57,75 @@ test.describe.serial('settings', () => {
     await page.getByRole('button', { name: 'Speichern' }).click();
     await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible();
   });
+
+  test('shows why no notifications can be sent', async ({ page }) => {
+    // the users of the Keycloak dev service have no address, and the dev server
+    // has no service worker for push
+    await page.goto('/settings');
+    await expect(
+      page.getByText('Your login has no e-mail address.', { exact: false }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole('switch', { name: 'By e-mail' }),
+    ).toBeDisabled();
+    await expect(page.getByTestId('push-hint')).toHaveText(
+      'This browser cannot receive push notifications here. Open the installed app or another browser.',
+    );
+    await expect(
+      page.getByRole('switch', { name: 'Push on this device' }),
+    ).toBeDisabled();
+    await expect(
+      page.getByText('Turn on e-mail or push first', { exact: false }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole('switch', {
+        name: 'Reminders of my cars that are due soon (once a day)',
+      }),
+    ).toBeDisabled();
+  });
+
+  test('turns a notification off', async ({ page }) => {
+    // as if the login had an address, the change is saved by the backend
+    await page.route('**/api/user/me/notifications', (route) =>
+      route.request().method() === 'GET'
+        ? route.fulfill({
+            json: {
+              available: true,
+              byMail: true,
+              email: 'alice@example.com',
+              newRequests: true,
+              requestDecided: true,
+              reminders: true,
+            },
+          })
+        : route.continue(),
+    );
+    await page.goto('/settings');
+    await expect(
+      page.getByText('Sent to alice@example.com, the address of your login.'),
+    ).toBeVisible();
+    const newRequests = page.getByRole('switch', {
+      name: 'New requests for more cars (as administrator)',
+    });
+    await expect(newRequests).toBeChecked();
+    await expect(page.getByRole('switch', { name: 'By e-mail' })).toBeChecked();
+    await expect(
+      page.getByRole('switch', {
+        name: 'Reminders of my cars that are due soon (once a day)',
+      }),
+    ).toBeChecked();
+
+    await newRequests.click();
+    await expect(page.getByText('Notifications saved')).toBeVisible();
+
+    const api = await aliceApi();
+    const saved = await (await api.get('/api/user/me/notifications')).json();
+    expect(saved.newRequests).toBe(false);
+    expect(saved.requestDecided).toBe(true);
+    expect(saved.reminders).toBe(true);
+    await api.put('/api/user/me/notifications', {
+      data: { newRequests: true },
+    });
+    await api.dispose();
+  });
 });

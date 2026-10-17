@@ -11,6 +11,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as RefuelRouteImport } from './routes/refuel'
 import { Route as CarIdRouteRouteImport } from './routes/car/$id/route'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
 import { Route as DevI18nRouteImport } from './routes/dev/i18n'
@@ -59,6 +60,11 @@ const ErrorLazyRoute = ErrorLazyRouteImport.update({
   path: '/error',
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/error.lazy').then((d) => d.Route))
+const RefuelRoute = RefuelRouteImport.update({
+  id: '/refuel',
+  path: '/refuel',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SettingsLazyRoute = SettingsLazyRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -170,6 +176,7 @@ const CarIdBillRecurringIndexLazyRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexLazyRoute
+  '/refuel': typeof RefuelRoute
   '/admin': typeof AdminLazyRoute
   '/error': typeof ErrorLazyRoute
   '/settings': typeof SettingsLazyRoute
@@ -193,6 +200,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexLazyRoute
+  '/refuel': typeof RefuelRoute
   '/admin': typeof AdminLazyRoute
   '/error': typeof ErrorLazyRoute
   '/settings': typeof SettingsLazyRoute
@@ -216,6 +224,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexLazyRoute
+  '/refuel': typeof RefuelRoute
   '/admin': typeof AdminLazyRoute
   '/error': typeof ErrorLazyRoute
   '/settings': typeof SettingsLazyRoute
@@ -241,6 +250,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/refuel'
     | '/admin'
     | '/error'
     | '/settings'
@@ -264,6 +274,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/refuel'
     | '/admin'
     | '/error'
     | '/settings'
@@ -286,6 +297,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/refuel'
     | '/admin'
     | '/error'
     | '/settings'
@@ -310,6 +322,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexLazyRoute: typeof IndexLazyRoute
+  RefuelRoute: typeof RefuelRoute
   AdminLazyRoute: typeof AdminLazyRoute
   ErrorLazyRoute: typeof ErrorLazyRoute
   SettingsLazyRoute: typeof SettingsLazyRoute
@@ -342,6 +355,13 @@ declare module '@tanstack/react-router' {
       path: '/error'
       fullPath: '/error'
       preLoaderRoute: typeof ErrorLazyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/refuel': {
+      id: '/refuel'
+      path: '/refuel'
+      fullPath: '/refuel'
+      preLoaderRoute: typeof RefuelRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/settings': {
@@ -507,6 +527,7 @@ const CarIdRouteRouteWithChildren = CarIdRouteRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexLazyRoute: IndexLazyRoute,
+  RefuelRoute: RefuelRoute,
   AdminLazyRoute: AdminLazyRoute,
   ErrorLazyRoute: ErrorLazyRoute,
   SettingsLazyRoute: SettingsLazyRoute,

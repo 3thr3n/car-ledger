@@ -1,0 +1,2 @@
+{#if approved}Deine Fahrzeug-Anfrage wurde genehmigt{#else}Deine Fahrzeug-Anfrage wurde abgelehnt{/if}
+{#if approved}Du kannst jetzt {grantedMaxCars} Fahrzeuge haben.{#else if comment}„{comment}“{#else}Deine Anfrage für {cars} {#if cars == 1}weiteres Fahrzeug{#else}weitere Fahrzeuge{/if} wurde abgelehnt.{/if}

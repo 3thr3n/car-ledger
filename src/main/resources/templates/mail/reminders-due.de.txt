@@ -1,0 +1,11 @@
+{#if count == 1}Erinnerung fällig: {first.title} ({first.car}){#else}{count} Erinnerungen sind fällig{/if}
+{#for r in reminders}
+- {r.car}: {r.title}{#if r.note} ({r.note}){/if}
+  {#if r.date}{#if r.daysLeft < 0}überfällig seit {r.date}{#else if r.daysLeft == 0}heute fällig{#else}fällig am {r.date}, in {r.daysLeft} {#if r.daysLeft == 1}Tag{#else}Tagen{/if}{/if}{/if}{#if r.date && r.odometer} · {/if}{#if r.odometer}{#if r.distanceLeft <= 0}fällig bei {r.odometer} {unit}, erreicht{#else}fällig bei {r.odometer} {unit}, noch {r.distanceLeftText} {unit}{/if}{/if}
+{/for}
+
+{#if link}Deine Erinnerungen: {link}
+{/if}
+--
+Du kannst diese Mails in den Einstellungen abschalten{#if settingsLink}:
+{settingsLink}{#else}.{/if}

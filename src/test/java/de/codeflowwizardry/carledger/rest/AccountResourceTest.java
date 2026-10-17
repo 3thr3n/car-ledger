@@ -2,6 +2,7 @@ package de.codeflowwizardry.carledger.rest;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -24,6 +25,8 @@ import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.security.runtime.QuarkusSecurityIdentity;
 import io.quarkus.test.security.TestSecurity;
+import io.quarkus.test.security.oidc.Claim;
+import io.quarkus.test.security.oidc.OidcSecurity;
 import java.time.OffsetDateTime;
 
 import io.restassured.http.ContentType;
@@ -118,7 +121,8 @@ class AccountResourceTest
 
 		// when
 		AccountEntity accountEntity = new AccountResource(
-				QuarkusSecurityIdentity.builder().setPrincipal(principal).build(), repository).checkUser("peter");
+				QuarkusSecurityIdentity.builder().setPrincipal(principal).build(), repository, null)
+				.checkUser("peter");
 
 		// then
 		assertSame(existing, accountEntity);
@@ -295,6 +299,66 @@ class AccountResourceTest
 				.statusCode(204);
 
 		assertEquals(0, accountRepository.count());
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = "admin")
+	@OidcSecurity(claims = @Claim(key = "email", value = "peter@example.com"))
+	void shouldRememberTheAddressTheRoleAndTheLanguageOfTheBrowser()
+	{
+		given()
+				.header("Accept-Language", "fr-FR, de;q=0.8, en;q=0.5")
+				.when()
+				.get("/api/user/me")
+				.then()
+				.statusCode(200);
+
+		AccountEntity account = account("peter");
+		assertEquals("peter@example.com", account.getEmail());
+		assertTrue(account.isAdmin());
+		assertEquals("DE", account.getBrowserLanguage());
+		assertEquals("DE", account.getMailLanguage());
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = "user")
+	@OidcSecurity(claims = @Claim(key = "email", value = "peter@example.com"))
+	void shouldTurnTheMailsOff()
+	{
+		given().get("/api/user/me").then().statusCode(200);
+
+		given()
+				.when()
+				.get("/api/user/me/notifications")
+				.then()
+				.statusCode(200)
+				.body("available", Matchers.is(true))
+				.body("email", Matchers.is("peter@example.com"))
+				.body("newRequests", Matchers.is(true))
+				.body("requestDecided", Matchers.is(true));
+
+		given()
+				.contentType(ContentType.JSON)
+				.body("""
+						{ "requestDecided": false }
+						""")
+				.when()
+				.put("/api/user/me/notifications")
+				.then()
+				.statusCode(200)
+				.body("newRequests", Matchers.is(true))
+				.body("requestDecided", Matchers.is(false));
+
+		AccountEntity account = account("peter");
+		assertFalse(account.isAdmin());
+		assertFalse(account.isNotifyRequestDecided());
+		assertEquals("EN", account.getMailLanguage());
+	}
+
+	@Transactional
+	AccountEntity account(String user)
+	{
+		return accountRepository.findByIdentifier(user);
 	}
 
 	@Transactional

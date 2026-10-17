@@ -9,6 +9,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import {
   getDashboardStatsOptions,
+  getMyCarsOptions,
   getRemindersOptions,
 } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
@@ -27,6 +28,7 @@ import RangeList from '@/components/dashboard/RangeList';
 import MonthlyChart from '@/components/dashboard/LazyMonthlyChart';
 import Section from '@/components/ui/Section';
 import ReminderList from '@/components/reminder/ReminderList';
+import InstallHint from '@/components/install/InstallHint';
 import ErrorPage from '@/pages/ErrorPage';
 
 export interface DashboardPageProps {
@@ -61,6 +63,12 @@ export default function DashboardPage({
     }),
   );
 
+  // the energy types of the shown cars, loaded by the filter already
+  const { data: cars } = useQuery(getMyCarsOptions({ client: localClient }));
+  const energyTypes = cars
+    ?.filter((car) => search.car === undefined || car.id === search.car)
+    .map((car) => car.energyType);
+
   if (isError) {
     return <ErrorPage error={error} />;
   }
@@ -80,6 +88,7 @@ export default function DashboardPage({
         title={t('dashboard.title')}
         subtitle={t('dashboard.subtitle')}
       />
+      <InstallHint />
       <DashboardFilter search={search} onChange={onSearchChange} />
 
       {!!dueReminders?.length && (
@@ -185,6 +194,7 @@ export default function DashboardPage({
                 carId={search.car ?? ALL_CARS}
                 from={search.from}
                 to={search.to}
+                energyTypes={energyTypes}
               />
             </Grid>
             <Grid size={{ xs: 12, lg: 7 }}>

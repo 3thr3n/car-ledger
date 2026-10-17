@@ -1,0 +1,17 @@
+{#if approved}Your car request was approved{#else}Your car request was rejected{/if}
+{#if approved}
+Your request for {cars} more {#if cars == 1}car{#else}cars{/if} was approved: you can now have {grantedMaxCars} cars.
+{#else}
+Your request for {cars} more {#if cars == 1}car{#else}cars{/if} was rejected.
+{#if comment}
+Comment: "{comment}"
+{/if}
+{/if}
+{#if link}
+
+Your cars: {link}
+{/if}
+
+--
+You can turn off these mails in the settings{#if settingsLink}:
+{settingsLink}{#else}.{/if}

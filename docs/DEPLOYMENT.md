@@ -136,8 +136,8 @@ chart `oci://ghcr.io/3thr3n/car-ledger/car-ledger` in version `0.4.0`, which run
 `oci://ghcr.io/3thr3n/car-ledger/helm`).
 
 Every build of `develop` publishes the image `ghcr.io/3thr3n/car-ledger:<run number>` and the chart as the prerelease
-`<next release>-dev.<run number>`, e.g. `0.4.0-dev.123`, which runs the image of the same build: `--version
-0.4.0-dev.123` installs build 123, `--devel` the latest build. Leave `carLedger.image.tag` empty, it would override
+`<next release>-dev.<run number>`, e.g. `0.5.0-dev.123`, which runs the image of the same build: `--version
+0.5.0-dev.123` installs build 123, `--devel` the latest build. Leave `carLedger.image.tag` empty, it would override
 the image of the chart.
 
 From the repository (`helm dependency update helm/car-ledger`, `helm install car-ledger helm/car-ledger ...`) the chart
@@ -171,6 +171,68 @@ with the role `user`, the roles are missing in the tokens of the client.
   signature comes from `carLedger.webhook.existingSecret`. See [WEBHOOKS.md](WEBHOOKS.md).
 - **Service accounts**: besides the login of the browser, the API accepts access tokens of the identity provider
   (`Authorization: Bearer …`), e.g. of a script deciding car requests. See [Service accounts](#service-accounts).
+- **E-mail**: `carLedger.mail.host` sends notifications by e-mail, see [E-mail](#e-mail).
+- **Push**: the notifications reach the browsers as push messages, on by default, see [Push](#push).
+- **Network policies**: only the app reaches its PostgreSQL and Infinispan, only Keycloak and authentik their
+  PostgreSQL (`networkPolicy.enabled`, on by default in all charts; needs a network plugin that enforces them). Further
+  sources, e.g. a backup tool: `networkPolicy.extraFrom`. `kubectl exec … pg_dump` (see [Operations](#operations))
+  is not affected.
+- **Installable app**: the app has a web app manifest (`/manifest.json`) and a service worker (`/sw.js`), which keeps
+  the files of the app (not the data) for a fast start. Both need HTTPS, which the ingress provides. A proxy or CDN in
+  front must not cache `/sw.js` for long, otherwise new versions arrive late; the app asks the user to reload when a
+  new version is ready.
+
+### E-mail
+
+With an SMTP server, CarLedger mails the administrators about new car requests, the user about the decision, and
+every user once a day about the reminders of the cars that became due:
+
+```yaml
+carLedger:
+  mail:
+    host: smtp.example.com
+    port: 587                 # STARTTLS (startTls: REQUIRED), or 465 with tls: true
+    from: "CarLedger <car-ledger@example.com>"
+    username: car-ledger@example.com
+    existingSecret: car-ledger-mail   # key "password", e.g.:
+    # kubectl create secret generic car-ledger-mail --from-literal=password='...'
+```
+
+- **Recipients**: the address is the claim `email` of the login (scope `email`, requested by default), stored at every
+  visit. Users without an address at the identity provider get no mails. The administrators are the accounts whose
+  last login had the role `admin`: a role taken away counts after the next login.
+- **Language**: the language of the settings, else the one of the browser at the last visit (English or German).
+- **Settings**: every user turns the mails off in *Settings → Notifications by e-mail*, administrators also the
+  ones about new requests.
+- **Reminders**: at 07:00 UTC (`carLedger.mail.remindersCron`, a Quartz cron, `off` for never) every user gets one
+  mail with the reminders that are due soon (30 days or 1,000 km before) or overdue, the most urgent first, in the units
+  of the account. A reminder is mailed once per due date and odometer: done or changed, it is mailed again when it is
+  due the next time. With several replicas only one sends it.
+- **Links**: the mails link to `carLedger.mail.appUrl`, by default `https://car-ledger.<ingress.host>`.
+- **Delivery**: after the change is saved, in the background, with three retries; a failing mail server never fails
+  the request of the user, the error is logged. The count of open requests in the app stays the reliable source.
+
+Without a host nothing is sent, the settings page says so. In dev mode the mails are only written to the log.
+
+### Push
+
+The same notifications (due reminders, new car requests, decisions) reach the browsers as push messages (Web Push),
+on every device where the user turns on *Settings → Notifications → Push on this device*. A user can have both, e-mail
+and push, or only one of them.
+
+- **Nothing to set up**: the chart generates the key of the server (VAPID, P-256) into the secret `car-ledger-push` and
+  keeps it on upgrades. A new key ends all subscriptions, the users turn push on again. An own key:
+  `carLedger.push.existingSecret` with the key `private-key`, e.g.
+  `openssl ecparam -name prime256v1 -genkey -noout | kubectl create secret generic my-push --from-file=private-key=/dev/stdin`.
+- **Push services**: the messages go to the push service of the browser (Google for Chrome and Android, Mozilla for
+  Firefox, Apple for Safari), end-to-end encrypted: the service cannot read them. The app needs outgoing HTTPS to
+  them. `carLedger.push.subject` is the contact the services see, by default `https://car-ledger.<ingress.host>`.
+  Subscriptions and messages are limited to the hosts of these services (`carLedger.push.allowedHosts`), so a
+  subscription cannot make the app send requests to other hosts, e.g. inside the cluster.
+- **iPhone and iPad**: only the installed app (home screen) receives push messages, the settings say so.
+- **Delivery**: after the change is saved, in the background, with three retries; a browser the push service does not
+  know anymore (uninstalled, permission withdrawn) is removed.
+- `carLedger.push.enabled=false` turns push off, the settings say so.
 
 ### Service accounts
 
@@ -181,7 +243,11 @@ A tool or script calls the API as an OpenID Connect client of its own, whose tok
 2. **Capability config**: *Client authentication* on, *Standard flow* and *Direct access grants* off,
    *Service accounts roles* on.
 3. **Service accounts roles** tab of the client → *Assign role* → filter by realm roles → `admin`.
-4. Copy the client secret from the **Credentials** tab.
+4. **Client scopes** tab → `car-ledger-bot-dedicated` → *Configure a new mapper* → **Audience**, name `audience
+   carLedger`, *Included Client Audience* `carLedger`, *Add to access token* on. CarLedger only accepts access tokens
+   that name it as audience, tokens of other clients of the realm are rejected (`carLedger.auth.audience`, `any`
+   turns the check off).
+5. Copy the client secret from the **Credentials** tab.
 
 ```bash
 TOKEN=$(curl -s https://keycloak.example.com/realms/car-ledger/protocol/openid-connect/token \
@@ -241,7 +307,10 @@ Use the image of a release (a git tag of `main`) or a dev build of `develop`. On
 | 1.7.0     | Energy type of the cars (existing cars become petrol), optional tank size and battery capacity (0.4.0)               |
 | 1.8.0     | Table for the charges of electric cars and plug-in hybrids (0.4.0)                                                   |
 | 1.9.0     | Unit system of the accounts (metric, US, UK), existing accounts stay metric (0.4.0)                                  |
-| 1.10.0    | Table for the requests of the users, first: more cars (0.4.x)                                                        |
+| 1.10.0    | Table for the requests of the users, first: more cars (0.4.0)                                                        |
+| 1.11.0    | Address, role and browser language of the accounts, notification settings, all on by default (0.5.0)                |
+| 1.12.0    | Which due of a reminder was mailed, the mails of the reminders on by default (0.5.0)                                 |
+| 1.13.0    | The browsers that receive push messages, the switch of the e-mails (on) (0.5.0)                                      |
 
 An older image refuses to start on the migrated database, as Flyway finds migrations it does not know. To go back,
 restore the backup. Without the backup, the older image runs on the migrated database (the new columns have defaults)
@@ -259,18 +328,43 @@ kubectl set env deployment/car-ledger QUARKUS_FLYWAY_IGNORE_FUTURE_MIGRATIONS=tr
   the actual mileage in *Edit car*, it becomes a new reading as of today.
 - **Settings**: all accounts start with VAT country Germany and the currency Euro. Users with another currency change
   it in *Settings*, existing amounts are not converted.
+- **E-mail** (0.5.0, optional): with `carLedger.mail.host` the app mails new car requests, decisions and due
+  reminders (on the first day all reminders that are due already, in one mail per user), see
+  [E-mail](#e-mail). The addresses and the role `admin` are stored at the next visit of each user, until then
+  nobody gets mails.
+- **Network policies** (0.5.0; keycloak chart 0.5.0, authentik chart 0.4.0): only the app reaches its databases. A
+  tool that connects to a PostgreSQL over the network (backup, monitoring) needs `networkPolicy.extraFrom`.
+- **Audience** (0.5.0): access tokens (`Authorization: Bearer`) must name CarLedger as audience (`aud`, the client
+  id), tokens of other clients of the same realm are rejected; the login of the browser is not affected. Add the
+  audience mapper to the clients of service accounts ([Service accounts](#service-accounts), step 4); the realm of
+  the keycloak chart has it for `carLedger` itself. authentik sets the audience by itself. `carLedger.auth.audience=any`
+  keeps the old behaviour.
+- **Push** (0.5.0): on by default, the chart creates the secret `car-ledger-push` with the key of the server. Each user
+  turns it on per device in the settings, see [Push](#push). The app needs outgoing HTTPS to the push services.
+- **Energy type** (0.4.0): existing cars become petrol cars. Owners of another car (diesel, LPG, CNG, electric,
+  plug-in hybrid) change it in *Edit car*; only electric cars and plug-in hybrids record charges.
+- **Car requests** (0.4.0): users who reached their car limit request more cars in the garage, the role `admin` approves
+  or rejects them on the administration page; the entry *Administration* shows the number of open requests. Nothing
+  to set up.
+- **Webhooks and service accounts** (0.4.0, optional): without `carLedger.webhook.url` no events are sent, see
+  [WEBHOOKS.md](WEBHOOKS.md). Scripts can call the API with the access token of a service account, see
+  [Service accounts](#service-accounts).
 - **Chart name** (0.4.0): the app chart is named `car-ledger` now, published at
   `oci://ghcr.io/3thr3n/car-ledger/car-ledger`. The old path `oci://ghcr.io/3thr3n/car-ledger/helm` ends with 0.3.0,
   switch the path in `helm upgrade` (the release and its resources stay the same) and in the dependencies of your
   charts (`name: car-ledger`).
-- **Keycloak realm** (keycloak chart 0.4.0): with `carLedger.hostname`, the chart imports the realm `car-ledger` and
-  generates the secret `keycloak`. Existing installations can set it as well: the existing realm and a secret
-  `keycloak` created by hand are kept. Keycloak starts with `--import-realm` and mounts the ConfigMap
-  `keycloak-realm` in any case (empty without `carLedger.hostname`), so its pod is restarted by the upgrade.
 - **Charts** (0.4.0): `keycloak` and `authentik` are published as well, upgrade them from
   `oci://ghcr.io/3thr3n/car-ledger/<chart>`. Installed on their own, they deploy the same resources as before; only in
   the stack chart do they get other names. The values `carLedger.auth.clientId` and `carLedger.auth.existingSecret` of
   the app chart are empty by default now, they still default to `carLedger` and `keycloak`.
+- **Stack chart** (0.4.0, new): `oci://ghcr.io/3thr3n/car-ledger/stack` deploys the app with Keycloak or authentik in
+  one release, see [Everything in one release](#everything-in-one-release). It is meant for new installations: an
+  existing app release named `car-ledger` can switch to it without Keycloak or authentik in the stack (its values move
+  under `app:`), an existing Keycloak or authentik is not taken over.
+- **Keycloak realm** (keycloak chart 0.4.0): with `carLedger.hostname`, the chart imports the realm `car-ledger` and
+  generates the secret `keycloak`. Existing installations can set it as well: the existing realm and a secret
+  `keycloak` created by hand are kept. Keycloak starts with `--import-realm` and mounts the ConfigMap
+  `keycloak-realm` in any case (empty without `carLedger.hostname`), so its pod is restarted by the upgrade.
 - **Uploads** (0.3.0): receipts and car pictures need requests up to `carLedger.attachments.maxRequestSize` (12 MB). The
   nginx ingress of the chart gets the annotation automatically; a Gateway or a proxy in front needs the same limit,
   otherwise uploads fail with 413. The files are stored in PostgreSQL, the backup above includes them.

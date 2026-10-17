@@ -5,8 +5,11 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-# the release before this commit, also on the build of a tag
-if ! last=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null); then
+# The newest release without this commit, also on the build of a tag (whose own tag is left out). Not git describe:
+# a release is tagged on main, so develop does not contain its tag.
+last=$(git tag --list --sort=-v:refname | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' \
+  | grep -vxF -f <(git tag --points-at HEAD; echo) | head -n 1 || true)
+if [ -z "$last" ]; then
   echo "No release before this commit, nothing to compare"
   exit 0
 fi

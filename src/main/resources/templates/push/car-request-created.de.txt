@@ -1,0 +1,2 @@
+Neue Fahrzeug-Anfrage von {account}
+{account} fragt {cars} {#if cars == 1}weiteres Fahrzeug{#else}weitere Fahrzeuge{/if} an{#if reason}: „{reason}“{/if}
