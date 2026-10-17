@@ -17,6 +17,7 @@ import Sidebar from '@/components/layout/Sidebar';
 import useMe from '@/hooks/useMe';
 import useOpenCarRequests from '@/hooks/useOpenCarRequests';
 import productLogo from '@/assets/car-ledger.svg';
+import OfflineSync from '@/offline/OfflineSync';
 
 const SIDEBAR_WIDTH = 264;
 
@@ -41,6 +42,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
         bgcolor: 'background.default',
       }}
     >
+      <OfflineSync />
       {isDesktop ? (
         <Box
           component="nav"

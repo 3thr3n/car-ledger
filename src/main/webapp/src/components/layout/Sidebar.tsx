@@ -37,6 +37,8 @@ import useVersion from '@/hooks/useVersion';
 import { reloadToNewest } from '@/utils/serviceWorker';
 import { RouterListItemButton } from '@/components/ui/links';
 import CarAvatar from '@/components/layout/CarAvatar';
+import { offlineStore } from '@/offline';
+import { forgetQueries } from '@/offline/persist';
 import productLogo from '@/assets/car-ledger.svg';
 
 const languages = ['EN', 'DE'];
@@ -300,7 +302,12 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
               </Typography>
             </Box>
             <Tooltip title={t('button.logout')}>
-              <IconButton size="small" href={`${baseUrl}/api/auth/logout`}>
+              <IconButton
+                size="small"
+                href={`${baseUrl}/api/auth/logout`}
+                // the next user of the device doesn't see the kept data
+                onClick={() => void forgetQueries(offlineStore)}
+              >
                 <LogoutRounded fontSize="small" />
               </IconButton>
             </Tooltip>

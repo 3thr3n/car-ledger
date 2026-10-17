@@ -12,17 +12,21 @@ import ChargingForm from '@/components/bill/ChargingForm';
 import MaintenanceForm from '@/components/bill/MaintenanceForm';
 import MiscellaneousForm from '@/components/bill/MiscellaneousForm';
 import RecurringForm from '@/components/bill/RecurringForm';
+import { useQueued } from '@/offline/useQueued';
 
 export interface AddBillPageProps {
   carId: number;
   /** the first type of the car without one */
   type?: BillType;
+  /** id of a bill of the offline queue to correct */
+  queued?: string;
   onTypeChange: (type: BillType) => void;
 }
 
 export default function AddBillPage({
   carId,
   type: requestedType,
+  queued: queuedId,
   onTypeChange,
 }: AddBillPageProps) {
   const { t } = useTranslation();
@@ -36,6 +40,8 @@ export default function AddBillPage({
   const type = types.some((meta) => meta.type === requestedType)
     ? requestedType!
     : types[0].type;
+  // gone when it was sent or discarded meanwhile
+  const queued = useQueued(carId, type).find((entry) => entry.id === queuedId);
 
   return (
     <Box id="AddBillPage" sx={{ maxWidth: 860 }}>
@@ -119,9 +125,11 @@ export default function AddBillPage({
           })}
         </Typography>
         {/* keyed, so switching the type starts with a fresh form */}
-        {type === BillType.FUEL && <FuelForm key={type} carId={carId} />}
+        {type === BillType.FUEL && (
+          <FuelForm key={type + queued?.id} carId={carId} queued={queued} />
+        )}
         {type === BillType.CHARGING && (
-          <ChargingForm key={type} carId={carId} />
+          <ChargingForm key={type + queued?.id} carId={carId} queued={queued} />
         )}
         {type === BillType.MAINTENANCE && (
           <MaintenanceForm key={type} carId={carId} />
