@@ -9,6 +9,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import {
   getDashboardStatsOptions,
+  getMyCarsOptions,
   getRemindersOptions,
 } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
@@ -61,6 +62,12 @@ export default function DashboardPage({
       query: { onlyDue: true },
     }),
   );
+
+  // the energy types of the shown cars, loaded by the filter already
+  const { data: cars } = useQuery(getMyCarsOptions({ client: localClient }));
+  const energyTypes = cars
+    ?.filter((car) => search.car === undefined || car.id === search.car)
+    .map((car) => car.energyType);
 
   if (isError) {
     return <ErrorPage error={error} />;
@@ -187,6 +194,7 @@ export default function DashboardPage({
                 carId={search.car ?? ALL_CARS}
                 from={search.from}
                 to={search.to}
+                energyTypes={energyTypes}
               />
             </Grid>
             <Grid size={{ xs: 12, lg: 7 }}>
