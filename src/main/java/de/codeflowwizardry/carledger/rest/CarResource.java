@@ -18,6 +18,7 @@ import de.codeflowwizardry.carledger.data.CarEntity;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.BillRepository;
 import de.codeflowwizardry.carledger.data.repository.BillRepository.Energy;
+import de.codeflowwizardry.carledger.data.repository.CarAccess.Action;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import de.codeflowwizardry.carledger.data.repository.RecurringBillPaymentRepository;
 import de.codeflowwizardry.carledger.exception.WrongUserException;
@@ -75,7 +76,7 @@ public class CarResource extends AbstractResource
 	@APIResponse(responseCode = "404", description = "Car was not found.")
 	public Car getMyCar(@PathParam("id") Long id)
 	{
-		return convert(findCar(id));
+		return convert(findCar(id, Action.READ));
 	}
 
 	@GET
@@ -86,7 +87,7 @@ public class CarResource extends AbstractResource
 	@APIResponse(responseCode = "404", description = "Car was not found.")
 	public CarOverview getMyCarOverview(@PathParam("id") Long id)
 	{
-		findCar(id);
+		findCar(id, Action.READ);
 		// the total contains the payments of the recurring costs, like the dashboard
 		return CarOverview.convert(billRepository.summarizeByType(id, context.getName()),
 				recurringBillPaymentRepository.sumAmount(id, context.getName(), Optional.empty(), Optional.empty()),
@@ -114,7 +115,7 @@ public class CarResource extends AbstractResource
 
 		Utils.requireValid(carpojo.validateDetails());
 
-		CarEntity carEntity = findCar(id);
+		CarEntity carEntity = findCar(id, Action.MANAGE);
 		carEntity.setName(carpojo.name());
 		if (carEntity.getOdometer() != carpojo.odometer())
 		{
@@ -141,7 +142,7 @@ public class CarResource extends AbstractResource
 	{
 		AccountEntity accountEntity = getAccount();
 
-		if (carRepository.countForUser(context.getName()) >= accountEntity.getMaxCars())
+		if (carRepository.countOwned(context.getName()) >= accountEntity.getMaxCars())
 		{
 			return Response
 					.status(400)
@@ -175,9 +176,9 @@ public class CarResource extends AbstractResource
 	 * @throws WrongUserException
 	 *             if the car does not exist for the user
 	 */
-	private CarEntity findCar(Long id)
+	private CarEntity findCar(Long id, Action action)
 	{
-		CarEntity carEntity = carRepository.findById(id, context.getName());
+		CarEntity carEntity = carRepository.findById(id, context.getName(), action);
 		if (carEntity == null)
 		{
 			throw new WrongUserException();

@@ -22,6 +22,7 @@ import de.codeflowwizardry.carledger.data.RecurringBillPaymentEntity;
 import de.codeflowwizardry.carledger.data.factory.FuelBillFactory;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.BillRepository;
+import de.codeflowwizardry.carledger.data.repository.CarAccess.Action;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import de.codeflowwizardry.carledger.data.repository.RecurringBillPaymentRepository;
 import de.codeflowwizardry.carledger.data.repository.RecurringBillRepository;
@@ -123,7 +124,8 @@ class CarResourceTest
 	void shouldAddRecurringPaymentsToTheTotalCostOfTheOverview()
 	{
 		QuarkusTransaction.requiringNew().run(() -> {
-			RecurringBillEntity insurance = new RecurringBillEntity(carRepository.findById(carId, "peter"));
+			RecurringBillEntity insurance = new RecurringBillEntity(
+					carRepository.findById(carId, "peter", Action.WRITE));
 			insurance.setName("Insurance");
 			insurance.setCategory(BillCategory.FINANCE);
 			insurance.setInterval(BillInterval.MONTHLY);

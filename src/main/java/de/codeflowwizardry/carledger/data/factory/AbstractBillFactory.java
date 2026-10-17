@@ -12,6 +12,7 @@ import de.codeflowwizardry.carledger.data.AbstractBillEntity;
 import de.codeflowwizardry.carledger.data.BillEntity;
 import de.codeflowwizardry.carledger.data.BillType;
 import de.codeflowwizardry.carledger.data.CarEntity;
+import de.codeflowwizardry.carledger.data.repository.CarAccess.Action;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import de.codeflowwizardry.carledger.exception.AlreadyPresentException;
 import de.codeflowwizardry.carledger.exception.WrongUserException;
@@ -71,7 +72,7 @@ public abstract class AbstractBillFactory<I extends AbstractBillInput, O extends
 	{
 		Utils.requireValid(input.validate());
 
-		CarEntity car = carRepository.findById(carId, user);
+		CarEntity car = carRepository.findById(carId, user, Action.WRITE);
 
 		if (car == null)
 		{
