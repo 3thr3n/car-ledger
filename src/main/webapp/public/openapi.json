@@ -2341,6 +2341,13 @@
             "type" : "integer",
             "format" : "int64"
           }
+        }, {
+          "description" : "Id created by the client, a request sent again with it answers with the same bill",
+          "name" : "Idempotency-Key",
+          "in" : "header",
+          "schema" : {
+            "$ref" : "#/components/schemas/UUID"
+          }
         } ],
         "requestBody" : {
           "content" : {
@@ -2632,6 +2639,13 @@
           "schema" : {
             "type" : "integer",
             "format" : "int64"
+          }
+        }, {
+          "description" : "Id created by the client, a request sent again with it answers with the same bill",
+          "name" : "Idempotency-Key",
+          "in" : "header",
+          "schema" : {
+            "$ref" : "#/components/schemas/UUID"
           }
         } ],
         "requestBody" : {
@@ -2925,6 +2939,13 @@
             "type" : "integer",
             "format" : "int64"
           }
+        }, {
+          "description" : "Id created by the client, a request sent again with it answers with the same bill",
+          "name" : "Idempotency-Key",
+          "in" : "header",
+          "schema" : {
+            "$ref" : "#/components/schemas/UUID"
+          }
         } ],
         "requestBody" : {
           "content" : {
@@ -3216,6 +3237,13 @@
           "schema" : {
             "type" : "integer",
             "format" : "int64"
+          }
+        }, {
+          "description" : "Id created by the client, a request sent again with it answers with the same bill",
+          "name" : "Idempotency-Key",
+          "in" : "header",
+          "schema" : {
+            "$ref" : "#/components/schemas/UUID"
           }
         } ],
         "requestBody" : {
