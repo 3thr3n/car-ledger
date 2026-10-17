@@ -130,14 +130,14 @@ shorter ones), 32 or more are recommended, and all replicas need the same one.
 helm install car-ledger oci://ghcr.io/3thr3n/car-ledger/car-ledger --set ingress.host=example.com
 ```
 
-Without `--version` the latest release is installed. A release (e.g. `0.4.0`, see the
-[releases](https://github.com/3thr3n/car-ledger/releases)) publishes the image `ghcr.io/3thr3n/car-ledger:0.4.0` and the
-chart `oci://ghcr.io/3thr3n/car-ledger/car-ledger` in version `0.4.0`, which runs that image (up to 0.3.x the chart was
+Without `--version` the latest release is installed. A release (e.g. `0.5.0`, see the
+[releases](https://github.com/3thr3n/car-ledger/releases)) publishes the image `ghcr.io/3thr3n/car-ledger:0.5.0` and the
+chart `oci://ghcr.io/3thr3n/car-ledger/car-ledger` in version `0.5.0`, which runs that image (up to 0.3.x the chart was
 `oci://ghcr.io/3thr3n/car-ledger/helm`).
 
 Every build of `develop` publishes the image `ghcr.io/3thr3n/car-ledger:<run number>` and the chart as the prerelease
-`<next release>-dev.<run number>`, e.g. `0.5.0-dev.123`, which runs the image of the same build: `--version
-0.5.0-dev.123` installs build 123, `--devel` the latest build. Leave `carLedger.image.tag` empty, it would override
+`<next release>-dev.<run number>`, e.g. `0.6.0-dev.123`, which runs the image of the same build: `--version
+0.6.0-dev.123` installs build 123, `--devel` the latest build. Leave `carLedger.image.tag` empty, it would override
 the image of the chart.
 
 From the repository (`helm dependency update helm/car-ledger`, `helm install car-ledger helm/car-ledger ...`) the chart
@@ -341,6 +341,9 @@ kubectl set env deployment/car-ledger QUARKUS_FLYWAY_IGNORE_FUTURE_MIGRATIONS=tr
   keeps the old behaviour.
 - **Push** (0.5.0): on by default, the chart creates the secret `car-ledger-push` with the key of the server. Each user
   turns it on per device in the settings, see [Push](#push). The app needs outgoing HTTPS to the push services.
+- **Installable app and headers** (0.5.0): CarLedger can be installed as an app and asks to reload when the server
+  runs a newer version. A proxy or CDN in front must not cache `/sw.js` for long (see [Options](#options)). The app
+  sends its own security headers (CSP, HSTS, …); a proxy that sets them as well must not set stricter ones.
 - **Energy type** (0.4.0): existing cars become petrol cars. Owners of another car (diesel, LPG, CNG, electric,
   plug-in hybrid) change it in *Edit car*; only electric cars and plug-in hybrids record charges.
 - **Car requests** (0.4.0): users who reached their car limit request more cars in the garage, the role `admin` approves
