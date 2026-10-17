@@ -12,11 +12,12 @@ import { useQuery } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { BillType, MonthStats } from '@/generated';
+import { BillType, EnergyType, MonthStats } from '@/generated';
 import { getMonthlyStatsOptions } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
 import { billTypes } from '@/utils/billTypes';
 import { Formatter, num, useFormat } from '@/utils/format';
+import { monthlyParts } from '@/utils/monthlyChart';
 import Section from '@/components/ui/Section';
 import EmptyState from '@/components/ui/EmptyState';
 
@@ -26,6 +27,8 @@ export interface MonthlyChartProps {
   from?: string;
   to?: string;
   subtitle?: string;
+  /** of the shown cars, so e.g. an electric car shows no fuel */
+  energyTypes?: EnergyType[];
 }
 
 type View = 'costs' | 'fuel' | 'charging';
@@ -103,6 +106,7 @@ export default function MonthlyChart({
   from,
   to,
   subtitle,
+  energyTypes,
 }: MonthlyChartProps) {
   const { t } = useTranslation();
   const format = useFormat();
@@ -150,22 +154,20 @@ export default function MonthlyChart({
   };
 
   const hasCosts = months.some((month) => (num(month.total) ?? 0) > 0);
-  // charging is only a part of the costs with charges, e.g. not for petrol cars
-  const hasChargingCosts = months.some(
-    (month) => (num(month.charging) ?? 0) > 0,
-  );
+  const parts = monthlyParts(months, energyTypes);
   const shownCostParts = costParts.filter(
-    (part) => part.type !== BillType.CHARGING || hasChargingCosts,
+    (part) =>
+      (part.type !== BillType.FUEL || parts.fuelCosts) &&
+      (part.type !== BillType.CHARGING || parts.chargingCosts),
   );
   const hasFuel = months.some((month) => num(month.pricePerUnit) !== undefined);
   const hasCharging = months.some(
     (month) => num(month.chargingPricePerUnit) !== undefined,
   );
-  // the fuel view stays without any charges, also when it is still empty
   const views: View[] = [
     'costs',
-    ...(hasFuel || !hasCharging ? (['fuel'] as const) : []),
-    ...(hasCharging ? (['charging'] as const) : []),
+    ...(parts.fuelView ? (['fuel'] as const) : []),
+    ...(parts.chargingView ? (['charging'] as const) : []),
   ];
   // e.g. the fuel view of a filter which now only has charges
   const shown = views.includes(view) ? view : 'costs';
