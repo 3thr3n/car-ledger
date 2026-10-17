@@ -51,7 +51,7 @@
     "@playwright/test": "1.63.0",
     "@tanstack/router-plugin": "^1.168.42",
     "@types/i18next-browser-languagedetector": "^3.0.0",
-    "@types/node": "^25",
+    "@types/node": "^26",
     "@types/papaparse": "^5.5.2",
     "@types/react": "^19",
     "@types/react-dom": "^19",
