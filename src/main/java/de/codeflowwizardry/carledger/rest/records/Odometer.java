@@ -11,7 +11,7 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
  * @param value
  *            current odometer in km, never below a reading
  * @param reading
- *            latest reading, of the car or of a maintenance bill
+ *            latest reading, of the car, of a maintenance bill or of a trip
  * @param readingDate
  *            day of the reading
  * @param driven

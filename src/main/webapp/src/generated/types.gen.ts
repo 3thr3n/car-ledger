@@ -93,6 +93,7 @@ export type BackupSummary = {
     bills?: number;
     recurringBills?: number;
     reminders?: number;
+    trips?: number;
     files?: number;
 };
 
@@ -162,6 +163,13 @@ export type BillPagedRecurringBill = {
     page?: number;
     size?: number;
     data?: Array<RecurringBill>;
+};
+
+export type BillPagedTrip = {
+    total?: number;
+    page?: number;
+    size?: number;
+    data?: Array<Trip>;
 };
 
 export enum BillType {
@@ -434,6 +442,16 @@ export type PushSubscriptionInput = {
     auth?: string;
 };
 
+export enum Reason {
+    ODOMETER_BELOW_PREVIOUS = 'ODOMETER_BELOW_PREVIOUS',
+    ODOMETER_ABOVE_NEXT = 'ODOMETER_ABOVE_NEXT',
+    OVERLAPS = 'OVERLAPS',
+    OPEN_TRIP = 'OPEN_TRIP',
+    ID_IN_USE = 'ID_IN_USE',
+    ALREADY_FINISHED = 'ALREADY_FINISHED',
+    DETAIL_CHANGED = 'DETAIL_CHANGED'
+}
+
 export type RecurringBill = {
     id?: number;
     name?: string;
@@ -544,6 +562,70 @@ export type TotalStats = {
     maintenanceBills?: number;
     miscellaneousBills?: number;
 };
+
+export type Trip = {
+    id: Uuid;
+    carId: number;
+    type: TripType;
+    startOdometer: number;
+    endOdometer?: number;
+    distance?: number;
+    startedAt: OffsetDateTime;
+    endedAt?: OffsetDateTime;
+    destination?: string;
+    purpose?: string;
+    businessPartner?: string;
+    reviewReason?: TripReview;
+    restored: boolean;
+    createdAt: OffsetDateTime;
+    finishedAt?: OffsetDateTime;
+};
+
+export type TripConflict = {
+    reason: Reason;
+    message: string;
+    minimumOdometer?: number;
+    maximumOdometer?: number;
+};
+
+export type TripCurrent = {
+    open?: Trip;
+    minimumOdometer: number;
+    estimatedOdometer: number;
+};
+
+export type TripFinishInput = {
+    endOdometer?: number;
+    endedAt?: OffsetDateTime;
+    destination?: string;
+    purpose?: string;
+    businessPartner?: string;
+    queued?: boolean;
+};
+
+export enum TripReview {
+    ODOMETER_BELOW_PREVIOUS = 'ODOMETER_BELOW_PREVIOUS',
+    ODOMETER_ABOVE_NEXT = 'ODOMETER_ABOVE_NEXT',
+    OVERLAPS = 'OVERLAPS'
+}
+
+export type TripStartInput = {
+    type?: TripType;
+    startOdometer?: number;
+    startedAt?: OffsetDateTime;
+    destination?: string;
+    purpose?: string;
+    businessPartner?: string;
+    queued?: boolean;
+};
+
+export enum TripType {
+    BUSINESS = 'BUSINESS',
+    PRIVATE = 'PRIVATE',
+    COMMUTE = 'COMMUTE'
+}
+
+export type Uuid = string;
 
 export enum UnitSystem {
     METRIC = 'METRIC',
@@ -2286,6 +2368,173 @@ export type GetMonthlyStatsResponses = {
 };
 
 export type GetMonthlyStatsResponse = GetMonthlyStatsResponses[keyof GetMonthlyStatsResponses];
+
+export type GetTripsData = {
+    body?: never;
+    path: {
+        carId: number;
+    };
+    query?: {
+        page?: number;
+        size?: number;
+        year?: number;
+    };
+    url: '/api/trip/{carId}';
+};
+
+export type GetTripsResponses = {
+    /**
+     * Trips found.
+     */
+    200: BillPagedTrip;
+};
+
+export type GetTripsResponse = GetTripsResponses[keyof GetTripsResponses];
+
+export type GetCurrentTripData = {
+    body?: never;
+    path: {
+        carId: number;
+    };
+    query?: never;
+    url: '/api/trip/{carId}/current';
+};
+
+export type GetCurrentTripErrors = {
+    /**
+     * Car is not for your user.
+     */
+    404: unknown;
+};
+
+export type GetCurrentTripResponses = {
+    /**
+     * Car found.
+     */
+    200: TripCurrent;
+};
+
+export type GetCurrentTripResponse = GetCurrentTripResponses[keyof GetCurrentTripResponses];
+
+export type GetTripYearsData = {
+    body?: never;
+    path: {
+        carId: number;
+    };
+    query?: never;
+    url: '/api/trip/{carId}/years';
+};
+
+export type GetTripYearsResponses = {
+    /**
+     * OK
+     */
+    200: Array<number>;
+};
+
+export type GetTripYearsResponse = GetTripYearsResponses[keyof GetTripYearsResponses];
+
+export type GetTripData = {
+    body?: never;
+    path: {
+        carId: number;
+        id: Uuid;
+    };
+    query?: never;
+    url: '/api/trip/{carId}/{id}';
+};
+
+export type GetTripErrors = {
+    /**
+     * Trip not found for the car of your user.
+     */
+    404: unknown;
+};
+
+export type GetTripResponses = {
+    /**
+     * Trip found.
+     */
+    200: Trip;
+};
+
+export type GetTripResponse = GetTripResponses[keyof GetTripResponses];
+
+export type StartTripData = {
+    body: TripStartInput;
+    path: {
+        carId: number;
+        id: Uuid;
+    };
+    query?: never;
+    url: '/api/trip/{carId}/{id}';
+};
+
+export type StartTripErrors = {
+    /**
+     * Validation failed, please check the response
+     */
+    400: Array<unknown>;
+    /**
+     * Car is not for your user.
+     */
+    404: unknown;
+    /**
+     * The trip doesn't fit the other data of the car (a queued one is stored with a review reason instead), another trip is open or the id is in use.
+     */
+    409: TripConflict;
+};
+
+export type StartTripError = StartTripErrors[keyof StartTripErrors];
+
+export type StartTripResponses = {
+    /**
+     * Trip was started before with the same values.
+     */
+    200: Trip;
+    /**
+     * Trip started.
+     */
+    201: Trip;
+};
+
+export type StartTripResponse = StartTripResponses[keyof StartTripResponses];
+
+export type FinishTripData = {
+    body: TripFinishInput;
+    path: {
+        carId: number;
+        id: Uuid;
+    };
+    query?: never;
+    url: '/api/trip/{carId}/{id}/finish';
+};
+
+export type FinishTripErrors = {
+    /**
+     * Validation failed, please check the response
+     */
+    400: Array<unknown>;
+    /**
+     * Trip not found for the car of your user.
+     */
+    404: unknown;
+    /**
+     * The trip doesn't fit the other data of the car (a queued one is stored with a review reason instead), it was finished with other values or a detail of the start was changed.
+     */
+    409: TripConflict;
+};
+
+export type FinishTripError = FinishTripErrors[keyof FinishTripErrors];
+
+export type FinishTripResponses = {
+    /**
+     * Trip finished.
+     */
+    200: Trip;
+};
+
+export type FinishTripResponse = FinishTripResponses[keyof FinishTripResponses];
 
 export type DeleteMyselfData = {
     body?: never;
