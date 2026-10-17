@@ -19,6 +19,8 @@ import DateVatFields from './DateVatFields';
 import FormActions from './FormActions';
 import BillAttachments from './BillAttachments';
 import useSaveBill from './useSaveBill';
+import { isOfflineError, offlineQueue } from '@/offline';
+import { QueuedRequest } from '@/offline/queue';
 
 const MAX = 100_000;
 /** refuels up to 5 % above the tank size are no warning */
@@ -54,19 +56,31 @@ const fromBill = (bill: FuelBill, units: Units): FuelState => ({
 export default function FuelForm({
   carId,
   bill,
+  queued,
 }: {
   carId: number;
   /** bill to edit, a new one is created without */
   bill?: FuelBill;
+  /** a new bill of the offline queue the server rejected, to correct */
+  queued?: QueuedRequest;
 }) {
   const { t } = useTranslation();
   const format = useFormat();
   const { units } = format;
   const vat = useVatCountry(bill?.vatRate);
-  const [form, setForm] = useState<FuelState>(() =>
-    bill ? fromBill(bill, units) : empty(),
-  );
+  const [form, setForm] = useState<FuelState>(() => {
+    if (bill) return fromBill(bill, units);
+    // the body is in the units of the API, like a saved bill
+    if (queued) return fromBill(queued.body as unknown as FuelBill, units);
+    return empty();
+  });
   const [touched, setTouched] = useState(false);
+  // id of the new bill: sent again (e.g. from the offline queue), it is
+  // created once
+  const [clientId, setClientId] = useState(
+    () => queued?.id ?? crypto.randomUUID(),
+  );
+  const url = `/api/bill/${carId}/fuel`;
 
   const save = useSaveBill(
     carId,
@@ -74,13 +88,22 @@ export default function FuelForm({
     () => {
       setForm(empty());
       setTouched(false);
+      setClientId(crypto.randomUUID());
     },
     bill?.id,
   );
   const create = useMutation({
     ...addNewFuelBillMutation({ client: localClient }),
-    onSuccess: save.onSuccess,
-    onError: save.onError,
+    onSuccess: async (saved) => {
+      // a corrected bill of the queue is saved now
+      if (queued) await offlineQueue.discard(queued.id);
+      await save.onSuccess(saved);
+    },
+    // without an answer the device is offline: kept for later
+    onError: (error, { body }) =>
+      isOfflineError(error)
+        ? save.queue(clientId, url, body!)
+        : save.onError(error),
   });
   const update = useMutation({
     ...updateFuelBillMutation({ client: localClient }),
@@ -153,8 +176,14 @@ export default function FuelForm({
     };
     if (bill?.id !== undefined) {
       update.mutate({ path: { carId, billId: bill.id }, body });
+    } else if (!navigator.onLine) {
+      void save.queue(clientId, url, body);
     } else {
-      create.mutate({ path: { carId }, body });
+      create.mutate({
+        path: { carId },
+        body,
+        headers: { 'Idempotency-Key': clientId },
+      });
     }
   };
 

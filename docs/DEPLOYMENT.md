@@ -343,6 +343,10 @@ kubectl set env deployment/car-ledger QUARKUS_FLYWAY_IGNORE_FUTURE_MIGRATIONS=tr
   keeps the old behaviour.
 - **Push** (0.5.0): on by default, the chart creates the secret `car-ledger-push` with the key of the server. Each user
   turns it on per device in the settings, see [Push](#push). The app needs outgoing HTTPS to the push services.
+- **Offline entries** (0.6.0): refuels and charges made without a connection are kept on the device (IndexedDB) and
+  sent later, with the header `Idempotency-Key`, so a request sent again doesn't create an entry twice (migration
+  1.15.0). For the forms the app keeps the account and the cars on the device as well; the logout removes them. A
+  proxy in front must pass the header. Nothing to set up.
 - **Installable app and headers** (0.5.0): CarLedger can be installed as an app and asks to reload when the server
   runs a newer version. A proxy or CDN in front must not cache `/sw.js` for long (see [Options](#options)). The app
   sends its own security headers (CSP, HSTS, …); a proxy that sets them as well must not set stricter ones.

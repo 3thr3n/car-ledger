@@ -16,6 +16,7 @@ import {
   useMiscellaneousColumns,
 } from '@/components/bill/columns';
 import useDeleteBill from '@/components/bill/useDeleteBill';
+import QueuedEntries from '@/components/bill/QueuedEntries';
 import { baseUrl } from '@/utils/QueryClient';
 import { billTypes } from '@/utils/billTypes';
 
@@ -71,64 +72,68 @@ export default function BillListPage({
   const navigate = useNavigate();
 
   return (
-    <Section flush>
-      <Stack
-        direction="row"
-        spacing={1.5}
-        sx={{ px: 2.5, pt: 2, pb: 1.5, alignItems: 'center' }}
-      >
-        <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-          <YearFilter
-            years={list.years}
-            value={list.year}
-            onChange={list.setYear}
-          />
-        </Box>
-        {/* the export has the format of the import */}
-        {list.total > 0 && billTypes[type].importable && (
-          <Button
-            href={exportUrl(carId, type, list.year)}
-            variant="outlined"
-            size="small"
-            startIcon={<FileDownloadRounded />}
-            sx={{ flexShrink: 0 }}
-          >
-            {t('button.export')}
-          </Button>
-        )}
-      </Stack>
-      <BillTable
-        carId={carId}
-        rows={list.rows}
-        total={list.total}
-        columns={columns}
-        mobileRow={mobileRow}
-        pageModel={list.pageModel}
-        onPageModelChange={list.setPageModel}
-        sortModel={list.sortModel}
-        onSortModelChange={list.setSortModel}
-        loading={list.isLoading || list.isFetching}
-        onDelete={onDelete}
-        onEdit={(row) =>
-          navigate({
-            to: '/car/$id/bill/$billId/edit',
-            params: { id: `${carId}`, billId: `${row.id}` },
-            search: { type },
-          })
-        }
-        emptyTitle={t('bill.empty.title', { type: t(`bill.types.${type}`) })}
-        emptyText={t(`bill.empty.${type}`)}
-        emptyAction={
-          <RouterButton
-            to="/car/$id/bill/add"
-            params={{ id: `${carId}` }}
-            search={{ type }}
-            variant="contained"
-          >
-            {t('bill.add.button')}
-          </RouterButton>
-        }
-      />
-    </Section>
+    <>
+      {/* the new ones kept on the device without a connection */}
+      <QueuedEntries carId={carId} type={type} />
+      <Section flush>
+        <Stack
+          direction="row"
+          spacing={1.5}
+          sx={{ px: 2.5, pt: 2, pb: 1.5, alignItems: 'center' }}
+        >
+          <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+            <YearFilter
+              years={list.years}
+              value={list.year}
+              onChange={list.setYear}
+            />
+          </Box>
+          {/* the export has the format of the import */}
+          {list.total > 0 && billTypes[type].importable && (
+            <Button
+              href={exportUrl(carId, type, list.year)}
+              variant="outlined"
+              size="small"
+              startIcon={<FileDownloadRounded />}
+              sx={{ flexShrink: 0 }}
+            >
+              {t('button.export')}
+            </Button>
+          )}
+        </Stack>
+        <BillTable
+          carId={carId}
+          rows={list.rows}
+          total={list.total}
+          columns={columns}
+          mobileRow={mobileRow}
+          pageModel={list.pageModel}
+          onPageModelChange={list.setPageModel}
+          sortModel={list.sortModel}
+          onSortModelChange={list.setSortModel}
+          loading={list.isLoading || list.isFetching}
+          onDelete={onDelete}
+          onEdit={(row) =>
+            navigate({
+              to: '/car/$id/bill/$billId/edit',
+              params: { id: `${carId}`, billId: `${row.id}` },
+              search: { type },
+            })
+          }
+          emptyTitle={t('bill.empty.title', { type: t(`bill.types.${type}`) })}
+          emptyText={t(`bill.empty.${type}`)}
+          emptyAction={
+            <RouterButton
+              to="/car/$id/bill/add"
+              params={{ id: `${carId}` }}
+              search={{ type }}
+              variant="contained"
+            >
+              {t('bill.add.button')}
+            </RouterButton>
+          }
+        />
+      </Section>
+    </>
   );
 }

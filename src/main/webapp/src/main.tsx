@@ -12,6 +12,9 @@ import { routeTree } from './routeTree.gen';
 import './i18n';
 import { registerServiceWorker } from '@/utils/serviceWorker';
 import { listenForInstallPrompt } from '@/utils/install';
+import queryClient from '@/utils/QueryClient';
+import { offlineQueue, offlineStore } from '@/offline';
+import { keepQueries, restoreQueries } from '@/offline/persist';
 
 // Create a new router instance
 const router = createRouter({ routeTree });
@@ -25,14 +28,19 @@ declare module '@tanstack/react-router' {
 
 registerServiceWorker();
 listenForInstallPrompt();
+// the queue and the data of the forms of the last visit, for offline
+keepQueries(queryClient, offlineStore);
+void offlineQueue.load();
 
 // Render the app
 const rootElement = document.getElementById('root')!;
 if (!rootElement.innerHTML) {
-  const root = ReactDOM.createRoot(rootElement);
-  root.render(
-    <StrictMode>
-      <RouterProvider router={router} />
-    </StrictMode>,
-  );
+  void restoreQueries(queryClient, offlineStore).finally(() => {
+    const root = ReactDOM.createRoot(rootElement);
+    root.render(
+      <StrictMode>
+        <RouterProvider router={router} />
+      </StrictMode>,
+    );
+  });
 }

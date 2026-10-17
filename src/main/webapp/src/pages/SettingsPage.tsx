@@ -28,9 +28,12 @@ import { markAccountDeleted } from '@/utils/accountDeleted';
 import { currencySymbol, DEFAULT_CURRENCY, useFormat } from '@/utils/format';
 import Page from '@/components/layout/Page';
 import BackupSection, { backupUrl } from '@/components/settings/BackupSection';
+import OfflineSection from '@/components/settings/OfflineSection';
 import NotificationSection from '@/components/settings/NotificationSection';
 import InstallSection from '@/components/install/InstallSection';
 import PageHeader from '@/components/ui/PageHeader';
+import { offlineQueue, offlineStore } from '@/offline';
+import { forgetQueries } from '@/offline/persist';
 import VatCountrySelect from '@/components/bill/VatCountrySelect';
 
 const currencies = [
@@ -68,6 +71,7 @@ export default function SettingsPage() {
       {account && <NotificationSection />}
       {account && <InstallSection />}
       {account && <BackupSection />}
+      {account && <OfflineSection />}
       {account?.name && <DeleteAccount name={account.name} />}
     </Page>
   );
@@ -244,6 +248,8 @@ function DeleteAccount({ name }: { name: string }) {
       queryClient.clear();
       clearMappings();
       markAccountDeleted();
+      void forgetQueries(offlineStore);
+      void offlineQueue.discardUser(name);
       location.href = `${baseUrl}/api/auth/logout`;
     },
     onError: () => toast.error(t('errors.backend')),
