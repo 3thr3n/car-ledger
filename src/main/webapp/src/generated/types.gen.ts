@@ -1046,6 +1046,12 @@ export type GetAllBillsResponse = GetAllBillsResponses[keyof GetAllBillsResponse
 
 export type AddNewChargingBillData = {
     body: ChargingBillInput;
+    headers?: {
+        /**
+         * Id created by the client, a request sent again with it answers with the same bill
+         */
+        'Idempotency-Key'?: Uuid;
+    };
     path: {
         carId: number;
     };
@@ -1193,6 +1199,12 @@ export type UpdateChargingBillResponse = UpdateChargingBillResponses[keyof Updat
 
 export type AddNewFuelBillData = {
     body: FuelBillInput;
+    headers?: {
+        /**
+         * Id created by the client, a request sent again with it answers with the same bill
+         */
+        'Idempotency-Key'?: Uuid;
+    };
     path: {
         carId: number;
     };
@@ -1340,6 +1352,12 @@ export type UpdateFuelBillResponse = UpdateFuelBillResponses[keyof UpdateFuelBil
 
 export type AddNewMaintenanceBillData = {
     body: MaintenanceBillInput;
+    headers?: {
+        /**
+         * Id created by the client, a request sent again with it answers with the same bill
+         */
+        'Idempotency-Key'?: Uuid;
+    };
     path: {
         carId: number;
     };
@@ -1487,6 +1505,12 @@ export type UpdateMaintenanceBillResponse = UpdateMaintenanceBillResponses[keyof
 
 export type AddNewMiscellaneousBillData = {
     body: MiscellaneousBillInput;
+    headers?: {
+        /**
+         * Id created by the client, a request sent again with it answers with the same bill
+         */
+        'Idempotency-Key'?: Uuid;
+    };
     path: {
         carId: number;
     };

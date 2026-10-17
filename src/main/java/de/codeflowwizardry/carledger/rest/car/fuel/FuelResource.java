@@ -2,6 +2,7 @@ package de.codeflowwizardry.carledger.rest.car.fuel;
 
 import io.quarkus.security.identity.SecurityIdentity;
 import java.util.List;
+import java.util.UUID;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
@@ -70,9 +71,13 @@ public class FuelResource extends AbstractBillResource<FuelBillRepository, FuelB
 	@APIResponse(responseCode = "404", description = "Car is not for your user.")
 	@APIResponse(responseCode = "400", description = "Validation failed, please check the response", content = @Content(schema = @Schema(implementation = List.class)))
 	@APIResponse(responseCode = "500", description = "Something went wrong while saving. Please ask the server admin for help.")
-	public Response addNewBill(@PathParam("carId") long carId, FuelBillInput fuelBillPojo)
+	public Response addNewBill(@PathParam("carId") long carId,
+			@Parameter(description = "Id created by the client, a request sent again with it answers with the same bill") @HeaderParam(IDEMPOTENCY_KEY) UUID clientId,
+			FuelBillInput fuelBillPojo)
 	{
-		return Response.accepted(FuelBill.convert(fuelBillFactory.create(fuelBillPojo, carId, context.getName())))
+		return Response
+				.accepted(FuelBill.convert(createOnce(carId, clientId,
+						() -> fuelBillFactory.create(fuelBillPojo, carId, context.getName(), clientId))))
 				.build();
 	}
 

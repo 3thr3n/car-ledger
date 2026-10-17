@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.UUID;
 
 import org.hibernate.SessionFactory;
 import org.junit.jupiter.api.AfterEach;
@@ -23,6 +24,7 @@ import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
 import io.restassured.http.ContentType;
+import io.restassured.response.ValidatableResponse;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
@@ -227,6 +229,48 @@ public class FuelResourceTest
 				.then()
 				.statusCode(202)
 				.body("date", is("2024-08-22"));
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
+	void shouldCreateABillWithTheSameClientIdOnce()
+	{
+		String body = """
+				{
+					"date": "2024-08-22",
+					"unit": 30,
+					"pricePerUnit": 188.9,
+					"vatRate": 19
+				}
+				""";
+		String clientId = UUID.randomUUID().toString();
+
+		// sent again after a lost answer, e.g. from the offline queue
+		int first = add(body, clientId).statusCode(202).extract().path("id");
+		int again = add(body, clientId).statusCode(202).extract().path("id");
+		assertEquals(first, again);
+
+		// another id is another bill, the same values exist already
+		add(body, UUID.randomUUID().toString()).statusCode(409);
+		given()
+				.pathParam("carId", carEntity.getId())
+				.queryParam("year", 2024)
+				.get("all")
+				.then()
+				.body("total", is(2));
+	}
+
+	private ValidatableResponse add(String body, String clientId)
+	{
+		return given()
+				.pathParam("carId", carEntity.getId())
+				.header("Idempotency-Key", clientId)
+				.contentType(ContentType.JSON)
+				.body(body)
+				.put()
+				.then();
 	}
 
 	@Test

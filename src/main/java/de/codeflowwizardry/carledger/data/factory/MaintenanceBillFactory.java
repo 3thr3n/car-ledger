@@ -1,5 +1,7 @@
 package de.codeflowwizardry.carledger.data.factory;
 
+import java.util.UUID;
+
 import de.codeflowwizardry.carledger.data.BillEntity;
 import de.codeflowwizardry.carledger.data.BillType;
 import de.codeflowwizardry.carledger.data.MaintenanceBillEntity;
@@ -26,9 +28,9 @@ public class MaintenanceBillFactory extends AbstractBillFactory<MaintenanceBillI
 
 	@Override
 	@Transactional
-	public MaintenanceBillEntity create(MaintenanceBillInput input, long carId, String user)
+	public MaintenanceBillEntity create(MaintenanceBillInput input, long carId, String user, UUID clientId)
 	{
-		BillEntity bill = createEntity(carId, user, input);
+		BillEntity bill = createEntity(carId, user, input, clientId);
 		persistBill(bill);
 
 		MaintenanceBillEntity maintenanceBillEntity = new MaintenanceBillEntity(bill);

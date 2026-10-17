@@ -1,5 +1,7 @@
 package de.codeflowwizardry.carledger.data.factory;
 
+import java.util.UUID;
+
 import de.codeflowwizardry.carledger.data.BillEntity;
 import de.codeflowwizardry.carledger.data.BillType;
 import de.codeflowwizardry.carledger.data.MiscellaneousBillEntity;
@@ -26,9 +28,9 @@ public class MiscellaneousBillFactory extends AbstractBillFactory<MiscellaneousB
 
 	@Override
 	@Transactional
-	public MiscellaneousBillEntity create(MiscellaneousBillInput input, long carId, String user)
+	public MiscellaneousBillEntity create(MiscellaneousBillInput input, long carId, String user, UUID clientId)
 	{
-		BillEntity bill = createEntity(carId, user, input);
+		BillEntity bill = createEntity(carId, user, input, clientId);
 		persistBill(bill);
 
 		MiscellaneousBillEntity miscellaneousBillEntity = new MiscellaneousBillEntity(bill);

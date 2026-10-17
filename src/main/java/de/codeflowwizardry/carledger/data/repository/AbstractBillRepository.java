@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 import de.codeflowwizardry.carledger.data.AbstractBillEntity;
 import de.codeflowwizardry.carledger.data.BillType;
@@ -98,6 +99,18 @@ public abstract class AbstractBillRepository<T extends AbstractBillEntity> imple
 		Map<String, String> all = new HashMap<>(BILL_SORT_FIELDS);
 		all.putAll(fields);
 		return Map.copyOf(all);
+	}
+
+	/**
+	 * @return the bill the client created with the id, if the user may change it
+	 */
+	public Optional<T> findByClientId(long carId, UUID clientId, String username)
+	{
+		return find("from " + entityName + " e join fetch e.bill b"
+				+ " where b.clientId = :clientId and b.car.id = :carId and "
+				+ CarAccess.condition("b.car", Action.WRITE),
+				Map.of("clientId", clientId, "carId", carId, CarAccess.USER, username))
+				.firstResultOptional();
 	}
 
 	/**

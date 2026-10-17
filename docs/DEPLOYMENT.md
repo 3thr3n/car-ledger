@@ -312,6 +312,7 @@ Use the image of a release (a git tag of `main`) or a dev build of `develop`. On
 | 1.12.0    | Which due of a reminder was mailed, the mails of the reminders on by default (0.5.0)                                 |
 | 1.13.0    | The browsers that receive push messages, the switch of the e-mails (on) (0.5.0)                                      |
 | 1.14.0    | Table for the trips of the trip log, protected against changes by a trigger (0.6.0)                                  |
+| 1.15.0    | Id of the client for new entries, a request sent again (offline queue) doesn't create an entry twice (0.6.0)         |
 
 An older image refuses to start on the migrated database, as Flyway finds migrations it does not know. To go back,
 restore the backup. Without the backup, the older image runs on the migrated database (the new columns have defaults)
