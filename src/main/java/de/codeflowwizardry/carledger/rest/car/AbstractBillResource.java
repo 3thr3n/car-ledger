@@ -12,6 +12,7 @@ import de.codeflowwizardry.carledger.data.BillType;
 import de.codeflowwizardry.carledger.data.repository.AbstractBillRepository;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.AttachmentRepository;
+import de.codeflowwizardry.carledger.data.repository.CarAccess.Action;
 import de.codeflowwizardry.carledger.rest.AbstractResource;
 import de.codeflowwizardry.carledger.rest.records.AbstractBill;
 import de.codeflowwizardry.carledger.rest.records.BillPaged;
@@ -79,12 +80,12 @@ public class AbstractBillResource<T extends AbstractBillRepository<E>, E extends
 
 	/**
 	 * @throws NotFoundException
-	 *             if the bill does not exist or does not belong to the car of the
-	 *             user
+	 *             if the bill does not exist or the user may not do the action
+	 *             with its car
 	 */
-	protected E findMyBill(long carId, long billId)
+	protected E findMyBill(long carId, long billId, Action action)
 	{
-		return repository.findBill(carId, billId, context.getName())
+		return repository.findBill(carId, billId, context.getName(), action)
 				.orElseThrow(() -> new NotFoundException("Bill not found"));
 	}
 }

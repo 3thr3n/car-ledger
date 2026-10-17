@@ -6,6 +6,8 @@ import java.time.LocalDate;
 import java.util.Map;
 import java.util.Optional;
 
+import de.codeflowwizardry.carledger.data.repository.CarAccess.Action;
+
 /**
  * Where clause of the queries over the cars of a user in a period
  */
@@ -29,8 +31,8 @@ final class PeriodFilter
 	static String where(String car, String date, long carId, String username, Optional<LocalDate> from,
 			Optional<LocalDate> to, Map<String, Object> params)
 	{
-		String where = " where " + car + ".user.userId = :userId";
-		params.put("userId", username);
+		String where = " where " + CarAccess.condition(car, Action.READ);
+		params.put(CarAccess.USER, username);
 
 		if (carId != ALL_CARS)
 		{

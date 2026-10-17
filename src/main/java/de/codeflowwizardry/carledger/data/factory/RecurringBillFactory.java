@@ -12,6 +12,7 @@ import de.codeflowwizardry.carledger.Utils;
 import de.codeflowwizardry.carledger.data.CarEntity;
 import de.codeflowwizardry.carledger.data.RecurringBillEntity;
 import de.codeflowwizardry.carledger.data.RecurringBillPaymentEntity;
+import de.codeflowwizardry.carledger.data.repository.CarAccess.Action;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import de.codeflowwizardry.carledger.data.repository.RecurringBillPaymentRepository;
 import de.codeflowwizardry.carledger.data.repository.RecurringBillRepository;
@@ -42,7 +43,7 @@ public class RecurringBillFactory
 	{
 		Utils.requireValid(input.validate());
 
-		CarEntity car = carRepository.findById(carId, name);
+		CarEntity car = carRepository.findById(carId, name, Action.WRITE);
 
 		if (car == null)
 		{
@@ -77,7 +78,7 @@ public class RecurringBillFactory
 	@Transactional
 	public RecurringBillEntity update(long carId, long billId, RecurringBillInput input, String user)
 	{
-		RecurringBillEntity bill = recurringBillRepository.getById(carId, user, billId);
+		RecurringBillEntity bill = recurringBillRepository.getById(carId, user, billId, Action.WRITE);
 		if (bill == null)
 		{
 			throw new WrongUserException();
@@ -121,7 +122,7 @@ public class RecurringBillFactory
 	@Transactional
 	public RecurringBillEntity end(long carId, long billId, LocalDate endDate, String user)
 	{
-		RecurringBillEntity bill = recurringBillRepository.getById(carId, user, billId);
+		RecurringBillEntity bill = recurringBillRepository.getById(carId, user, billId, Action.WRITE);
 		if (bill == null)
 		{
 			throw new WrongUserException();

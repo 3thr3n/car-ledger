@@ -95,7 +95,7 @@ public class BackupService
 		{
 			Files files = new Files(zip);
 			List<BackupFile.Car> cars = new ArrayList<>();
-			for (CarEntity car : carRepository.listForUser(user))
+			for (CarEntity car : carRepository.listOwned(user))
 			{
 				cars.add(car(car, user, files));
 			}
@@ -238,7 +238,7 @@ public class BackupService
 		BackupFile backup = parse(entries.read(BackupFile.ENTRY, MAX_JSON));
 
 		AccountEntity account = accountRepository.findByIdentifier(user);
-		if (carRepository.countForUser(user) > 0)
+		if (carRepository.countOwned(user) > 0)
 		{
 			throw new AlreadyPresentException("A backup can only be restored into an account without cars!");
 		}
