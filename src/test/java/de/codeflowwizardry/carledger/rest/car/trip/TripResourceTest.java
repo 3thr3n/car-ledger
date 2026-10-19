@@ -22,6 +22,7 @@ import org.junit.jupiter.api.Test;
 import de.codeflowwizardry.carledger.TripService;
 import de.codeflowwizardry.carledger.data.AccountEntity;
 import de.codeflowwizardry.carledger.data.CarEntity;
+import de.codeflowwizardry.carledger.data.repository.CarAccess.Action;
 import de.codeflowwizardry.carledger.data.TripType;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
@@ -96,6 +97,7 @@ class TripResourceTest
 		car.setManufactureYear(2020);
 		car.setOdometer(50_000);
 		car.setOdometerDate(LocalDate.now().minusMonths(1));
+		car.setTripLog(true);
 		carRepository.persist(car);
 		return car.getId();
 	}
@@ -180,6 +182,22 @@ class TripResourceTest
 				.statusCode(200)
 				.body("total", is(1))
 				.body("data[0].endOdometer", is(50_120));
+	}
+
+	@Test
+	void shouldStartNoTripWithTheTripLogOff()
+	{
+		UUID open = UUID.randomUUID();
+		start(carId, open, startBody(TripType.PRIVATE, 50_000, now.minusHours(1), false)).statusCode(201);
+		tripLog(false);
+
+		// the open trip can still be finished
+		finish(carId, open, finishBody(50_100, now.minusMinutes(30), false))
+				.statusCode(200);
+		// also one sent later from the offline queue
+		start(carId, UUID.randomUUID(), startBody(TripType.PRIVATE, 50_100, now, true))
+				.statusCode(400)
+				.body("[0]", is("The trip log of the car is off, turn it on in the settings of the car!"));
 	}
 
 	@Test
@@ -361,6 +379,12 @@ class TripResourceTest
 		// a missing detail can be added, but not changed
 		assertEquals(1, update("update trip set tp_destination = 'Munich' where id = ?1", open));
 		assertRejected("update trip set tp_destination = 'Berlin' where id = ?1", open, "only be added");
+	}
+
+	private void tripLog(boolean on)
+	{
+		QuarkusTransaction.requiringNew()
+				.run(() -> carRepository.findById(carId, "peter", Action.WRITE).setTripLog(on));
 	}
 
 	private int update(String sql, UUID id)

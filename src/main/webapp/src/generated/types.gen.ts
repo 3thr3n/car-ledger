@@ -195,6 +195,7 @@ export type Car = {
     energyType: EnergyType;
     tankSize?: number;
     batteryCapacity?: number;
+    tripLog: boolean;
     pictureId?: number;
 };
 
@@ -209,6 +210,7 @@ export type CarInput = {
     energyType?: EnergyType;
     tankSize?: number;
     batteryCapacity?: number;
+    tripLog?: boolean;
 };
 
 export type CarOverview = {

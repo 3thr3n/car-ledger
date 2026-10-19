@@ -26,9 +26,13 @@ import de.codeflowwizardry.carledger.data.EnergyType;
  *            optional, in liters, ignored for cars without a tank
  * @param batteryCapacity
  *            optional, in kWh, ignored for cars without a battery
+ * @param tripLog
+ *            trips can be started; without it a new car has none and an
+ *            existing one keeps its setting
  */
 public record CarInput(String name, int year, int odometer, String licensePlate, String vin, LocalDate purchaseDate,
-		BigDecimal purchasePrice, EnergyType energyType, BigDecimal tankSize, BigDecimal batteryCapacity)
+		BigDecimal purchasePrice, EnergyType energyType, BigDecimal tankSize, BigDecimal batteryCapacity,
+		Boolean tripLog)
 {
 	public static final int MAX_PLATE_LENGTH = 20;
 	public static final BigDecimal MAX_PRICE = new BigDecimal("9999999999.99");

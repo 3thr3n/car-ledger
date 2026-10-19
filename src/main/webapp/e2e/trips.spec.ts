@@ -82,6 +82,27 @@ test.describe.serial('trips', () => {
       .click();
   }
 
+  test('turns the trip log of the car on', async ({ page }) => {
+    await page.goto(`/car/${carId}`);
+    const tabs = page.getByRole('tablist');
+    await expect(tabs.getByRole('tab', { name: 'Overview' })).toBeVisible();
+    await expect(tabs.getByRole('tab', { name: 'Trips' })).toHaveCount(0);
+
+    await page.goto(`/car/${carId}/trips`);
+    await expect(
+      page.getByText('The trip log is off for this car'),
+    ).toBeVisible();
+    await page.getByRole('link', { name: 'Edit car' }).click();
+    await page.getByRole('switch', { name: 'Trip log' }).check();
+    await page.getByRole('button', { name: 'Save' }).click();
+
+    await expect(tabs.getByRole('tab', { name: 'Trips' })).toBeVisible();
+    await tabs.getByRole('tab', { name: 'Trips' }).click();
+    await expect(page.getByTestId('current-trip')).toContainText(
+      'No trip is open',
+    );
+  });
+
   test('starts and finishes a trip', async ({ page }) => {
     await openTrips(page);
     await expect(page.getByTestId('current-trip')).toContainText(

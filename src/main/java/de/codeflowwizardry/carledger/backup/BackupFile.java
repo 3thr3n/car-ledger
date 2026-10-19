@@ -43,11 +43,14 @@ public record BackupFile(String format, int version, OffsetDateTime createdAt, S
 	 *            the own picture, <code>null</code> for the generated avatar
 	 * @param trips
 	 *            missing in backups before the trip log
+	 * @param tripLog
+	 *            missing in backups before it could be turned off: on with
+	 *            trips
 	 */
 	public record Car(String name, int year, int odometer, LocalDate odometerDate, String licensePlate, String vin,
 			LocalDate purchaseDate, BigDecimal purchasePrice, EnergyType energyType, BigDecimal tankSize,
 			BigDecimal batteryCapacity, File picture, List<Bill> bills, List<RecurringBill> recurringBills,
-			List<Reminder> reminders, List<Trip> trips)
+			List<Reminder> reminders, List<Trip> trips, Boolean tripLog)
 	{
 	}
 

@@ -5,11 +5,12 @@ import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getMyCarsOptions } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
-import { shortcutCar } from '@/utils/lastCar';
+import { shortcutTripCar } from '@/utils/lastCar';
 
 /**
  * Target of the shortcut "Trip" of the installed app: the trips of the last
- * opened car with "Start trip" or "Finish trip", the garage without cars
+ * opened car with the trip log, with "Start trip" or "Finish trip"; the garage
+ * without such a car
  */
 export const Route = createFileRoute('/trip')({
   component: TripShortcut,
@@ -22,7 +23,7 @@ function TripShortcut() {
 
   useEffect(() => {
     if (!cars) return;
-    const car = shortcutCar(cars);
+    const car = shortcutTripCar(cars);
     if (car?.id === undefined) {
       navigate({ to: '/car', replace: true });
     } else {

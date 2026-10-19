@@ -251,6 +251,8 @@ car:
     odometerHelpEdit: "Geschätzt aus dem letzten Stand und den Tankfüllungen seitdem. Eine Änderung speichert einen neuen Stand ab heute."
     details: "Details"
     detailsHelp: "Optional. Der Kaufpreis ergibt mit den Kosten die Gesamtkosten des Besitzes."
+    tripLog: "Fahrtenbuch"
+    tripLogHelp: "Fahrten mit Kilometerstand starten und beenden, z. B. für einen Dienstwagen. Fügt den Reiter Fahrten hinzu."
     licensePlate: "Kennzeichen"
     licensePlatePlaceholder: "z. B. M-AB 1234"
     vin: "FIN"
@@ -756,6 +758,10 @@ trip:
     ODOMETER_BELOW_PREVIOUS: "Später gesendet, der Kilometerstand liegt unter einem früheren Stand"
     ODOMETER_ABOVE_NEXT: "Später gesendet, der Kilometerstand liegt über einem späteren Stand"
     OVERLAPS: "Später gesendet, überschneidet sich mit einer anderen Fahrt"
+  off:
+    title: "Das Fahrtenbuch ist für dieses Auto aus"
+    text: "Schalte es in den Einstellungen des Autos ein, um Fahrten zu starten. Bisherige Fahrten bleiben in der Liste."
+    turnOn: "Auto bearbeiten"
   pending:
     title: "Noch nicht gesendet"
     subtitle: "Ohne Verbindung gestartet oder beendet und auf diesem Gerät gespeichert"

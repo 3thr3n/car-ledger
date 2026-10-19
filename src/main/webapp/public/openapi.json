@@ -541,12 +541,15 @@
           "batteryCapacity" : {
             "type" : "number"
           },
+          "tripLog" : {
+            "type" : "boolean"
+          },
           "pictureId" : {
             "type" : "integer",
             "format" : "int64"
           }
         },
-        "required" : [ "currentOdometer", "energyType" ]
+        "required" : [ "currentOdometer", "energyType", "tripLog" ]
       },
       "CarInput" : {
         "type" : "object",
@@ -582,6 +585,9 @@
           },
           "batteryCapacity" : {
             "type" : "number"
+          },
+          "tripLog" : {
+            "type" : "boolean"
           }
         }
       },

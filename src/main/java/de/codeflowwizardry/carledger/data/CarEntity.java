@@ -40,6 +40,10 @@ public class CarEntity
 	@Column(name = "c_battery_capacity")
 	private BigDecimal batteryCapacity;
 
+	/** the trip log (Fahrtenbuch) is used: trips can be started */
+	@Column(name = "c_trip_log", nullable = false)
+	private boolean tripLog;
+
 	/** attachment with the picture, the generated avatar is shown without */
 	@Column(name = "c_picture_id")
 	private Long pictureId;
@@ -171,6 +175,16 @@ public class CarEntity
 	public void setBatteryCapacity(BigDecimal batteryCapacity)
 	{
 		this.batteryCapacity = batteryCapacity;
+	}
+
+	public boolean isTripLog()
+	{
+		return tripLog;
+	}
+
+	public void setTripLog(boolean tripLog)
+	{
+		this.tripLog = tripLog;
 	}
 
 	public Long getPictureId()

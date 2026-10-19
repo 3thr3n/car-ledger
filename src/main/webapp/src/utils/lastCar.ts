@@ -30,6 +30,16 @@ export function shortcutCar(cars: Car[]): Car | undefined {
   return cars.find((car) => car.id === last) ?? cars[0];
 }
 
+/**
+ * The car of the shortcut "Trip": the last opened one with the trip log, else
+ * the first one with it; undefined without such a car
+ */
+export function shortcutTripCar(cars: Car[]): Car | undefined {
+  const last = lastCarId();
+  const withLog = cars.filter((car) => car.tripLog);
+  return withLog.find((car) => car.id === last) ?? withLog[0];
+}
+
 /** refuel for cars with a tank, charging for electric cars */
 export const shortcutType = (car: Car) =>
   hasTank(car.energyType) ? BillType.FUEL : BillType.CHARGING;

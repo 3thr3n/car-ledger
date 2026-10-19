@@ -1,9 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { BillType, Car, EnergyType } from '@/generated';
-import { rememberCar, shortcutCar, shortcutType } from '@/utils/lastCar';
+import {
+  rememberCar,
+  shortcutCar,
+  shortcutTripCar,
+  shortcutType,
+} from '@/utils/lastCar';
 
-const car = (id: number, energyType = EnergyType.PETROL) =>
-  ({ id, name: `Car ${id}`, energyType }) as Car;
+const car = (id: number, energyType = EnergyType.PETROL, tripLog = false) =>
+  ({ id, name: `Car ${id}`, energyType, tripLog }) as Car;
+const logged = (id: number) => car(id, EnergyType.PETROL, true);
 
 describe('shortcut "Add refuel"', () => {
   // the tests run in Node, without the storage of the browser
@@ -28,6 +34,17 @@ describe('shortcut "Add refuel"', () => {
 
   it('has no car without cars', () => {
     expect(shortcutCar([])).toBeUndefined();
+  });
+
+  it('takes the last opened car with the trip log for the trips', () => {
+    rememberCar(3);
+    expect(shortcutTripCar([logged(1), car(2), logged(3)])?.id).toBe(3);
+  });
+
+  it('takes the first car with the trip log for the trips', () => {
+    rememberCar(2);
+    expect(shortcutTripCar([car(1), car(2), logged(3)])?.id).toBe(3);
+    expect(shortcutTripCar([car(1), car(2)])).toBeUndefined();
   });
 
   it('charges electric cars and refuels the others', () => {

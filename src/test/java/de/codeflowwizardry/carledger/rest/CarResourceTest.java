@@ -369,6 +369,49 @@ class CarResourceTest
 	@TestSecurity(user = "peter", roles = {
 			"user"
 	})
+	void shouldTurnTheTripLogOnAndKeepItWithoutTheValue()
+	{
+		given().when().get("{id}", carId).then().statusCode(200).body("tripLog", is(false));
+
+		given()
+				.body("""
+						{ "name": "Normal car", "year": 2022, "odometer": 0, "tripLog": true }
+						""")
+				.contentType(ContentType.JSON)
+				.when()
+				.post("{id}", carId)
+				.then()
+				.statusCode(200)
+				.body("tripLog", is(true));
+
+		// e.g. an older app that doesn't know the setting
+		given()
+				.body("""
+						{ "name": "Normal car", "year": 2022, "odometer": 0 }
+						""")
+				.contentType(ContentType.JSON)
+				.when()
+				.post("{id}", carId)
+				.then()
+				.statusCode(200)
+				.body("tripLog", is(true));
+
+		given()
+				.body("""
+						{ "name": "Normal car", "year": 2022, "odometer": 0, "tripLog": false }
+						""")
+				.contentType(ContentType.JSON)
+				.when()
+				.post("{id}", carId)
+				.then()
+				.statusCode(200)
+				.body("tripLog", is(false));
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
 	void shouldRejectImpossibleSizes()
 	{
 		given()

@@ -17,6 +17,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.zip.ZipEntry;
@@ -153,6 +154,7 @@ class BackupTest
 		car.setEnergyType(EnergyType.PLUG_IN_HYBRID);
 		car.setTankSize(BigDecimal.valueOf(40));
 		car.setBatteryCapacity(BigDecimal.valueOf(13));
+		car.setTripLog(true);
 		carRepository.persist(car);
 		return car.getId();
 	}
@@ -273,6 +275,7 @@ class BackupTest
 				.body("[0].pictureId", notNullValue())
 				.body("[0].vin", is("WVWZZZ1KZ6W000001"))
 				.body("[0].batteryCapacity", is(13.0F))
+				.body("[0].tripLog", is(true))
 				.extract().jsonPath().getLong("[0].id");
 
 		given().when().get("/api/bill/{carId}/fuel/all", restored).then()
@@ -310,10 +313,24 @@ class BackupTest
 		Map<String, byte[]> entries = unzip(download());
 		deleteCar();
 		ObjectNode json = (ObjectNode) mapper.readTree(entries.get("backup.json"));
-		((ObjectNode) json.withArray("cars").get(0)).remove("trips");
+		((ObjectNode) json.withArray("cars").get(0)).remove(List.of("trips", "tripLog"));
 		entries.put("backup.json", mapper.writeValueAsBytes(json));
 
 		restore(zip(entries)).statusCode(200).body("trips", is(0));
+		given().when().get("/api/car/my").then().body("[0].tripLog", is(false));
+	}
+
+	@Test
+	void shouldTurnTheTripLogOnForTripsOfABackupWithoutTheSetting() throws IOException
+	{
+		Map<String, byte[]> entries = unzip(download());
+		deleteCar();
+		ObjectNode json = (ObjectNode) mapper.readTree(entries.get("backup.json"));
+		((ObjectNode) json.withArray("cars").get(0)).remove("tripLog");
+		entries.put("backup.json", mapper.writeValueAsBytes(json));
+
+		restore(zip(entries)).statusCode(200).body("trips", is(2));
+		given().when().get("/api/car/my").then().body("[0].tripLog", is(true));
 	}
 
 	@Test
