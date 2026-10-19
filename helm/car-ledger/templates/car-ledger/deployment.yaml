@@ -97,6 +97,10 @@ spec:
                   key: {{ .privateKeyKey }}
             {{- end }}
             {{- end }}
+            {{- if include "carLedger.trustSources" . }}
+            - name: CARLEDGER_TRUST_DIR
+              value: /etc/car-ledger/trust
+            {{- end }}
             {{- with .Values.carLedger.mail }}
             {{- if .host }}
             - name: CARLEDGER_MAIL_ENABLED
@@ -161,3 +165,15 @@ spec:
             {{- toYaml .Values.carLedger.readinessProbe | nindent 12 }}
           resources:
             {{- toYaml .Values.carLedger.resources | nindent 12 }}
+          {{- if include "carLedger.trustSources" . }}
+          volumeMounts:
+            - name: trust
+              mountPath: /etc/car-ledger/trust
+              readOnly: true
+      volumes:
+        # the certificates to trust, read once at the start (a renewed CA needs a restart)
+        - name: trust
+          projected:
+            sources:
+              {{- include "carLedger.trustSources" . | trim | nindent 14 }}
+          {{- end }}

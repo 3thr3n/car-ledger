@@ -173,6 +173,8 @@ with the role `user`, the roles are missing in the tokens of the client.
   (`Authorization: Bearer …`), e.g. of a script deciding car requests. See [Service accounts](#service-accounts).
 - **E-mail**: `carLedger.mail.host` sends notifications by e-mail, see [E-mail](#e-mail).
 - **Push**: the notifications reach the browsers as push messages, on by default, see [Push](#push).
+- **Self-signed certificates**: the app trusts the CA of the ingresses and further certificates for its own HTTPS
+  requests (login, SMTP, webhooks), see [Self-signed certificates](#self-signed-certificates).
 - **Network policies**: only the app reaches its PostgreSQL and Infinispan, only Keycloak and authentik their
   PostgreSQL (`networkPolicy.enabled`, on by default in all charts; needs a network plugin that enforces them). Further
   sources, e.g. a backup tool: `networkPolicy.extraFrom`. `kubectl exec … pg_dump` (see [Operations](#operations))
@@ -260,6 +262,35 @@ tokens with the `client_credentials` grant of the provider *CarLedger*, the user
 `admin` and an app password, see the
 [authentik documentation](https://docs.goauthentik.io/add-secure-apps/providers/oauth2/client_credentials/).
 
+### Self-signed certificates
+
+The app makes HTTPS requests of its own: to the identity provider (the login), the SMTP server, webhooks and the push
+services. It trusts the public CAs, and the certificates of `carLedger.trust` besides them. Without them a login at an
+identity provider with a self-signed certificate fails with `PKIX path building failed` in the log of the app.
+
+- **The CA of the ingresses** (`carLedger.trust.ingressCA`, on by default): the `ca.crt` of the TLS secret of the
+  ingress of the app (`car-ledger-ingress-tls`) and, without `carLedger.auth.url`, of the identity provider of the
+  charts (`keycloak.<ingress.host>-tls` or `authentik-ingress-tls`). cert-manager writes it for a CA or a self-signed
+  issuer; a secret without it (e.g. of a public issuer) is skipped.
+- **Further certificates** (`carLedger.trust.certificates`): a key of a secret or a ConfigMap each, with one or several
+  certificates as PEM, e.g. the CA of a company or a self-signed certificate created by hand (its `tls.crt`):
+
+  ```yaml
+  carLedger:
+    trust:
+      certificates:
+        - secret: keycloak.example.com-tls
+          key: tls.crt
+        - configMap: company-ca
+          key: ca.pem
+  ```
+
+With the stack chart the values are under `app:`. The certificates are read at the start of the app: after a new CA
+(or a secret created after the app), restart it (`kubectl rollout restart deployment/car-ledger`). The log of the start
+names the trusted certificates (`Trusting 2 certificate(s) ...`).
+
+Outside of Kubernetes, the environment variable `CARLEDGER_TRUST_DIR` points to a directory with the PEM files.
+
 ## Upgrading to the current version
 
 Checklist for installations running an older image of the app.
@@ -343,6 +374,10 @@ kubectl set env deployment/car-ledger QUARKUS_FLYWAY_IGNORE_FUTURE_MIGRATIONS=tr
   keeps the old behaviour.
 - **Push** (0.5.0): on by default, the chart creates the secret `car-ledger-push` with the key of the server. Each user
   turns it on per device in the settings, see [Push](#push). The app needs outgoing HTTPS to the push services.
+- **Trusted certificates** (0.6.0): the app trusts the `ca.crt` of the ingress secrets (of a cert-manager CA or
+  self-signed issuer) for its own HTTPS requests, further ones with `carLedger.trust.certificates`, see
+  [Self-signed certificates](#self-signed-certificates). An own truststore in `JAVA_OPTS` is kept, the certificates
+  are added to it.
 - **Offline entries** (0.6.0): refuels and charges made without a connection are kept on the device (IndexedDB) and
   sent later, with the header `Idempotency-Key`, so a request sent again doesn't create an entry twice (migration
   1.15.0). For the forms the app keeps the account and the cars on the device as well; the logout removes them. A

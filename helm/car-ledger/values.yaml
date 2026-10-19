@@ -92,6 +92,21 @@ carLedger:
     appUrl:
     # when the due reminders are mailed (Quartz cron), in UTC: 07:00 UTC by default, "off" for never
     remindersCron: "0 0 7 * * ?"
+  # certificates the app trusts for its own HTTPS requests (the login at the identity provider, SMTP,
+  # webhooks, push) besides the public CAs, e.g. self-signed ones or the CA of a company, as PEM. See
+  # docs/DEPLOYMENT.md#self-signed-certificates
+  trust:
+    # the ca.crt of the TLS secrets of the ingresses, as cert-manager writes it for a CA or self-signed
+    # issuer: of the app (car-ledger-ingress-tls) and, without auth.url, of the identity provider of the
+    # charts (keycloak.<ingress.host>-tls or authentik-ingress-tls). Skipped while a secret or the key is
+    # missing
+    ingressCA: true
+    # further certificates, a key of a secret or a ConfigMap each (one or several certificates), e.g.
+    # - secret: keycloak.example.com-tls
+    #   key: ca.crt
+    # - configMap: company-ca
+    #   key: ca.pem
+    certificates: []
   # probes of the app, the paths are fixed. The startup probe gives a slow start (small CPU limit,
   # database migrations) failureThreshold * periodSeconds, 150 s by default, before the pod is restarted
   startupProbe:
