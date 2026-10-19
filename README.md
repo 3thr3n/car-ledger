@@ -182,6 +182,11 @@ cd src/main/webapp && yarn test
 # end-to-end tests, start Quarkus (with dev services, needs Docker) and Vite themselves,
 # running servers are reused
 cd src/main/webapp && npx playwright install chromium && yarn test:e2e
+
+# charts: the template tests of helm/<chart>/tests (plugin helm-unittest) and the rendered
+# resources against the schemas of Kubernetes (kubeconform), after helm dependency update
+helm unittest --with-subchart=false helm/car-ledger helm/keycloak helm/authentik helm/stack
+helm/validate-manifests.sh
 ```
 
 The build writes the OpenAPI spec of the backend to `src/main/webapp/public/openapi.json`, the frontend client is

@@ -1,0 +1,95 @@
+suite: ingress and HTTPRoute of the app
+templates:
+  - templates/car-ledger/ingress.yaml
+  - templates/car-ledger/httproute.yaml
+release:
+  name: car-ledger
+  namespace: car-ledger
+set:
+  ingress.host: example.com
+tests:
+  - it: serves car-ledger.<host> with TLS
+    template: templates/car-ledger/ingress.yaml
+    asserts:
+      - equal:
+          path: spec.rules[0].host
+          value: car-ledger.example.com
+      - equal:
+          path: spec.tls[0]
+          value:
+            hosts: [car-ledger.example.com]
+            secretName: car-ledger-ingress-tls
+      - equal:
+          path: spec.ingressClassName
+          value: nginx
+
+  - it: takes the host of the stack chart
+    template: templates/car-ledger/ingress.yaml
+    set:
+      ingress.host: ""
+      global.host: example.org
+    asserts:
+      - equal:
+          path: spec.rules[0].host
+          value: car-ledger.example.org
+
+  - it: lets nginx pass uploads up to the request size of the attachments
+    template: templates/car-ledger/ingress.yaml
+    set:
+      carLedger.attachments.maxRequestSize: 20M
+    asserts:
+      - equal:
+          path: metadata.annotations["nginx.ingress.kubernetes.io/proxy-body-size"]
+          value: 20m
+
+  - it: keeps an own body size of nginx
+    template: templates/car-ledger/ingress.yaml
+    set:
+      ingress.annotations:
+        nginx.ingress.kubernetes.io/proxy-body-size: 50m
+    asserts:
+      - equal:
+          path: metadata.annotations["nginx.ingress.kubernetes.io/proxy-body-size"]
+          value: 50m
+
+  - it: has no annotation of nginx for another ingress class
+    template: templates/car-ledger/ingress.yaml
+    set:
+      ingress.className: traefik
+    asserts:
+      - notExists:
+          path: metadata.annotations
+
+  - it: gets the certificate of cert-manager
+    template: templates/car-ledger/ingress.yaml
+    set:
+      ingress.certManager: lets-encrypt
+    asserts:
+      - equal:
+          path: metadata.annotations["cert-manager.io/cluster-issuer"]
+          value: lets-encrypt
+
+  - it: has no ingress behind a Gateway
+    set:
+      ingress.enabled: false
+      httpRoute.enabled: true
+    asserts:
+      - hasDocuments:
+          count: 0
+        template: templates/car-ledger/ingress.yaml
+      - equal:
+          path: spec.hostnames
+          value: [car-ledger.example.com]
+        template: templates/car-ledger/httproute.yaml
+      - equal:
+          path: spec.parentRefs
+          value:
+            - name: gateway
+              sectionName: https
+        template: templates/car-ledger/httproute.yaml
+
+  - it: has no HTTPRoute by default
+    template: templates/car-ledger/httproute.yaml
+    asserts:
+      - hasDocuments:
+          count: 0

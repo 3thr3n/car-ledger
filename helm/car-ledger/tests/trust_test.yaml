@@ -1,0 +1,115 @@
+suite: certificates the app trusts
+templates:
+  - templates/car-ledger/deployment.yaml
+release:
+  name: car-ledger
+  namespace: car-ledger
+set:
+  ingress.host: example.com
+tests:
+  - it: trusts the CA of the ingresses of the app and of Keycloak by default
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: CARLEDGER_TRUST_DIR
+            value: /etc/car-ledger/trust
+      - equal:
+          path: spec.template.spec.containers[0].volumeMounts
+          value:
+            - name: trust
+              mountPath: /etc/car-ledger/trust
+              readOnly: true
+      - equal:
+          path: spec.template.spec.volumes[0].projected.sources
+          value:
+            - secret:
+                name: car-ledger-ingress-tls
+                optional: true
+                items:
+                  - key: ca.crt
+                    path: ingress-ca.crt
+            - secret:
+                name: keycloak.example.com-tls
+                optional: true
+                items:
+                  - key: ca.crt
+                    path: login-ca.crt
+
+  - it: trusts the CA of the ingress of authentik in the stack chart
+    set:
+      global.authentik.enabled: true
+    asserts:
+      - equal:
+          path: spec.template.spec.volumes[0].projected.sources[1].secret.name
+          value: authentik-ingress-tls
+
+  - it: trusts only the CA of its own ingress with another identity provider
+    set:
+      carLedger.auth.url: https://idp.example.org/realms/cars
+    asserts:
+      - lengthEqual:
+          path: spec.template.spec.volumes[0].projected.sources
+          count: 1
+      - equal:
+          path: spec.template.spec.volumes[0].projected.sources[0].secret.name
+          value: car-ledger-ingress-tls
+
+  - it: adds further certificates of secrets and ConfigMaps
+    set:
+      carLedger.trust.ingressCA: false
+      carLedger.trust.certificates:
+        - secret: keycloak.example.com-tls
+          key: tls.crt
+        - configMap: company-ca
+          key: ca.pem
+        - secret: other-ca
+    asserts:
+      - equal:
+          path: spec.template.spec.volumes[0].projected.sources
+          value:
+            - secret:
+                name: keycloak.example.com-tls
+                items:
+                  - key: tls.crt
+                    path: 0-tls.crt
+            - configMap:
+                name: company-ca
+                items:
+                  - key: ca.pem
+                    path: 1-ca.pem
+            - secret:
+                name: other-ca
+                items:
+                  - key: ca.crt
+                    path: 2-ca.crt
+
+  - it: needs a secret or a ConfigMap for a certificate
+    set:
+      carLedger.trust.certificates:
+        - key: ca.crt
+    asserts:
+      - failedTemplate:
+          errorPattern: carLedger.trust.certificates needs a secret or a configMap
+
+  - it: mounts nothing without certificates
+    set:
+      carLedger.trust.ingressCA: false
+    asserts:
+      - notExists:
+          path: spec.template.spec.volumes
+      - notExists:
+          path: spec.template.spec.containers[0].volumeMounts
+      - notContains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: CARLEDGER_TRUST_DIR
+          any: true
+
+  - it: has no ingress CA behind a Gateway
+    set:
+      ingress.enabled: false
+      httpRoute.enabled: true
+    asserts:
+      - notExists:
+          path: spec.template.spec.volumes
