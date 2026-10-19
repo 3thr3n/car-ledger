@@ -2,11 +2,17 @@ import { expect, test } from '@playwright/test';
 import { aliceApi, deleteAllCars } from './helpers';
 
 /** creates the only car of alice, returns its id */
-async function createCar(energyType: string) {
+async function createCar(energyType: string, tripLog = false) {
   await deleteAllCars();
   const api = await aliceApi();
   const created = await api.put('/api/car/my', {
-    data: { name: `E2E ${energyType}`, year: 2020, odometer: 1000, energyType },
+    data: {
+      name: `E2E ${energyType}`,
+      year: 2020,
+      odometer: 1000,
+      energyType,
+      tripLog,
+    },
   });
   expect(created.ok()).toBeTruthy();
   const cars = (await (await api.get('/api/car/my')).json()) as {
@@ -57,8 +63,14 @@ test.describe.serial('shortcut "Trip"', () => {
     await expect(page).toHaveURL(/\/car$/);
   });
 
+  test('opens the garage without a car with the trip log', async ({ page }) => {
+    await createCar('PETROL');
+    await page.goto('/trip');
+    await expect(page).toHaveURL(/\/car$/);
+  });
+
   test('opens the trips of the car', async ({ page }) => {
-    const id = await createCar('PETROL');
+    const id = await createCar('PETROL', true);
     await page.goto('/trip');
     await expect(page).toHaveURL(new RegExp(`/car/${id}/trips$`));
     await expect(

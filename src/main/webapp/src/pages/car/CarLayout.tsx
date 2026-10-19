@@ -28,14 +28,17 @@ import {
 import NotFoundPage from '@/pages/NotFoundPage';
 import ErrorPage from '@/pages/ErrorPage';
 
-/** the entry types of the car between the overview and the trips */
-const tabsFor = (energyType?: EnergyType) => [
+/**
+ * The entry types of the car between the overview and the reminders, the trips
+ * only with the trip log
+ */
+const tabsFor = (energyType?: EnergyType, tripLog?: boolean) => [
   { key: 'overview', to: '/car/$id' } as const,
   ...billTypesFor(energyType).map((meta) => ({
     key: meta.type,
     to: meta.listRoute,
   })),
-  { key: 'trips', to: '/car/$id/trips' } as const,
+  ...(tripLog ? [{ key: 'trips', to: '/car/$id/trips' } as const] : []),
   { key: 'reminders', to: '/car/$id/reminders' } as const,
 ];
 
@@ -68,7 +71,7 @@ export default function CarLayout({ id }: { id: number }) {
   const activeTab =
     rest === ''
       ? 'overview'
-      : rest === '/reminders' || rest === '/trips'
+      : rest === '/reminders' || (rest === '/trips' && car?.tripLog)
         ? (rest.slice(1) as PageTab)
         : (Object.values(BillType).find(
             (type) => rest === `/bill/${type.toLowerCase()}`,
@@ -181,7 +184,7 @@ export default function CarLayout({ id }: { id: number }) {
               allowScrollButtonsMobile
               sx={{ mb: 3, borderBottom: 1, borderColor: 'divider' }}
             >
-              {tabsFor(car?.energyType).map((tab) => (
+              {tabsFor(car?.energyType, car?.tripLog).map((tab) => (
                 <RouterTab
                   key={tab.key}
                   value={tab.key}

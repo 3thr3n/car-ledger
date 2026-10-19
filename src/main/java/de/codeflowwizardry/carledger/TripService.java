@@ -120,6 +120,10 @@ public class TripService
 		CarEntity car = lockedCar(carId, username);
 
 		Optional<TripEntity> existing = tripRepository.findByIdOptional(id);
+		if (existing.isEmpty() && !car.isTripLog())
+		{
+			Utils.requireValid(List.of("The trip log of the car is off, turn it on in the settings of the car!"));
+		}
 		if (existing.isPresent())
 		{
 			TripEntity trip = existing.get();

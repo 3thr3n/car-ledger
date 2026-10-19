@@ -251,6 +251,8 @@ car:
     odometerHelpEdit: "Estimated from the last reading and the refuels since. Changing it saves a new reading as of today."
     details: "Details"
     detailsHelp: "Optional. The purchase price adds up to the cost of ownership."
+    tripLog: "Trip log"
+    tripLogHelp: "Start and finish trips with the odometer, e.g. for a company car (Fahrtenbuch). Adds the tab Trips."
     licensePlate: "License plate"
     licensePlatePlaceholder: "e.g. M-AB 1234"
     vin: "VIN"
@@ -756,6 +758,10 @@ trip:
     ODOMETER_BELOW_PREVIOUS: "Sent later, its odometer is below an earlier reading"
     ODOMETER_ABOVE_NEXT: "Sent later, its odometer is above a later reading"
     OVERLAPS: "Sent later, it overlaps another trip"
+  off:
+    title: "The trip log is off for this car"
+    text: "Turn it on in the settings of the car to start trips. Trips logged before stay in the list."
+    turnOn: "Edit car"
   pending:
     title: "Not sent yet"
     subtitle: "Started or finished without a connection and kept on this device"

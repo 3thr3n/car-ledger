@@ -204,7 +204,7 @@ public class BackupService
 		return new BackupFile.Car(car.getName(), car.getManufactureYear(), car.getOdometer(), car.getOdometerDate(),
 				car.getLicensePlate(), car.getVin(), car.getPurchaseDate(), car.getPurchasePrice(),
 				car.getEnergyType(), car.getTankSize(), car.getBatteryCapacity(), picture, bills, recurringBills,
-				reminders, trips);
+				reminders, trips, car.isTripLog());
 	}
 
 	private static BackupFile.Bill bill(BillEntity bill, List<BackupFile.File> files)
@@ -333,7 +333,7 @@ public class BackupService
 	{
 		CarInput input = new CarInput(backup.name(), backup.year(), backup.odometer(), backup.licensePlate(),
 				backup.vin(), backup.purchaseDate(), backup.purchasePrice(), backup.energyType(), backup.tankSize(),
-				backup.batteryCapacity());
+				backup.batteryCapacity(), backup.tripLog());
 		List<String> errors = new ArrayList<>(input.validateDetails());
 		if (StringUtils.isBlank(backup.name()) || backup.odometer() < 0)
 		{
@@ -357,6 +357,7 @@ public class BackupService
 		car.setEnergyType(input.energyTypeOrDefault());
 		car.setTankSize(input.normalizedTankSize());
 		car.setBatteryCapacity(input.normalizedBatteryCapacity());
+		car.setTripLog(backup.tripLog() != null ? backup.tripLog() : !list(backup.trips()).isEmpty());
 		carRepository.persist(car);
 
 		for (BackupFile.Bill bill : list(backup.bills()))

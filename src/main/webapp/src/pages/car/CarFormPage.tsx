@@ -2,9 +2,11 @@ import {
   Box,
   Button,
   Card,
+  FormControlLabel,
   Grid,
   MenuItem,
   Stack,
+  Switch,
   TextField,
   Typography,
 } from '@mui/material';
@@ -123,6 +125,7 @@ function CarForm({
   const [batteryCapacity, setBatteryCapacity] = useState(
     initial.batteryCapacity,
   );
+  const [tripLog, setTripLog] = useState(initial.tripLog ?? false);
   const [licensePlate, setLicensePlate] = useState(initial.licensePlate ?? '');
   const [vin, setVin] = useState(initial.vin ?? '');
   const [purchaseDate, setPurchaseDate] = useState<Dayjs | null>(
@@ -238,6 +241,7 @@ function CarForm({
         ? convert(tankSize, units.volume.toLiters)
         : undefined,
       batteryCapacity: hasBattery(energyType) ? batteryCapacity : undefined,
+      tripLog,
     };
     if (id) {
       update.mutate({ path: { id }, body });
@@ -411,6 +415,20 @@ function CarForm({
               />
             </Grid>
           </Grid>
+        </Box>
+        <Box>
+          <FormControlLabel
+            control={
+              <Switch
+                checked={tripLog}
+                onChange={(event) => setTripLog(event.target.checked)}
+              />
+            }
+            label={t('car.form.tripLog')}
+          />
+          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+            {t('car.form.tripLogHelp')}
+          </Typography>
         </Box>
         <Stack
           direction="row"

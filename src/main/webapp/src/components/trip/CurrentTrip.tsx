@@ -2,16 +2,22 @@ import { Alert, Box, Button, Skeleton, Stack, Typography } from '@mui/material';
 import CloudOffRounded from '@mui/icons-material/CloudOffRounded';
 import FlagRounded from '@mui/icons-material/FlagRounded';
 import PlayArrowRounded from '@mui/icons-material/PlayArrowRounded';
+import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { getMyCarOptions } from '@/generated/@tanstack/react-query.gen';
+import EmptyState from '@/components/ui/EmptyState';
 import Section from '@/components/ui/Section';
+import { RouterButton } from '@/components/ui/links';
 import { useFormat } from '@/utils/format';
+import { localClient } from '@/utils/QueryClient';
 import { TripFinishDialog, TripStartDialog } from './TripDialogs';
 import { useTripState } from './useTrip';
 
 /**
  * The open trip of the car with "Finish trip", otherwise "Start trip". Works
- * without a connection with the state kept on the device.
+ * without a connection with the state kept on the device. With the trip log
+ * turned off no trip starts, an open one can still be finished.
  */
 export default function CurrentTrip({ carId }: { carId: number }) {
   const { t } = useTranslation();
@@ -20,6 +26,30 @@ export default function CurrentTrip({ carId }: { carId: number }) {
   const [starting, setStarting] = useState(false);
   const [finishing, setFinishing] = useState(false);
   const { open } = state;
+  // loaded by the layout of the car already
+  const { data: car } = useQuery(
+    getMyCarOptions({ client: localClient, path: { id: carId } }),
+  );
+
+  if (car && !car.tripLog && !open) {
+    return (
+      <Section>
+        <EmptyState
+          title={t('trip.off.title')}
+          text={t('trip.off.text')}
+          action={
+            <RouterButton
+              to="/car/$id/edit"
+              params={{ id: `${carId}` }}
+              variant="contained"
+            >
+              {t('trip.off.turnOn')}
+            </RouterButton>
+          }
+        />
+      </Section>
+    );
+  }
 
   return (
     <Section title={t('trip.current.title')}>
