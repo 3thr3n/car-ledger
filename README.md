@@ -187,6 +187,23 @@ cd src/main/webapp && npx playwright install chromium && yarn test:e2e
 The build writes the OpenAPI spec of the backend to `src/main/webapp/public/openapi.json`, the frontend client is
 generated from it with `yarn openapi-ts`. Commit both, the CI fails if they are outdated.
 
+### Local cluster
+
+`hack/kind/up.sh` creates a cluster in Docker with [kind](https://kind.sigs.k8s.io) and installs the stack chart from
+the working copy: Cilium (also as ingress controller) or ingress-nginx, local-path or Longhorn, and cert-manager with a
+self-signed CA, which nobody trusts, like in many company clusters. It needs Docker, kind, kubectl and helm and the
+ports 80 and 443.
+
+```bash
+hack/kind/up.sh                    # Keycloak, Cilium, local-path, builds the image of the working copy
+hack/kind/up.sh --idp authentik --ingress nginx --storage longhorn --no-build
+node hack/kind/login.cjs keycloak alice alice   # logs in with a browser, the user has to exist
+hack/kind/down.sh
+```
+
+The app is https://car-ledger.localhost, Keycloak https://keycloak.localhost and authentik https://authentik.localhost;
+the CA is in `target/kind/ca.crt`. Running `up.sh` again upgrades the stack.
+
 ## Contributing
 
 Contributions are welcome! Please follow these steps to contribute:
