@@ -31,3 +31,38 @@ domain, global.authentik.enabled switches the defaults of the login to the chart
 {{- define "carLedger.authSecret" -}}
 {{- .Values.carLedger.auth.existingSecret | default (ternary "car-ledger-oidc" "keycloak" (eq (include "carLedger.withAuthentik" .) "true")) -}}
 {{- end }}
+
+{{/* Sources of the projected volume with the certificates to trust (carLedger.trust), empty without any */}}
+{{- define "carLedger.trustSources" -}}
+{{- if and .Values.carLedger.trust.ingressCA .Values.ingress.enabled }}
+- secret:
+    name: car-ledger-ingress-tls
+    # created by cert-manager after the ingress, without a CA (e.g. a public issuer) it has no ca.crt
+    optional: true
+    items:
+      - key: ca.crt
+        path: ingress-ca.crt
+{{- if not .Values.carLedger.auth.url }}
+# the ingress of the identity provider of the charts (keycloak.<host> or authentik), maybe of another issuer
+- secret:
+    name: {{ ternary "authentik-ingress-tls" (printf "keycloak.%s-tls" (include "carLedger.host" .)) (eq (include "carLedger.withAuthentik" .) "true") }}
+    optional: true
+    items:
+      - key: ca.crt
+        path: login-ca.crt
+{{- end }}
+{{- end }}
+{{- range $index, $certificate := .Values.carLedger.trust.certificates }}
+{{- $key := $certificate.key | default "ca.crt" }}
+{{- if $certificate.secret }}
+- secret:
+    name: {{ $certificate.secret }}
+{{- else }}
+- configMap:
+    name: {{ required "carLedger.trust.certificates needs a secret or a configMap" $certificate.configMap }}
+{{- end }}
+    items:
+      - key: {{ $key }}
+        path: {{ printf "%d-%s" $index $key }}
+{{- end }}
+{{- end }}
