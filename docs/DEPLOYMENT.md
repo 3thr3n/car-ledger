@@ -87,7 +87,8 @@ The first start creates the database and can take a few minutes.
 
 With `carLedger.hostname`, Keycloak imports the realm `car-ledger` on its first start:
 
-- the client `carLedger`: confidential, standard flow with PKCE `S256`, the redirect URIs of CarLedger
+- the client `carLedger`: confidential, standard flow with PKCE `S256`, the redirect URIs of CarLedger, the realm
+  roles in the ID token (the app reads the roles of a login from it)
 - the realm roles `user` and `admin`; `user` is a default role, every new user gets it. `admin` opens the
   administration, give it to the administrators.
 
@@ -104,6 +105,10 @@ Without `carLedger.hostname`, nothing is imported; set the realm up once in the 
     - Valid redirect URI: `https://car-ledger.example.com/api/auth/callback`
     - Valid post logout redirect URI: `https://car-ledger.example.com/api/auth/logout-callback`
     - Advanced → PKCE method: `S256`
+    - Client scopes → `carLedger-dedicated` → *Configure a new mapper* → *User Realm Role*: name
+      `realm roles in the ID token`, token claim name `realm_access.roles`, multivalued, *Add to ID token* on (the
+      scope `roles` of Keycloak adds them to the access token only, the app reads the roles of a login from the ID
+      token)
     - Copy the client secret from the *Credentials* tab
 3. Realm roles `user` and `admin`. Every user needs `user` (or `admin`), add `user` to the default roles of the
    realm so new users get it. `admin` opens the administration.
@@ -312,6 +317,10 @@ Checklist for installations running an older image of the app.
    ```
 
 3. **Create the realm role `admin`** and assign it to the administrators, the same way as the existing role `user`.
+
+   **Add the realm roles to the ID token** of the client `carLedger`, if the API answers with 403 after the login: the
+   mapper of [Realm and client](#2-realm-and-client) (step 2, client scopes). The realm imported by the keycloak chart
+   up to 0.5.0 lacks it, 0.5.1 imports it, but an existing realm is not imported again.
 
 4. Coming from the bitnami based charts: follow [the steps below](#upgrading-from-the-bitnami-based-charts-01x) first.
 
