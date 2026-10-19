@@ -183,9 +183,10 @@ with the role `user`, the roles are missing in the tokens of the client.
   sources, e.g. a backup tool: `networkPolicy.extraFrom`. `kubectl exec … pg_dump` (see [Operations](#operations))
   is not affected.
 - **Installable app**: the app has a web app manifest (`/manifest.json`) and a service worker (`/sw.js`), which keeps
-  the files of the app (not the data) for a fast start. Both need HTTPS, which the ingress provides. A proxy or CDN in
-  front must not cache `/sw.js` for long, otherwise new versions arrive late; the app asks the user to reload when a
-  new version is ready.
+  the files of the app (not the data) for a fast start. Both need HTTPS, which the ingress provides. The server sends
+  `Cache-Control: no-cache` for the files without a hash in their name (`index.html`, `/sw.js`, `/manifest.json`), only
+  `/assets/` is cached; a proxy or CDN in front must keep that, otherwise new versions arrive late. A new version starts
+  with the next reload or start of the app, or in the background; while something is typed, the app asks first.
 
 ### E-mail
 
