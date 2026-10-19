@@ -24,6 +24,12 @@ import de.codeflowwizardry.carledger.data.TripType;
  *            when the server received the start
  * @param finishedAt
  *            when the server received the finish
+ * @param deletedAt
+ *            when the trip was deleted, it stays listed and doesn't count
+ * @param deletedBy
+ *            the account that deleted it
+ * @param deleteReason
+ *            why it was deleted
  */
 public record Trip(
 		@Schema(required = true) UUID id,
@@ -40,13 +46,17 @@ public record Trip(
 		TripReview reviewReason,
 		@Schema(required = true) boolean restored,
 		@Schema(required = true) OffsetDateTime createdAt,
-		OffsetDateTime finishedAt)
+		OffsetDateTime finishedAt,
+		OffsetDateTime deletedAt,
+		String deletedBy,
+		String deleteReason)
 {
 	public static Trip convert(TripEntity entity)
 	{
 		return new Trip(entity.getId(), entity.getCar().getId(), entity.getType(), entity.getStartOdometer(),
 				entity.getEndOdometer(), entity.getDistance(), entity.getStartedAt(), entity.getEndedAt(),
 				entity.getDestination(), entity.getPurpose(), entity.getBusinessPartner(), entity.getReviewReason(),
-				entity.isRestored(), entity.getCreatedAt(), entity.getFinishedAt());
+				entity.isRestored(), entity.getCreatedAt(), entity.getFinishedAt(), entity.getDeletedAt(),
+				entity.getDeletedBy(), entity.getDeleteReason());
 	}
 }

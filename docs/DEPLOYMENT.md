@@ -355,6 +355,7 @@ Use the image of a release (a git tag of `main`) or a dev build of `develop`. On
 | 1.14.0    | Table for the trips of the trip log, protected against changes by a trigger (0.6.0)                                  |
 | 1.15.0    | Id of the client for new entries, a request sent again (offline queue) doesn't create an entry twice (0.6.0)         |
 | 1.16.0    | Trip log per car (off), on for the cars with trips (0.6.0)                                                           |
+| 1.17.0    | Trips are deleted with a reason and stay listed, a trigger allows only that change (0.6.0)                           |
 
 An older image refuses to start on the migrated database, as Flyway finds migrations it does not know. To go back,
 restore the backup. Without the backup, the older image runs on the migrated database (the new columns have defaults)
@@ -395,7 +396,8 @@ kubectl set env deployment/car-ledger QUARKUS_FLYWAY_IGNORE_FUTURE_MIGRATIONS=tr
   proxy in front must pass the header. Nothing to set up.
 - **Trip log** (0.6.0): trips with start and end odometer (Fahrtenbuch), turned on per car in *Edit car* (migration
   1.16.0 turns it on for cars with trips). Starting and finishing work offline as well; the app keeps the open trip
-  and the minimum odometer on the device.
+  and the minimum odometer on the device. A wrong trip is deleted with a reason by the owner of the car: it stays
+  listed as deleted and no longer counts for the odometer (migration 1.17.0).
 - **Installable app and headers** (0.5.0): CarLedger can be installed as an app and asks to reload when the server
   runs a newer version. A proxy or CDN in front must not cache `/sw.js` for long (see [Options](#options)). The app
   sends its own security headers (CSP, HSTS, …); a proxy that sets them as well must not set stricter ones.

@@ -28,6 +28,8 @@ public record TripConflict(
 		/** the trip was finished with other values */
 		ALREADY_FINISHED,
 		/** a detail given at the start can't be changed */
-		DETAIL_CHANGED
+		DETAIL_CHANGED,
+		/** the open trip was deleted, it can't be finished */
+		DELETED
 	}
 }

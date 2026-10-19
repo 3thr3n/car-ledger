@@ -752,6 +752,7 @@ trip:
     distance: "Strecke"
     details: "Ziel / Zweck"
     open: "offen"
+    deleted: "Gelöscht am {{date}}: {{reason}}"
     restored: "Aus einer Sicherung wiederhergestellt"
   review:
     label: "Prüfen"
@@ -762,6 +763,14 @@ trip:
     title: "Das Fahrtenbuch ist für dieses Auto aus"
     text: "Schalte es in den Einstellungen des Autos ein, um Fahrten zu starten. Bisherige Fahrten bleiben in der Liste."
     turnOn: "Auto bearbeiten"
+  delete:
+    button: "Fahrt löschen"
+    title: "Fahrt löschen?"
+    text: "Die Fahrt vom {{time}} ab {{odometer}} bleibt im Fahrtenbuch, als gelöscht mit dem Grund markiert, und zählt nicht mehr für den Kilometerstand. Das lässt sich nicht rückgängig machen."
+    reason: "Grund"
+    confirm: "Fahrt löschen"
+    deleted: "Fahrt gelöscht"
+    offline: "Zum Löschen ist eine Verbindung nötig, versuche es wieder, wenn du online bist"
   pending:
     title: "Noch nicht gesendet"
     subtitle: "Ohne Verbindung gestartet oder beendet und auf diesem Gerät gespeichert"

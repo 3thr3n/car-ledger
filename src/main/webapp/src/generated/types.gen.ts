@@ -451,7 +451,8 @@ export enum Reason {
     OPEN_TRIP = 'OPEN_TRIP',
     ID_IN_USE = 'ID_IN_USE',
     ALREADY_FINISHED = 'ALREADY_FINISHED',
-    DETAIL_CHANGED = 'DETAIL_CHANGED'
+    DETAIL_CHANGED = 'DETAIL_CHANGED',
+    DELETED = 'DELETED'
 }
 
 export type RecurringBill = {
@@ -581,6 +582,9 @@ export type Trip = {
     restored: boolean;
     createdAt: OffsetDateTime;
     finishedAt?: OffsetDateTime;
+    deletedAt?: OffsetDateTime;
+    deletedBy?: string;
+    deleteReason?: string;
 };
 
 export type TripConflict = {
@@ -594,6 +598,10 @@ export type TripCurrent = {
     open?: Trip;
     minimumOdometer: number;
     estimatedOdometer: number;
+};
+
+export type TripDeleteInput = {
+    reason?: string;
 };
 
 export type TripFinishInput = {
@@ -2525,6 +2533,38 @@ export type StartTripResponses = {
 };
 
 export type StartTripResponse = StartTripResponses[keyof StartTripResponses];
+
+export type DeleteTripData = {
+    body: TripDeleteInput;
+    path: {
+        carId: number;
+        id: Uuid;
+    };
+    query?: never;
+    url: '/api/trip/{carId}/{id}/delete';
+};
+
+export type DeleteTripErrors = {
+    /**
+     * Validation failed, please check the response
+     */
+    400: Array<unknown>;
+    /**
+     * Trip not found for a car you own.
+     */
+    404: unknown;
+};
+
+export type DeleteTripError = DeleteTripErrors[keyof DeleteTripErrors];
+
+export type DeleteTripResponses = {
+    /**
+     * Trip deleted.
+     */
+    200: Trip;
+};
+
+export type DeleteTripResponse = DeleteTripResponses[keyof DeleteTripResponses];
 
 export type FinishTripData = {
     body: TripFinishInput;

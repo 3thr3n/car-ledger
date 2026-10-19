@@ -107,11 +107,13 @@ public record BackupFile(String format, int version, OffsetDateTime createdAt, S
 
 	/**
 	 * A trip without its id, the restore creates new ones. The end is missing
-	 * while the trip is open.
+	 * while the trip is open, the deletion of one that wasn't deleted (and in
+	 * backups before trips could be deleted).
 	 */
 	public record Trip(TripType type, int startOdometer, Integer endOdometer, OffsetDateTime startedAt,
 			OffsetDateTime endedAt, String destination, String purpose, String businessPartner,
-			TripReview reviewReason, OffsetDateTime createdAt, OffsetDateTime finishedAt)
+			TripReview reviewReason, OffsetDateTime createdAt, OffsetDateTime finishedAt, OffsetDateTime deletedAt,
+			String deletedBy, String deleteReason)
 	{
 	}
 }

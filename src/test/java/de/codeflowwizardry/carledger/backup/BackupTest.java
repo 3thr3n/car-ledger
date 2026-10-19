@@ -3,8 +3,10 @@ package de.codeflowwizardry.carledger.backup;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -346,6 +348,42 @@ class BackupTest
 		restore(zip(entries)).statusCode(400)
 				.body("[0]", is("A car of the backup has more than one open trip!"));
 		given().when().get("/api/car/my").then().body("size()", is(0));
+	}
+
+	@Test
+	void shouldRestoreADeletedTripWithItsDeletion() throws IOException
+	{
+		Map<String, byte[]> entries = unzip(download());
+		deleteCar();
+		ObjectNode json = (ObjectNode) mapper.readTree(entries.get("backup.json"));
+		var trips = ((ObjectNode) json.withArray("cars").get(0)).withArray("trips");
+		// a second open trip, deleted: it doesn't block the open one
+		ObjectNode deleted = trips.get(1).deepCopy();
+		deleted.put("deletedAt", "2025-03-05T18:00:00Z").put("deletedBy", "peter").put("deleteReason", "Twice");
+		trips.add(deleted);
+		entries.put("backup.json", mapper.writeValueAsBytes(json));
+
+		restore(zip(entries)).statusCode(200).body("trips", is(3));
+		long restored = given().when().get("/api/car/my").then().extract().jsonPath().getLong("[0].id");
+		given().when().get("/api/trip/{carId}", restored).then()
+				.body("data.deleteReason", hasItem("Twice"))
+				.body("data.deletedBy", hasItem("peter"));
+		given().when().get("/api/trip/{carId}/current", restored).then()
+				.body("open.deletedAt", nullValue());
+	}
+
+	@Test
+	void shouldRestoreNothingWithAnIncompleteDeletion() throws IOException
+	{
+		Map<String, byte[]> entries = unzip(download());
+		deleteCar();
+		ObjectNode json = (ObjectNode) mapper.readTree(entries.get("backup.json"));
+		var trips = ((ObjectNode) json.withArray("cars").get(0)).withArray("trips");
+		((ObjectNode) trips.get(0)).put("deletedAt", "2025-03-05T18:00:00Z");
+		entries.put("backup.json", mapper.writeValueAsBytes(json));
+
+		restore(zip(entries)).statusCode(400).body("[0]",
+				is("A deleted trip of the backup needs the time, the account and the reason of the deletion!"));
 	}
 
 	@Test
