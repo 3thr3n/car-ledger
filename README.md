@@ -195,13 +195,13 @@ generated from it with `yarn openapi-ts`. Commit both, the CI fails if they are 
 ### Local cluster
 
 `hack/kind/up.sh` creates a cluster in Docker with [kind](https://kind.sigs.k8s.io) and installs the stack chart from
-the working copy: Cilium (also as ingress controller) or ingress-nginx, local-path or Longhorn, and cert-manager with a
-self-signed CA, which nobody trusts, like in many company clusters. It needs Docker, kind, kubectl and helm and the
+the working copy: Cilium (also as ingress controller) or ingress-nginx, local-path and cert-manager with a self-signed
+CA, which nobody trusts, like in many company clusters. It needs Docker, kind, kubectl and helm and the
 ports 80 and 443.
 
 ```bash
 hack/kind/up.sh                    # Keycloak, Cilium, local-path, builds the image of the working copy
-hack/kind/up.sh --idp authentik --ingress nginx --storage longhorn --no-build
+hack/kind/up.sh --idp authentik --ingress nginx --no-build
 node hack/kind/login.cjs keycloak alice alice   # logs in with a browser, the user has to exist
 hack/kind/down.sh
 ```
