@@ -166,5 +166,9 @@ infinispan:
     expose:
       type: ""
     nameOverride: "car-ledger-infinispan"
+    # the server runs as user 185: a new volume of block storage (e.g. Longhorn) belongs to root, without the group the
+    # server can not write its data directory (Permission denied on ___global.lck)
+    securityContext:
+      fsGroup: 185
     security:
       secretName: infinispan
