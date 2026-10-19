@@ -32,6 +32,7 @@ import de.codeflowwizardry.carledger.data.repository.RecurringBillRepository;
 import de.codeflowwizardry.carledger.data.repository.ReminderRepository;
 import de.codeflowwizardry.carledger.data.repository.TripRepository;
 import de.codeflowwizardry.carledger.exception.AlreadyPresentException;
+import de.codeflowwizardry.carledger.rest.car.trip.TripDeleteInput;
 import de.codeflowwizardry.carledger.rest.car.trip.TripFinishInput;
 import de.codeflowwizardry.carledger.rest.car.trip.TripStartInput;
 import de.codeflowwizardry.carledger.rest.records.CarInput;
@@ -188,7 +189,7 @@ public class BackupService
 				.map(trip -> new BackupFile.Trip(trip.getType(), trip.getStartOdometer(), trip.getEndOdometer(),
 						trip.getStartedAt(), trip.getEndedAt(), trip.getDestination(), trip.getPurpose(),
 						trip.getBusinessPartner(), trip.getReviewReason(), trip.getCreatedAt(),
-						trip.getFinishedAt()))
+						trip.getFinishedAt(), trip.getDeletedAt(), trip.getDeletedBy(), trip.getDeleteReason()))
 				.toList();
 
 		BackupFile.File picture = null;
@@ -384,7 +385,8 @@ public class BackupService
 		boolean open = false;
 		for (BackupFile.Trip trip : list(backup.trips()))
 		{
-			if (trip.endOdometer() == null && trip.endedAt() == null)
+			// a deleted open trip doesn't block the next one
+			if (trip.endOdometer() == null && trip.endedAt() == null && trip.deletedAt() == null)
 			{
 				if (open)
 				{
@@ -422,6 +424,14 @@ public class BackupService
 				errors.add("A trip of the backup ends before its start!");
 			}
 		}
+		boolean deleted = backup.deletedAt() != null;
+		if (deleted != (backup.deletedBy() != null) || deleted != (backup.deleteReason() != null))
+		{
+			errors.add("A deleted trip of the backup needs the time, the account and the reason of the deletion!");
+		} else if (deleted)
+		{
+			errors.addAll(new TripDeleteInput(backup.deleteReason()).validate());
+		}
 		Utils.requireValid(errors);
 
 		OffsetDateTime createdAt = backup.createdAt() == null ? backup.startedAt() : backup.createdAt();
@@ -435,6 +445,10 @@ public class BackupService
 		{
 			entity.finish(backup.endOdometer(), backup.endedAt(),
 					backup.finishedAt() == null ? backup.endedAt() : backup.finishedAt());
+		}
+		if (deleted)
+		{
+			entity.delete(backup.deletedAt(), backup.deletedBy(), backup.deleteReason().strip());
 		}
 		tripRepository.persist(entity);
 	}

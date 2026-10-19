@@ -8,7 +8,8 @@ import jakarta.persistence.*;
 /**
  * A trip of the trip log. Append-only (a trigger of the database guards it):
  * the start never changes, the finish is set once, the details can only be
- * added. So there are setters only for these.
+ * added, and a trip is deleted once with a reason, the row stays. So there are
+ * setters only for these.
  */
 @Entity(name = "trip")
 public class TripEntity
@@ -63,6 +64,16 @@ public class TripEntity
 	@Column(name = "tp_finished_at")
 	private OffsetDateTime finishedAt;
 
+	@Column(name = "tp_deleted_at")
+	private OffsetDateTime deletedAt;
+
+	/** the user id of the account, no reference: the row stays without it */
+	@Column(name = "tp_deleted_by", length = 255)
+	private String deletedBy;
+
+	@Column(name = "tp_delete_reason", length = 500)
+	private String deleteReason;
+
 	protected TripEntity()
 	{
 	}
@@ -95,9 +106,42 @@ public class TripEntity
 		this.finishedAt = finishedAt;
 	}
 
+	/**
+	 * Deleted trips stay listed, they don't count for the odometer
+	 *
+	 * @param deletedBy
+	 *            user id of the account
+	 */
+	public void delete(OffsetDateTime deletedAt, String deletedBy, String deleteReason)
+	{
+		this.deletedAt = deletedAt;
+		this.deletedBy = deletedBy;
+		this.deleteReason = deleteReason;
+	}
+
+	public boolean isDeleted()
+	{
+		return deletedAt != null;
+	}
+
 	public boolean isOpen()
 	{
 		return endOdometer == null;
+	}
+
+	public OffsetDateTime getDeletedAt()
+	{
+		return deletedAt;
+	}
+
+	public String getDeletedBy()
+	{
+		return deletedBy;
+	}
+
+	public String getDeleteReason()
+	{
+		return deleteReason;
 	}
 
 	/**

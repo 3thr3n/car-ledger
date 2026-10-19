@@ -752,6 +752,7 @@ trip:
     distance: "Distance"
     details: "Destination / purpose"
     open: "open"
+    deleted: "Deleted on {{date}}: {{reason}}"
     restored: "Restored from a backup"
   review:
     label: "Check"
@@ -762,6 +763,14 @@ trip:
     title: "The trip log is off for this car"
     text: "Turn it on in the settings of the car to start trips. Trips logged before stay in the list."
     turnOn: "Edit car"
+  delete:
+    button: "Delete trip"
+    title: "Delete the trip?"
+    text: "The trip of {{time}} from {{odometer}} stays in the trip log, marked as deleted with the reason, and no longer counts for the odometer. This can't be undone."
+    reason: "Reason"
+    confirm: "Delete trip"
+    deleted: "Trip deleted"
+    offline: "Deleting needs a connection, try again when you are online"
   pending:
     title: "Not sent yet"
     subtitle: "Started or finished without a connection and kept on this device"

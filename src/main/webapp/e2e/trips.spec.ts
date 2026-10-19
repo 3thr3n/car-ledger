@@ -18,6 +18,7 @@ interface Trip {
   purpose?: string;
   businessPartner?: string;
   reviewReason?: string | null;
+  deleteReason?: string | null;
   createdAt: string;
   finishedAt?: string;
 }
@@ -260,5 +261,37 @@ test.describe.serial('trips', () => {
       endOdometer: 20180,
       distance: 30,
     });
+  });
+
+  test('deletes a trip with a reason, it stays listed', async ({ page }) => {
+    await openTrips(page);
+    const row = page
+      .getByTestId('trip-list')
+      .getByRole('row', { name: /20,180 km/ });
+    await row.getByRole('button', { name: 'Delete trip' }).click();
+
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toContainText('stays in the trip log');
+    const confirm = dialog.getByRole('button', { name: 'Delete trip' });
+    await expect(confirm).toBeDisabled();
+    await dialog.getByRole('textbox', { name: 'Reason' }).fill('Entered twice');
+    await confirm.click();
+
+    await expect(page.getByText('Trip deleted')).toBeVisible();
+    await expect(row).toContainText('Entered twice');
+    await expect(row.getByRole('button', { name: 'Delete trip' })).toHaveCount(
+      0,
+    );
+    const [latest] = await trips();
+    expect(latest).toMatchObject({
+      endOdometer: 20180,
+      deleteReason: 'Entered twice',
+    });
+
+    // its odometer no longer counts for the next start
+    await page.getByRole('button', { name: 'Start trip' }).click();
+    await expect(odometer(page, /Odometer at the start/)).toHaveValue(
+      '20,150 km',
+    );
   });
 });

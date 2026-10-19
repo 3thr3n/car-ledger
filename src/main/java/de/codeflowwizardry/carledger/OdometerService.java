@@ -59,7 +59,8 @@ public class OdometerService
 			add(readings, row);
 		}
 		for (Object[] row : query("select t.car.id, t.startedAt, t.startOdometer, t.endedAt, t.endOdometer from trip t"
-				+ " where " + CarAccess.condition("t.car", Action.READ), "t.car", carId, username))
+				+ " where t.deletedAt is null and " + CarAccess.condition("t.car", Action.READ), "t.car", carId,
+				username))
 		{
 			add(readings, (Long) row[0], TripService.day((OffsetDateTime) row[1]), (Integer) row[2]);
 			if (row[4] != null)

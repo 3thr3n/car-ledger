@@ -24,6 +24,7 @@ import de.codeflowwizardry.carledger.rest.car.trip.Trip;
 import de.codeflowwizardry.carledger.rest.car.trip.TripConflict;
 import de.codeflowwizardry.carledger.rest.car.trip.TripConflict.Reason;
 import de.codeflowwizardry.carledger.rest.car.trip.TripCurrent;
+import de.codeflowwizardry.carledger.rest.car.trip.TripDeleteInput;
 import de.codeflowwizardry.carledger.rest.car.trip.TripFinishInput;
 import de.codeflowwizardry.carledger.rest.car.trip.TripStartInput;
 import de.codeflowwizardry.carledger.rest.records.BillPaged;
@@ -40,7 +41,8 @@ import jakarta.ws.rs.core.Response;
 
 /**
  * The trip log, append-only: a trip is started and finished, then it can't be
- * changed.
+ * changed. A wrong trip is deleted with a reason and stays listed; it doesn't
+ * count for the checks and the odometer anymore.
  * <p>
  * Start and finish carry an id of the client, sent again they answer like the
  * first time. They are checked against the other data of the car in the order
@@ -187,6 +189,10 @@ public class TripService
 			}
 			throw conflict(Reason.ALREADY_FINISHED, "The trip was finished already!", null, null);
 		}
+		if (trip.isDeleted())
+		{
+			throw conflict(Reason.DELETED, "The trip was deleted!", null, null);
+		}
 
 		errors = new ArrayList<>();
 		if (input.endOdometer() < trip.getStartOdometer())
@@ -326,6 +332,22 @@ public class TripService
 	private static String clean(String value)
 	{
 		return value == null || value.isBlank() ? null : value.strip();
+	}
+
+	/**
+	 * Deletes a trip with a reason, only the owner of the car; the trip stays
+	 * listed. Sent again, it answers with the deleted trip.
+	 */
+	@Transactional
+	public Trip delete(long carId, UUID id, TripDeleteInput input, String username)
+	{
+		Utils.requireValid(input.validate());
+		TripEntity trip = find(car(carId, username, Action.MANAGE).getId(), id, username, Action.MANAGE);
+		if (!trip.isDeleted())
+		{
+			trip.delete(OffsetDateTime.now(), username, input.reason().strip());
+		}
+		return Trip.convert(trip);
 	}
 
 	private TripEntity find(long carId, UUID id, String username, Action action)

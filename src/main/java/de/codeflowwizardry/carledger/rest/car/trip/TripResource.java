@@ -113,4 +113,17 @@ public class TripResource extends AbstractResource
 	{
 		return tripService.finish(carId, id, input, context.getName());
 	}
+
+	@POST
+	@Path("{id}/delete")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	@Operation(operationId = "deleteTrip", description = "Deletes a trip with a reason, only the owner of the car. The trip stays listed as deleted and doesn't count for the odometer anymore. Sent again, it answers with the deleted trip.")
+	@APIResponse(responseCode = "200", description = "Trip deleted.", content = @Content(schema = @Schema(implementation = Trip.class)))
+	@APIResponse(responseCode = "400", description = "Validation failed, please check the response", content = @Content(schema = @Schema(implementation = List.class)))
+	@APIResponse(responseCode = "404", description = "Trip not found for a car you own.")
+	public Trip deleteTrip(@PathParam("carId") long carId, @PathParam("id") UUID id, TripDeleteInput input)
+	{
+		return tripService.delete(carId, id, input, context.getName());
+	}
 }

@@ -63,17 +63,19 @@ public class TripRepository implements PanacheRepositoryBase<TripEntity, UUID>
 
 	public Optional<TripEntity> findOpen(CarEntity car)
 	{
-		return find("car = ?1 and endOdometer is null", car).firstResultOptional();
+		return find("car = ?1 and endOdometer is null and deletedAt is null", car).firstResultOptional();
 	}
 
 	/**
 	 * @return the highest odometer of the trips started before the time, the end
-	 *         or the start of an open one
+	 *         or the start of an open one; not of deleted trips, like the
+	 *         methods below
 	 */
 	public Optional<Integer> highestBefore(CarEntity car, OffsetDateTime time, UUID exclude)
 	{
 		return Optional.ofNullable(getEntityManager().createQuery("select max(coalesce(t.endOdometer, t.startOdometer))"
-				+ " from trip t where t.car = :car and t.startedAt < :time and t.id <> :exclude", Integer.class)
+				+ " from trip t where t.car = :car and t.startedAt < :time and t.id <> :exclude and t.deletedAt is null",
+				Integer.class)
 				.setParameter("car", car)
 				.setParameter("time", time)
 				.setParameter("exclude", exclude)
@@ -86,7 +88,8 @@ public class TripRepository implements PanacheRepositoryBase<TripEntity, UUID>
 	public Optional<Integer> lowestAfter(CarEntity car, OffsetDateTime time, UUID exclude)
 	{
 		return Optional.ofNullable(getEntityManager().createQuery("select min(t.startOdometer)"
-				+ " from trip t where t.car = :car and t.startedAt > :time and t.id <> :exclude", Integer.class)
+				+ " from trip t where t.car = :car and t.startedAt > :time and t.id <> :exclude and t.deletedAt is null",
+				Integer.class)
 				.setParameter("car", car)
 				.setParameter("time", time)
 				.setParameter("exclude", exclude)
@@ -101,7 +104,7 @@ public class TripRepository implements PanacheRepositoryBase<TripEntity, UUID>
 	 */
 	public boolean overlaps(CarEntity car, OffsetDateTime start, OffsetDateTime end, UUID exclude)
 	{
-		return count("car = :car and id <> :exclude and (startedAt < :end or startedAt = :start)"
+		return count("car = :car and id <> :exclude and deletedAt is null and (startedAt < :end or startedAt = :start)"
 				+ " and (endedAt is null or endedAt > :start)",
 				Map.of("car", car, "exclude", exclude, "start", start, "end", end)) > 0;
 	}

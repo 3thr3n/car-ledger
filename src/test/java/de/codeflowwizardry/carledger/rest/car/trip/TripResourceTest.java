@@ -404,6 +404,84 @@ class TripResourceTest
 		assertTrue(cause.getMessage().contains(message), cause.getMessage());
 	}
 
+	private ValidatableResponse delete(long car, UUID id, String reason)
+	{
+		return given()
+				.contentType(ContentType.JSON)
+				.pathParam("carId", car)
+				.body(Map.of("reason", reason))
+				.when()
+				.post("{id}/delete", id)
+				.then();
+	}
+
+	@Test
+	void shouldDeleteATripWithAReasonAndKeepIt()
+	{
+		UUID id = trip(50_000, 50_100, now.minusHours(3), now.minusHours(2));
+		current().body("minimumOdometer", is(50_100)).body("estimatedOdometer", is(50_100));
+
+		delete(carId, id, "  Entered twice  ")
+				.statusCode(200)
+				.body("deletedAt", notNullValue())
+				.body("deletedBy", is("peter"))
+				.body("deleteReason", is("Entered twice"));
+		// sent again, it keeps the first deletion
+		delete(carId, id, "Other reason").statusCode(200).body("deleteReason", is("Entered twice"));
+
+		// still listed, no longer counted
+		given().pathParam("carId", carId).when().get().then()
+				.body("total", is(1))
+				.body("data[0].deleteReason", is("Entered twice"))
+				.body("data[0].distance", is(100));
+		current().body("minimumOdometer", is(50_000)).body("estimatedOdometer", is(50_000));
+		start(carId, UUID.randomUUID(), startBody(TripType.PRIVATE, 50_000, now.minusHours(1), false))
+				.statusCode(201)
+				.body("reviewReason", nullValue());
+	}
+
+	@Test
+	void shouldDeleteAnOpenTripAndStartTheNext()
+	{
+		UUID open = UUID.randomUUID();
+		start(carId, open, startBody(TripType.PRIVATE, 50_000, now.minusHours(2), false)).statusCode(201);
+
+		delete(carId, open, "Started by mistake").statusCode(200);
+		current().body("open", nullValue());
+
+		start(carId, UUID.randomUUID(), startBody(TripType.PRIVATE, 50_000, now.minusHours(1), false))
+				.statusCode(201);
+		// e.g. a finish sent later from the offline queue
+		finish(carId, open, finishBody(50_050, now, true))
+				.statusCode(409)
+				.body("reason", is("DELETED"));
+	}
+
+	@Test
+	void shouldDeleteOnlyWithAReasonAndOnlyTripsOfOwnCars()
+	{
+		UUID id = trip(50_000, 50_100, now.minusHours(3), now.minusHours(2));
+		delete(carId, id, " ").statusCode(400).body("[0]", is("A reason must be given!"));
+		delete(carId, id, "x".repeat(501)).statusCode(400);
+		delete(otherCarId, id, "Not mine").statusCode(404);
+		delete(carId, UUID.randomUUID(), "Unknown").statusCode(404);
+		given().pathParam("carId", carId).when().get().then().body("data[0].deletedAt", nullValue());
+	}
+
+	@Test
+	void shouldOnlySetTheDeletionOnceInTheDatabase()
+	{
+		UUID finished = trip(50_000, 50_100, now.minusHours(4), now.minusHours(3));
+		UUID open = UUID.randomUUID();
+		start(carId, open, startBody(TripType.PRIVATE, 50_100, now.minusHours(1), false)).statusCode(201);
+		assertRejected("update trip set tp_deleted_at = now(), tp_deleted_by = 'peter', tp_delete_reason = 'x',"
+				+ " tp_end_odometer = 50200, tp_ended_at = now() where id = ?1", open, "changes nothing else");
+
+		assertEquals(1, update("update trip set tp_deleted_at = now(), tp_deleted_by = 'peter',"
+				+ " tp_delete_reason = 'Wrong' where id = ?1", finished));
+		assertRejected("update trip set tp_delete_reason = 'Other' where id = ?1", finished, "a deleted trip");
+	}
+
 	@Test
 	void shouldStartOnlyOneOfTwoTripsAtTheSameTime()
 	{

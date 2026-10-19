@@ -1,6 +1,7 @@
 import {
   Box,
   Chip,
+  IconButton,
   Stack,
   Table,
   TableBody,
@@ -11,6 +12,7 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
+import DeleteOutlineRounded from '@mui/icons-material/DeleteOutlineRounded';
 import RestoreRounded from '@mui/icons-material/RestoreRounded';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
@@ -25,16 +27,32 @@ import Section from '@/components/ui/Section';
 import YearFilter from '@/components/ui/YearFilter';
 import { useFormat } from '@/utils/format';
 import { localClient } from '@/utils/QueryClient';
+import TripDeleteDialog from './TripDeleteDialog';
 
 const PAGE_SIZES = [10, 25, 50];
 
 /** hidden on phones, the row shows them below the date instead */
 const wide = { display: { xs: 'none', md: 'table-cell' } };
 
+/** the odometers of a deleted trip don't count */
+const struck = (trip: Trip) =>
+  trip.deletedAt
+    ? { textDecoration: 'line-through', color: 'text.disabled' }
+    : {};
+
 function Details({ trip }: { trip: Trip }) {
   const { t } = useTranslation();
+  const format = useFormat();
   return (
     <>
+      {trip.deletedAt && (
+        <Typography variant="body2" sx={{ color: 'error.main' }}>
+          {t('trip.list.deleted', {
+            date: format.dateTime(trip.deletedAt),
+            reason: trip.deleteReason,
+          })}
+        </Typography>
+      )}
       {trip.destination && <Box>{trip.destination}</Box>}
       {(trip.purpose || trip.businessPartner) && (
         <Typography variant="body2" sx={{ color: 'text.secondary' }}>
@@ -63,6 +81,7 @@ export default function TripList({ carId }: { carId: number }) {
   const [year, setYear] = useState<number>();
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(PAGE_SIZES[0]);
+  const [toDelete, setToDelete] = useState<Trip>();
 
   const { data: years } = useQuery(
     getTripYearsOptions({ client: localClient, path: { carId } }),
@@ -110,6 +129,7 @@ export default function TripList({ carId }: { carId: number }) {
                   <TableCell sx={wide}>{t('trip.list.route')}</TableCell>
                   <TableCell align="right">{t('trip.list.distance')}</TableCell>
                   <TableCell sx={wide}>{t('trip.list.details')}</TableCell>
+                  <TableCell padding="checkbox" />
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -146,7 +166,7 @@ export default function TripList({ carId }: { carId: number }) {
                       {t(`trip.types.${trip.type}`)}
                     </TableCell>
                     <TableCell
-                      sx={{ ...wide, whiteSpace: 'nowrap' }}
+                      sx={{ ...wide, ...struck(trip), whiteSpace: 'nowrap' }}
                       className="tabular"
                     >
                       {format.distance(trip.startOdometer)} →{' '}
@@ -154,13 +174,29 @@ export default function TripList({ carId }: { carId: number }) {
                         ? t('trip.list.open')
                         : format.distance(trip.endOdometer)}
                     </TableCell>
-                    <TableCell align="right" className="tabular">
+                    <TableCell
+                      align="right"
+                      className="tabular"
+                      sx={struck(trip)}
+                    >
                       {trip.distance == null
                         ? t('trip.list.open')
                         : format.distance(trip.distance)}
                     </TableCell>
                     <TableCell sx={wide}>
                       <Details trip={trip} />
+                    </TableCell>
+                    <TableCell padding="checkbox">
+                      {!trip.deletedAt && (
+                        <IconButton
+                          size="small"
+                          aria-label={t('trip.delete.button')}
+                          title={t('trip.delete.button')}
+                          onClick={() => setToDelete(trip)}
+                        >
+                          <DeleteOutlineRounded fontSize="small" />
+                        </IconButton>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -181,6 +217,10 @@ export default function TripList({ carId }: { carId: number }) {
           />
         </>
       )}
+      <TripDeleteDialog
+        trip={toDelete}
+        onClose={() => setToDelete(undefined)}
+      />
     </Section>
   );
 }
