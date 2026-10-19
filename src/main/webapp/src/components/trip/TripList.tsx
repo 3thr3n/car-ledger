@@ -145,7 +145,10 @@ export default function TripList({ carId }: { carId: number }) {
                     <TableCell sx={wide}>
                       {t(`trip.types.${trip.type}`)}
                     </TableCell>
-                    <TableCell sx={wide} className="tabular">
+                    <TableCell
+                      sx={{ ...wide, whiteSpace: 'nowrap' }}
+                      className="tabular"
+                    >
                       {format.distance(trip.startOdometer)} →{' '}
                       {trip.endOdometer == null
                         ? t('trip.list.open')
