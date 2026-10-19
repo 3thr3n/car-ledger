@@ -72,3 +72,11 @@ tests:
       - matchRegex:
           path: data["car-ledger.json"]
           pattern: '"rootUrl": "http://car-ledger.local"'
+
+  - it: puts the realm roles into the ID token, the app reads the roles of a login from it
+    set:
+      carLedger.hostname: car-ledger.example.com
+    asserts:
+      - matchRegex:
+          path: data["car-ledger.json"]
+          pattern: '"access.token.claim": "false",\s*"claim.name": "realm_access.roles",\s*"id.token.claim": "true",[^}]*"multivalued": "true"[^}]*\},\s*"name": "realm roles in the ID token",\s*"protocol": "openid-connect",\s*"protocolMapper": "oidc-usermodel-realm-role-mapper"'
