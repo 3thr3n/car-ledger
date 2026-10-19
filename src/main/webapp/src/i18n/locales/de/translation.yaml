@@ -716,6 +716,8 @@ trip:
     destination: "Ziel"
     purpose: "Zweck"
     businessPartner: "Geschäftspartner"
+    startedAt: "Start"
+    endedAt: "Ende"
   current:
     title: "Fahrt"
     none: "Keine Fahrt offen"
@@ -730,6 +732,7 @@ trip:
     odometerHelp: "Mindestens {{minimum}}, der höchste Stand des Autos"
     businessHint: "Eine dienstliche Fahrt braucht Ziel, Zweck und Geschäftspartner, spätestens beim Beenden."
     started: "Fahrt gestartet"
+    earlier: "Früher gestartet"
   finish:
     button: "Fahrt beenden"
     title: "Fahrt beenden"
@@ -737,11 +740,18 @@ trip:
     final: "Eine beendete Fahrt kann nicht mehr geändert werden. Prüfe den Kilometerstand und die Angaben."
     odometerHelp: "Mindestens {{minimum}}, der Stand beim Start"
     finished: "Fahrt beendet"
+    earlier: "Früher beendet"
   queued: "Keine Verbindung: die Fahrt ist auf diesem Gerät gespeichert und wird gesendet, sobald du wieder online bist"
   errors:
     businessDetail: "Für eine dienstliche Fahrt nötig"
     odometerBelow: "Mindestens {{minimum}}"
     odometerAbove: "Höchstens {{maximum}}, dort beginnt eine spätere Fahrt"
+    required: "Pflichtfeld"
+    time: "Gib ein Datum und eine Uhrzeit an"
+    future: "Nicht in der Zukunft"
+    beforeStart: "Nicht vor dem Start ({{time}})"
+    endBeforeStart: "Nicht vor dem Start"
+    endBelowStart: "Nicht unter dem Start"
   list:
     title: "Fahrtenbuch"
     subtitle: "Gestartete und beendete Fahrten, neueste zuerst"
@@ -754,6 +764,8 @@ trip:
     open: "offen"
     deleted: "Gelöscht am {{date}}: {{reason}}"
     restored: "Aus einer Sicherung wiederhergestellt"
+    enteredLater: "Nachgetragen"
+    enteredLaterHint: "Eingetragen am {{time}}, mehr als 2 Stunden nach der Fahrt"
   review:
     label: "Prüfen"
     ODOMETER_BELOW_PREVIOUS: "Später gesendet, der Kilometerstand liegt unter einem früheren Stand"
@@ -771,6 +783,13 @@ trip:
     confirm: "Fahrt löschen"
     deleted: "Fahrt gelöscht"
     offline: "Zum Löschen ist eine Verbindung nötig, versuche es wieder, wenn du online bist"
+  past:
+    button: "Vergangene Fahrt nachtragen"
+    title: "Vergangene Fahrt nachtragen"
+    text: "Eine Fahrt, die du nicht erfasst hast, mit Start und Ende. Sie wird als nachgetragen markiert."
+    confirm: "Fahrt nachtragen"
+    added: "Fahrt nachgetragen"
+    offline: "Zum Nachtragen ist eine Verbindung nötig, versuche es wieder, wenn du online bist"
   pending:
     title: "Noch nicht gesendet"
     subtitle: "Ohne Verbindung gestartet oder beendet und auf diesem Gerät gespeichert"

@@ -1486,7 +1486,7 @@
       },
       "Trip" : {
         "type" : "object",
-        "required" : [ "id", "carId", "type", "startOdometer", "startedAt", "restored", "createdAt" ],
+        "required" : [ "id", "carId", "type", "startOdometer", "startedAt", "restored", "createdAt", "enteredLater" ],
         "properties" : {
           "id" : {
             "$ref" : "#/components/schemas/UUID"
@@ -1547,6 +1547,9 @@
           },
           "deleteReason" : {
             "type" : "string"
+          },
+          "enteredLater" : {
+            "type" : "boolean"
           }
         }
       },
@@ -1616,6 +1619,37 @@
           },
           "queued" : {
             "type" : "boolean"
+          }
+        }
+      },
+      "TripPastInput" : {
+        "type" : "object",
+        "properties" : {
+          "type" : {
+            "$ref" : "#/components/schemas/TripType"
+          },
+          "startOdometer" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "startedAt" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          },
+          "endOdometer" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "endedAt" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          },
+          "destination" : {
+            "type" : "string"
+          },
+          "purpose" : {
+            "type" : "string"
+          },
+          "businessPartner" : {
+            "type" : "string"
           }
         }
       },
@@ -5096,6 +5130,86 @@
           }
         },
         "summary" : "Finish Trip",
+        "tags" : [ "Trip Resource" ]
+      }
+    },
+    "/api/trip/{carId}/{id}/past" : {
+      "put" : {
+        "description" : "Adds a forgotten trip afterwards with its start and its finish, also while another trip is open if it doesn't overlap it. Sent again with the same values, it answers with the trip.",
+        "operationId" : "addPastTrip",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/UUID"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/TripPastInput"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Trip added.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Trip"
+                }
+              }
+            }
+          },
+          "200" : {
+            "description" : "Trip was added before with the same values.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Trip"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed, please check the response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Car is not for your user."
+          },
+          "409" : {
+            "description" : "The trip doesn't fit the other data of the car or the id is in use.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TripConflict"
+                }
+              }
+            }
+          }
+        },
+        "summary" : "Add Past Trip",
         "tags" : [ "Trip Resource" ]
       }
     },

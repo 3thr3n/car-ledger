@@ -12,6 +12,7 @@ import { RouterButton } from '@/components/ui/links';
 import { useFormat } from '@/utils/format';
 import { localClient } from '@/utils/QueryClient';
 import { TripFinishDialog, TripStartDialog } from './TripDialogs';
+import TripPastDialog from './TripPastDialog';
 import { useTripState } from './useTrip';
 
 /**
@@ -25,6 +26,7 @@ export default function CurrentTrip({ carId }: { carId: number }) {
   const state = useTripState(carId);
   const [starting, setStarting] = useState(false);
   const [finishing, setFinishing] = useState(false);
+  const [addingPast, setAddingPast] = useState(false);
   const { open } = state;
   // loaded by the layout of the car already
   const { data: car } = useQuery(
@@ -52,7 +54,16 @@ export default function CurrentTrip({ carId }: { carId: number }) {
   }
 
   return (
-    <Section title={t('trip.current.title')}>
+    <Section
+      title={t('trip.current.title')}
+      action={
+        car?.tripLog && (
+          <Button size="small" onClick={() => setAddingPast(true)}>
+            {t('trip.past.button')}
+          </Button>
+        )
+      }
+    >
       <Box data-testid="current-trip">
         <Stack
           direction={{ xs: 'column', sm: 'row' }}
@@ -125,6 +136,11 @@ export default function CurrentTrip({ carId }: { carId: number }) {
         minimumOdometer={state.minimumOdometer}
         suggestedOdometer={state.suggestedOdometer}
         onClose={() => setStarting(false)}
+      />
+      <TripPastDialog
+        carId={carId}
+        open={addingPast}
+        onClose={() => setAddingPast(false)}
       />
       <TripFinishDialog
         carId={carId}

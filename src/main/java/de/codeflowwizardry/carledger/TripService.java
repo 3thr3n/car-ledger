@@ -26,6 +26,7 @@ import de.codeflowwizardry.carledger.rest.car.trip.TripConflict.Reason;
 import de.codeflowwizardry.carledger.rest.car.trip.TripCurrent;
 import de.codeflowwizardry.carledger.rest.car.trip.TripDeleteInput;
 import de.codeflowwizardry.carledger.rest.car.trip.TripFinishInput;
+import de.codeflowwizardry.carledger.rest.car.trip.TripPastInput;
 import de.codeflowwizardry.carledger.rest.car.trip.TripStartInput;
 import de.codeflowwizardry.carledger.rest.records.BillPaged;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
@@ -208,11 +209,7 @@ public class TripService
 		addDetail(trip.getDestination(), input.destination(), trip::setDestination);
 		addDetail(trip.getPurpose(), input.purpose(), trip::setPurpose);
 		addDetail(trip.getBusinessPartner(), input.businessPartner(), trip::setBusinessPartner);
-		if (trip.getType() == TripType.BUSINESS && (trip.getDestination() == null || trip.getPurpose() == null
-				|| trip.getBusinessPartner() == null))
-		{
-			Utils.requireValid(List.of("A business trip needs a destination, a purpose and a business partner!"));
-		}
+		requireBusinessDetails(trip);
 
 		TripReview review = null;
 		Optional<Integer> maximum = tripRepository.lowestAfter(car, trip.getStartedAt(), id);
@@ -348,6 +345,78 @@ public class TripService
 			trip.delete(OffsetDateTime.now(), username, input.reason().strip());
 		}
 		return Trip.convert(trip);
+	}
+
+	/**
+	 * A forgotten trip entered afterwards, started and finished at once. Unlike a
+	 * start it may come while another trip is open, if it doesn't overlap it. It
+	 * is checked like a live request: what doesn't fit is rejected. Sent again
+	 * with the same values, it answers with the trip.
+	 */
+	@Transactional
+	public Started addPast(long carId, UUID id, TripPastInput input, String username)
+	{
+		List<String> errors = input.validate();
+		if (errors.isEmpty() && inFuture(input.endedAt()))
+		{
+			errors.add("End time must not be in the future!");
+		}
+		Utils.requireValid(errors);
+
+		CarEntity car = lockedCar(carId, username);
+		Optional<TripEntity> existing = tripRepository.findByIdOptional(id);
+		if (existing.isPresent())
+		{
+			TripEntity trip = existing.get();
+			if (!trip.getCar().getId().equals(car.getId()) || trip.isOpen() || !sameStart(trip, input.start())
+					|| !sameFinish(trip, input.finish()))
+			{
+				throw conflict(Reason.ID_IN_USE, "The id belongs to another trip!", null, null);
+			}
+			return new Started(Trip.convert(trip), false);
+		}
+		if (!car.isTripLog())
+		{
+			Utils.requireValid(List.of("The trip log of the car is off, turn it on in the settings of the car!"));
+		}
+
+		int minimum = highestBefore(car, input.startedAt(), id);
+		Optional<Integer> maximum = tripRepository.lowestAfter(car, input.startedAt(), id);
+		if (input.startOdometer() < minimum)
+		{
+			throw conflict(Reason.ODOMETER_BELOW_PREVIOUS, "The start must not be below " + minimum + " km!", minimum,
+					null);
+		}
+		if (maximum.isPresent() && input.endOdometer() > maximum.get())
+		{
+			throw conflict(Reason.ODOMETER_ABOVE_NEXT,
+					"The end must not be above " + maximum.get() + " km, the start of a later trip!", null,
+					maximum.get());
+		}
+		if (tripRepository.overlaps(car, input.startedAt(), input.endedAt(), id))
+		{
+			throw conflict(Reason.OVERLAPS, "Another trip of the car was on the road then!", null, null);
+		}
+
+		OffsetDateTime now = OffsetDateTime.now();
+		TripEntity trip = new TripEntity(id, car, accountRepository.findByIdentifier(username), input.type(),
+				input.startOdometer(), input.startedAt(), false, now);
+		trip.setDestination(clean(input.destination()));
+		trip.setPurpose(clean(input.purpose()));
+		trip.setBusinessPartner(clean(input.businessPartner()));
+		requireBusinessDetails(trip);
+		trip.finish(input.endOdometer(), input.endedAt(), now);
+		tripRepository.persist(trip);
+		return new Started(Trip.convert(trip), true);
+	}
+
+	private static void requireBusinessDetails(TripEntity trip)
+	{
+		if (trip.getType() == TripType.BUSINESS && (trip.getDestination() == null || trip.getPurpose() == null
+				|| trip.getBusinessPartner() == null))
+		{
+			Utils.requireValid(List.of("A business trip needs a destination, a purpose and a business partner!"));
+		}
 	}
 
 	private TripEntity find(long carId, UUID id, String username, Action action)

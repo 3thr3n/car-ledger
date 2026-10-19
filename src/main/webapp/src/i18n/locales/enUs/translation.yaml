@@ -716,6 +716,8 @@ trip:
     destination: "Destination"
     purpose: "Purpose"
     businessPartner: "Business partner"
+    startedAt: "Start"
+    endedAt: "Finish"
   current:
     title: "Trip"
     none: "No trip is open"
@@ -730,6 +732,7 @@ trip:
     odometerHelp: "At least {{minimum}}, the highest reading of the car"
     businessHint: "A business trip needs the destination, the purpose and the business partner, at the latest when you finish it."
     started: "Trip started"
+    earlier: "Started earlier"
   finish:
     button: "Finish trip"
     title: "Finish the trip"
@@ -737,11 +740,18 @@ trip:
     final: "A finished trip can't be changed anymore. Check the odometer and the details."
     odometerHelp: "At least {{minimum}}, the odometer at the start"
     finished: "Trip finished"
+    earlier: "Finished earlier"
   queued: "No connection: the trip is kept on this device and sent when you are online again"
   errors:
     businessDetail: "Needed for a business trip"
     odometerBelow: "At least {{minimum}}"
     odometerAbove: "At most {{maximum}}, a later trip starts there"
+    required: "Required"
+    time: "Enter a date and a time"
+    future: "Not in the future"
+    beforeStart: "Not before the start ({{time}})"
+    endBeforeStart: "Not before the start"
+    endBelowStart: "Not below the start"
   list:
     title: "Trip log"
     subtitle: "Started and finished trips, newest first"
@@ -754,6 +764,8 @@ trip:
     open: "open"
     deleted: "Deleted on {{date}}: {{reason}}"
     restored: "Restored from a backup"
+    enteredLater: "Entered later"
+    enteredLaterHint: "Entered on {{time}}, more than 2 hours after the trip"
   review:
     label: "Check"
     ODOMETER_BELOW_PREVIOUS: "Sent later, its odometer is below an earlier reading"
@@ -771,6 +783,13 @@ trip:
     confirm: "Delete trip"
     deleted: "Trip deleted"
     offline: "Deleting needs a connection, try again when you are online"
+  past:
+    button: "Add past trip"
+    title: "Add a past trip"
+    text: "A trip you forgot to log, with its start and its finish. It is marked as entered later."
+    confirm: "Add trip"
+    added: "Trip added"
+    offline: "Adding a past trip needs a connection, try again when you are online"
   pending:
     title: "Not sent yet"
     subtitle: "Started or finished without a connection and kept on this device"

@@ -43,6 +43,7 @@ export function fromQueued(entry: QueuedRequest): TripView {
     businessPartner: body.businessPartner as string | undefined,
     restored: false,
     createdAt: entry.createdAt,
+    enteredLater: false,
     pending: true,
   };
 }
