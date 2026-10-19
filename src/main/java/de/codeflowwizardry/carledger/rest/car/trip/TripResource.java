@@ -114,6 +114,26 @@ public class TripResource extends AbstractResource
 		return tripService.finish(carId, id, input, context.getName());
 	}
 
+	@PUT
+	@Path("{id}/past")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	@Operation(operationId = "addPastTrip", description = "Adds a forgotten trip afterwards with its start and its finish, also while another trip is open if it doesn't overlap it. Sent again with the same values, it answers with the trip.")
+	@APIResponse(responseCode = "201", description = "Trip added.", content = @Content(schema = @Schema(implementation = Trip.class)))
+	@APIResponse(responseCode = "200", description = "Trip was added before with the same values.", content = @Content(schema = @Schema(implementation = Trip.class)))
+	@APIResponse(responseCode = "400", description = "Validation failed, please check the response", content = @Content(schema = @Schema(implementation = List.class)))
+	@APIResponse(responseCode = "404", description = "Car is not for your user.")
+	@APIResponse(responseCode = "409", description = "The trip doesn't fit the other data of the car or the id is in use.", content = @Content(schema = @Schema(implementation = TripConflict.class)))
+	public Response addPastTrip(@PathParam("carId") long carId, @PathParam("id") UUID id, TripPastInput input)
+	{
+		Started added = tripService.addPast(carId, id, input, context.getName());
+		if (!added.created())
+		{
+			return Response.ok(added.trip()).build();
+		}
+		return Response.created(URI.create("trip/" + carId + "/" + id)).entity(added.trip()).build();
+	}
+
 	@POST
 	@Path("{id}/delete")
 	@Consumes(MediaType.APPLICATION_JSON)

@@ -1,5 +1,6 @@
 package de.codeflowwizardry.carledger.rest.car.trip;
 
+import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
@@ -30,6 +31,10 @@ import de.codeflowwizardry.carledger.data.TripType;
  *            the account that deleted it
  * @param deleteReason
  *            why it was deleted
+ * @param enteredLater
+ *            the server received the start or the finish more than
+ *            {@link #ENTERED_LATER} after the time of the device: entered
+ *            afterwards, not on the road
  */
 public record Trip(
 		@Schema(required = true) UUID id,
@@ -49,14 +54,32 @@ public record Trip(
 		OffsetDateTime finishedAt,
 		OffsetDateTime deletedAt,
 		String deletedBy,
-		String deleteReason)
+		String deleteReason,
+		@Schema(required = true) boolean enteredLater)
 {
+	/**
+	 * a request of the offline queue arrives later as well, but was made on the
+	 * road
+	 */
+	public static final Duration ENTERED_LATER = Duration.ofHours(2);
+
 	public static Trip convert(TripEntity entity)
 	{
 		return new Trip(entity.getId(), entity.getCar().getId(), entity.getType(), entity.getStartOdometer(),
 				entity.getEndOdometer(), entity.getDistance(), entity.getStartedAt(), entity.getEndedAt(),
 				entity.getDestination(), entity.getPurpose(), entity.getBusinessPartner(), entity.getReviewReason(),
 				entity.isRestored(), entity.getCreatedAt(), entity.getFinishedAt(), entity.getDeletedAt(),
-				entity.getDeletedBy(), entity.getDeleteReason());
+				entity.getDeletedBy(), entity.getDeleteReason(), enteredLater(entity));
+	}
+
+	static boolean enteredLater(TripEntity entity)
+	{
+		return later(entity.getStartedAt(), entity.getCreatedAt())
+				|| entity.getFinishedAt() != null && later(entity.getEndedAt(), entity.getFinishedAt());
+	}
+
+	private static boolean later(OffsetDateTime device, OffsetDateTime received)
+	{
+		return Duration.between(device, received).compareTo(ENTERED_LATER) > 0;
 	}
 }

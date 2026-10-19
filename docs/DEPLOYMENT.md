@@ -397,7 +397,9 @@ kubectl set env deployment/car-ledger QUARKUS_FLYWAY_IGNORE_FUTURE_MIGRATIONS=tr
 - **Trip log** (0.6.0): trips with start and end odometer (Fahrtenbuch), turned on per car in *Edit car* (migration
   1.16.0 turns it on for cars with trips). Starting and finishing work offline as well; the app keeps the open trip
   and the minimum odometer on the device. A wrong trip is deleted with a reason by the owner of the car: it stays
-  listed as deleted and no longer counts for the odometer (migration 1.17.0).
+  listed as deleted and no longer counts for the odometer (migration 1.17.0). Forgotten trips are entered afterwards
+  (started or finished earlier, or a past trip with start and finish); a trip the server received more than 2 hours
+  after its time is marked as entered later.
 - **Installable app and headers** (0.5.0): CarLedger can be installed as an app and asks to reload when the server
   runs a newer version. A proxy or CDN in front must not cache `/sw.js` for long (see [Options](#options)). The app
   sends its own security headers (CSP, HSTS, …); a proxy that sets them as well must not set stricter ones.

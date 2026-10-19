@@ -5,104 +5,74 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  FormControlLabel,
   MenuItem,
   Stack,
+  Switch,
   TextField,
 } from '@mui/material';
+import { DateTimePicker } from '@mui/x-date-pickers';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { toast } from 'react-toastify';
-import { Reason, TripConflict, TripType } from '@/generated';
+import { TripType } from '@/generated';
 import NumberField from '@/components/bill/NumberField';
-import { BackendError, errorMessage } from '@/utils/BackendError';
-import { useFormat } from '@/utils/format';
 import { odometerToApi, odometerToField } from '@/utils/units';
+import {
+  Details,
+  MAX_BUSINESS_PARTNER,
+  MAX_DESTINATION,
+  MAX_ODOMETER,
+  MAX_PURPOSE,
+  missingForBusiness,
+  trimmed,
+  useConflict,
+  useDone,
+  useEarlierTime,
+  useOdometer,
+} from './tripForm';
 import { TripView } from './tripState';
-import { TripResult, useTripActions } from './useTrip';
+import { useTripActions } from './useTrip';
 
-/** the limits of the API */
-const MAX_ODOMETER = 10_000_000;
-const MAX_DESTINATION = 200;
-const MAX_PURPOSE = 500;
-const MAX_BUSINESS_PARTNER = 200;
-
-interface Details {
-  destination?: string;
-  purpose?: string;
-  businessPartner?: string;
+export function EarlierTime({
+  label,
+  timeLabel,
+  state,
+}: {
+  label: string;
+  timeLabel: string;
+  state: ReturnType<typeof useEarlierTime>;
+}) {
+  return (
+    <>
+      <FormControlLabel
+        control={
+          <Switch
+            checked={state.on}
+            onChange={(event) => state.setOn(event.target.checked)}
+          />
+        }
+        label={label}
+      />
+      {state.on && (
+        <DateTimePicker
+          label={timeLabel}
+          value={state.time}
+          onChange={state.setTime}
+          disableFuture
+          slotProps={{
+            textField: {
+              fullWidth: true,
+              error: !!state.error,
+              helperText: state.error,
+            },
+          }}
+        />
+      )}
+    </>
+  );
 }
 
-/** empty fields are not sent, a detail can still be given at the finish */
-const trimmed = (details: Details): Details => ({
-  destination: details.destination?.trim() || undefined,
-  purpose: details.purpose?.trim() || undefined,
-  businessPartner: details.businessPartner?.trim() || undefined,
-});
-
-/**
- * The odometer in whole units of the account. The lowest value is rounded up,
- * so it is not below the minimum in km after the conversion.
- */
-function useOdometer(minimumKm: number) {
-  const format = useFormat();
-  const { units } = format;
-  const minimum = Math.ceil(units.distance.fromKm(minimumKm));
-  return {
-    units,
-    minimum,
-    minimumText: format.unit(minimum, units.distance.label, 0),
-  };
-}
-
-/**
- * The message of a conflict for the odometer field, other errors as toast
- *
- * @return the message for the field, if it belongs there
- */
-function useConflict() {
-  const { t } = useTranslation();
-  const format = useFormat();
-  return (error: unknown): string | undefined => {
-    const conflict =
-      error instanceof BackendError && error.status === 409
-        ? (error.body as TripConflict | undefined)
-        : undefined;
-    if (
-      conflict?.reason === Reason.ODOMETER_BELOW_PREVIOUS &&
-      conflict.minimumOdometer !== undefined
-    ) {
-      return t('trip.errors.odometerBelow', {
-        minimum: format.distance(conflict.minimumOdometer),
-      });
-    }
-    if (
-      conflict?.reason === Reason.ODOMETER_ABOVE_NEXT &&
-      conflict.maximumOdometer !== undefined
-    ) {
-      return t('trip.errors.odometerAbove', {
-        maximum: format.distance(conflict.maximumOdometer),
-      });
-    }
-    toast.error(errorMessage(error, t('errors.backend')));
-    return undefined;
-  };
-}
-
-/**
- * The details a business trip needs at the latest at the finish: without them
- * the server rejects the finish, also one sent later from the offline queue
- */
-const missingForBusiness = (
-  type: TripType,
-  details: Details,
-): (keyof Details)[] =>
-  type === TripType.BUSINESS
-    ? (['destination', 'purpose', 'businessPartner'] as const).filter(
-        (key) => !details[key]?.trim(),
-      )
-    : [];
-
-function DetailFields({
+export function DetailFields({
   type,
   value,
   fixed = {},
@@ -149,15 +119,6 @@ function DetailFields({
         field('businessPartner', MAX_BUSINESS_PARTNER)}
     </>
   );
-}
-
-function useDone(onClose: () => void, savedKey: string) {
-  const { t } = useTranslation();
-  return (result: TripResult) => {
-    if (result === 'queued') toast.info(t('trip.queued'));
-    else toast.success(t(savedKey));
-    onClose();
-  };
 }
 
 export function TripStartDialog({
@@ -213,6 +174,7 @@ function StartForm({
   const { start } = useTripActions(carId);
   const onConflict = useConflict();
   const done = useDone(onClose, 'trip.start.started');
+  const earlier = useEarlierTime();
 
   const below = value !== undefined && value < odometer.minimum;
   const error =
@@ -222,21 +184,25 @@ function StartForm({
       : undefined);
 
   const submit = async () => {
-    if (value === undefined || below) return;
+    if (value === undefined || below || earlier.error) return;
     setPending(true);
     try {
       const shown = trimmed(details);
       done(
-        await start({
-          type,
-          startOdometer: odometerToApi(units, value),
-          ...shown,
-          businessPartner:
-            type === TripType.BUSINESS ? shown.businessPartner : undefined,
-        }),
+        await start(
+          {
+            type,
+            startOdometer: odometerToApi(units, value),
+            ...shown,
+            businessPartner:
+              type === TripType.BUSINESS ? shown.businessPartner : undefined,
+          },
+          earlier.value,
+        ),
       );
     } catch (e) {
-      setServerError(onConflict(e));
+      const conflict = onConflict(e);
+      setServerError(conflict.below ?? conflict.above);
     } finally {
       setPending(false);
     }
@@ -286,6 +252,11 @@ function StartForm({
               {t('trip.start.businessHint')}
             </Alert>
           )}
+          <EarlierTime
+            label={t('trip.start.earlier')}
+            timeLabel={t('trip.fields.startedAt')}
+            state={earlier}
+          />
         </Stack>
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2 }}>
@@ -342,6 +313,7 @@ function FinishForm({
   const { finish } = useTripActions(carId);
   const onConflict = useConflict();
   const done = useDone(onClose, 'trip.finish.finished');
+  const earlier = useEarlierTime(trip.startedAt);
   const fixed: Details = {
     destination: trip.destination,
     purpose: trip.purpose,
@@ -363,24 +335,31 @@ function FinishForm({
 
   const submit = async () => {
     setTouched(true);
-    if (value === undefined || below || missing.length) return;
+    if (value === undefined || below || missing.length || earlier.error) {
+      return;
+    }
     setPending(true);
     try {
       // only the details missing at the start, the others can't change
       const added = trimmed(details);
       done(
-        await finish(trip, {
-          endOdometer: odometerToApi(units, value),
-          destination: fixed.destination ? undefined : added.destination,
-          purpose: fixed.purpose ? undefined : added.purpose,
-          businessPartner:
-            fixed.businessPartner || trip.type !== TripType.BUSINESS
-              ? undefined
-              : added.businessPartner,
-        }),
+        await finish(
+          trip,
+          {
+            endOdometer: odometerToApi(units, value),
+            destination: fixed.destination ? undefined : added.destination,
+            purpose: fixed.purpose ? undefined : added.purpose,
+            businessPartner:
+              fixed.businessPartner || trip.type !== TripType.BUSINESS
+                ? undefined
+                : added.businessPartner,
+          },
+          earlier.value,
+        ),
       );
     } catch (e) {
-      setServerError(onConflict(e));
+      const conflict = onConflict(e);
+      setServerError(conflict.below ?? conflict.above);
     } finally {
       setPending(false);
     }
@@ -414,6 +393,11 @@ function FinishForm({
             required
             missing={touched ? missing : []}
             onChange={(patch) => setDetails((d) => ({ ...d, ...patch }))}
+          />
+          <EarlierTime
+            label={t('trip.finish.earlier')}
+            timeLabel={t('trip.fields.endedAt')}
+            state={earlier}
           />
           <Alert severity="warning" variant="outlined">
             {t('trip.finish.final')}

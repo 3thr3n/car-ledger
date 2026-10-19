@@ -482,6 +482,84 @@ class TripResourceTest
 		assertRejected("update trip set tp_delete_reason = 'Other' where id = ?1", finished, "a deleted trip");
 	}
 
+	private ValidatableResponse addPast(UUID id, int from, int to, OffsetDateTime start, OffsetDateTime end)
+	{
+		Map<String, Object> body = new HashMap<>();
+		body.put("type", TripType.PRIVATE);
+		body.put("startOdometer", from);
+		body.put("startedAt", start.toString());
+		body.put("endOdometer", to);
+		body.put("endedAt", end.toString());
+		return given()
+				.contentType(ContentType.JSON)
+				.pathParam("carId", carId)
+				.body(body)
+				.when()
+				.put("{id}/past", id)
+				.then();
+	}
+
+	@Test
+	void shouldAddAForgottenTripWhileAnotherIsOpen()
+	{
+		UUID open = UUID.randomUUID();
+		start(carId, open, startBody(TripType.PRIVATE, 50_100, now.minusHours(1), false))
+				.statusCode(201)
+				.body("enteredLater", is(false));
+
+		UUID past = UUID.randomUUID();
+		addPast(past, 50_000, 50_080, now.minusHours(5), now.minusHours(4))
+				.statusCode(201)
+				.body("distance", is(80))
+				.body("finishedAt", notNullValue())
+				.body("enteredLater", is(true));
+		// sent again
+		addPast(past, 50_000, 50_080, now.minusHours(5), now.minusHours(4)).statusCode(200);
+		addPast(past, 50_000, 50_090, now.minusHours(5), now.minusHours(4))
+				.statusCode(409)
+				.body("reason", is("ID_IN_USE"));
+
+		current().body("open.id", is(open.toString()));
+		given().pathParam("carId", carId).when().get().then().body("total", is(2));
+	}
+
+	@Test
+	void shouldRejectAForgottenTripThatDoesNotFit()
+	{
+		start(carId, UUID.randomUUID(), startBody(TripType.PRIVATE, 50_100, now.minusHours(1), false))
+				.statusCode(201);
+
+		// on the road at the same time as the open trip
+		addPast(UUID.randomUUID(), 50_000, 50_050, now.minusHours(2), now.minusMinutes(30))
+				.statusCode(409)
+				.body("reason", is("OVERLAPS"));
+		// ends above the start of the later trip
+		addPast(UUID.randomUUID(), 50_000, 50_150, now.minusHours(5), now.minusHours(4))
+				.statusCode(409)
+				.body("reason", is("ODOMETER_ABOVE_NEXT"))
+				.body("maximumOdometer", is(50_100));
+		// starts below the odometer of the car
+		addPast(UUID.randomUUID(), 49_000, 49_050, now.minusHours(5), now.minusHours(4))
+				.statusCode(409)
+				.body("reason", is("ODOMETER_BELOW_PREVIOUS"))
+				.body("minimumOdometer", is(50_000));
+		addPast(UUID.randomUUID(), 50_000, 49_990, now.minusHours(5), now.minusHours(4))
+				.statusCode(400)
+				.body("[0]", is("End odometer must not be below the start!"));
+		addPast(UUID.randomUUID(), 50_000, 50_010, now.minusHours(5), now.plusHours(1))
+				.statusCode(400)
+				.body("[0]", is("End time must not be in the future!"));
+	}
+
+	@Test
+	void shouldAddNoForgottenTripWithTheTripLogOff()
+	{
+		tripLog(false);
+		addPast(UUID.randomUUID(), 50_000, 50_050, now.minusHours(5), now.minusHours(4))
+				.statusCode(400)
+				.body("[0]", is("The trip log of the car is off, turn it on in the settings of the car!"));
+	}
+
 	@Test
 	void shouldStartOnlyOneOfTwoTripsAtTheSameTime()
 	{

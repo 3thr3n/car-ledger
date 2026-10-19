@@ -585,6 +585,7 @@ export type Trip = {
     deletedAt?: OffsetDateTime;
     deletedBy?: string;
     deleteReason?: string;
+    enteredLater: boolean;
 };
 
 export type TripConflict = {
@@ -611,6 +612,17 @@ export type TripFinishInput = {
     purpose?: string;
     businessPartner?: string;
     queued?: boolean;
+};
+
+export type TripPastInput = {
+    type?: TripType;
+    startOdometer?: number;
+    startedAt?: OffsetDateTime;
+    endOdometer?: number;
+    endedAt?: OffsetDateTime;
+    destination?: string;
+    purpose?: string;
+    businessPartner?: string;
 };
 
 export enum TripReview {
@@ -2601,6 +2613,46 @@ export type FinishTripResponses = {
 };
 
 export type FinishTripResponse = FinishTripResponses[keyof FinishTripResponses];
+
+export type AddPastTripData = {
+    body: TripPastInput;
+    path: {
+        carId: number;
+        id: Uuid;
+    };
+    query?: never;
+    url: '/api/trip/{carId}/{id}/past';
+};
+
+export type AddPastTripErrors = {
+    /**
+     * Validation failed, please check the response
+     */
+    400: Array<unknown>;
+    /**
+     * Car is not for your user.
+     */
+    404: unknown;
+    /**
+     * The trip doesn't fit the other data of the car or the id is in use.
+     */
+    409: TripConflict;
+};
+
+export type AddPastTripError = AddPastTripErrors[keyof AddPastTripErrors];
+
+export type AddPastTripResponses = {
+    /**
+     * Trip was added before with the same values.
+     */
+    200: Trip;
+    /**
+     * Trip added.
+     */
+    201: Trip;
+};
+
+export type AddPastTripResponse = AddPastTripResponses[keyof AddPastTripResponses];
 
 export type DeleteMyselfData = {
     body?: never;

@@ -294,4 +294,45 @@ test.describe.serial('trips', () => {
       '20,150 km',
     );
   });
+
+  /** types a date and a time into a picker, its sections one after the other */
+  async function fillDateTime(page: Page, name: string, date: Date) {
+    const pad = (value: number) => String(value).padStart(2, '0');
+    const hours = date.getHours() % 12 || 12;
+    await page
+      .getByRole('group', { name })
+      .getByRole('spinbutton')
+      .first()
+      .click();
+    await page.keyboard.type(
+      `${pad(date.getMonth() + 1)}${pad(date.getDate())}${date.getFullYear()}` +
+        `${pad(hours)}${pad(date.getMinutes())}${date.getHours() < 12 ? 'A' : 'P'}`,
+    );
+  }
+
+  test('adds a forgotten trip of yesterday', async ({ page }) => {
+    await openTrips(page);
+    await page.getByRole('button', { name: 'Add past trip' }).click();
+    const dialog = page.getByRole('dialog');
+    await page.getByRole('combobox', { name: 'Type' }).click();
+    await page.getByRole('option', { name: 'Private' }).click();
+
+    const start = new Date();
+    start.setDate(start.getDate() - 1);
+    start.setHours(8, 0, 0, 0);
+    await fillDateTime(page, 'Start', start);
+    await odometer(page, /Odometer at the start/).fill('19900');
+    await fillDateTime(page, 'Finish', new Date(start.getTime() + 3600_000));
+    await odometer(page, /Odometer at the finish/).fill('19950');
+    await dialog.getByRole('button', { name: 'Add trip' }).click();
+
+    await expect(page.getByText('Trip added')).toBeVisible();
+    const row = page
+      .getByTestId('trip-list')
+      .getByRole('row', { name: /19,950 km/ });
+    await expect(row).toContainText('50 km');
+    await expect(row).toContainText('Entered later');
+    const added = (await trips()).find((trip) => trip.startOdometer === 19900);
+    expect(new Date(added!.startedAt).getTime()).toBe(start.getTime());
+  });
 });

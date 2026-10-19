@@ -59,6 +59,20 @@ function Details({ trip }: { trip: Trip }) {
           {[trip.purpose, trip.businessPartner].filter(Boolean).join(' · ')}
         </Typography>
       )}
+      {trip.enteredLater && (
+        <Tooltip
+          title={t('trip.list.enteredLaterHint', {
+            time: format.dateTime(trip.finishedAt ?? trip.createdAt),
+          })}
+        >
+          <Chip
+            size="small"
+            variant="outlined"
+            label={t('trip.list.enteredLater')}
+            sx={{ mt: 0.5, mr: 0.5 }}
+          />
+        </Tooltip>
+      )}
       {trip.reviewReason && (
         <Tooltip title={t(`trip.review.${trip.reviewReason}`)}>
           <Chip

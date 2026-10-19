@@ -1,9 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import {
+  addPastTrip,
   finishTrip,
   startTrip,
   TripFinishInput,
+  TripPastInput,
   TripStartInput,
 } from '@/generated';
 import { getCurrentTripOptions } from '@/generated/@tanstack/react-query.gen';
@@ -93,11 +95,15 @@ export function useTripActions(carId: number) {
     return 'queued' as const;
   };
 
-  const start = async (details: StartDetails): Promise<TripResult> => {
+  /** @param startedAt e.g. a start forgotten for a while, now without */
+  const start = async (
+    details: StartDetails,
+    startedAt?: string,
+  ): Promise<TripResult> => {
     const id = crypto.randomUUID();
     const body: TripStartInput = {
       ...details,
-      startedAt: new Date().toISOString(),
+      startedAt: startedAt ?? new Date().toISOString(),
     };
     if (!navigator.onLine) return startQueued(id, body);
     try {
@@ -118,10 +124,11 @@ export function useTripActions(carId: number) {
   const finish = async (
     trip: TripView,
     details: FinishDetails,
+    endedAt?: string,
   ): Promise<TripResult> => {
     const body: TripFinishInput = {
       ...details,
-      endedAt: new Date().toISOString(),
+      endedAt: endedAt ?? new Date().toISOString(),
     };
     if (trip.pending || !navigator.onLine) return finishQueued(trip.id, body);
     try {
@@ -138,5 +145,19 @@ export function useTripActions(carId: number) {
     return done();
   };
 
-  return { start, finish };
+  /**
+   * A forgotten trip with its start and finish, only online: it is checked
+   * like a live request, the errors belong into the dialog
+   */
+  const addPast = async (input: TripPastInput): Promise<TripResult> => {
+    await addPastTrip({
+      client: localClient,
+      path: { carId, id: crypto.randomUUID() },
+      body: input,
+      throwOnError: true,
+    });
+    return done();
+  };
+
+  return { start, finish, addPast };
 }
