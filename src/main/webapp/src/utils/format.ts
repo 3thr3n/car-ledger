@@ -31,6 +31,8 @@ export interface Formatter {
   ) => string;
   /** Date from the API (yyyy-MM-dd) */
   date: (value?: string | null) => string;
+  /** Time from the API (ISO with offset), in the time zone of the device */
+  dateTime: (value?: string | null) => string;
   /** units of the account, the API always uses km, liters and ct/l */
   units: Units;
   /** km of the API, e.g. "12,400 km" or "7,705 mi" */
@@ -172,6 +174,13 @@ export function useFormat(): Formatter {
           ? new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }).format(
               dayjs(value).toDate(),
             )
+          : EMPTY,
+      dateTime: (value) =>
+        value
+          ? new Intl.DateTimeFormat(locale, {
+              dateStyle: 'medium',
+              timeStyle: 'short',
+            }).format(dayjs(value).toDate())
           : EMPTY,
     };
   }, [locale, currency, unitSystem]);

@@ -6,7 +6,7 @@ import { QueuedRequest } from './queue';
 
 /**
  * The requests of the queue of the logged-in user, optionally of one car and
- * type, in the order they were made
+ * bill type, in the order they were made
  */
 export function useQueued(carId?: number, billType?: BillType) {
   const { account } = useMe();
@@ -39,11 +39,17 @@ export function useOthersQueued() {
   );
 }
 
-/** puts a new bill into the queue, sent when there is a connection again */
-export function useQueueBill() {
+/**
+ * Puts a request into the queue (a new bill, the start or the finish of a
+ * trip), sent when there is a connection again
+ */
+export function useQueueRequest() {
   const { account } = useMe();
   return (
-    entry: Pick<QueuedRequest, 'id' | 'carId' | 'billType' | 'url' | 'body'>,
+    entry: Pick<
+      QueuedRequest,
+      'id' | 'carId' | 'billType' | 'tripId' | 'tripAction' | 'url' | 'body'
+    >,
   ) => {
     // asks the browser to keep the data of the app, e.g. Safari deletes it
     // after some weeks without a visit. A browser may decline.

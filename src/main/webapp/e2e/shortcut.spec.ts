@@ -46,3 +46,23 @@ test.describe.serial('shortcut "Add refuel"', () => {
     );
   });
 });
+
+/** The shortcut "Trip" opens /trip: the trips of the last opened car */
+test.describe.serial('shortcut "Trip"', () => {
+  test.afterAll(deleteAllCars);
+
+  test('opens the garage without cars', async ({ page }) => {
+    await deleteAllCars();
+    await page.goto('/trip');
+    await expect(page).toHaveURL(/\/car$/);
+  });
+
+  test('opens the trips of the car', async ({ page }) => {
+    const id = await createCar('PETROL');
+    await page.goto('/trip');
+    await expect(page).toHaveURL(new RegExp(`/car/${id}/trips$`));
+    await expect(
+      page.getByRole('button', { name: 'Start trip' }),
+    ).toBeVisible();
+  });
+});

@@ -50,13 +50,25 @@ export default defineConfig({
             purpose: 'maskable',
           },
         ],
-        // long press on the icon: the form of a new refuel (or charge) of the
-        // last used car
+        // long press on the icon: the form of a new refuel (or charge) and
+        // the trips of the last used car
         shortcuts: [
           {
             name: 'Add refuel',
             short_name: 'Refuel',
             url: '/refuel',
+            icons: [
+              {
+                src: '/icons/icon-192.png',
+                sizes: '192x192',
+                type: 'image/png',
+              },
+            ],
+          },
+          {
+            name: 'Start or finish a trip',
+            short_name: 'Trip',
+            url: '/trip',
             icons: [
               {
                 src: '/icons/icon-192.png',

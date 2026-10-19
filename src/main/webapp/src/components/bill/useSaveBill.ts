@@ -3,7 +3,7 @@ import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
 import { BillType } from '@/generated';
-import { useQueueBill } from '@/offline/useQueued';
+import { useQueueRequest } from '@/offline/useQueued';
 import { invalidateCar } from '@/utils/QueryClient';
 import { errorMessage } from '@/utils/BackendError';
 import { billTypes } from '@/utils/billTypes';
@@ -28,7 +28,7 @@ export default function useSaveBill(
   const navigate = useNavigate();
   const again = useRef(false);
   const [pending, setPending] = useState<File[]>([]);
-  const addToQueue = useQueueBill();
+  const addToQueue = useQueueRequest();
 
   /** the bill is saved even if a file fails, the user can attach it later */
   const uploadPending = async (savedId?: number) => {

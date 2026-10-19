@@ -21,6 +21,19 @@ describe('localClient', () => {
     );
   });
 
+  it('keeps the message and the details of a conflict', async () => {
+    const conflict = {
+      reason: 'ODOMETER_BELOW_PREVIOUS',
+      message: 'The odometer is below 1000 km',
+      minimumOdometer: 1000,
+    };
+    const fetch = vi.fn(async () => Response.json(conflict, { status: 409 }));
+
+    await expect(call(fetch)).rejects.toEqual(
+      new BackendError(409, 'The odometer is below 1000 km', conflict),
+    );
+  });
+
   it('reports the status of other errors', async () => {
     const fetch = vi.fn(async () => new Response('', { status: 404 }));
 
