@@ -1,0 +1,52 @@
+suite: network policies of the app
+templates:
+  - templates/networkpolicy.yaml
+release:
+  name: car-ledger
+  namespace: car-ledger
+set:
+  ingress.host: example.com
+tests:
+  - it: lets only the app reach PostgreSQL and Infinispan
+    asserts:
+      - hasDocuments:
+          count: 2
+      - equal:
+          path: spec.ingress[0].from
+          value:
+            - podSelector:
+                matchLabels:
+                  app: car-ledger
+        documentIndex: 0
+      - equal:
+          path: spec.podSelector.matchLabels["app.kubernetes.io/instance"]
+          value: car-ledger
+        documentIndex: 0
+      - equal:
+          path: spec.ingress[0].ports
+          value:
+            - port: 11222
+              protocol: TCP
+        documentIndex: 1
+
+  - it: lets further sources in
+    set:
+      networkPolicy.extraFrom:
+        - podSelector:
+            matchLabels:
+              app: pg-backup
+    asserts:
+      - contains:
+          path: spec.ingress[0].from
+          content:
+            podSelector:
+              matchLabels:
+                app: pg-backup
+        documentIndex: 0
+
+  - it: has no policies when turned off
+    set:
+      networkPolicy.enabled: false
+    asserts:
+      - hasDocuments:
+          count: 0

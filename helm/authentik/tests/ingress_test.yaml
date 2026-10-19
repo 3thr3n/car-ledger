@@ -1,0 +1,69 @@
+suite: ingress, HTTPRoute and network policy of authentik
+templates:
+  - templates/ingress.yaml
+  - templates/httproute.yaml
+  - templates/networkpolicy.yaml
+release:
+  name: authentik
+  namespace: auth
+set:
+  hostname: authentik.example.com
+tests:
+  - it: serves the host name with TLS
+    template: templates/ingress.yaml
+    asserts:
+      - equal:
+          path: spec.tls[0]
+          value:
+            hosts: [authentik.example.com]
+            secretName: authentik-ingress-tls
+      - equal:
+          path: spec.rules[0].http.paths[0].backend.service.name
+          value: authentik-server
+
+  - it: names the service like the authentik chart in the stack
+    template: templates/ingress.yaml
+    release:
+      name: car-ledger
+    asserts:
+      - equal:
+          path: spec.rules[0].http.paths[0].backend.service.name
+          value: car-ledger-authentik-server
+
+  - it: has no TLS without it
+    template: templates/ingress.yaml
+    set:
+      tls: false
+    asserts:
+      - notExists:
+          path: spec.tls
+
+  - it: needs a host name
+    template: templates/ingress.yaml
+    set:
+      hostname: ""
+    asserts:
+      - failedTemplate:
+          errorPattern: hostname is required
+
+  - it: has a HTTPRoute instead of the ingress behind a Gateway
+    set:
+      ingress.enabled: false
+      httpRoute.enabled: true
+    asserts:
+      - hasDocuments:
+          count: 0
+        template: templates/ingress.yaml
+      - equal:
+          path: spec.hostnames
+          value: [authentik.example.com]
+        template: templates/httproute.yaml
+
+  - it: lets only authentik reach its PostgreSQL
+    template: templates/networkpolicy.yaml
+    asserts:
+      - equal:
+          path: spec.ingress[0].from[0].podSelector.matchLabels
+          value:
+            app.kubernetes.io/name: authentik
+            app.kubernetes.io/instance: authentik

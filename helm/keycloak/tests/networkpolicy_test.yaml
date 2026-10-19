@@ -1,0 +1,36 @@
+suite: network policy of Keycloak
+templates:
+  - templates/networkpolicy.yaml
+release:
+  name: keycloak
+  namespace: auth
+tests:
+  - it: lets only Keycloak reach its PostgreSQL
+    asserts:
+      - equal:
+          path: metadata.name
+          value: keycloak-postgresql
+      - equal:
+          path: spec.ingress[0].from
+          value:
+            - podSelector:
+                matchLabels:
+                  app.kubernetes.io/name: keycloak
+                  app.kubernetes.io/instance: keycloak
+
+  - it: selects the PostgreSQL of the stack chart by its prefix
+    release:
+      name: car-ledger
+    set:
+      global.keycloak.enabled: true
+    asserts:
+      - equal:
+          path: spec.podSelector.matchLabels["app.kubernetes.io/instance"]
+          value: car-ledger-keycloak
+
+  - it: has no policy when turned off
+    set:
+      networkPolicy.enabled: false
+    asserts:
+      - hasDocuments:
+          count: 0

@@ -1,0 +1,55 @@
+suite: blueprint of CarLedger in authentik
+templates:
+  - templates/blueprint.yaml
+release:
+  name: authentik
+  namespace: auth
+set:
+  hostname: authentik.example.com
+tests:
+  - it: needs the host name of CarLedger
+    asserts:
+      - failedTemplate:
+          errorPattern: carLedger.hostname is required
+
+  - it: creates the client of CarLedger with its redirect URIs
+    set:
+      carLedger.hostname: car-ledger.example.com
+    asserts:
+      - matchRegex:
+          path: data["car-ledger.yaml"]
+          pattern: 'url: "https://car-ledger.example.com/api/auth/callback"\s+redirect_uri_type: authorization'
+      - matchRegex:
+          path: data["car-ledger.yaml"]
+          pattern: 'url: "https://car-ledger.example.com/api/auth/logout-callback"\s+redirect_uri_type: logout'
+      - matchRegex:
+          path: data["car-ledger.yaml"]
+          pattern: 'client_id: "car-ledger"'
+      - matchRegex:
+          path: data["car-ledger.yaml"]
+          pattern: 'client_secret: !Env CAR_LEDGER_CLIENT_SECRET'
+      - matchRegex:
+          path: data["car-ledger.yaml"]
+          pattern: 'grant_types:\s+- authorization_code\s+- refresh_token'
+
+  - it: takes the slug and the client id from the values
+    set:
+      carLedger.hostname: car-ledger.example.com
+      carLedger.slug: cars
+      carLedger.clientId: cars-client
+    asserts:
+      - matchRegex:
+          path: data["car-ledger.yaml"]
+          pattern: 'slug: "cars"'
+      - matchRegex:
+          path: data["car-ledger.yaml"]
+          pattern: 'client_id: "cars-client"'
+
+  - it: takes the host of the stack chart and uses http without TLS
+    set:
+      global.host: example.org
+      tls: false
+    asserts:
+      - matchRegex:
+          path: data["car-ledger.yaml"]
+          pattern: 'meta_launch_url: "http://car-ledger.example.org/"'
