@@ -183,6 +183,7 @@ car:
   odometer: "Kilometerstand"
   tabs:
     overview: "Übersicht"
+    trips: "Fahrten"
     reminders: "Erinnerungen"
   overview:
     totalCost: "Gesamtkosten"
@@ -700,3 +701,63 @@ offline:
     text_other: "{{count}} offline erfasste Einträge eines anderen Kontos warten auf diesem Gerät. Sie werden gesendet, wenn sich dieses Konto hier anmeldet."
     discardTitle_one: "{{count}} Eintrag verwerfen?"
     discardTitle_other: "{{count}} Einträge verwerfen?"
+
+trip:
+  types:
+    BUSINESS: "Dienstlich"
+    PRIVATE: "Privat"
+    COMMUTE: "Arbeitsweg"
+  fields:
+    startOdometer: "Kilometerstand beim Start"
+    endOdometer: "Kilometerstand am Ziel"
+    type: "Art"
+    destination: "Ziel"
+    purpose: "Zweck"
+    businessPartner: "Geschäftspartner"
+  current:
+    title: "Fahrt"
+    none: "Keine Fahrt offen"
+    noneText: "Starte eine Fahrt vor dem Losfahren und beende sie, wenn du ankommst."
+    open: "Offene Fahrt"
+    since: "Seit {{time}}, gestartet bei {{odometer}}"
+    pending: "Ohne Verbindung gestartet, noch nicht gesendet"
+  start:
+    button: "Fahrt starten"
+    title: "Fahrt starten"
+    confirm: "Starten"
+    odometerHelp: "Mindestens {{minimum}}, der höchste Stand des Autos"
+    businessHint: "Eine dienstliche Fahrt braucht Ziel, Zweck und Geschäftspartner, spätestens beim Beenden."
+    started: "Fahrt gestartet"
+  finish:
+    button: "Fahrt beenden"
+    title: "Fahrt beenden"
+    confirm: "Fahrt beenden"
+    final: "Eine beendete Fahrt kann nicht mehr geändert werden. Prüfe den Kilometerstand und die Angaben."
+    odometerHelp: "Mindestens {{minimum}}, der Stand beim Start"
+    finished: "Fahrt beendet"
+  queued: "Keine Verbindung: die Fahrt ist auf diesem Gerät gespeichert und wird gesendet, sobald du wieder online bist"
+  errors:
+    businessDetail: "Für eine dienstliche Fahrt nötig"
+    odometerBelow: "Mindestens {{minimum}}"
+    odometerAbove: "Höchstens {{maximum}}, dort beginnt eine spätere Fahrt"
+  list:
+    title: "Fahrtenbuch"
+    subtitle: "Gestartete und beendete Fahrten, neueste zuerst"
+    emptyTitle: "Noch keine Fahrten"
+    emptyText: "Fahrten, die du startest und beendest, erscheinen hier."
+    date: "Datum"
+    route: "Kilometerstand"
+    distance: "Strecke"
+    details: "Ziel / Zweck"
+    open: "offen"
+    restored: "Aus einer Sicherung wiederhergestellt"
+  review:
+    label: "Prüfen"
+    ODOMETER_BELOW_PREVIOUS: "Später gesendet, der Kilometerstand liegt unter einem früheren Stand"
+    ODOMETER_ABOVE_NEXT: "Später gesendet, der Kilometerstand liegt über einem späteren Stand"
+    OVERLAPS: "Später gesendet, überschneidet sich mit einer anderen Fahrt"
+  pending:
+    title: "Noch nicht gesendet"
+    subtitle: "Ohne Verbindung gestartet oder beendet und auf diesem Gerät gespeichert"
+    start: "Start bei {{odometer}}"
+    finish: "Ziel bei {{odometer}}"

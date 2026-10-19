@@ -11,9 +11,13 @@ export interface QueuedRequest {
   /** the account that made it, only its login sends it */
   user: string;
   carId: number;
-  billType: BillType;
+  /** of a new bill */
+  billType?: BillType;
+  /** of a trip: its id, which the server takes from the URL */
+  tripId?: string;
+  tripAction?: 'start' | 'finish';
   method: 'PUT';
-  /** e.g. /api/bill/1/fuel */
+  /** e.g. /api/bill/1/fuel or /api/trip/1/<id>/finish */
   url: string;
   /** in the units of the API */
   body: Record<string, unknown>;

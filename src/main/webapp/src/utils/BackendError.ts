@@ -1,11 +1,14 @@
 export class BackendError extends Error {
   status: number;
   message: string;
+  /** the answer of the server, e.g. the details of a conflict (409) */
+  body?: unknown;
 
-  constructor(status: number, message?: string) {
+  constructor(status: number, message?: string, body?: unknown) {
     super();
     this.status = status;
     this.message = message ?? '';
+    this.body = body;
   }
 }
 

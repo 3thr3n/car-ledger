@@ -183,6 +183,7 @@ car:
   odometer: "Odometer"
   tabs:
     overview: "Overview"
+    trips: "Trips"
     reminders: "Reminders"
   overview:
     totalCost: "Total cost"
@@ -700,3 +701,63 @@ offline:
     text_other: "{{count}} entries of another account made offline wait on this device. They are sent when that account logs in here."
     discardTitle_one: "Discard {{count}} entry?"
     discardTitle_other: "Discard {{count}} entries?"
+
+trip:
+  types:
+    BUSINESS: "Business"
+    PRIVATE: "Private"
+    COMMUTE: "Commute"
+  fields:
+    startOdometer: "Odometer at the start"
+    endOdometer: "Odometer at the finish"
+    type: "Type"
+    destination: "Destination"
+    purpose: "Purpose"
+    businessPartner: "Business partner"
+  current:
+    title: "Trip"
+    none: "No trip is open"
+    noneText: "Start a trip before you drive and finish it when you arrive."
+    open: "Open trip"
+    since: "Since {{time}}, started at {{odometer}}"
+    pending: "Started without a connection, not sent yet"
+  start:
+    button: "Start trip"
+    title: "Start a trip"
+    confirm: "Start"
+    odometerHelp: "At least {{minimum}}, the highest reading of the car"
+    businessHint: "A business trip needs the destination, the purpose and the business partner, at the latest when you finish it."
+    started: "Trip started"
+  finish:
+    button: "Finish trip"
+    title: "Finish the trip"
+    confirm: "Finish trip"
+    final: "A finished trip can't be changed anymore. Check the odometer and the details."
+    odometerHelp: "At least {{minimum}}, the odometer at the start"
+    finished: "Trip finished"
+  queued: "No connection: the trip is kept on this device and sent when you are online again"
+  errors:
+    businessDetail: "Needed for a business trip"
+    odometerBelow: "At least {{minimum}}"
+    odometerAbove: "At most {{maximum}}, a later trip starts there"
+  list:
+    title: "Trip log"
+    subtitle: "Started and finished trips, newest first"
+    emptyTitle: "No trips yet"
+    emptyText: "Trips you start and finish are listed here."
+    date: "Date"
+    route: "Odometer"
+    distance: "Distance"
+    details: "Destination / purpose"
+    open: "open"
+    restored: "Restored from a backup"
+  review:
+    label: "Check"
+    ODOMETER_BELOW_PREVIOUS: "Sent later, its odometer is below an earlier reading"
+    ODOMETER_ABOVE_NEXT: "Sent later, its odometer is above a later reading"
+    OVERLAPS: "Sent later, it overlaps another trip"
+  pending:
+    title: "Not sent yet"
+    subtitle: "Started or finished without a connection and kept on this device"
+    start: "Start at {{odometer}}"
+    finish: "Finish at {{odometer}}"

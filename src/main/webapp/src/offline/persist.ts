@@ -9,10 +9,11 @@ import { OfflineStore } from './store';
 
 /**
  * The queries a form needs without a connection: the account (units, VAT,
- * currency) and the cars (energy type, tank size, odometer). Not the lists of
- * the bills.
+ * currency), the cars (energy type, tank size, odometer) and their open trip
+ * with the minimum odometer of the next start. Not the lists of the bills and
+ * trips.
  */
-const KEPT = new Set(['getMyself', 'getMyCars', 'getMyCar']);
+const KEPT = new Set(['getMyself', 'getMyCars', 'getMyCar', 'getCurrentTrip']);
 const KEY = 'queries';
 /** writes at most once per this many ms */
 const DELAY = 500;
