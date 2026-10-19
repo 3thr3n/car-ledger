@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 # A local cluster to try the charts with a real login: kind with Cilium (CNI without kube-proxy, enforces the
-# NetworkPolicies) and its ingress controller or ingress-nginx, the storage local-path or Longhorn, cert-manager with a
-# self-signed CA (like a cluster whose certificates no one trusts) and the stack chart with Keycloak or authentik.
+# NetworkPolicies) and its ingress controller or ingress-nginx, the storage local-path, cert-manager with a self-signed
+# CA (like a cluster whose certificates no one trusts) and the stack chart with Keycloak or authentik. Longhorn does not
+# work in kind: iscsid needs the network namespace of the host, a kind node has its own.
 #
-#   hack/kind/up.sh [--idp keycloak|authentik|none] [--ingress cilium|nginx] [--storage local-path|longhorn]
-#                   [--image <repository:tag>] [--no-build]
+#   hack/kind/up.sh [--idp keycloak|authentik|none] [--ingress cilium|nginx] [--image <repository:tag>]
+#                   [--no-build]
 #
 # The app is https://car-ledger.localhost, the identity provider https://keycloak.localhost or
 # https://authentik.localhost: ports 80 and 443 of this machine, *.localhost is 127.0.0.1 without a DNS server. Inside
@@ -22,15 +23,13 @@ NODE_IMAGE=kindest/node:v1.37.0@sha256:a1ed56cfb0e7b93589bdf97c8cd566405a265939e
 CILIUM_VERSION=1.20.2
 CERT_MANAGER_VERSION=v1.21.2
 INGRESS_NGINX_VERSION=4.15.1
-LONGHORN_VERSION=1.12.1
 OUT=target/kind
 
-idp=keycloak ingress=cilium storage=local-path image="" build=true
+idp=keycloak ingress=cilium image="" build=true
 while [ $# -gt 0 ]; do
   case "$1" in
     --idp) idp="$2"; shift ;;
     --ingress) ingress="$2"; shift ;;
-    --storage) storage="$2"; shift ;;
     --image) image="$2"; build=false; shift ;;
     --no-build) build=false ;;
     *) sed -n '2,13p' "$0" >&2; exit 1 ;;
@@ -39,29 +38,15 @@ while [ $# -gt 0 ]; do
 done
 case "$idp" in keycloak | authentik | none) ;; *) echo "unknown --idp $idp" >&2; exit 1 ;; esac
 case "$ingress" in cilium | nginx) ;; *) echo "unknown --ingress $ingress" >&2; exit 1 ;; esac
-case "$storage" in local-path | longhorn) ;; *) echo "unknown --storage $storage" >&2; exit 1 ;; esac
 image="${image:-car-ledger:kind}"
 
 step() { echo "==> $*" >&2; }
-if [ "$storage" = longhorn ] && [ ! -d /sys/module/iscsi_tcp ]; then
-  # the nodes share the kernel of this machine
-  echo "Longhorn needs the kernel module iscsi_tcp: sudo modprobe iscsi_tcp" >&2
-  exit 1
-fi
 mkdir -p "$OUT"
 
 if ! kind get clusters 2>/dev/null | grep -qx "$CLUSTER"; then
-  node_image="$NODE_IMAGE"
-  if [ "$storage" = longhorn ]; then
-    # Longhorn needs iscsiadm on the nodes
-    step "Node image with open-iscsi"
-    docker build -q -t car-ledger-kind-node:longhorn --build-arg "NODE_IMAGE=$NODE_IMAGE" \
-      -f hack/kind/longhorn-node.Dockerfile hack/kind >/dev/null
-    node_image=car-ledger-kind-node:longhorn
-  fi
   step "Cluster $CLUSTER"
   # the ingress is a NodePort service, ports 80 and 443 of this machine lead to it
-  kind create cluster --name "$CLUSTER" --image "$node_image" --wait 0s --config - <<EOF
+  kind create cluster --name "$CLUSTER" --image "$NODE_IMAGE" --wait 0s --config - <<EOF
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
 networking:
@@ -134,18 +119,6 @@ kc -n kube-system create configmap coredns --from-file=Corefile="$OUT/Corefile" 
   kc replace -f - >/dev/null
 kc -n kube-system rollout restart deployment coredns >/dev/null
 kc -n kube-system rollout status deployment coredns --timeout=2m >/dev/null
-
-if [ "$storage" = longhorn ]; then
-  step "Longhorn $LONGHORN_VERSION"
-  hc upgrade --install longhorn longhorn --repo https://charts.longhorn.io --version "$LONGHORN_VERSION" \
-    --namespace longhorn-system --create-namespace --wait --timeout 15m \
-    --set persistence.defaultClass=true --set persistence.defaultClassReplicaCount=1 \
-    --set defaultSettings.defaultReplicaCount=1 --set longhornUI.replicas=1 \
-    --set csi.attacherReplicaCount=1 --set csi.provisionerReplicaCount=1 \
-    --set csi.resizerReplicaCount=1 --set csi.snapshotterReplicaCount=1
-  # only one default class
-  kc annotate storageclass standard storageclass.kubernetes.io/is-default-class=false --overwrite >/dev/null
-fi
 
 step "cert-manager $CERT_MANAGER_VERSION and the CA"
 hc upgrade --install cert-manager cert-manager --repo https://charts.jetstack.io --version "$CERT_MANAGER_VERSION" \
