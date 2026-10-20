@@ -795,3 +795,11 @@ trip:
     subtitle: "Ohne Verbindung gestartet oder beendet und auf diesem Gerät gespeichert"
     start: "Start bei {{odometer}}"
     finish: "Ziel bei {{odometer}}"
+  export:
+    button: "Exportieren"
+    title: "Fahrtenbuch exportieren"
+    period: "Zeitraum"
+    custom: "Tage wählen"
+    from: "Von"
+    to: "Bis"
+    text: "Das PDF ist das Fahrtenbuch zum Ausdrucken oder Einreichen, mit den gelöschten Fahrten samt Grund und den Summen je Art. Die CSV ist für Tabellen. Ob ein Finanzamt es als elektronisches Fahrtenbuch anerkennt, kann CarLedger nicht garantieren."

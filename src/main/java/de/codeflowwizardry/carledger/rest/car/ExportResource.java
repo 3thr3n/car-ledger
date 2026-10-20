@@ -28,6 +28,10 @@ import de.codeflowwizardry.carledger.data.repository.MiscellaneousBillRepository
 import de.codeflowwizardry.carledger.data.repository.RecurringBillPaymentRepository;
 import de.codeflowwizardry.carledger.exception.WrongUserException;
 import de.codeflowwizardry.carledger.rest.AbstractResource;
+import de.codeflowwizardry.carledger.tripexport.TripCsvWriter;
+import de.codeflowwizardry.carledger.tripexport.TripExport;
+import de.codeflowwizardry.carledger.tripexport.TripExportService;
+import de.codeflowwizardry.carledger.tripexport.TripPdfWriter;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Response;
@@ -36,6 +40,7 @@ import jakarta.ws.rs.core.Response;
 public class ExportResource extends AbstractResource
 {
 	static final String TEXT_CSV = "text/csv";
+	static final String APPLICATION_PDF = "application/pdf";
 
 	private final CarRepository carRepository;
 	private final FuelBillRepository fuelBillRepository;
@@ -44,6 +49,7 @@ public class ExportResource extends AbstractResource
 	private final MiscellaneousBillRepository miscellaneousBillRepository;
 	private final BillRepository billRepository;
 	private final RecurringBillPaymentRepository recurringBillPaymentRepository;
+	private final TripExportService tripExportService;
 
 	@Inject
 	public ExportResource(SecurityIdentity identity, AccountRepository accountRepository,
@@ -51,7 +57,7 @@ public class ExportResource extends AbstractResource
 			ChargingBillRepository chargingBillRepository,
 			MaintenanceBillRepository maintenanceBillRepository,
 			MiscellaneousBillRepository miscellaneousBillRepository, BillRepository billRepository,
-			RecurringBillPaymentRepository recurringBillPaymentRepository)
+			RecurringBillPaymentRepository recurringBillPaymentRepository, TripExportService tripExportService)
 	{
 		super(identity, accountRepository);
 		this.carRepository = carRepository;
@@ -61,6 +67,7 @@ public class ExportResource extends AbstractResource
 		this.miscellaneousBillRepository = miscellaneousBillRepository;
 		this.billRepository = billRepository;
 		this.recurringBillPaymentRepository = recurringBillPaymentRepository;
+		this.tripExportService = tripExportService;
 	}
 
 	@GET
@@ -128,6 +135,69 @@ public class ExportResource extends AbstractResource
 				.build();
 	}
 
+	@GET
+	@Path("trips/csv")
+	@Produces(TEXT_CSV)
+	@Operation(operationId = "exportTripsCsv", description = """
+			Exports the trip log of the car as CSV, for spreadsheets: the oldest trip first, also the deleted ones \
+			with their deletion, in km, the times ISO-8601 in the zone. A year or a period (from, to), nothing for \
+			all trips. Not meant to be imported.""")
+	@APIResponse(responseCode = "200", description = "The trips as CSV.", content = @Content(mediaType = TEXT_CSV, schema = @Schema(type = SchemaType.STRING)))
+	@APIResponse(responseCode = "400", description = "A year and a period, a period that ends before it starts or an unknown zone.")
+	@APIResponse(responseCode = "404", description = "Car not found.")
+	public Response exportTripsCsv(@PathParam("carId") long carId, @QueryParam("year") Integer year,
+			@QueryParam("from") LocalDate from, @QueryParam("to") LocalDate to, @QueryParam("zone") String zone)
+	{
+		TripExport export = tripExportService.export(carId, context.getName(), Optional.ofNullable(year),
+				Optional.ofNullable(from), Optional.ofNullable(to), Optional.ofNullable(zone), Optional.empty());
+		return Response.ok(TripCsvWriter.write(export), TEXT_CSV + "; charset=UTF-8")
+				.header("Content-Disposition", "attachment; filename=\"" + tripFileName(export, "csv") + "\"")
+				.build();
+	}
+
+	@GET
+	@Path("trips/pdf")
+	@Produces(APPLICATION_PDF)
+	@Operation(operationId = "exportTripsPdf", description = """
+			Exports the trip log of the car as PDF (Fahrtenbuch): the oldest trip first, the deleted ones with the \
+			reason, the trips entered later with the time they were entered, the sums per type. In the units of the \
+			account and the language (de, en; the one of the account without), the times in the zone. A year or a \
+			period (from, to), nothing for all trips.""")
+	@APIResponse(responseCode = "200", description = "The trips as PDF.", content = @Content(mediaType = APPLICATION_PDF, schema = @Schema(type = SchemaType.STRING, format = "binary")))
+	@APIResponse(responseCode = "400", description = "A year and a period, a period that ends before it starts, an unknown zone or language.")
+	@APIResponse(responseCode = "404", description = "Car not found.")
+	public Response exportTripsPdf(@PathParam("carId") long carId, @QueryParam("year") Integer year,
+			@QueryParam("from") LocalDate from, @QueryParam("to") LocalDate to, @QueryParam("zone") String zone,
+			@QueryParam("language") String language)
+	{
+		TripExport export = tripExportService.export(carId, context.getName(), Optional.ofNullable(year),
+				Optional.ofNullable(from), Optional.ofNullable(to), Optional.ofNullable(zone),
+				Optional.ofNullable(language));
+		return Response.ok(TripPdfWriter.write(export), APPLICATION_PDF)
+				.header("Content-Disposition", "attachment; filename=\"" + tripFileName(export, "pdf") + "\"")
+				.build();
+	}
+
+	/**
+	 * @return e.g. <code>golf-trips-2025.pdf</code>, the period as
+	 *         <code>2025-03-01-2025-03-31</code>
+	 */
+	static String tripFileName(TripExport export, String extension)
+	{
+		String base = name(export.carName()) + "-trips";
+		LocalDate from = export.from();
+		LocalDate to = export.to();
+		if (from != null && to != null && from.getDayOfYear() == 1
+				&& to.equals(from.withDayOfYear(from.lengthOfYear())))
+		{
+			base += "-" + from.getYear();
+		} else if (from != null || to != null)
+		{
+			base += "-" + (from == null ? "" : from) + "-" + (to == null ? "" : to);
+		}
+		return base + "." + extension;
+	}
+
 	private <E extends AbstractBillEntity> String export(CsvExporter<E> exporter,
 			AbstractBillRepository<E> repository, long carId, Integer year)
 	{
@@ -149,11 +219,18 @@ public class ExportResource extends AbstractResource
 	 */
 	static String fileName(CarEntity car, String what, Integer year)
 	{
-		String name = car.getName() == null ? ""
-				: car.getName().toLowerCase(Locale.ROOT)
+		return name(car.getName()) + "-" + what.toLowerCase(Locale.ROOT) + (year == null ? "" : "-" + year) + ".csv";
+	}
+
+	/**
+	 * @return the name of the car with only letters, digits and dashes
+	 */
+	private static String name(String carName)
+	{
+		String name = carName == null ? ""
+				: carName.toLowerCase(Locale.ROOT)
 						.replaceAll("[^a-z0-9]+", "-")
 						.replaceAll("^-|-$", "");
-		return (name.isEmpty() ? "car" : name) + "-" + what.toLowerCase(Locale.ROOT)
-				+ (year == null ? "" : "-" + year) + ".csv";
+		return name.isEmpty() ? "car" : name;
 	}
 }

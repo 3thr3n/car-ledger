@@ -2170,6 +2170,75 @@ export type ExportAllExpensesCsvResponses = {
 
 export type ExportAllExpensesCsvResponse = ExportAllExpensesCsvResponses[keyof ExportAllExpensesCsvResponses];
 
+export type ExportTripsCsvData = {
+    body?: never;
+    path: {
+        carId: number;
+    };
+    query?: {
+        from?: LocalDate;
+        to?: LocalDate;
+        year?: number;
+        zone?: string;
+    };
+    url: '/api/export/{carId}/trips/csv';
+};
+
+export type ExportTripsCsvErrors = {
+    /**
+     * A year and a period, a period that ends before it starts or an unknown zone.
+     */
+    400: unknown;
+    /**
+     * Car not found.
+     */
+    404: unknown;
+};
+
+export type ExportTripsCsvResponses = {
+    /**
+     * The trips as CSV.
+     */
+    200: string;
+};
+
+export type ExportTripsCsvResponse = ExportTripsCsvResponses[keyof ExportTripsCsvResponses];
+
+export type ExportTripsPdfData = {
+    body?: never;
+    path: {
+        carId: number;
+    };
+    query?: {
+        from?: LocalDate;
+        language?: string;
+        to?: LocalDate;
+        year?: number;
+        zone?: string;
+    };
+    url: '/api/export/{carId}/trips/pdf';
+};
+
+export type ExportTripsPdfErrors = {
+    /**
+     * A year and a period, a period that ends before it starts, an unknown zone or language.
+     */
+    400: unknown;
+    /**
+     * Car not found.
+     */
+    404: unknown;
+};
+
+export type ExportTripsPdfResponses = {
+    /**
+     * The trips as PDF.
+     */
+    200: Blob | File;
+};
+
+export type ExportTripsPdfResponse = ExportTripsPdfResponses[keyof ExportTripsPdfResponses];
+
 export type ImportCsvData = {
     body: {
         file?: Blob | File;
