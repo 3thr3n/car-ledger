@@ -2,6 +2,7 @@ package de.codeflowwizardry.carledger;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.*;
 
 import de.codeflowwizardry.carledger.data.repository.CarAccess;
@@ -14,9 +15,11 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 
 /**
- * Calculates the current odometer of cars. Readings are the odometer of the car
- * and the ones of maintenance bills. The latest reading is the base, the
- * distances of the refuels or charges after its day are added.
+ * Calculates the current odometer of cars. Readings are the odometer of the
+ * car,
+ * the ones of maintenance bills and the start and end of trips. The latest
+ * reading is the base, the distances of the refuels or charges after its day
+ * are added.
  */
 @ApplicationScoped
 public class OdometerService
@@ -34,7 +37,7 @@ public class OdometerService
 	}
 
 	/**
-	 * Three queries, independent of the number of cars and bills.
+	 * Four queries, independent of the number of cars, bills and trips.
 	 *
 	 * @param carId
 	 *            or {@link CarRepository#ALL_CARS}
@@ -54,6 +57,16 @@ public class OdometerService
 				username))
 		{
 			add(readings, row);
+		}
+		for (Object[] row : query("select t.car.id, t.startedAt, t.startOdometer, t.endedAt, t.endOdometer from trip t"
+				+ " where t.deletedAt is null and " + CarAccess.condition("t.car", Action.READ), "t.car", carId,
+				username))
+		{
+			add(readings, (Long) row[0], TripService.day((OffsetDateTime) row[1]), (Integer) row[2]);
+			if (row[4] != null)
+			{
+				add(readings, (Long) row[0], TripService.day((OffsetDateTime) row[3]), (Integer) row[4]);
+			}
 		}
 
 		Map<Long, NavigableMap<LocalDate, BigDecimal>> refueled = drivenPerDay("FuelBillEntity", carId, username);
@@ -114,8 +127,12 @@ public class OdometerService
 
 	private static void add(Map<Long, List<Reading>> readings, Object[] row)
 	{
-		readings.computeIfAbsent((Long) row[0], id -> new ArrayList<>())
-				.add(new Reading((LocalDate) row[1], (Integer) row[2]));
+		add(readings, (Long) row[0], (LocalDate) row[1], (Integer) row[2]);
+	}
+
+	private static void add(Map<Long, List<Reading>> readings, long carId, LocalDate date, int value)
+	{
+		readings.computeIfAbsent(carId, id -> new ArrayList<>()).add(new Reading(date, value));
 	}
 
 	private List<Object[]> query(String query, String carPath, long carId, String username)

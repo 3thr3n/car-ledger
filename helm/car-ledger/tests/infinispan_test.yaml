@@ -1,0 +1,19 @@
+suite: Infinispan of the app
+# the StatefulSet includes the helpers and the configuration of the subchart
+templates:
+  - charts/infinispan/templates/statefulset.yaml
+  - charts/infinispan/templates/configmap.yaml
+  - charts/infinispan/templates/helpers.tpl
+  - charts/infinispan/templates/_log4j2.xml.tpl
+release:
+  name: car-ledger
+  namespace: car-ledger
+set:
+  ingress.host: example.com
+tests:
+  - it: gives the volume to the group of the server, a new volume of block storage belongs to root
+    template: charts/infinispan/templates/statefulset.yaml
+    asserts:
+      - equal:
+          path: spec.template.spec.securityContext.fsGroup
+          value: 185

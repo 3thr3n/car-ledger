@@ -182,10 +182,32 @@ cd src/main/webapp && yarn test
 # end-to-end tests, start Quarkus (with dev services, needs Docker) and Vite themselves,
 # running servers are reused
 cd src/main/webapp && npx playwright install chromium && yarn test:e2e
+
+# charts: the template tests of helm/<chart>/tests (plugin helm-unittest) and the rendered
+# resources against the schemas of Kubernetes (kubeconform), after helm dependency update
+helm unittest --with-subchart=false helm/car-ledger helm/keycloak helm/authentik helm/stack
+helm/validate-manifests.sh
 ```
 
 The build writes the OpenAPI spec of the backend to `src/main/webapp/public/openapi.json`, the frontend client is
 generated from it with `yarn openapi-ts`. Commit both, the CI fails if they are outdated.
+
+### Local cluster
+
+`hack/kind/up.sh` creates a cluster in Docker with [kind](https://kind.sigs.k8s.io) and installs the stack chart from
+the working copy: Cilium (also as ingress controller) or ingress-nginx, local-path or Longhorn, and cert-manager with a
+self-signed CA, which nobody trusts, like in many company clusters. It needs Docker, kind, kubectl and helm and the
+ports 80 and 443.
+
+```bash
+hack/kind/up.sh                    # Keycloak, Cilium, local-path, builds the image of the working copy
+hack/kind/up.sh --idp authentik --ingress nginx --storage longhorn --no-build
+node hack/kind/login.cjs keycloak alice alice   # logs in with a browser, the user has to exist
+hack/kind/down.sh
+```
+
+The app is https://car-ledger.localhost, Keycloak https://keycloak.localhost and authentik https://authentik.localhost;
+the CA is in `target/kind/ca.crt`. Running `up.sh` again upgrades the stack.
 
 ## Contributing
 
@@ -213,15 +235,15 @@ For using the helm chart, you can add this as a dependency and update the values
 ```yaml
 dependencies:
   - name: car-ledger
-    version: "0.5.x"
+    version: "0.6.x"
     repository: oci://ghcr.io/3thr3n/car-ledger
 ```
 
 Up to 0.3.x, the chart was named `helm` (`oci://ghcr.io/3thr3n/car-ledger/helm`), it is `car-ledger` since 0.4.0.
 
 Every [release](https://github.com/3thr3n/car-ledger/releases) publishes the chart and the image in its version (e.g.
-`0.5.0`), the release notes name both. Builds of `develop` are published as prereleases (`0.6.0-dev.<run number>`,
-chart and image of the same build), a range takes them only with a prerelease suffix (e.g. `>=0.6.0-0`).
+`0.6.0`), the release notes name both. Builds of `develop` are published as prereleases (`0.7.0-dev.<run number>`,
+chart and image of the same build), a range takes them only with a prerelease suffix (e.g. `>=0.7.0-0`).
 
 The login uses OpenID Connect: `helm/keycloak` deploys Keycloak with the realm of CarLedger, `helm/authentik` deploys authentik with CarLedger
 already set up, any other provider works as well.
@@ -233,4 +255,13 @@ realm and the secret the app needs), the checklist for upgrading and the upgrade
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+Copyright (C) 2024–2026 3thr3n
+
+CarLedger is free software: you can redistribute it and/or modify it under the terms of the
+[GNU Affero General Public License version 3](LICENSE) (AGPL-3.0-only) as published by the Free Software Foundation.
+It is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the license for more details.
+
+In short: you can use, host and change CarLedger freely, also in a company. If you run a **modified** version for other
+users over a network, you have to offer them its source code (section 13 of the license). Releases up to 0.5.x were
+published under the MIT License and stay available under it.

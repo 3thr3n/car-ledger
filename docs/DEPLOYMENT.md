@@ -87,7 +87,8 @@ The first start creates the database and can take a few minutes.
 
 With `carLedger.hostname`, Keycloak imports the realm `car-ledger` on its first start:
 
-- the client `carLedger`: confidential, standard flow with PKCE `S256`, the redirect URIs of CarLedger
+- the client `carLedger`: confidential, standard flow with PKCE `S256`, the redirect URIs of CarLedger, the realm
+  roles in the ID token (the app reads the roles of a login from it)
 - the realm roles `user` and `admin`; `user` is a default role, every new user gets it. `admin` opens the
   administration, give it to the administrators.
 
@@ -104,6 +105,10 @@ Without `carLedger.hostname`, nothing is imported; set the realm up once in the 
     - Valid redirect URI: `https://car-ledger.example.com/api/auth/callback`
     - Valid post logout redirect URI: `https://car-ledger.example.com/api/auth/logout-callback`
     - Advanced → PKCE method: `S256`
+    - Client scopes → `carLedger-dedicated` → *Configure a new mapper* → *User Realm Role*: name
+      `realm roles in the ID token`, token claim name `realm_access.roles`, multivalued, *Add to ID token* on (the
+      scope `roles` of Keycloak adds them to the access token only, the app reads the roles of a login from the ID
+      token)
     - Copy the client secret from the *Credentials* tab
 3. Realm roles `user` and `admin`. Every user needs `user` (or `admin`), add `user` to the default roles of the
    realm so new users get it. `admin` opens the administration.
@@ -130,14 +135,14 @@ shorter ones), 32 or more are recommended, and all replicas need the same one.
 helm install car-ledger oci://ghcr.io/3thr3n/car-ledger/car-ledger --set ingress.host=example.com
 ```
 
-Without `--version` the latest release is installed. A release (e.g. `0.5.0`, see the
-[releases](https://github.com/3thr3n/car-ledger/releases)) publishes the image `ghcr.io/3thr3n/car-ledger:0.5.0` and the
-chart `oci://ghcr.io/3thr3n/car-ledger/car-ledger` in version `0.5.0`, which runs that image (up to 0.3.x the chart was
+Without `--version` the latest release is installed. A release (e.g. `0.6.0`, see the
+[releases](https://github.com/3thr3n/car-ledger/releases)) publishes the image `ghcr.io/3thr3n/car-ledger:0.6.0` and the
+chart `oci://ghcr.io/3thr3n/car-ledger/car-ledger` in version `0.6.0`, which runs that image (up to 0.3.x the chart was
 `oci://ghcr.io/3thr3n/car-ledger/helm`).
 
 Every build of `develop` publishes the image `ghcr.io/3thr3n/car-ledger:<run number>` and the chart as the prerelease
-`<next release>-dev.<run number>`, e.g. `0.6.0-dev.123`, which runs the image of the same build: `--version
-0.6.0-dev.123` installs build 123, `--devel` the latest build. Leave `carLedger.image.tag` empty, it would override
+`<next release>-dev.<run number>`, e.g. `0.7.0-dev.123`, which runs the image of the same build: `--version
+0.7.0-dev.123` installs build 123, `--devel` the latest build. Leave `carLedger.image.tag` empty, it would override
 the image of the chart.
 
 From the repository (`helm dependency update helm/car-ledger`, `helm install car-ledger helm/car-ledger ...`) the chart
@@ -173,14 +178,17 @@ with the role `user`, the roles are missing in the tokens of the client.
   (`Authorization: Bearer …`), e.g. of a script deciding car requests. See [Service accounts](#service-accounts).
 - **E-mail**: `carLedger.mail.host` sends notifications by e-mail, see [E-mail](#e-mail).
 - **Push**: the notifications reach the browsers as push messages, on by default, see [Push](#push).
+- **Self-signed certificates**: the app trusts the CA of the ingresses and further certificates for its own HTTPS
+  requests (login, SMTP, webhooks), see [Self-signed certificates](#self-signed-certificates).
 - **Network policies**: only the app reaches its PostgreSQL and Infinispan, only Keycloak and authentik their
   PostgreSQL (`networkPolicy.enabled`, on by default in all charts; needs a network plugin that enforces them). Further
   sources, e.g. a backup tool: `networkPolicy.extraFrom`. `kubectl exec … pg_dump` (see [Operations](#operations))
   is not affected.
 - **Installable app**: the app has a web app manifest (`/manifest.json`) and a service worker (`/sw.js`), which keeps
-  the files of the app (not the data) for a fast start. Both need HTTPS, which the ingress provides. A proxy or CDN in
-  front must not cache `/sw.js` for long, otherwise new versions arrive late; the app asks the user to reload when a
-  new version is ready.
+  the files of the app (not the data) for a fast start. Both need HTTPS, which the ingress provides. The server sends
+  `Cache-Control: no-cache` for the files without a hash in their name (`index.html`, `/sw.js`, `/manifest.json`), only
+  `/assets/` is cached; a proxy or CDN in front must keep that, otherwise new versions arrive late. A new version starts
+  with the next reload or start of the app, or in the background; while something is typed, the app asks first.
 
 ### E-mail
 
@@ -260,6 +268,35 @@ tokens with the `client_credentials` grant of the provider *CarLedger*, the user
 `admin` and an app password, see the
 [authentik documentation](https://docs.goauthentik.io/add-secure-apps/providers/oauth2/client_credentials/).
 
+### Self-signed certificates
+
+The app makes HTTPS requests of its own: to the identity provider (the login), the SMTP server, webhooks and the push
+services. It trusts the public CAs, and the certificates of `carLedger.trust` besides them. Without them a login at an
+identity provider with a self-signed certificate fails with `PKIX path building failed` in the log of the app.
+
+- **The CA of the ingresses** (`carLedger.trust.ingressCA`, on by default): the `ca.crt` of the TLS secret of the
+  ingress of the app (`car-ledger-ingress-tls`) and, without `carLedger.auth.url`, of the identity provider of the
+  charts (`keycloak.<ingress.host>-tls` or `authentik-ingress-tls`). cert-manager writes it for a CA or a self-signed
+  issuer; a secret without it (e.g. of a public issuer) is skipped.
+- **Further certificates** (`carLedger.trust.certificates`): a key of a secret or a ConfigMap each, with one or several
+  certificates as PEM, e.g. the CA of a company or a self-signed certificate created by hand (its `tls.crt`):
+
+  ```yaml
+  carLedger:
+    trust:
+      certificates:
+        - secret: keycloak.example.com-tls
+          key: tls.crt
+        - configMap: company-ca
+          key: ca.pem
+  ```
+
+With the stack chart the values are under `app:`. The certificates are read at the start of the app: after a new CA
+(or a secret created after the app), restart it (`kubectl rollout restart deployment/car-ledger`). The log of the start
+names the trusted certificates (`Trusting 2 certificate(s) ...`).
+
+Outside of Kubernetes, the environment variable `CARLEDGER_TRUST_DIR` points to a directory with the PEM files.
+
 ## Upgrading to the current version
 
 Checklist for installations running an older image of the app.
@@ -281,6 +318,10 @@ Checklist for installations running an older image of the app.
    ```
 
 3. **Create the realm role `admin`** and assign it to the administrators, the same way as the existing role `user`.
+
+   **Add the realm roles to the ID token** of the client `carLedger`, if the API answers with 403 after the login: the
+   mapper of [Realm and client](#2-realm-and-client) (step 2, client scopes). The realm imported by the keycloak chart
+   up to 0.5.0 lacks it, 0.5.1 imports it, but an existing realm is not imported again.
 
 4. Coming from the bitnami based charts: follow [the steps below](#upgrading-from-the-bitnami-based-charts-01x) first.
 
@@ -311,6 +352,10 @@ Use the image of a release (a git tag of `main`) or a dev build of `develop`. On
 | 1.11.0    | Address, role and browser language of the accounts, notification settings, all on by default (0.5.0)                |
 | 1.12.0    | Which due of a reminder was mailed, the mails of the reminders on by default (0.5.0)                                 |
 | 1.13.0    | The browsers that receive push messages, the switch of the e-mails (on) (0.5.0)                                      |
+| 1.14.0    | Table for the trips of the trip log, protected against changes by a trigger (0.6.0)                                  |
+| 1.15.0    | Id of the client for new entries, a request sent again (offline queue) doesn't create an entry twice (0.6.0)         |
+| 1.16.0    | Trip log per car (off), on for the cars with trips (0.6.0)                                                           |
+| 1.17.0    | Trips are deleted with a reason and stay listed, a trigger allows only that change (0.6.0)                           |
 
 An older image refuses to start on the migrated database, as Flyway finds migrations it does not know. To go back,
 restore the backup. Without the backup, the older image runs on the migrated database (the new columns have defaults)
@@ -341,6 +386,25 @@ kubectl set env deployment/car-ledger QUARKUS_FLYWAY_IGNORE_FUTURE_MIGRATIONS=tr
   keeps the old behaviour.
 - **Push** (0.5.0): on by default, the chart creates the secret `car-ledger-push` with the key of the server. Each user
   turns it on per device in the settings, see [Push](#push). The app needs outgoing HTTPS to the push services.
+- **Trusted certificates** (0.6.0): the app trusts the `ca.crt` of the ingress secrets (of a cert-manager CA or
+  self-signed issuer) for its own HTTPS requests, further ones with `carLedger.trust.certificates`, see
+  [Self-signed certificates](#self-signed-certificates). An own truststore in `JAVA_OPTS` is kept, the certificates
+  are added to it.
+- **Offline entries** (0.6.0): refuels and charges made without a connection are kept on the device (IndexedDB) and
+  sent later, with the header `Idempotency-Key`, so a request sent again doesn't create an entry twice (migration
+  1.15.0). For the forms the app keeps the account and the cars on the device as well; the logout removes them. A
+  proxy in front must pass the header. Nothing to set up.
+- **License** (0.6.0): CarLedger is licensed under the AGPL-3.0 from 0.6.0 on, the releases up to 0.5.x stay under
+  MIT. Running it, also for others, needs nothing; whoever runs a **modified** version for other users has to offer
+  them its source code, e.g. by changing the link to the source in the settings and on the start page.
+- **Trip log** (0.6.0): trips with start and end odometer (Fahrtenbuch), turned on per car in *Edit car* (migration
+  1.16.0 turns it on for cars with trips). Starting and finishing work offline as well; the app keeps the open trip
+  and the minimum odometer on the device. A wrong trip is deleted with a reason by the owner of the car: it stays
+  listed as deleted and no longer counts for the odometer (migration 1.17.0). Forgotten trips are entered afterwards
+  (started or finished earlier, or a past trip with start and finish); a trip the server received more than 2 hours
+  after its time is marked as entered later. The trip log is exported per year or period as PDF (Fahrtenbuch, in the
+  language and the units of the account) and as CSV. CarLedger records the trips so that changes can be seen;
+  whether a tax office accepts it as an electronic Fahrtenbuch is not something the app can guarantee.
 - **Installable app and headers** (0.5.0): CarLedger can be installed as an app and asks to reload when the server
   runs a newer version. A proxy or CDN in front must not cache `/sw.js` for long (see [Options](#options)). The app
   sends its own security headers (CSP, HSTS, …); a proxy that sets them as well must not set stricter ones.

@@ -273,6 +273,10 @@
             "type" : "integer",
             "format" : "int32"
           },
+          "trips" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
           "files" : {
             "type" : "integer",
             "format" : "int32"
@@ -461,6 +465,29 @@
           }
         }
       },
+      "BillPagedTrip" : {
+        "type" : "object",
+        "properties" : {
+          "total" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "page" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "data" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Trip"
+            }
+          }
+        }
+      },
       "BillType" : {
         "type" : "string",
         "enum" : [ "FUEL", "CHARGING", "MAINTENANCE", "MISCELLANEOUS", "RECURRING" ]
@@ -514,12 +541,15 @@
           "batteryCapacity" : {
             "type" : "number"
           },
+          "tripLog" : {
+            "type" : "boolean"
+          },
           "pictureId" : {
             "type" : "integer",
             "format" : "int64"
           }
         },
-        "required" : [ "currentOdometer", "energyType" ]
+        "required" : [ "currentOdometer", "energyType", "tripLog" ]
       },
       "CarInput" : {
         "type" : "object",
@@ -555,6 +585,9 @@
           },
           "batteryCapacity" : {
             "type" : "number"
+          },
+          "tripLog" : {
+            "type" : "boolean"
           }
         }
       },
@@ -1185,6 +1218,10 @@
           }
         }
       },
+      "Reason" : {
+        "type" : "string",
+        "enum" : [ "ODOMETER_BELOW_PREVIOUS", "ODOMETER_ABOVE_NEXT", "OVERLAPS", "OPEN_TRIP", "ID_IN_USE", "ALREADY_FINISHED", "DETAIL_CHANGED", "DELETED" ]
+      },
       "RecurringBill" : {
         "type" : "object",
         "properties" : {
@@ -1446,6 +1483,215 @@
             "format" : "int32"
           }
         }
+      },
+      "Trip" : {
+        "type" : "object",
+        "required" : [ "id", "carId", "type", "startOdometer", "startedAt", "restored", "createdAt", "enteredLater" ],
+        "properties" : {
+          "id" : {
+            "$ref" : "#/components/schemas/UUID"
+          },
+          "carId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "type" : {
+            "$ref" : "#/components/schemas/TripType"
+          },
+          "startOdometer" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "endOdometer" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "distance" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "startedAt" : {
+            "type" : "string",
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          },
+          "endedAt" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          },
+          "destination" : {
+            "type" : "string"
+          },
+          "purpose" : {
+            "type" : "string"
+          },
+          "businessPartner" : {
+            "type" : "string"
+          },
+          "reviewReason" : {
+            "$ref" : "#/components/schemas/TripReview"
+          },
+          "restored" : {
+            "type" : "boolean"
+          },
+          "createdAt" : {
+            "type" : "string",
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          },
+          "finishedAt" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          },
+          "deletedAt" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          },
+          "deletedBy" : {
+            "type" : "string"
+          },
+          "deleteReason" : {
+            "type" : "string"
+          },
+          "enteredLater" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "TripConflict" : {
+        "type" : "object",
+        "required" : [ "reason", "message" ],
+        "properties" : {
+          "reason" : {
+            "$ref" : "#/components/schemas/Reason"
+          },
+          "message" : {
+            "type" : "string"
+          },
+          "minimumOdometer" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "maximumOdometer" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "TripCurrent" : {
+        "type" : "object",
+        "properties" : {
+          "open" : {
+            "$ref" : "#/components/schemas/Trip"
+          },
+          "minimumOdometer" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "estimatedOdometer" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        },
+        "required" : [ "minimumOdometer", "estimatedOdometer" ]
+      },
+      "TripDeleteInput" : {
+        "type" : "object",
+        "properties" : {
+          "reason" : {
+            "type" : "string"
+          }
+        }
+      },
+      "TripFinishInput" : {
+        "type" : "object",
+        "properties" : {
+          "endOdometer" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "endedAt" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          },
+          "destination" : {
+            "type" : "string"
+          },
+          "purpose" : {
+            "type" : "string"
+          },
+          "businessPartner" : {
+            "type" : "string"
+          },
+          "queued" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "TripPastInput" : {
+        "type" : "object",
+        "properties" : {
+          "type" : {
+            "$ref" : "#/components/schemas/TripType"
+          },
+          "startOdometer" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "startedAt" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          },
+          "endOdometer" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "endedAt" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          },
+          "destination" : {
+            "type" : "string"
+          },
+          "purpose" : {
+            "type" : "string"
+          },
+          "businessPartner" : {
+            "type" : "string"
+          }
+        }
+      },
+      "TripReview" : {
+        "type" : "string",
+        "enum" : [ "ODOMETER_BELOW_PREVIOUS", "ODOMETER_ABOVE_NEXT", "OVERLAPS" ]
+      },
+      "TripStartInput" : {
+        "type" : "object",
+        "properties" : {
+          "type" : {
+            "$ref" : "#/components/schemas/TripType"
+          },
+          "startOdometer" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "startedAt" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          },
+          "destination" : {
+            "type" : "string"
+          },
+          "purpose" : {
+            "type" : "string"
+          },
+          "businessPartner" : {
+            "type" : "string"
+          },
+          "queued" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "TripType" : {
+        "type" : "string",
+        "enum" : [ "BUSINESS", "PRIVATE", "COMMUTE" ]
+      },
+      "UUID" : {
+        "type" : "string",
+        "format" : "uuid",
+        "pattern" : "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
       },
       "UnitSystem" : {
         "type" : "string",
@@ -2152,6 +2398,13 @@
             "type" : "integer",
             "format" : "int64"
           }
+        }, {
+          "description" : "Id created by the client, a request sent again with it answers with the same bill",
+          "name" : "Idempotency-Key",
+          "in" : "header",
+          "schema" : {
+            "$ref" : "#/components/schemas/UUID"
+          }
         } ],
         "requestBody" : {
           "content" : {
@@ -2443,6 +2696,13 @@
           "schema" : {
             "type" : "integer",
             "format" : "int64"
+          }
+        }, {
+          "description" : "Id created by the client, a request sent again with it answers with the same bill",
+          "name" : "Idempotency-Key",
+          "in" : "header",
+          "schema" : {
+            "$ref" : "#/components/schemas/UUID"
           }
         } ],
         "requestBody" : {
@@ -2736,6 +2996,13 @@
             "type" : "integer",
             "format" : "int64"
           }
+        }, {
+          "description" : "Id created by the client, a request sent again with it answers with the same bill",
+          "name" : "Idempotency-Key",
+          "in" : "header",
+          "schema" : {
+            "$ref" : "#/components/schemas/UUID"
+          }
         } ],
         "requestBody" : {
           "content" : {
@@ -3027,6 +3294,13 @@
           "schema" : {
             "type" : "integer",
             "format" : "int64"
+          }
+        }, {
+          "description" : "Id created by the client, a request sent again with it answers with the same bill",
+          "name" : "Idempotency-Key",
+          "in" : "header",
+          "schema" : {
+            "$ref" : "#/components/schemas/UUID"
           }
         } ],
         "requestBody" : {
@@ -4054,6 +4328,133 @@
         "tags" : [ "Export Resource" ]
       }
     },
+    "/api/export/{carId}/trips/csv" : {
+      "get" : {
+        "description" : "Exports the trip log of the car as CSV, for spreadsheets: the oldest trip first, also the deleted ones with their deletion, in km, the times ISO-8601 in the zone. A year or a period (from, to), nothing for all trips. Not meant to be imported.",
+        "operationId" : "exportTripsCsv",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "from",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          }
+        }, {
+          "name" : "to",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          }
+        }, {
+          "name" : "year",
+          "in" : "query",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "name" : "zone",
+          "in" : "query",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "The trips as CSV.",
+            "content" : {
+              "text/csv" : {
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "A year and a period, a period that ends before it starts or an unknown zone."
+          },
+          "404" : {
+            "description" : "Car not found."
+          }
+        },
+        "summary" : "Export Trips Csv",
+        "tags" : [ "Export Resource" ]
+      }
+    },
+    "/api/export/{carId}/trips/pdf" : {
+      "get" : {
+        "description" : "Exports the trip log of the car as PDF (Fahrtenbuch): the oldest trip first, the deleted ones with the reason, the trips entered later with the time they were entered, the sums per type. In the units of the account and the language (de, en; the one of the account without), the times in the zone. A year or a period (from, to), nothing for all trips.",
+        "operationId" : "exportTripsPdf",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "from",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          }
+        }, {
+          "name" : "language",
+          "in" : "query",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "to",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          }
+        }, {
+          "name" : "year",
+          "in" : "query",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "name" : "zone",
+          "in" : "query",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "The trips as PDF.",
+            "content" : {
+              "application/pdf" : {
+                "schema" : {
+                  "format" : "binary",
+                  "type" : "string"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "A year and a period, a period that ends before it starts, an unknown zone or language."
+          },
+          "404" : {
+            "description" : "Car not found."
+          }
+        },
+        "summary" : "Export Trips Pdf",
+        "tags" : [ "Export Resource" ]
+      }
+    },
     "/api/import/{carId}" : {
       "post" : {
         "description" : "This is the description for the import of an csv of your fuel entities.<br />\n<br />\nYou need to add the csv and the order in the csv (starts with 0).<br />\nseparator between columns is ',' (comma)\n",
@@ -4494,6 +4895,449 @@
         },
         "summary" : "Get Monthly Stats",
         "tags" : [ "Stats Resource" ]
+      }
+    },
+    "/api/trip/{carId}" : {
+      "get" : {
+        "description" : "Trips of a car, the latest first. Pages starting at 1",
+        "operationId" : "getTrips",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "page",
+          "in" : "query",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 1
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 10
+          }
+        }, {
+          "name" : "year",
+          "in" : "query",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Trips found.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/BillPagedTrip"
+                }
+              }
+            }
+          }
+        },
+        "summary" : "Get Trips",
+        "tags" : [ "Trip Resource" ]
+      }
+    },
+    "/api/trip/{carId}/current" : {
+      "get" : {
+        "description" : "The open trip and the minimum odometer for the next start",
+        "operationId" : "getCurrentTrip",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Car found.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TripCurrent"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Car is not for your user."
+          }
+        },
+        "summary" : "Get Current Trip",
+        "tags" : [ "Trip Resource" ]
+      }
+    },
+    "/api/trip/{carId}/years" : {
+      "get" : {
+        "description" : "Years with trips, the latest first",
+        "operationId" : "getTripYears",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "type" : "integer",
+                    "format" : "int32"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary" : "Get Trip Years",
+        "tags" : [ "Trip Resource" ]
+      }
+    },
+    "/api/trip/{carId}/{id}" : {
+      "put" : {
+        "description" : "Starts a trip with the id created by the client. Sent again with the same values, it answers with the trip.",
+        "operationId" : "startTrip",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/UUID"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/TripStartInput"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Trip started.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Trip"
+                }
+              }
+            }
+          },
+          "200" : {
+            "description" : "Trip was started before with the same values.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Trip"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed, please check the response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Car is not for your user."
+          },
+          "409" : {
+            "description" : "The trip doesn't fit the other data of the car (a queued one is stored with a review reason instead), another trip is open or the id is in use.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TripConflict"
+                }
+              }
+            }
+          }
+        },
+        "summary" : "Start Trip",
+        "tags" : [ "Trip Resource" ]
+      },
+      "get" : {
+        "operationId" : "getTrip",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/UUID"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Trip found.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Trip"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Trip not found for the car of your user."
+          }
+        },
+        "summary" : "Get Trip",
+        "tags" : [ "Trip Resource" ]
+      }
+    },
+    "/api/trip/{carId}/{id}/delete" : {
+      "post" : {
+        "description" : "Deletes a trip with a reason, only the owner of the car. The trip stays listed as deleted and doesn't count for the odometer anymore. Sent again, it answers with the deleted trip.",
+        "operationId" : "deleteTrip",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/UUID"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/TripDeleteInput"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Trip deleted.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Trip"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed, please check the response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Trip not found for a car you own."
+          }
+        },
+        "summary" : "Delete Trip",
+        "tags" : [ "Trip Resource" ]
+      }
+    },
+    "/api/trip/{carId}/{id}/finish" : {
+      "put" : {
+        "description" : "Finishes a trip, it can't be changed afterwards. Sent again with the same values, it answers with the trip.",
+        "operationId" : "finishTrip",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/UUID"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/TripFinishInput"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Trip finished.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Trip"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed, please check the response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Trip not found for the car of your user."
+          },
+          "409" : {
+            "description" : "The trip doesn't fit the other data of the car (a queued one is stored with a review reason instead), it was finished with other values or a detail of the start was changed.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TripConflict"
+                }
+              }
+            }
+          }
+        },
+        "summary" : "Finish Trip",
+        "tags" : [ "Trip Resource" ]
+      }
+    },
+    "/api/trip/{carId}/{id}/past" : {
+      "put" : {
+        "description" : "Adds a forgotten trip afterwards with its start and its finish, also while another trip is open if it doesn't overlap it. Sent again with the same values, it answers with the trip.",
+        "operationId" : "addPastTrip",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/UUID"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/TripPastInput"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Trip added.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Trip"
+                }
+              }
+            }
+          },
+          "200" : {
+            "description" : "Trip was added before with the same values.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Trip"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed, please check the response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Car is not for your user."
+          },
+          "409" : {
+            "description" : "The trip doesn't fit the other data of the car or the id is in use.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TripConflict"
+                }
+              }
+            }
+          }
+        },
+        "summary" : "Add Past Trip",
+        "tags" : [ "Trip Resource" ]
       }
     },
     "/api/user/me" : {

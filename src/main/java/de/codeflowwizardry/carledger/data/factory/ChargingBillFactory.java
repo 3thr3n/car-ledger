@@ -1,6 +1,7 @@
 package de.codeflowwizardry.carledger.data.factory;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 import de.codeflowwizardry.carledger.data.BillEntity;
 import de.codeflowwizardry.carledger.data.BillType;
@@ -23,9 +24,9 @@ public class ChargingBillFactory extends AbstractBillFactory<ChargingBillInput, 
 
 	@Override
 	@Transactional
-	public ChargingBillEntity create(ChargingBillInput input, long carId, String user)
+	public ChargingBillEntity create(ChargingBillInput input, long carId, String user, UUID clientId)
 	{
-		BillEntity bill = createEntity(carId, user, input);
+		BillEntity bill = createEntity(carId, user, input, clientId);
 		BigDecimal unit = EnergyBills.calculateUnit(input);
 		EnergyBills.calculateTotal(bill, unit, input);
 		persistBill(bill);

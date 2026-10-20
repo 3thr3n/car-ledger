@@ -93,6 +93,7 @@ export type BackupSummary = {
     bills?: number;
     recurringBills?: number;
     reminders?: number;
+    trips?: number;
     files?: number;
 };
 
@@ -164,6 +165,13 @@ export type BillPagedRecurringBill = {
     data?: Array<RecurringBill>;
 };
 
+export type BillPagedTrip = {
+    total?: number;
+    page?: number;
+    size?: number;
+    data?: Array<Trip>;
+};
+
 export enum BillType {
     FUEL = 'FUEL',
     CHARGING = 'CHARGING',
@@ -187,6 +195,7 @@ export type Car = {
     energyType: EnergyType;
     tankSize?: number;
     batteryCapacity?: number;
+    tripLog: boolean;
     pictureId?: number;
 };
 
@@ -201,6 +210,7 @@ export type CarInput = {
     energyType?: EnergyType;
     tankSize?: number;
     batteryCapacity?: number;
+    tripLog?: boolean;
 };
 
 export type CarOverview = {
@@ -434,6 +444,17 @@ export type PushSubscriptionInput = {
     auth?: string;
 };
 
+export enum Reason {
+    ODOMETER_BELOW_PREVIOUS = 'ODOMETER_BELOW_PREVIOUS',
+    ODOMETER_ABOVE_NEXT = 'ODOMETER_ABOVE_NEXT',
+    OVERLAPS = 'OVERLAPS',
+    OPEN_TRIP = 'OPEN_TRIP',
+    ID_IN_USE = 'ID_IN_USE',
+    ALREADY_FINISHED = 'ALREADY_FINISHED',
+    DETAIL_CHANGED = 'DETAIL_CHANGED',
+    DELETED = 'DELETED'
+}
+
 export type RecurringBill = {
     id?: number;
     name?: string;
@@ -544,6 +565,89 @@ export type TotalStats = {
     maintenanceBills?: number;
     miscellaneousBills?: number;
 };
+
+export type Trip = {
+    id: Uuid;
+    carId: number;
+    type: TripType;
+    startOdometer: number;
+    endOdometer?: number;
+    distance?: number;
+    startedAt: OffsetDateTime;
+    endedAt?: OffsetDateTime;
+    destination?: string;
+    purpose?: string;
+    businessPartner?: string;
+    reviewReason?: TripReview;
+    restored: boolean;
+    createdAt: OffsetDateTime;
+    finishedAt?: OffsetDateTime;
+    deletedAt?: OffsetDateTime;
+    deletedBy?: string;
+    deleteReason?: string;
+    enteredLater: boolean;
+};
+
+export type TripConflict = {
+    reason: Reason;
+    message: string;
+    minimumOdometer?: number;
+    maximumOdometer?: number;
+};
+
+export type TripCurrent = {
+    open?: Trip;
+    minimumOdometer: number;
+    estimatedOdometer: number;
+};
+
+export type TripDeleteInput = {
+    reason?: string;
+};
+
+export type TripFinishInput = {
+    endOdometer?: number;
+    endedAt?: OffsetDateTime;
+    destination?: string;
+    purpose?: string;
+    businessPartner?: string;
+    queued?: boolean;
+};
+
+export type TripPastInput = {
+    type?: TripType;
+    startOdometer?: number;
+    startedAt?: OffsetDateTime;
+    endOdometer?: number;
+    endedAt?: OffsetDateTime;
+    destination?: string;
+    purpose?: string;
+    businessPartner?: string;
+};
+
+export enum TripReview {
+    ODOMETER_BELOW_PREVIOUS = 'ODOMETER_BELOW_PREVIOUS',
+    ODOMETER_ABOVE_NEXT = 'ODOMETER_ABOVE_NEXT',
+    OVERLAPS = 'OVERLAPS'
+}
+
+export type TripStartInput = {
+    type?: TripType;
+    startOdometer?: number;
+    startedAt?: OffsetDateTime;
+    destination?: string;
+    purpose?: string;
+    businessPartner?: string;
+    queued?: boolean;
+};
+
+export enum TripType {
+    BUSINESS = 'BUSINESS',
+    PRIVATE = 'PRIVATE',
+    COMMUTE = 'COMMUTE'
+}
+
+export type Uuid = string;
 
 export enum UnitSystem {
     METRIC = 'METRIC',
@@ -964,6 +1068,12 @@ export type GetAllBillsResponse = GetAllBillsResponses[keyof GetAllBillsResponse
 
 export type AddNewChargingBillData = {
     body: ChargingBillInput;
+    headers?: {
+        /**
+         * Id created by the client, a request sent again with it answers with the same bill
+         */
+        'Idempotency-Key'?: Uuid;
+    };
     path: {
         carId: number;
     };
@@ -1111,6 +1221,12 @@ export type UpdateChargingBillResponse = UpdateChargingBillResponses[keyof Updat
 
 export type AddNewFuelBillData = {
     body: FuelBillInput;
+    headers?: {
+        /**
+         * Id created by the client, a request sent again with it answers with the same bill
+         */
+        'Idempotency-Key'?: Uuid;
+    };
     path: {
         carId: number;
     };
@@ -1258,6 +1374,12 @@ export type UpdateFuelBillResponse = UpdateFuelBillResponses[keyof UpdateFuelBil
 
 export type AddNewMaintenanceBillData = {
     body: MaintenanceBillInput;
+    headers?: {
+        /**
+         * Id created by the client, a request sent again with it answers with the same bill
+         */
+        'Idempotency-Key'?: Uuid;
+    };
     path: {
         carId: number;
     };
@@ -1405,6 +1527,12 @@ export type UpdateMaintenanceBillResponse = UpdateMaintenanceBillResponses[keyof
 
 export type AddNewMiscellaneousBillData = {
     body: MiscellaneousBillInput;
+    headers?: {
+        /**
+         * Id created by the client, a request sent again with it answers with the same bill
+         */
+        'Idempotency-Key'?: Uuid;
+    };
     path: {
         carId: number;
     };
@@ -2042,6 +2170,75 @@ export type ExportAllExpensesCsvResponses = {
 
 export type ExportAllExpensesCsvResponse = ExportAllExpensesCsvResponses[keyof ExportAllExpensesCsvResponses];
 
+export type ExportTripsCsvData = {
+    body?: never;
+    path: {
+        carId: number;
+    };
+    query?: {
+        from?: LocalDate;
+        to?: LocalDate;
+        year?: number;
+        zone?: string;
+    };
+    url: '/api/export/{carId}/trips/csv';
+};
+
+export type ExportTripsCsvErrors = {
+    /**
+     * A year and a period, a period that ends before it starts or an unknown zone.
+     */
+    400: unknown;
+    /**
+     * Car not found.
+     */
+    404: unknown;
+};
+
+export type ExportTripsCsvResponses = {
+    /**
+     * The trips as CSV.
+     */
+    200: string;
+};
+
+export type ExportTripsCsvResponse = ExportTripsCsvResponses[keyof ExportTripsCsvResponses];
+
+export type ExportTripsPdfData = {
+    body?: never;
+    path: {
+        carId: number;
+    };
+    query?: {
+        from?: LocalDate;
+        language?: string;
+        to?: LocalDate;
+        year?: number;
+        zone?: string;
+    };
+    url: '/api/export/{carId}/trips/pdf';
+};
+
+export type ExportTripsPdfErrors = {
+    /**
+     * A year and a period, a period that ends before it starts, an unknown zone or language.
+     */
+    400: unknown;
+    /**
+     * Car not found.
+     */
+    404: unknown;
+};
+
+export type ExportTripsPdfResponses = {
+    /**
+     * The trips as PDF.
+     */
+    200: Blob | File;
+};
+
+export type ExportTripsPdfResponse = ExportTripsPdfResponses[keyof ExportTripsPdfResponses];
+
 export type ImportCsvData = {
     body: {
         file?: Blob | File;
@@ -2286,6 +2483,245 @@ export type GetMonthlyStatsResponses = {
 };
 
 export type GetMonthlyStatsResponse = GetMonthlyStatsResponses[keyof GetMonthlyStatsResponses];
+
+export type GetTripsData = {
+    body?: never;
+    path: {
+        carId: number;
+    };
+    query?: {
+        page?: number;
+        size?: number;
+        year?: number;
+    };
+    url: '/api/trip/{carId}';
+};
+
+export type GetTripsResponses = {
+    /**
+     * Trips found.
+     */
+    200: BillPagedTrip;
+};
+
+export type GetTripsResponse = GetTripsResponses[keyof GetTripsResponses];
+
+export type GetCurrentTripData = {
+    body?: never;
+    path: {
+        carId: number;
+    };
+    query?: never;
+    url: '/api/trip/{carId}/current';
+};
+
+export type GetCurrentTripErrors = {
+    /**
+     * Car is not for your user.
+     */
+    404: unknown;
+};
+
+export type GetCurrentTripResponses = {
+    /**
+     * Car found.
+     */
+    200: TripCurrent;
+};
+
+export type GetCurrentTripResponse = GetCurrentTripResponses[keyof GetCurrentTripResponses];
+
+export type GetTripYearsData = {
+    body?: never;
+    path: {
+        carId: number;
+    };
+    query?: never;
+    url: '/api/trip/{carId}/years';
+};
+
+export type GetTripYearsResponses = {
+    /**
+     * OK
+     */
+    200: Array<number>;
+};
+
+export type GetTripYearsResponse = GetTripYearsResponses[keyof GetTripYearsResponses];
+
+export type GetTripData = {
+    body?: never;
+    path: {
+        carId: number;
+        id: Uuid;
+    };
+    query?: never;
+    url: '/api/trip/{carId}/{id}';
+};
+
+export type GetTripErrors = {
+    /**
+     * Trip not found for the car of your user.
+     */
+    404: unknown;
+};
+
+export type GetTripResponses = {
+    /**
+     * Trip found.
+     */
+    200: Trip;
+};
+
+export type GetTripResponse = GetTripResponses[keyof GetTripResponses];
+
+export type StartTripData = {
+    body: TripStartInput;
+    path: {
+        carId: number;
+        id: Uuid;
+    };
+    query?: never;
+    url: '/api/trip/{carId}/{id}';
+};
+
+export type StartTripErrors = {
+    /**
+     * Validation failed, please check the response
+     */
+    400: Array<unknown>;
+    /**
+     * Car is not for your user.
+     */
+    404: unknown;
+    /**
+     * The trip doesn't fit the other data of the car (a queued one is stored with a review reason instead), another trip is open or the id is in use.
+     */
+    409: TripConflict;
+};
+
+export type StartTripError = StartTripErrors[keyof StartTripErrors];
+
+export type StartTripResponses = {
+    /**
+     * Trip was started before with the same values.
+     */
+    200: Trip;
+    /**
+     * Trip started.
+     */
+    201: Trip;
+};
+
+export type StartTripResponse = StartTripResponses[keyof StartTripResponses];
+
+export type DeleteTripData = {
+    body: TripDeleteInput;
+    path: {
+        carId: number;
+        id: Uuid;
+    };
+    query?: never;
+    url: '/api/trip/{carId}/{id}/delete';
+};
+
+export type DeleteTripErrors = {
+    /**
+     * Validation failed, please check the response
+     */
+    400: Array<unknown>;
+    /**
+     * Trip not found for a car you own.
+     */
+    404: unknown;
+};
+
+export type DeleteTripError = DeleteTripErrors[keyof DeleteTripErrors];
+
+export type DeleteTripResponses = {
+    /**
+     * Trip deleted.
+     */
+    200: Trip;
+};
+
+export type DeleteTripResponse = DeleteTripResponses[keyof DeleteTripResponses];
+
+export type FinishTripData = {
+    body: TripFinishInput;
+    path: {
+        carId: number;
+        id: Uuid;
+    };
+    query?: never;
+    url: '/api/trip/{carId}/{id}/finish';
+};
+
+export type FinishTripErrors = {
+    /**
+     * Validation failed, please check the response
+     */
+    400: Array<unknown>;
+    /**
+     * Trip not found for the car of your user.
+     */
+    404: unknown;
+    /**
+     * The trip doesn't fit the other data of the car (a queued one is stored with a review reason instead), it was finished with other values or a detail of the start was changed.
+     */
+    409: TripConflict;
+};
+
+export type FinishTripError = FinishTripErrors[keyof FinishTripErrors];
+
+export type FinishTripResponses = {
+    /**
+     * Trip finished.
+     */
+    200: Trip;
+};
+
+export type FinishTripResponse = FinishTripResponses[keyof FinishTripResponses];
+
+export type AddPastTripData = {
+    body: TripPastInput;
+    path: {
+        carId: number;
+        id: Uuid;
+    };
+    query?: never;
+    url: '/api/trip/{carId}/{id}/past';
+};
+
+export type AddPastTripErrors = {
+    /**
+     * Validation failed, please check the response
+     */
+    400: Array<unknown>;
+    /**
+     * Car is not for your user.
+     */
+    404: unknown;
+    /**
+     * The trip doesn't fit the other data of the car or the id is in use.
+     */
+    409: TripConflict;
+};
+
+export type AddPastTripError = AddPastTripErrors[keyof AddPastTripErrors];
+
+export type AddPastTripResponses = {
+    /**
+     * Trip was added before with the same values.
+     */
+    200: Trip;
+    /**
+     * Trip added.
+     */
+    201: Trip;
+};
+
+export type AddPastTripResponse = AddPastTripResponses[keyof AddPastTripResponses];
 
 export type DeleteMyselfData = {
     body?: never;

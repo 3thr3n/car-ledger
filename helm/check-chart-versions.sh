@@ -22,7 +22,8 @@ for chart in keycloak authentik; do
     echo "helm/$chart: new since $last, version $current"
   elif [ "$current" != "$released" ]; then
     echo "helm/$chart: $released in $last, now $current"
-  elif ! git diff --quiet "$last" -- "helm/$chart"; then
+  # the tests and .helmignore (which keeps them out) are not part of the published chart
+  elif ! git diff --quiet "$last" -- "helm/$chart" ":!helm/$chart/tests" ":!helm/$chart/.helmignore"; then
     echo "::error file=helm/$chart/Chart.yaml::helm/$chart changed since $last, raise its version $current"
     failed=1
   else

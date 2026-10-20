@@ -10,12 +10,16 @@ import de.codeflowwizardry.carledger.data.BillInterval;
 import de.codeflowwizardry.carledger.data.BillType;
 import de.codeflowwizardry.carledger.data.ChargingLocation;
 import de.codeflowwizardry.carledger.data.EnergyType;
+import de.codeflowwizardry.carledger.data.TripReview;
+import de.codeflowwizardry.carledger.data.TripType;
 import de.codeflowwizardry.carledger.data.UnitSystem;
 
 /**
  * Content of backup.json in the ZIP of a backup. The files (receipts, pictures)
  * are entries of the ZIP, named by {@link File#path()}. The stored values are
  * kept as they are: km, liters, cent per liter and the calculated consumption.
+ * New fields are optional, so older backups can still be restored (e.g. the
+ * trips).
  *
  * @param format
  *            always {@value #FORMAT}
@@ -37,11 +41,16 @@ public record BackupFile(String format, int version, OffsetDateTime createdAt, S
 	/**
 	 * @param picture
 	 *            the own picture, <code>null</code> for the generated avatar
+	 * @param trips
+	 *            missing in backups before the trip log
+	 * @param tripLog
+	 *            missing in backups before it could be turned off: on with
+	 *            trips
 	 */
 	public record Car(String name, int year, int odometer, LocalDate odometerDate, String licensePlate, String vin,
 			LocalDate purchaseDate, BigDecimal purchasePrice, EnergyType energyType, BigDecimal tankSize,
 			BigDecimal batteryCapacity, File picture, List<Bill> bills, List<RecurringBill> recurringBills,
-			List<Reminder> reminders)
+			List<Reminder> reminders, List<Trip> trips, Boolean tripLog)
 	{
 	}
 
@@ -93,6 +102,18 @@ public record BackupFile(String format, int version, OffsetDateTime createdAt, S
 
 	public record Reminder(String title, String note, LocalDate dueDate, Integer dueOdometer, Integer intervalMonths,
 			Integer intervalKm)
+	{
+	}
+
+	/**
+	 * A trip without its id, the restore creates new ones. The end is missing
+	 * while the trip is open, the deletion of one that wasn't deleted (and in
+	 * backups before trips could be deleted).
+	 */
+	public record Trip(TripType type, int startOdometer, Integer endOdometer, OffsetDateTime startedAt,
+			OffsetDateTime endedAt, String destination, String purpose, String businessPartner,
+			TripReview reviewReason, OffsetDateTime createdAt, OffsetDateTime finishedAt, OffsetDateTime deletedAt,
+			String deletedBy, String deleteReason)
 	{
 	}
 }

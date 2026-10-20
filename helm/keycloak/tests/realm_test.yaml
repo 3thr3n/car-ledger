@@ -1,0 +1,82 @@
+suite: realm car-ledger of Keycloak
+templates:
+  - templates/realm.yaml
+release:
+  name: keycloak
+  namespace: auth
+tests:
+  - it: imports nothing without the host name of CarLedger
+    asserts:
+      - equal:
+          path: metadata.name
+          value: keycloak-realm
+      - equal:
+          path: data
+          value: {}
+
+  - it: imports the client of CarLedger with its redirect URIs
+    set:
+      carLedger.hostname: car-ledger.example.com
+    asserts:
+      - matchRegex:
+          path: data["car-ledger.json"]
+          pattern: '"redirectUris": \[\s*"https://car-ledger.example.com/api/auth/callback"\s*\]'
+      - matchRegex:
+          path: data["car-ledger.json"]
+          pattern: '"post.logout.redirect.uris": "https://car-ledger.example.com/api/auth/logout-callback"'
+      - matchRegex:
+          path: data["car-ledger.json"]
+          pattern: '"pkce.code.challenge.method": "S256"'
+      - matchRegex:
+          path: data["car-ledger.json"]
+          pattern: '"secret": "\$\{CAR_LEDGER_CLIENT_SECRET\}"'
+
+  - it: names CarLedger as audience of the access tokens
+    set:
+      carLedger.hostname: car-ledger.example.com
+    asserts:
+      - matchRegex:
+          path: data["car-ledger.json"]
+          pattern: '"protocolMapper": "oidc-audience-mapper"'
+      - matchRegex:
+          path: data["car-ledger.json"]
+          pattern: '"included.client.audience": "carLedger"'
+
+  - it: gives every new user the role user
+    set:
+      carLedger.hostname: car-ledger.example.com
+    asserts:
+      - matchRegex:
+          path: data["car-ledger.json"]
+          pattern: '"realm": \[\s*"offline_access",\s*"uma_authorization",\s*"user"\s*\]'
+
+  - it: takes the host of the stack chart and its prefix
+    set:
+      global.host: example.org
+      global.keycloak.enabled: true
+    release:
+      name: car-ledger
+    asserts:
+      - equal:
+          path: metadata.name
+          value: car-ledger-keycloak-realm
+      - matchRegex:
+          path: data["car-ledger.json"]
+          pattern: https://car-ledger.example.org/api/auth/callback
+
+  - it: uses http without TLS
+    set:
+      carLedger.hostname: car-ledger.local
+      keycloak.tls: false
+    asserts:
+      - matchRegex:
+          path: data["car-ledger.json"]
+          pattern: '"rootUrl": "http://car-ledger.local"'
+
+  - it: puts the realm roles into the ID token, the app reads the roles of a login from it
+    set:
+      carLedger.hostname: car-ledger.example.com
+    asserts:
+      - matchRegex:
+          path: data["car-ledger.json"]
+          pattern: '"access.token.claim": "false",\s*"claim.name": "realm_access.roles",\s*"id.token.claim": "true",[^}]*"multivalued": "true"[^}]*\},\s*"name": "realm roles in the ID token",\s*"protocol": "openid-connect",\s*"protocolMapper": "oidc-usermodel-realm-role-mapper"'

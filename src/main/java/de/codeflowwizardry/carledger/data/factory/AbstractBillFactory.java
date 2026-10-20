@@ -4,6 +4,7 @@ import static de.codeflowwizardry.carledger.StatsCalculator.ONE_HUNDRED;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.UUID;
 
 import org.hibernate.exception.ConstraintViolationException;
 
@@ -18,6 +19,7 @@ import de.codeflowwizardry.carledger.exception.AlreadyPresentException;
 import de.codeflowwizardry.carledger.exception.WrongUserException;
 import de.codeflowwizardry.carledger.rest.records.input.AbstractBillInput;
 import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
 
 public abstract class AbstractBillFactory<I extends AbstractBillInput, O extends AbstractBillEntity>
 {
@@ -41,7 +43,17 @@ public abstract class AbstractBillFactory<I extends AbstractBillInput, O extends
 		this.carRepository = carRepository;
 	}
 
-	abstract O create(I input, long carId, String user);
+	/**
+	 * @param clientId
+	 *            the id the client created for the bill, <code>null</code> without
+	 */
+	abstract O create(I input, long carId, String user, UUID clientId);
+
+	@Transactional
+	public O create(I input, long carId, String user)
+	{
+		return create(input, carId, user, null);
+	}
 
 	/**
 	 * Updates an existing bill with the input, calculated values are calculated
@@ -68,7 +80,7 @@ public abstract class AbstractBillFactory<I extends AbstractBillInput, O extends
 	 * @throws WrongUserException
 	 *             if the car does not belong to the user
 	 */
-	protected BillEntity createEntity(long carId, String user, I input)
+	protected BillEntity createEntity(long carId, String user, I input, UUID clientId)
 	{
 		Utils.requireValid(input.validate());
 
@@ -82,6 +94,7 @@ public abstract class AbstractBillFactory<I extends AbstractBillInput, O extends
 		BillEntity bill = new BillEntity();
 		bill.setType(getType());
 		bill.setCar(car);
+		bill.setClientId(clientId);
 
 		bill.setDate(input.getDate());
 		bill.setVatRate(input.getVatRate());

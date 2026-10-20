@@ -202,6 +202,10 @@ public class CarResource extends AbstractResource
 		carEntity.setEnergyType(input.energyTypeOrDefault());
 		carEntity.setTankSize(input.normalizedTankSize());
 		carEntity.setBatteryCapacity(input.normalizedBatteryCapacity());
+		if (input.tripLog() != null)
+		{
+			carEntity.setTripLog(input.tripLog());
+		}
 	}
 
 	private boolean isInputInvalid(CarInput carInput)

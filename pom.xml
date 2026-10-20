@@ -8,6 +8,13 @@
     <!-- set by the CI to the version of the release or the build (see build-backend.yml), shown at the start -->
     <version>${revision}</version>
 
+    <licenses>
+        <license>
+            <name>AGPL-3.0-only</name>
+            <url>https://www.gnu.org/licenses/agpl-3.0.html</url>
+        </license>
+    </licenses>
+
     <properties>
         <revision>dev</revision>
         <compiler-plugin.version>3.16.0</compiler-plugin.version>
@@ -114,6 +121,12 @@
             <groupId>com.opencsv</groupId>
             <artifactId>opencsv</artifactId>
             <version>5.12.0</version>
+        </dependency>
+        <!-- the trip log as PDF (Fahrtenbuch), LGPL / MPL -->
+        <dependency>
+            <groupId>com.github.librepdf</groupId>
+            <artifactId>openpdf</artifactId>
+            <version>3.0.5</version>
         </dependency>
 
 

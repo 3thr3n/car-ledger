@@ -1,0 +1,237 @@
+suite: deployment of the app
+templates:
+  - templates/car-ledger/deployment.yaml
+release:
+  name: car-ledger
+  namespace: car-ledger
+chart:
+  appVersion: "123"
+set:
+  ingress.host: example.com
+tests:
+  - it: runs the image of the build of the chart
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: ghcr.io/3thr3n/car-ledger:123
+
+  - it: runs another image with carLedger.image.tag
+    set:
+      carLedger.image.tag: "0.4.0"
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: ghcr.io/3thr3n/car-ledger:0.4.0
+
+  - it: logs in at Keycloak of the charts by default
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: QUARKUS_OIDC_AUTH_SERVER_URL
+            value: https://keycloak.example.com/realms/car-ledger
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: QUARKUS_OIDC_CLIENT_ID
+            value: carLedger
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: QUARKUS_OIDC_CREDENTIALS_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: keycloak
+                key: secret
+
+  - it: logs in at authentik of the stack chart
+    set:
+      global.authentik.enabled: true
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: QUARKUS_OIDC_AUTH_SERVER_URL
+            value: https://authentik.example.com/application/o/car-ledger/
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: QUARKUS_OIDC_CLIENT_ID
+            value: car-ledger
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: QUARKUS_OIDC_AUTHENTICATION_STATE_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: car-ledger-oidc
+                key: state-secret
+
+  - it: logs in at another identity provider
+    set:
+      carLedger.auth.url: https://idp.example.org/realms/cars
+      carLedger.auth.clientId: cars
+      carLedger.auth.existingSecret: idp
+      carLedger.auth.audience: any
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: QUARKUS_OIDC_AUTH_SERVER_URL
+            value: https://idp.example.org/realms/cars
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: QUARKUS_OIDC_CLIENT_ID
+            value: cars
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: QUARKUS_OIDC_TOKEN_AUDIENCE
+            value: any
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: QUARKUS_OIDC_CREDENTIALS_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: idp
+                key: secret
+
+  - it: checks the audience of the client by default
+    asserts:
+      - notContains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: QUARKUS_OIDC_TOKEN_AUDIENCE
+          any: true
+
+  - it: connects to its own PostgreSQL by default
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: QUARKUS_DATASOURCE_JDBC_URL
+            value: jdbc:postgresql://car-ledger-postgresql:5432/car-ledger
+
+  - it: connects to another PostgreSQL by its JDBC URL
+    set:
+      carLedger.postgres.jdbc: jdbc:postgresql://db.example.org:5432/cars
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: QUARKUS_DATASOURCE_JDBC_URL
+            value: jdbc:postgresql://db.example.org:5432/cars
+
+  - it: sends push messages with the generated key by default
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: CARLEDGER_PUSH_SUBJECT
+            value: https://car-ledger.example.com
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: CARLEDGER_PUSH_PRIVATE_KEY
+            valueFrom:
+              secretKeyRef:
+                name: car-ledger-push
+                key: private-key
+      - notContains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: CARLEDGER_PUSH_ALLOWED_HOSTS
+          any: true
+
+  - it: sends push messages only to the allowed hosts
+    set:
+      carLedger.push.allowedHosts: ["*.googleapis.com", "push.example.com"]
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: CARLEDGER_PUSH_ALLOWED_HOSTS
+            value: "*.googleapis.com,push.example.com"
+
+  - it: sends no push messages when turned off
+    set:
+      carLedger.push.enabled: false
+    asserts:
+      - notContains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: CARLEDGER_PUSH_ENABLED
+          any: true
+
+  - it: sends no mails without an SMTP server
+    asserts:
+      - notContains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: CARLEDGER_MAIL_ENABLED
+          any: true
+
+  - it: sends mails with an SMTP server
+    set:
+      carLedger.mail.host: smtp.example.com
+      carLedger.mail.username: car-ledger@example.com
+      carLedger.mail.existingSecret: mail
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: QUARKUS_MAILER_HOST
+            value: smtp.example.com
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: QUARKUS_MAILER_FROM
+            value: car-ledger@example.com
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: CARLEDGER_MAIL_APP_URL
+            value: https://car-ledger.example.com
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: QUARKUS_MAILER_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: mail
+                key: password
+
+  - it: needs the secret of the password for a username at the SMTP server
+    set:
+      carLedger.mail.host: smtp.example.com
+      carLedger.mail.username: car-ledger@example.com
+    asserts:
+      - failedTemplate:
+          errorPattern: carLedger.mail.existingSecret is needed with carLedger.mail.username
+
+  - it: sends webhooks with a URL, signed with the secret
+    set:
+      carLedger.webhook.url: https://hooks.example.com/car-ledger
+      carLedger.webhook.existingSecret: webhook
+      carLedger.webhook.events: [car-request.created, car-request.decided]
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: CARLEDGER_WEBHOOK_URL
+            value: https://hooks.example.com/car-ledger
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: CARLEDGER_WEBHOOK_EVENTS
+            value: car-request.created,car-request.decided
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: CARLEDGER_WEBHOOK_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: webhook
+                key: webhook-secret

@@ -1,13 +1,24 @@
 name: Lint backend
-on: [push]
+# pull requests (also of dependabot) and the branches they go to
+on:
+  push:
+    branches: [ "develop", "main" ]
+  pull_request:
+    branches: [ "develop", "main" ]
 
 # only reads the repository, the token gets no write access
 permissions:
   contents: read
 
+# a new push to a pull request cancels its older run, the other runs have a group of their own
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: true
+
 jobs:
   verify:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
     - uses: actions/checkout@v7
     - name: Set up JDK 21
@@ -18,4 +29,4 @@ jobs:
         cache: maven
 
     - name: Build with Maven
-      run: mvn -B validate
+      run: ./mvnw -B validate

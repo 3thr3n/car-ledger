@@ -10,9 +10,14 @@ on:
 permissions:
   contents: read
 
+# a new push to a pull request cancels its older run, the other runs have a group of their own
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: true
+
 jobs:
+  # also for the updates of dependabot, e.g. of Playwright or Vite
   e2e:
-    if: ${{ github.actor != 'dependabot[bot]' }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -30,12 +35,23 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: 24
+          cache: yarn
+          cache-dependency-path: src/main/webapp/yarn.lock
 
-      - name: Install frontend dependencies and the browser
+      - name: Install frontend dependencies
         working-directory: src/main/webapp
-        run: |
-          yarn install --frozen-lockfile
-          npx playwright install --with-deps chromium
+        run: yarn install --frozen-lockfile
+
+      # the browser of the Playwright version in yarn.lock; the system libraries are not cached
+      - name: Cache the browser
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('src/main/webapp/yarn.lock') }}
+
+      - name: Install the browser
+        working-directory: src/main/webapp
+        run: npx playwright install --with-deps chromium
 
       # starts Quarkus in dev mode (dev services: PostgreSQL, Keycloak, Infinispan) and Vite
       - name: Run the end-to-end tests

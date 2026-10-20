@@ -11,6 +11,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -29,7 +30,11 @@ import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import de.codeflowwizardry.carledger.data.repository.RecurringBillPaymentRepository;
 import de.codeflowwizardry.carledger.data.repository.RecurringBillRepository;
 import de.codeflowwizardry.carledger.data.repository.ReminderRepository;
+import de.codeflowwizardry.carledger.data.repository.TripRepository;
 import de.codeflowwizardry.carledger.exception.AlreadyPresentException;
+import de.codeflowwizardry.carledger.rest.car.trip.TripDeleteInput;
+import de.codeflowwizardry.carledger.rest.car.trip.TripFinishInput;
+import de.codeflowwizardry.carledger.rest.car.trip.TripStartInput;
 import de.codeflowwizardry.carledger.rest.records.CarInput;
 import de.codeflowwizardry.carledger.rest.records.input.SettingsInput;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -39,8 +44,9 @@ import jakarta.transaction.Transactional;
 
 /**
  * The backup of the own data as ZIP: backup.json with the settings, cars,
- * bills, recurring costs and reminders, and the files (receipts, pictures).
- * A restore fills an account without cars, all at once or nothing.
+ * bills, recurring costs, reminders and trips, and the files (receipts,
+ * pictures). A restore fills an account without cars, all at once or nothing.
+ * Restored trips are marked, as a backup is a file anyone can edit.
  */
 @ApplicationScoped
 public class BackupService
@@ -60,6 +66,7 @@ public class BackupService
 	private final RecurringBillRepository recurringBillRepository;
 	private final RecurringBillPaymentRepository paymentRepository;
 	private final ReminderRepository reminderRepository;
+	private final TripRepository tripRepository;
 	private final AttachmentService attachmentService;
 	private final ObjectMapper mapper;
 	private final EntityManager em;
@@ -68,8 +75,8 @@ public class BackupService
 	public BackupService(AccountRepository accountRepository, CarRepository carRepository,
 			BillRepository billRepository, AttachmentRepository attachmentRepository,
 			RecurringBillRepository recurringBillRepository, RecurringBillPaymentRepository paymentRepository,
-			ReminderRepository reminderRepository, AttachmentService attachmentService, ObjectMapper mapper,
-			EntityManager em)
+			ReminderRepository reminderRepository, TripRepository tripRepository, AttachmentService attachmentService,
+			ObjectMapper mapper, EntityManager em)
 	{
 		this.accountRepository = accountRepository;
 		this.carRepository = carRepository;
@@ -78,6 +85,7 @@ public class BackupService
 		this.recurringBillRepository = recurringBillRepository;
 		this.paymentRepository = paymentRepository;
 		this.reminderRepository = reminderRepository;
+		this.tripRepository = tripRepository;
 		this.attachmentService = attachmentService;
 		this.mapper = mapper;
 		this.em = em;
@@ -177,6 +185,13 @@ public class BackupService
 						reminder.getIntervalKm()))
 				.toList();
 
+		List<BackupFile.Trip> trips = tripRepository.list("car = ?1 order by startedAt, id", car).stream()
+				.map(trip -> new BackupFile.Trip(trip.getType(), trip.getStartOdometer(), trip.getEndOdometer(),
+						trip.getStartedAt(), trip.getEndedAt(), trip.getDestination(), trip.getPurpose(),
+						trip.getBusinessPartner(), trip.getReviewReason(), trip.getCreatedAt(),
+						trip.getFinishedAt(), trip.getDeletedAt(), trip.getDeletedBy(), trip.getDeleteReason()))
+				.toList();
+
 		BackupFile.File picture = null;
 		if (car.getPictureId() != null)
 		{
@@ -190,7 +205,7 @@ public class BackupService
 		return new BackupFile.Car(car.getName(), car.getManufactureYear(), car.getOdometer(), car.getOdometerDate(),
 				car.getLicensePlate(), car.getVin(), car.getPurchaseDate(), car.getPurchasePrice(),
 				car.getEnergyType(), car.getTankSize(), car.getBatteryCapacity(), picture, bills, recurringBills,
-				reminders);
+				reminders, trips, car.isTripLog());
 	}
 
 	private static BackupFile.Bill bill(BillEntity bill, List<BackupFile.File> files)
@@ -256,7 +271,7 @@ public class BackupService
 			restoreCar(account, car, entries, counter);
 		}
 		return new BackupSummary(cars.size(), counter.bills, counter.recurringBills, counter.reminders,
-				counter.files);
+				counter.trips, counter.files);
 	}
 
 	private static final class Counter
@@ -264,6 +279,7 @@ public class BackupService
 		int bills;
 		int recurringBills;
 		int reminders;
+		int trips;
 		int files;
 	}
 
@@ -318,7 +334,7 @@ public class BackupService
 	{
 		CarInput input = new CarInput(backup.name(), backup.year(), backup.odometer(), backup.licensePlate(),
 				backup.vin(), backup.purchaseDate(), backup.purchasePrice(), backup.energyType(), backup.tankSize(),
-				backup.batteryCapacity());
+				backup.batteryCapacity(), backup.tripLog());
 		List<String> errors = new ArrayList<>(input.validateDetails());
 		if (StringUtils.isBlank(backup.name()) || backup.odometer() < 0)
 		{
@@ -342,6 +358,7 @@ public class BackupService
 		car.setEnergyType(input.energyTypeOrDefault());
 		car.setTankSize(input.normalizedTankSize());
 		car.setBatteryCapacity(input.normalizedBatteryCapacity());
+		car.setTripLog(backup.tripLog() != null ? backup.tripLog() : !list(backup.trips()).isEmpty());
 		carRepository.persist(car);
 
 		for (BackupFile.Bill bill : list(backup.bills()))
@@ -365,12 +382,75 @@ public class BackupService
 			reminderRepository.persist(entity);
 			counter.reminders++;
 		}
+		boolean open = false;
+		for (BackupFile.Trip trip : list(backup.trips()))
+		{
+			// a deleted open trip doesn't block the next one
+			if (trip.endOdometer() == null && trip.endedAt() == null && trip.deletedAt() == null)
+			{
+				if (open)
+				{
+					Utils.requireValid(List.of("A car of the backup has more than one open trip!"));
+				}
+				open = true;
+			}
+			restoreTrip(account, car, trip);
+			counter.trips++;
+		}
 		if (backup.picture() != null)
 		{
 			car.setPictureId(attachmentService
 					.restore(car, null, backup.picture().fileName(), content(entries, backup.picture())).getId());
 			counter.files++;
 		}
+	}
+
+	/**
+	 * With a new id and the times of the backup, marked as restored
+	 */
+	private void restoreTrip(AccountEntity account, CarEntity car, BackupFile.Trip backup)
+	{
+		List<String> errors = new ArrayList<>(new TripStartInput(backup.type(), backup.startOdometer(),
+				backup.startedAt(), backup.destination(), backup.purpose(), backup.businessPartner(), false)
+				.validate());
+		boolean finished = backup.endOdometer() != null || backup.endedAt() != null;
+		if (finished)
+		{
+			errors.addAll(new TripFinishInput(backup.endOdometer(), backup.endedAt(), null, null, null, false)
+					.validate());
+			if (errors.isEmpty() && (backup.endOdometer() < backup.startOdometer()
+					|| backup.endedAt().isBefore(backup.startedAt())))
+			{
+				errors.add("A trip of the backup ends before its start!");
+			}
+		}
+		boolean deleted = backup.deletedAt() != null;
+		if (deleted != (backup.deletedBy() != null) || deleted != (backup.deleteReason() != null))
+		{
+			errors.add("A deleted trip of the backup needs the time, the account and the reason of the deletion!");
+		} else if (deleted)
+		{
+			errors.addAll(new TripDeleteInput(backup.deleteReason()).validate());
+		}
+		Utils.requireValid(errors);
+
+		OffsetDateTime createdAt = backup.createdAt() == null ? backup.startedAt() : backup.createdAt();
+		TripEntity entity = new TripEntity(UUID.randomUUID(), car, account, backup.type(), backup.startOdometer(),
+				backup.startedAt(), true, createdAt);
+		entity.setDestination(StringUtils.trimToNull(backup.destination()));
+		entity.setPurpose(StringUtils.trimToNull(backup.purpose()));
+		entity.setBusinessPartner(StringUtils.trimToNull(backup.businessPartner()));
+		entity.setReviewReason(backup.reviewReason());
+		if (finished)
+		{
+			entity.finish(backup.endOdometer(), backup.endedAt(),
+					backup.finishedAt() == null ? backup.endedAt() : backup.finishedAt());
+		}
+		if (deleted)
+		{
+			entity.delete(backup.deletedAt(), backup.deletedBy(), backup.deleteReason().strip());
+		}
+		tripRepository.persist(entity);
 	}
 
 	private void restoreBill(CarEntity car, BackupFile.Bill backup, BackupArchive entries, Counter counter)

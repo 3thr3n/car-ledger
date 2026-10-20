@@ -1,13 +1,24 @@
 name: Lint charts
-on: [push]
+# pull requests (also of dependabot) and the branches they go to
+on:
+  push:
+    branches: [ "develop", "main" ]
+  pull_request:
+    branches: [ "develop", "main" ]
 
 # only reads the repository, the token gets no write access
 permissions:
   contents: read
 
+# a new push to a pull request cancels its older run, the other runs have a group of their own
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: true
+
 jobs:
   lint:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       # with the history and the tags, for the versions of the charts
       - uses: actions/checkout@v7
@@ -28,6 +39,31 @@ jobs:
           for providers in "" "--set global.keycloak.enabled=true" "--set global.authentik.enabled=true"; do
             helm lint helm/stack --set global.host=example.com $providers
           done
+
+      # the tools in fixed versions, at least 14 days old: helm-unittest (a plugin, not signed for the
+      # verification of Helm 4) and kubeconform with the checksum of its release
+      - name: Tools
+        env:
+          HELM_UNITTEST_VERSION: v1.2.1
+          KUBECONFORM_VERSION: v0.8.0
+          KUBECONFORM_SHA256: 9bc2bffbf71f261128533edaf912153948b7ff238f9a531ae6d34466ec287883
+        run: |
+          verify=""
+          if helm version --short | grep -q '^v4'; then verify="--verify=false"; fi
+          helm plugin install https://github.com/helm-unittest/helm-unittest --version "$HELM_UNITTEST_VERSION" $verify
+          curl -sSfL -o kubeconform.tgz \
+            "https://github.com/yannh/kubeconform/releases/download/$KUBECONFORM_VERSION/kubeconform-linux-amd64.tar.gz"
+          echo "$KUBECONFORM_SHA256  kubeconform.tgz" | sha256sum -c -
+          tar xzf kubeconform.tgz kubeconform
+          sudo mv kubeconform /usr/local/bin/
+
+      # what the values render: helm/<chart>/tests, the subcharts of the stack with its own tests
+      - name: Template tests
+        run: helm unittest --with-subchart=false helm/car-ledger helm/keycloak helm/authentik helm/stack
+
+      # the rendered resources against the schemas of Kubernetes
+      - name: Schemas
+        run: helm/validate-manifests.sh
 
       # a changed chart keycloak or authentik needs a new version to be published. Not for the updates of
       # dependabot, raise the version before the release (which checks it as well)

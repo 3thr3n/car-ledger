@@ -4,6 +4,7 @@
   "description": "This is the UI for the CarLedger",
   "productName": "CarLedger",
   "author": "3thr3n <code@codeflowwizardry.de>",
+  "license": "AGPL-3.0-only",
   "private": true,
   "type": "module",
   "scripts": {
@@ -68,7 +69,7 @@
     "postcss": "^8",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.71.0",
-    "vite": "^8.3.2",
+    "vite": "^8.3.3",
     "vite-plugin-pwa": "1.3.0",
     "vitest": "5.0.3"
   },

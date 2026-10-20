@@ -2,6 +2,7 @@ package de.codeflowwizardry.carledger.rest.car.maintenance;
 
 import io.quarkus.security.identity.SecurityIdentity;
 import java.util.List;
+import java.util.UUID;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
@@ -71,11 +72,15 @@ public class MaintenanceResource
 	@APIResponse(responseCode = "404", description = "Car is not for your user.")
 	@APIResponse(responseCode = "400", description = "Validation failed, please check the response", content = @Content(schema = @Schema(implementation = List.class)))
 	@APIResponse(responseCode = "500", description = "Something went wrong while saving. Please ask the server admin for help.")
-	public Response addNewBill(@PathParam("carId") long carId, MaintenanceBillInput maintenanceBillInput)
+	public Response addNewBill(@PathParam("carId") long carId,
+			@Parameter(description = "Id created by the client, a request sent again with it answers with the same bill") @HeaderParam(IDEMPOTENCY_KEY) UUID clientId,
+			MaintenanceBillInput maintenanceBillInput)
 	{
 		return Response
 				.accepted(MaintenanceBill
-						.convert(maintenanceBillFactory.create(maintenanceBillInput, carId, context.getName())))
+						.convert(createOnce(carId, clientId,
+								() -> maintenanceBillFactory.create(maintenanceBillInput, carId, context.getName(),
+										clientId))))
 				.build();
 	}
 

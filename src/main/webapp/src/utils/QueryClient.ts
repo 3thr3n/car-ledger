@@ -23,6 +23,12 @@ localClient.interceptors.error.use(async (error, res) => {
     toast.error('Server internal error, please retry later!');
   }
 
+  // a conflict explains itself, e.g. the minimum odometer of a trip
+  if (res?.status == 409 && error && typeof error === 'object') {
+    const message = 'message' in error ? String(error.message) : undefined;
+    throw new BackendError(409, message, error);
+  }
+
   // without a response the server was not reachable
   throw new BackendError(res?.status ?? 0);
 });

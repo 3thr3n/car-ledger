@@ -2,6 +2,7 @@ package de.codeflowwizardry.carledger.data;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.UUID;
 
 import jakarta.persistence.*;
 
@@ -36,6 +37,10 @@ public class BillEntity extends AbstractBillEntity
 	@JoinColumn(name = "b_car_id", nullable = false)
 	protected CarEntity car;
 
+	/** created by the client for a new bill, see the header Idempotency-Key */
+	@Column(name = "b_client_id", updatable = false)
+	private UUID clientId;
+
 	// lazy, otherwise every loaded bill triggers four extra selects; fetch join
 	// them where needed
 	@OneToOne(mappedBy = "bill", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
@@ -52,6 +57,16 @@ public class BillEntity extends AbstractBillEntity
 
 	public BillEntity()
 	{
+	}
+
+	public UUID getClientId()
+	{
+		return clientId;
+	}
+
+	public void setClientId(UUID clientId)
+	{
+		this.clientId = clientId;
 	}
 
 	@Override

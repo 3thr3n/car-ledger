@@ -28,15 +28,25 @@ import {
 import NotFoundPage from '@/pages/NotFoundPage';
 import ErrorPage from '@/pages/ErrorPage';
 
-/** the entry types of the car between the overview and the reminders */
-const tabsFor = (energyType?: EnergyType) => [
+/**
+ * The entry types of the car between the overview and the reminders, the trips
+ * only with the trip log
+ */
+const tabsFor = (energyType?: EnergyType, tripLog?: boolean) => [
   { key: 'overview', to: '/car/$id' } as const,
   ...billTypesFor(energyType).map((meta) => ({
     key: meta.type,
     to: meta.listRoute,
   })),
+  ...(tripLog ? [{ key: 'trips', to: '/car/$id/trips' } as const] : []),
   { key: 'reminders', to: '/car/$id/reminders' } as const,
 ];
+
+/** the tabs of the car that are no entry type */
+const pageTabs = ['overview', 'trips', 'reminders'] as const;
+type PageTab = (typeof pageTabs)[number];
+const isPageTab = (key: string): key is PageTab =>
+  (pageTabs as readonly string[]).includes(key);
 
 export default function CarLayout({ id }: { id: number }) {
   const { t } = useTranslation();
@@ -61,8 +71,8 @@ export default function CarLayout({ id }: { id: number }) {
   const activeTab =
     rest === ''
       ? 'overview'
-      : rest === '/reminders'
-        ? 'reminders'
+      : rest === '/reminders' || (rest === '/trips' && car?.tripLog)
+        ? (rest.slice(1) as PageTab)
         : (Object.values(BillType).find(
             (type) => rest === `/bill/${type.toLowerCase()}`,
           ) ?? false);
@@ -70,9 +80,7 @@ export default function CarLayout({ id }: { id: number }) {
 
   // preselect the type of the current tab when adding an entry
   const addType =
-    activeTab !== false && activeTab !== 'overview' && activeTab !== 'reminders'
-      ? activeTab
-      : undefined;
+    activeTab !== false && !isPageTab(activeTab) ? activeTab : undefined;
   const importType =
     addType && billTypes[addType].importable ? addType : undefined;
   const params = { id: `${id}` };
@@ -176,12 +184,12 @@ export default function CarLayout({ id }: { id: number }) {
               allowScrollButtonsMobile
               sx={{ mb: 3, borderBottom: 1, borderColor: 'divider' }}
             >
-              {tabsFor(car?.energyType).map((tab) => (
+              {tabsFor(car?.energyType, car?.tripLog).map((tab) => (
                 <RouterTab
                   key={tab.key}
                   value={tab.key}
                   label={
-                    tab.key === 'overview' || tab.key === 'reminders'
+                    isPageTab(tab.key)
                       ? t(`car.tabs.${tab.key}`)
                       : t(`bill.types.${tab.key}`)
                   }
