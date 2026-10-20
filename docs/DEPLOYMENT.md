@@ -135,14 +135,14 @@ shorter ones), 32 or more are recommended, and all replicas need the same one.
 helm install car-ledger oci://ghcr.io/3thr3n/car-ledger/car-ledger --set ingress.host=example.com
 ```
 
-Without `--version` the latest release is installed. A release (e.g. `0.5.0`, see the
-[releases](https://github.com/3thr3n/car-ledger/releases)) publishes the image `ghcr.io/3thr3n/car-ledger:0.5.0` and the
-chart `oci://ghcr.io/3thr3n/car-ledger/car-ledger` in version `0.5.0`, which runs that image (up to 0.3.x the chart was
+Without `--version` the latest release is installed. A release (e.g. `0.6.0`, see the
+[releases](https://github.com/3thr3n/car-ledger/releases)) publishes the image `ghcr.io/3thr3n/car-ledger:0.6.0` and the
+chart `oci://ghcr.io/3thr3n/car-ledger/car-ledger` in version `0.6.0`, which runs that image (up to 0.3.x the chart was
 `oci://ghcr.io/3thr3n/car-ledger/helm`).
 
 Every build of `develop` publishes the image `ghcr.io/3thr3n/car-ledger:<run number>` and the chart as the prerelease
-`<next release>-dev.<run number>`, e.g. `0.6.0-dev.123`, which runs the image of the same build: `--version
-0.6.0-dev.123` installs build 123, `--devel` the latest build. Leave `carLedger.image.tag` empty, it would override
+`<next release>-dev.<run number>`, e.g. `0.7.0-dev.123`, which runs the image of the same build: `--version
+0.7.0-dev.123` installs build 123, `--devel` the latest build. Leave `carLedger.image.tag` empty, it would override
 the image of the chart.
 
 From the repository (`helm dependency update helm/car-ledger`, `helm install car-ledger helm/car-ledger ...`) the chart
@@ -394,7 +394,7 @@ kubectl set env deployment/car-ledger QUARKUS_FLYWAY_IGNORE_FUTURE_MIGRATIONS=tr
   sent later, with the header `Idempotency-Key`, so a request sent again doesn't create an entry twice (migration
   1.15.0). For the forms the app keeps the account and the cars on the device as well; the logout removes them. A
   proxy in front must pass the header. Nothing to set up.
-- **License** (0.6.0): CarLedger is licensed under the AGPL-3.0 from 0.6.0 on, the releases up to 0.5.0 stay under
+- **License** (0.6.0): CarLedger is licensed under the AGPL-3.0 from 0.6.0 on, the releases up to 0.5.x stay under
   MIT. Running it, also for others, needs nothing; whoever runs a **modified** version for other users has to offer
   them its source code, e.g. by changing the link to the source in the settings and on the start page.
 - **Trip log** (0.6.0): trips with start and end odometer (Fahrtenbuch), turned on per car in *Edit car* (migration
