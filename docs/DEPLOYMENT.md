@@ -394,6 +394,9 @@ kubectl set env deployment/car-ledger QUARKUS_FLYWAY_IGNORE_FUTURE_MIGRATIONS=tr
   sent later, with the header `Idempotency-Key`, so a request sent again doesn't create an entry twice (migration
   1.15.0). For the forms the app keeps the account and the cars on the device as well; the logout removes them. A
   proxy in front must pass the header. Nothing to set up.
+- **License** (0.6.0): CarLedger is licensed under the AGPL-3.0 from 0.6.0 on, the releases up to 0.5.0 stay under
+  MIT. Running it, also for others, needs nothing; whoever runs a **modified** version for other users has to offer
+  them its source code, e.g. by changing the link to the source in the settings and on the start page.
 - **Trip log** (0.6.0): trips with start and end odometer (Fahrtenbuch), turned on per car in *Edit car* (migration
   1.16.0 turns it on for cars with trips). Starting and finishing work offline as well; the app keeps the open trip
   and the minimum odometer on the device. A wrong trip is deleted with a reason by the owner of the car: it stays

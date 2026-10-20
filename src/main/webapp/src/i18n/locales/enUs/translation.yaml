@@ -2,9 +2,11 @@ app:
   title: "CarLedger"
   loading: "Loading"
   language: "Language"
-  openSource: "CarLedger is open source — find it on"
+  openSource: "CarLedger is free software under the AGPL-3.0 — find it on"
   version: "CarLedger {{version}}"
   versions: "Version of the app {{app}}, of the server {{server}}"
+  source: "Free software under the AGPL-3.0:"
+  sourceLink: "source code"
   update:
     text: "A new version of CarLedger is available."
     reload: "Reload"

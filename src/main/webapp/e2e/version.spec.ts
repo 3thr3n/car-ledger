@@ -9,6 +9,10 @@ test.describe('version of the app', () => {
       'Version of the app dev, of the server dev',
     );
     await expect(page.getByText('The app is up to date.')).toBeVisible();
+    // section 13 of the AGPL
+    await expect(
+      page.getByRole('link', { name: 'source code' }),
+    ).toHaveAttribute('href', 'https://github.com/3thr3n/car-ledger');
     await expect(
       page.getByRole('button', { name: 'Update available' }),
     ).toHaveCount(0);
