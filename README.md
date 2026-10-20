@@ -235,15 +235,15 @@ For using the helm chart, you can add this as a dependency and update the values
 ```yaml
 dependencies:
   - name: car-ledger
-    version: "0.5.x"
+    version: "0.6.x"
     repository: oci://ghcr.io/3thr3n/car-ledger
 ```
 
 Up to 0.3.x, the chart was named `helm` (`oci://ghcr.io/3thr3n/car-ledger/helm`), it is `car-ledger` since 0.4.0.
 
 Every [release](https://github.com/3thr3n/car-ledger/releases) publishes the chart and the image in its version (e.g.
-`0.5.0`), the release notes name both. Builds of `develop` are published as prereleases (`0.6.0-dev.<run number>`,
-chart and image of the same build), a range takes them only with a prerelease suffix (e.g. `>=0.6.0-0`).
+`0.6.0`), the release notes name both. Builds of `develop` are published as prereleases (`0.7.0-dev.<run number>`,
+chart and image of the same build), a range takes them only with a prerelease suffix (e.g. `>=0.7.0-0`).
 
 The login uses OpenID Connect: `helm/keycloak` deploys Keycloak with the realm of CarLedger, `helm/authentik` deploys authentik with CarLedger
 already set up, any other provider works as well.
@@ -263,5 +263,5 @@ It is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the license for more details.
 
 In short: you can use, host and change CarLedger freely, also in a company. If you run a **modified** version for other
-users over a network, you have to offer them its source code (section 13 of the license). Releases up to 0.5.0 were
+users over a network, you have to offer them its source code (section 13 of the license). Releases up to 0.5.x were
 published under the MIT License and stay available under it.
