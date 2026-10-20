@@ -22,6 +22,7 @@ import { baseUrl } from '@/utils/QueryClient';
 import { RouterButton } from '@/components/ui/links';
 import { billTypes, BillPaletteKey } from '@/utils/billTypes';
 import { BillType } from '@/generated';
+import { SOURCE_URL } from '@/utils/source';
 
 interface Feature {
   key: string;
@@ -176,7 +177,7 @@ export default function LandingPage() {
           {t('app.openSource')}{' '}
           <Box
             component="a"
-            href="https://github.com/3thr3n/car-ledger"
+            href={SOURCE_URL}
             target="_blank"
             rel="noreferrer"
             sx={{ color: 'primary.main' }}

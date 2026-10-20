@@ -1,9 +1,18 @@
-import { Alert, Box, Button, Card, Stack, Typography } from '@mui/material';
+import {
+  Alert,
+  Box,
+  Button,
+  Card,
+  Link,
+  Stack,
+  Typography,
+} from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { isStandalone, useInstallPrompt } from '@/utils/install';
 import InstallSteps from '@/components/install/InstallSteps';
 import useVersion from '@/hooks/useVersion';
 import { reloadToNewest } from '@/utils/serviceWorker';
+import { SOURCE_URL } from '@/utils/source';
 
 /** the steps to install the app, also after the hint was dismissed */
 export default function InstallSection() {
@@ -40,6 +49,13 @@ export default function InstallSection() {
             app: version.app,
             server: version.server ?? '…',
           })}
+        </Typography>
+        {/* section 13 of the AGPL: the users can get the source */}
+        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+          {t('app.source')}{' '}
+          <Link href={SOURCE_URL} target="_blank" rel="noreferrer">
+            {t('app.sourceLink')}
+          </Link>
         </Typography>
         {version.outdated ? (
           <Alert

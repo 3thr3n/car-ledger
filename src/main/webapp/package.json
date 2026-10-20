@@ -4,6 +4,7 @@
   "description": "This is the UI for the CarLedger",
   "productName": "CarLedger",
   "author": "3thr3n <code@codeflowwizardry.de>",
+  "license": "AGPL-3.0-only",
   "private": true,
   "type": "module",
   "scripts": {

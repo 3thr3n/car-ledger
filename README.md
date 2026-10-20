@@ -255,4 +255,13 @@ realm and the secret the app needs), the checklist for upgrading and the upgrade
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+Copyright (C) 2024–2026 3thr3n
+
+CarLedger is free software: you can redistribute it and/or modify it under the terms of the
+[GNU Affero General Public License version 3](LICENSE) (AGPL-3.0-only) as published by the Free Software Foundation.
+It is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the license for more details.
+
+In short: you can use, host and change CarLedger freely, also in a company. If you run a **modified** version for other
+users over a network, you have to offer them its source code (section 13 of the license). Releases up to 0.5.0 were
+published under the MIT License and stay available under it.
