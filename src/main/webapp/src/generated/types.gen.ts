@@ -430,6 +430,28 @@ export type Odometer = {
     driven: number;
 };
 
+export type OdometerReset = {
+    id: Uuid;
+    carId: number;
+    resetAt: OffsetDateTime;
+    odometer: number;
+    odometerBefore?: number;
+    reason: string;
+    createdBy: string;
+    restored: boolean;
+    createdAt: OffsetDateTime;
+    deletedAt?: OffsetDateTime;
+    deletedBy?: string;
+    deleteReason?: string;
+};
+
+export type OdometerResetInput = {
+    resetAt?: OffsetDateTime;
+    odometer?: number;
+    odometerBefore?: number;
+    reason?: string;
+};
+
 export type OffsetDateTime = string;
 
 export type PushSettings = {
@@ -448,6 +470,7 @@ export enum Reason {
     ODOMETER_BELOW_PREVIOUS = 'ODOMETER_BELOW_PREVIOUS',
     ODOMETER_ABOVE_NEXT = 'ODOMETER_ABOVE_NEXT',
     OVERLAPS = 'OVERLAPS',
+    ODOMETER_RESET = 'ODOMETER_RESET',
     OPEN_TRIP = 'OPEN_TRIP',
     ID_IN_USE = 'ID_IN_USE',
     ALREADY_FINISHED = 'ALREADY_FINISHED',
@@ -628,7 +651,8 @@ export type TripPastInput = {
 export enum TripReview {
     ODOMETER_BELOW_PREVIOUS = 'ODOMETER_BELOW_PREVIOUS',
     ODOMETER_ABOVE_NEXT = 'ODOMETER_ABOVE_NEXT',
-    OVERLAPS = 'OVERLAPS'
+    OVERLAPS = 'OVERLAPS',
+    ODOMETER_RESET = 'ODOMETER_RESET'
 }
 
 export type TripStartInput = {
@@ -2461,6 +2485,103 @@ export type GetCurrentTripResponses = {
 };
 
 export type GetCurrentTripResponse = GetCurrentTripResponses[keyof GetCurrentTripResponses];
+
+export type GetOdometerResetsData = {
+    body?: never;
+    path: {
+        carId: number;
+    };
+    query?: never;
+    url: '/api/trip/{carId}/resets';
+};
+
+export type GetOdometerResetsErrors = {
+    /**
+     * Car is not for your user.
+     */
+    404: unknown;
+};
+
+export type GetOdometerResetsResponses = {
+    /**
+     * Car found.
+     */
+    200: Array<OdometerReset>;
+};
+
+export type GetOdometerResetsResponse = GetOdometerResetsResponses[keyof GetOdometerResetsResponses];
+
+export type AddOdometerResetData = {
+    body: OdometerResetInput;
+    path: {
+        carId: number;
+        id: Uuid;
+    };
+    query?: never;
+    url: '/api/trip/{carId}/resets/{id}';
+};
+
+export type AddOdometerResetErrors = {
+    /**
+     * Validation failed, please check the response
+     */
+    400: Array<unknown>;
+    /**
+     * Car is not one you own.
+     */
+    404: unknown;
+    /**
+     * The reset doesn't fit the trips of the car or the id is in use.
+     */
+    409: TripConflict;
+};
+
+export type AddOdometerResetError = AddOdometerResetErrors[keyof AddOdometerResetErrors];
+
+export type AddOdometerResetResponses = {
+    /**
+     * Reset was added before with the same values.
+     */
+    200: OdometerReset;
+    /**
+     * Reset added.
+     */
+    201: OdometerReset;
+};
+
+export type AddOdometerResetResponse = AddOdometerResetResponses[keyof AddOdometerResetResponses];
+
+export type DeleteOdometerResetData = {
+    body: TripDeleteInput;
+    path: {
+        carId: number;
+        id: Uuid;
+    };
+    query?: never;
+    url: '/api/trip/{carId}/resets/{id}/delete';
+};
+
+export type DeleteOdometerResetErrors = {
+    /**
+     * Validation failed, please check the response
+     */
+    400: Array<unknown>;
+    /**
+     * Reset not found for a car you own.
+     */
+    404: unknown;
+};
+
+export type DeleteOdometerResetError = DeleteOdometerResetErrors[keyof DeleteOdometerResetErrors];
+
+export type DeleteOdometerResetResponses = {
+    /**
+     * Reset deleted.
+     */
+    200: OdometerReset;
+};
+
+export type DeleteOdometerResetResponse = DeleteOdometerResetResponses[keyof DeleteOdometerResetResponses];
 
 export type GetTripYearsData = {
     body?: never;

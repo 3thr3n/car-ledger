@@ -8,9 +8,11 @@ import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
@@ -27,11 +29,13 @@ import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.AttachmentRepository;
 import de.codeflowwizardry.carledger.data.repository.BillRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
+import de.codeflowwizardry.carledger.data.repository.OdometerResetRepository;
 import de.codeflowwizardry.carledger.data.repository.RecurringBillPaymentRepository;
 import de.codeflowwizardry.carledger.data.repository.RecurringBillRepository;
 import de.codeflowwizardry.carledger.data.repository.ReminderRepository;
 import de.codeflowwizardry.carledger.data.repository.TripRepository;
 import de.codeflowwizardry.carledger.exception.AlreadyPresentException;
+import de.codeflowwizardry.carledger.rest.car.trip.OdometerResetInput;
 import de.codeflowwizardry.carledger.rest.car.trip.TripDeleteInput;
 import de.codeflowwizardry.carledger.rest.car.trip.TripFinishInput;
 import de.codeflowwizardry.carledger.rest.car.trip.TripStartInput;
@@ -46,7 +50,8 @@ import jakarta.transaction.Transactional;
  * The backup of the own data as ZIP: backup.json with the settings, cars,
  * bills, recurring costs, reminders and trips, and the files (receipts,
  * pictures). A restore fills an account without cars, all at once or nothing.
- * Restored trips are marked, as a backup is a file anyone can edit.
+ * Restored trips and odometer resets are marked, as a backup is a file anyone
+ * can edit.
  */
 @ApplicationScoped
 public class BackupService
@@ -67,6 +72,7 @@ public class BackupService
 	private final RecurringBillPaymentRepository paymentRepository;
 	private final ReminderRepository reminderRepository;
 	private final TripRepository tripRepository;
+	private final OdometerResetRepository resetRepository;
 	private final AttachmentService attachmentService;
 	private final ObjectMapper mapper;
 	private final EntityManager em;
@@ -75,8 +81,9 @@ public class BackupService
 	public BackupService(AccountRepository accountRepository, CarRepository carRepository,
 			BillRepository billRepository, AttachmentRepository attachmentRepository,
 			RecurringBillRepository recurringBillRepository, RecurringBillPaymentRepository paymentRepository,
-			ReminderRepository reminderRepository, TripRepository tripRepository, AttachmentService attachmentService,
-			ObjectMapper mapper, EntityManager em)
+			ReminderRepository reminderRepository, TripRepository tripRepository,
+			OdometerResetRepository resetRepository, AttachmentService attachmentService, ObjectMapper mapper,
+			EntityManager em)
 	{
 		this.accountRepository = accountRepository;
 		this.carRepository = carRepository;
@@ -86,6 +93,7 @@ public class BackupService
 		this.paymentRepository = paymentRepository;
 		this.reminderRepository = reminderRepository;
 		this.tripRepository = tripRepository;
+		this.resetRepository = resetRepository;
 		this.attachmentService = attachmentService;
 		this.mapper = mapper;
 		this.em = em;
@@ -192,6 +200,12 @@ public class BackupService
 						trip.getFinishedAt(), trip.getDeletedAt(), trip.getDeletedBy(), trip.getDeleteReason()))
 				.toList();
 
+		List<BackupFile.OdometerReset> resets = resetRepository.list("car = ?1 order by resetAt, id", car).stream()
+				.map(reset -> new BackupFile.OdometerReset(reset.getResetAt(), reset.getOdometer(),
+						reset.getOdometerBefore(), reset.getReason(), reset.getCreatedBy(), reset.getCreatedAt(),
+						reset.getDeletedAt(), reset.getDeletedBy(), reset.getDeleteReason()))
+				.toList();
+
 		BackupFile.File picture = null;
 		if (car.getPictureId() != null)
 		{
@@ -205,7 +219,7 @@ public class BackupService
 		return new BackupFile.Car(car.getName(), car.getManufactureYear(), car.getOdometer(), car.getOdometerDate(),
 				car.getLicensePlate(), car.getVin(), car.getPurchaseDate(), car.getPurchasePrice(),
 				car.getEnergyType(), car.getTankSize(), car.getBatteryCapacity(), picture, bills, recurringBills,
-				reminders, trips, car.isTripLog());
+				reminders, trips, car.isTripLog(), resets);
 	}
 
 	private static BackupFile.Bill bill(BillEntity bill, List<BackupFile.File> files)
@@ -397,6 +411,15 @@ public class BackupService
 			restoreTrip(account, car, trip);
 			counter.trips++;
 		}
+		Set<OffsetDateTime> resetTimes = new HashSet<>();
+		for (BackupFile.OdometerReset reset : list(backup.odometerResets()))
+		{
+			if (reset.resetAt() != null && reset.deletedAt() == null && !resetTimes.add(reset.resetAt()))
+			{
+				Utils.requireValid(List.of("Two odometer resets of a car of the backup are at the same time!"));
+			}
+			restoreReset(account, car, reset);
+		}
 		if (backup.picture() != null)
 		{
 			car.setPictureId(attachmentService
@@ -451,6 +474,35 @@ public class BackupService
 			entity.delete(backup.deletedAt(), backup.deletedBy(), backup.deleteReason().strip());
 		}
 		tripRepository.persist(entity);
+	}
+
+	/**
+	 * With a new id and the times of the backup, marked as restored
+	 */
+	private void restoreReset(AccountEntity account, CarEntity car, BackupFile.OdometerReset backup)
+	{
+		List<String> errors = new ArrayList<>(new OdometerResetInput(backup.resetAt(), backup.odometer(),
+				backup.odometerBefore(), backup.reason()).validate());
+		boolean deleted = backup.deletedAt() != null;
+		if (deleted != (backup.deletedBy() != null) || deleted != (backup.deleteReason() != null))
+		{
+			errors.add("A deleted odometer reset of the backup needs the time, the account and the reason of the"
+					+ " deletion!");
+		} else if (deleted)
+		{
+			errors.addAll(new TripDeleteInput(backup.deleteReason()).validate());
+		}
+		Utils.requireValid(errors);
+
+		OdometerResetEntity entity = new OdometerResetEntity(UUID.randomUUID(), car, backup.resetAt(),
+				backup.odometer(), backup.odometerBefore(), backup.reason().strip(),
+				backup.createdBy() == null ? account.getUserId() : backup.createdBy(), true,
+				backup.createdAt() == null ? backup.resetAt() : backup.createdAt());
+		if (deleted)
+		{
+			entity.delete(backup.deletedAt(), backup.deletedBy(), backup.deleteReason().strip());
+		}
+		resetRepository.persist(entity);
 	}
 
 	private void restoreBill(CarEntity car, BackupFile.Bill backup, BackupArchive entries, Counter counter)

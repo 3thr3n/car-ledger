@@ -46,11 +46,13 @@ public record BackupFile(String format, int version, OffsetDateTime createdAt, S
 	 * @param tripLog
 	 *            missing in backups before it could be turned off: on with
 	 *            trips
+	 * @param odometerResets
+	 *            missing in backups before the resets
 	 */
 	public record Car(String name, int year, int odometer, LocalDate odometerDate, String licensePlate, String vin,
 			LocalDate purchaseDate, BigDecimal purchasePrice, EnergyType energyType, BigDecimal tankSize,
 			BigDecimal batteryCapacity, File picture, List<Bill> bills, List<RecurringBill> recurringBills,
-			List<Reminder> reminders, List<Trip> trips, Boolean tripLog)
+			List<Reminder> reminders, List<Trip> trips, Boolean tripLog, List<OdometerReset> odometerResets)
 	{
 	}
 
@@ -114,6 +116,16 @@ public record BackupFile(String format, int version, OffsetDateTime createdAt, S
 			OffsetDateTime endedAt, String destination, String purpose, String businessPartner,
 			TripReview reviewReason, OffsetDateTime createdAt, OffsetDateTime finishedAt, OffsetDateTime deletedAt,
 			String deletedBy, String deleteReason)
+	{
+	}
+
+	/**
+	 * An odometer reset without its id, like a trip; the deletion is missing if
+	 * it wasn't deleted
+	 */
+	public record OdometerReset(OffsetDateTime resetAt, Integer odometer, Integer odometerBefore, String reason,
+			String createdBy, OffsetDateTime createdAt, OffsetDateTime deletedAt, String deletedBy,
+			String deleteReason)
 	{
 	}
 }
