@@ -10,5 +10,7 @@ public enum TripReview {
 	/** the trip ends above the start of a later trip */
 	ODOMETER_ABOVE_NEXT,
 	/** the time of the trip overlaps another trip */
-	OVERLAPS
+	OVERLAPS,
+	/** the odometer was reset during the trip */
+	ODOMETER_RESET
 }

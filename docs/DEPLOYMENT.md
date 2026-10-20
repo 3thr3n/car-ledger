@@ -356,6 +356,7 @@ Use the image of a release (a git tag of `main`) or a dev build of `develop`. On
 | 1.15.0    | Id of the client for new entries, a request sent again (offline queue) doesn't create an entry twice (0.6.0)         |
 | 1.16.0    | Trip log per car (off), on for the cars with trips (0.6.0)                                                           |
 | 1.17.0    | Trips are deleted with a reason and stay listed, a trigger allows only that change (0.6.0)                           |
+| 1.18.0    | Table for the odometer resets of the trip log, a trigger allows only to delete them (0.7.0)                          |
 
 An older image refuses to start on the migrated database, as Flyway finds migrations it does not know. To go back,
 restore the backup. Without the backup, the older image runs on the migrated database (the new columns have defaults)
@@ -405,6 +406,9 @@ kubectl set env deployment/car-ledger QUARKUS_FLYWAY_IGNORE_FUTURE_MIGRATIONS=tr
   after its time is marked as entered later. The trip log is exported per year or period as PDF (Fahrtenbuch, in the
   language and the units of the account) and as CSV. CarLedger records the trips so that changes can be seen;
   whether a tax office accepts it as an electronic Fahrtenbuch is not something the app can guarantee.
+- **Odometer reset** (0.7.0): a replaced instrument cluster or a reset odometer is entered in the trip log as an
+  odometer reset by the owner of the car: from its time on the odometer and the checks of the trips count from the
+  new reading (migration 1.18.0). Nothing to set up.
 - **Installable app and headers** (0.5.0): CarLedger can be installed as an app and asks to reload when the server
   runs a newer version. A proxy or CDN in front must not cache `/sw.js` for long (see [Options](#options)). The app
   sends its own security headers (CSP, HSTS, …); a proxy that sets them as well must not set stricter ones.

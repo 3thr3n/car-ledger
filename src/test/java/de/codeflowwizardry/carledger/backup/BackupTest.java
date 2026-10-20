@@ -35,6 +35,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import de.codeflowwizardry.carledger.ReminderService;
+import de.codeflowwizardry.carledger.OdometerResetService;
 import de.codeflowwizardry.carledger.TripService;
 import de.codeflowwizardry.carledger.attachment.AttachmentService;
 import de.codeflowwizardry.carledger.data.AccountEntity;
@@ -57,6 +58,7 @@ import de.codeflowwizardry.carledger.rest.car.maintenance.MaintenanceBillInput;
 import de.codeflowwizardry.carledger.rest.car.miscellaneous.MiscellaneousBillInput;
 import de.codeflowwizardry.carledger.rest.car.recurring.RecurringBillInput;
 import de.codeflowwizardry.carledger.rest.car.reminder.ReminderInput;
+import de.codeflowwizardry.carledger.rest.car.trip.OdometerResetInput;
 import de.codeflowwizardry.carledger.rest.car.trip.TripFinishInput;
 import de.codeflowwizardry.carledger.rest.car.trip.TripStartInput;
 import io.quarkus.test.junit.QuarkusTest;
@@ -98,6 +100,8 @@ class BackupTest
 	@Inject
 	TripService tripService;
 	@Inject
+	OdometerResetService resetService;
+	@Inject
 	AttachmentService attachmentService;
 	@Inject
 	ObjectMapper mapper;
@@ -132,6 +136,9 @@ class BackupTest
 				OffsetDateTime.parse("2025-03-02T08:00:00+01:00"), "Munich", null, null, false), "peter");
 		tripService.finish(carId, business, new TripFinishInput(41_620,
 				OffsetDateTime.parse("2025-03-02T10:30:00+01:00"), null, "Customer visit", "ACME", false), "peter");
+		resetService.add(carId, UUID.randomUUID(), new OdometerResetInput(
+				OffsetDateTime.parse("2025-03-04T12:00:00+01:00"), 41_650, 41_640, "Instrument cluster replaced"),
+				"peter");
 		tripService.start(carId, UUID.randomUUID(), new TripStartInput(TripType.PRIVATE, 41_700,
 				OffsetDateTime.parse("2025-03-05T17:00:00+01:00"), null, null, null, false), "peter");
 	}
@@ -255,6 +262,10 @@ class BackupTest
 		assertEquals("ACME", trip.get("businessPartner").asText());
 		assertTrue(trip.get("id") == null);
 		assertTrue(car.get("trips").get(1).get("endOdometer").isNull());
+		JsonNode reset = car.get("odometerResets").get(0);
+		assertEquals(41_650, reset.get("odometer").asInt());
+		assertEquals(41_640, reset.get("odometerBefore").asInt());
+		assertTrue(reset.get("id") == null);
 	}
 
 	@Test
@@ -304,6 +315,11 @@ class BackupTest
 				.body("data[1].endedAt", is("2025-03-02T09:30:00Z"));
 		given().when().get("/api/trip/{carId}/current", restored).then()
 				.body("open.startOdometer", is(41_700));
+		given().when().get("/api/trip/{carId}/resets", restored).then()
+				.body("odometer", contains(41_650))
+				.body("restored", contains(true))
+				.body("[0].resetAt", is("2025-03-04T11:00:00Z"))
+				.body("[0].createdBy", is("peter"));
 		byte[] picture = given().when().get("/api/car/my/{id}/picture", restored).then().statusCode(200)
 				.extract().asByteArray();
 		assertArrayEquals(PNG, picture);

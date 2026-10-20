@@ -47,7 +47,7 @@ export function useOdometer(minimumKm: number) {
 export interface OdometerConflict {
   /** the odometer is below an earlier reading: the start */
   below?: string;
-  /** the odometer is above the start of a later trip: the end */
+  /** the odometer is above a later reading: the end */
   above?: string;
 }
 

@@ -363,4 +363,26 @@ test.describe.serial('trips', () => {
     expect(lines).toHaveLength((await trips()).length + 1);
     expect(lines.some((line) => line.endsWith(',Entered twice'))).toBe(true);
   });
+
+  test('resets the odometer, the next trip starts from it', async ({
+    page,
+  }) => {
+    await openTrips(page);
+    await page.getByRole('button', { name: 'Add reset' }).click();
+    const dialog = page.getByRole('dialog');
+    await odometer(page, /Last reading before/).fill('20160');
+    await odometer(page, /New reading/).fill('12');
+    await dialog
+      .getByRole('textbox', { name: 'Reason' })
+      .fill('Instrument cluster replaced');
+    await dialog.getByRole('button', { name: 'Add reset' }).click();
+
+    await expect(page.getByText('Odometer reset added')).toBeVisible();
+    await expect(page.getByTestId('odometer-resets')).toContainText(
+      '20,160 km → 12 km',
+    );
+
+    await page.getByRole('button', { name: 'Start trip' }).click();
+    await expect(odometer(page, /Odometer at the start/)).toHaveValue('12 km');
+  });
 });

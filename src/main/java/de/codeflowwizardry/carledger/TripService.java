@@ -12,12 +12,14 @@ import java.util.UUID;
 import java.util.function.Consumer;
 
 import de.codeflowwizardry.carledger.data.CarEntity;
+import de.codeflowwizardry.carledger.data.OdometerResetEntity;
 import de.codeflowwizardry.carledger.data.TripEntity;
 import de.codeflowwizardry.carledger.data.TripReview;
 import de.codeflowwizardry.carledger.data.TripType;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.CarAccess.Action;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
+import de.codeflowwizardry.carledger.data.repository.OdometerResetRepository;
 import de.codeflowwizardry.carledger.data.repository.TripRepository;
 import de.codeflowwizardry.carledger.exception.WrongUserException;
 import de.codeflowwizardry.carledger.rest.car.trip.Trip;
@@ -51,6 +53,10 @@ import jakarta.ws.rs.core.Response;
  * doesn't fit is rejected, one from the offline queue
  * ({@link TripStartInput#queued()}) is stored with a {@link TripReview}, so
  * nothing that waited on a phone is lost.
+ * <p>
+ * An odometer reset splits the trip log: a trip is checked only against the
+ * readings between the reset before it and the one after it, and it must not
+ * be on the road at a reset.
  */
 @ApplicationScoped
 public class TripService
@@ -58,19 +64,24 @@ public class TripService
 	/** a time of the device may be ahead of the server by this */
 	static final Duration CLOCK_TOLERANCE = Duration.ofMinutes(5);
 
-	private static final UUID NONE = new UUID(0, 0);
+	static final UUID NONE = new UUID(0, 0);
+
+	private static final String RESET_DURING_TRIP = "The odometer was reset during the trip!";
 
 	private final TripRepository tripRepository;
+	private final OdometerResetRepository resetRepository;
 	private final CarRepository carRepository;
 	private final AccountRepository accountRepository;
 	private final OdometerService odometerService;
 	private final EntityManager em;
 
 	@Inject
-	public TripService(TripRepository tripRepository, CarRepository carRepository,
-			AccountRepository accountRepository, OdometerService odometerService, EntityManager em)
+	public TripService(TripRepository tripRepository, OdometerResetRepository resetRepository,
+			CarRepository carRepository, AccountRepository accountRepository, OdometerService odometerService,
+			EntityManager em)
 	{
 		this.tripRepository = tripRepository;
+		this.resetRepository = resetRepository;
 		this.carRepository = carRepository;
 		this.accountRepository = accountRepository;
 		this.odometerService = odometerService;
@@ -143,7 +154,7 @@ public class TripService
 
 		TripReview review = null;
 		int minimum = highestBefore(car, input.startedAt(), id);
-		Optional<Integer> maximum = tripRepository.lowestAfter(car, input.startedAt(), id);
+		Optional<Integer> maximum = lowestAfter(car, input.startedAt(), id);
 		if (input.startOdometer() < minimum)
 		{
 			review = check(input.queued(), TripReview.ODOMETER_BELOW_PREVIOUS,
@@ -151,7 +162,7 @@ public class TripService
 		} else if (maximum.isPresent() && input.startOdometer() > maximum.get())
 		{
 			review = check(input.queued(), TripReview.ODOMETER_ABOVE_NEXT,
-					"The start must not be above " + maximum.get() + " km, the start of a later trip!", null,
+					"The start must not be above " + maximum.get() + " km, a later reading!", null,
 					maximum.get());
 		} else if (tripRepository.overlaps(car, input.startedAt(), input.startedAt(), id))
 		{
@@ -212,16 +223,19 @@ public class TripService
 		requireBusinessDetails(trip);
 
 		TripReview review = null;
-		Optional<Integer> maximum = tripRepository.lowestAfter(car, trip.getStartedAt(), id);
+		Optional<Integer> maximum = lowestAfter(car, trip.getStartedAt(), id);
 		if (maximum.isPresent() && input.endOdometer() > maximum.get())
 		{
 			review = check(input.queued(), TripReview.ODOMETER_ABOVE_NEXT,
-					"The end must not be above " + maximum.get() + " km, the start of a later trip!", null,
+					"The end must not be above " + maximum.get() + " km, a later reading!", null,
 					maximum.get());
 		} else if (tripRepository.overlaps(car, trip.getStartedAt(), input.endedAt(), id))
 		{
 			review = check(input.queued(), TripReview.OVERLAPS, "Another trip of the car was on the road then!", null,
 					null);
+		} else if (resetRepository.between(car, trip.getStartedAt(), input.endedAt()))
+		{
+			review = check(input.queued(), TripReview.ODOMETER_RESET, RESET_DURING_TRIP, null, null);
 		}
 		if (trip.getReviewReason() == null)
 		{
@@ -233,22 +247,50 @@ public class TripService
 
 	/**
 	 * @return the highest reading before the time: the odometer of the car,
-	 *         maintenance bills and trips
+	 *         maintenance bills and trips. After a reset only the reset and the
+	 *         readings after it: the trips from its time on, the others from the
+	 *         day after it, like {@link OdometerService}.
 	 */
-	private int highestBefore(CarEntity car, OffsetDateTime time, UUID exclude)
+	int highestBefore(CarEntity car, OffsetDateTime time, UUID exclude)
 	{
 		LocalDate day = day(time);
-		int highest = car.getOdometerDate() == null || !car.getOdometerDate().isAfter(day) ? car.getOdometer() : 0;
+		Optional<OdometerResetEntity> reset = resetRepository.latestUntil(car, time);
+		LocalDate resetDay = reset.map(r -> day(r.getResetAt())).orElse(null);
+
+		int highest = reset.map(OdometerResetEntity::getOdometer).orElse(0);
+		if (!car.getOdometerDate().isAfter(day) && (resetDay == null || car.getOdometerDate().isAfter(resetDay)))
+		{
+			highest = Math.max(highest, car.getOdometer());
+		}
 		Integer maintenance = em.createQuery("select max(m.odometer) from MaintenanceBillEntity m join m.bill b"
-				+ " where b.car = :car and b.date <= :day", Integer.class)
+				+ " where b.car = :car and b.date <= :day and b.date > :resetDay", Integer.class)
 				.setParameter("car", car)
 				.setParameter("day", day)
+				.setParameter("resetDay", resetDay != null ? resetDay : LocalDate.of(1, 1, 1))
 				.getSingleResult();
 		if (maintenance != null)
 		{
 			highest = Math.max(highest, maintenance);
 		}
-		return Math.max(highest, tripRepository.highestBefore(car, time, exclude).orElse(0));
+		OffsetDateTime since = reset.map(OdometerResetEntity::getResetAt).orElse(null);
+		return Math.max(highest, tripRepository.highestBefore(car, since, time, exclude).orElse(0));
+	}
+
+	/**
+	 * @return the highest reading allowed after the time until the next reset:
+	 *         the lowest start of the later trips, the reading before the reset
+	 */
+	Optional<Integer> lowestAfter(CarEntity car, OffsetDateTime time, UUID exclude)
+	{
+		Optional<OdometerResetEntity> next = resetRepository.firstAfter(car, time);
+		Optional<Integer> trips = tripRepository.lowestAfter(car, time,
+				next.map(OdometerResetEntity::getResetAt).orElse(null), exclude);
+		Optional<Integer> before = next.map(OdometerResetEntity::getOdometerBefore);
+		if (trips.isPresent() && before.isPresent())
+		{
+			return Optional.of(Math.min(trips.get(), before.get()));
+		}
+		return trips.isPresent() ? trips : before;
 	}
 
 	/**
@@ -260,7 +302,7 @@ public class TripService
 		return time.atZoneSameInstant(ZoneId.systemDefault()).toLocalDate();
 	}
 
-	private static boolean inFuture(OffsetDateTime time)
+	static boolean inFuture(OffsetDateTime time)
 	{
 		return time.isAfter(OffsetDateTime.now().plus(CLOCK_TOLERANCE));
 	}
@@ -280,7 +322,7 @@ public class TripService
 		return review;
 	}
 
-	private static ClientErrorException conflict(Reason reason, String message, Integer minimum, Integer maximum)
+	static ClientErrorException conflict(Reason reason, String message, Integer minimum, Integer maximum)
 	{
 		return new ClientErrorException(Response.status(Response.Status.CONFLICT)
 				.entity(new TripConflict(reason, message, minimum, maximum))
@@ -381,7 +423,7 @@ public class TripService
 		}
 
 		int minimum = highestBefore(car, input.startedAt(), id);
-		Optional<Integer> maximum = tripRepository.lowestAfter(car, input.startedAt(), id);
+		Optional<Integer> maximum = lowestAfter(car, input.startedAt(), id);
 		if (input.startOdometer() < minimum)
 		{
 			throw conflict(Reason.ODOMETER_BELOW_PREVIOUS, "The start must not be below " + minimum + " km!", minimum,
@@ -390,12 +432,16 @@ public class TripService
 		if (maximum.isPresent() && input.endOdometer() > maximum.get())
 		{
 			throw conflict(Reason.ODOMETER_ABOVE_NEXT,
-					"The end must not be above " + maximum.get() + " km, the start of a later trip!", null,
+					"The end must not be above " + maximum.get() + " km, a later reading!", null,
 					maximum.get());
 		}
 		if (tripRepository.overlaps(car, input.startedAt(), input.endedAt(), id))
 		{
 			throw conflict(Reason.OVERLAPS, "Another trip of the car was on the road then!", null, null);
+		}
+		if (resetRepository.between(car, input.startedAt(), input.endedAt()))
+		{
+			throw conflict(Reason.ODOMETER_RESET, RESET_DURING_TRIP, null, null);
 		}
 
 		OffsetDateTime now = OffsetDateTime.now();

@@ -14,6 +14,7 @@ import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import io.quarkus.panache.common.Page;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.persistence.TypedQuery;
 
 /**
  * The trips of a user are read through {@link CarAccess}. The methods with a
@@ -95,33 +96,58 @@ public class TripRepository implements PanacheRepositoryBase<TripEntity, UUID>
 	}
 
 	/**
+	 * @param since
+	 *            the time of the last reset before, the trips started before it
+	 *            don't count; <code>null</code> without
 	 * @return the highest odometer of the trips started before the time, the end
 	 *         or the start of an open one; not of deleted trips, like the
 	 *         methods below
 	 */
-	public Optional<Integer> highestBefore(CarEntity car, OffsetDateTime time, UUID exclude)
+	public Optional<Integer> highestBefore(CarEntity car, OffsetDateTime since, OffsetDateTime time, UUID exclude)
 	{
-		return Optional.ofNullable(getEntityManager().createQuery("select max(coalesce(t.endOdometer, t.startOdometer))"
-				+ " from trip t where t.car = :car and t.startedAt < :time and t.id <> :exclude and t.deletedAt is null",
-				Integer.class)
+		TypedQuery<Integer> query = getEntityManager()
+				.createQuery("select max(coalesce(t.endOdometer, t.startOdometer))"
+						+ " from trip t where t.car = :car and t.startedAt < :time and t.id <> :exclude and t.deletedAt is null"
+						+ (since != null ? " and t.startedAt >= :since" : ""), Integer.class)
 				.setParameter("car", car)
 				.setParameter("time", time)
-				.setParameter("exclude", exclude)
-				.getSingleResult());
+				.setParameter("exclude", exclude);
+		if (since != null)
+		{
+			query.setParameter("since", since);
+		}
+		return Optional.ofNullable(query.getSingleResult());
 	}
 
 	/**
+	 * @param until
+	 *            the time of the next reset, the trips from it on don't count;
+	 *            <code>null</code> without
 	 * @return the lowest start of the trips started after the time
 	 */
-	public Optional<Integer> lowestAfter(CarEntity car, OffsetDateTime time, UUID exclude)
+	public Optional<Integer> lowestAfter(CarEntity car, OffsetDateTime time, OffsetDateTime until, UUID exclude)
 	{
-		return Optional.ofNullable(getEntityManager().createQuery("select min(t.startOdometer)"
-				+ " from trip t where t.car = :car and t.startedAt > :time and t.id <> :exclude and t.deletedAt is null",
-				Integer.class)
+		TypedQuery<Integer> query = getEntityManager().createQuery("select min(t.startOdometer)"
+				+ " from trip t where t.car = :car and t.startedAt > :time and t.id <> :exclude and t.deletedAt is null"
+				+ (until != null ? " and t.startedAt < :until" : ""), Integer.class)
 				.setParameter("car", car)
 				.setParameter("time", time)
-				.setParameter("exclude", exclude)
-				.getSingleResult());
+				.setParameter("exclude", exclude);
+		if (until != null)
+		{
+			query.setParameter("until", until);
+		}
+		return Optional.ofNullable(query.getSingleResult());
+	}
+
+	/**
+	 * @return whether a trip of the car is on the road at the time, not only
+	 *         starting or ending then; an open one until now
+	 */
+	public boolean onTheRoad(CarEntity car, OffsetDateTime time)
+	{
+		return count("car = ?1 and deletedAt is null and startedAt < ?2 and (endedAt is null or endedAt > ?2)", car,
+				time) > 0;
 	}
 
 	/**

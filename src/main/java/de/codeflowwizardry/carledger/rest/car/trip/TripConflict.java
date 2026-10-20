@@ -20,7 +20,7 @@ public record TripConflict(
 {
 	public enum Reason {
 		/** see {@link de.codeflowwizardry.carledger.data.TripReview} */
-		ODOMETER_BELOW_PREVIOUS, ODOMETER_ABOVE_NEXT, OVERLAPS,
+		ODOMETER_BELOW_PREVIOUS, ODOMETER_ABOVE_NEXT, OVERLAPS, ODOMETER_RESET,
 		/** another trip of the car is open */
 		OPEN_TRIP,
 		/** the id belongs to a trip with other values, or to another car */

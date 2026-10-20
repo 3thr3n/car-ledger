@@ -1183,6 +1183,72 @@
           }
         }
       },
+      "OdometerReset" : {
+        "type" : "object",
+        "required" : [ "id", "carId", "resetAt", "odometer", "reason", "createdBy", "restored", "createdAt" ],
+        "properties" : {
+          "id" : {
+            "$ref" : "#/components/schemas/UUID"
+          },
+          "carId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "resetAt" : {
+            "type" : "string",
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          },
+          "odometer" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "odometerBefore" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "reason" : {
+            "type" : "string"
+          },
+          "createdBy" : {
+            "type" : "string"
+          },
+          "restored" : {
+            "type" : "boolean"
+          },
+          "createdAt" : {
+            "type" : "string",
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          },
+          "deletedAt" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          },
+          "deletedBy" : {
+            "type" : "string"
+          },
+          "deleteReason" : {
+            "type" : "string"
+          }
+        }
+      },
+      "OdometerResetInput" : {
+        "type" : "object",
+        "properties" : {
+          "resetAt" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          },
+          "odometer" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "odometerBefore" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "reason" : {
+            "type" : "string"
+          }
+        }
+      },
       "OffsetDateTime" : {
         "type" : "string",
         "format" : "date-time",
@@ -1220,7 +1286,7 @@
       },
       "Reason" : {
         "type" : "string",
-        "enum" : [ "ODOMETER_BELOW_PREVIOUS", "ODOMETER_ABOVE_NEXT", "OVERLAPS", "OPEN_TRIP", "ID_IN_USE", "ALREADY_FINISHED", "DETAIL_CHANGED", "DELETED" ]
+        "enum" : [ "ODOMETER_BELOW_PREVIOUS", "ODOMETER_ABOVE_NEXT", "OVERLAPS", "ODOMETER_RESET", "OPEN_TRIP", "ID_IN_USE", "ALREADY_FINISHED", "DETAIL_CHANGED", "DELETED" ]
       },
       "RecurringBill" : {
         "type" : "object",
@@ -1655,7 +1721,7 @@
       },
       "TripReview" : {
         "type" : "string",
-        "enum" : [ "ODOMETER_BELOW_PREVIOUS", "ODOMETER_ABOVE_NEXT", "OVERLAPS" ]
+        "enum" : [ "ODOMETER_BELOW_PREVIOUS", "ODOMETER_ABOVE_NEXT", "OVERLAPS", "ODOMETER_RESET" ]
       },
       "TripStartInput" : {
         "type" : "object",
@@ -4979,6 +5045,181 @@
         },
         "summary" : "Get Current Trip",
         "tags" : [ "Trip Resource" ]
+      }
+    },
+    "/api/trip/{carId}/resets" : {
+      "get" : {
+        "description" : "Odometer resets of a car, the latest first, also the deleted ones",
+        "operationId" : "getOdometerResets",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Car found.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/OdometerReset"
+                  }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Car is not for your user."
+          }
+        },
+        "summary" : "Get Odometer Resets",
+        "tags" : [ "Odometer Reset Resource" ]
+      }
+    },
+    "/api/trip/{carId}/resets/{id}" : {
+      "put" : {
+        "description" : "Adds an odometer reset with the id created by the client, only the owner of the car. From its time on the odometer counts from the new reading. Sent again with the same values, it answers with the reset.",
+        "operationId" : "addOdometerReset",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/UUID"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/OdometerResetInput"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Reset added.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/OdometerReset"
+                }
+              }
+            }
+          },
+          "200" : {
+            "description" : "Reset was added before with the same values.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/OdometerReset"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed, please check the response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Car is not one you own."
+          },
+          "409" : {
+            "description" : "The reset doesn't fit the trips of the car or the id is in use.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TripConflict"
+                }
+              }
+            }
+          }
+        },
+        "summary" : "Add Odometer Reset",
+        "tags" : [ "Odometer Reset Resource" ]
+      }
+    },
+    "/api/trip/{carId}/resets/{id}/delete" : {
+      "post" : {
+        "description" : "Deletes an odometer reset with a reason, only the owner of the car. It stays listed as deleted and doesn't count anymore. Sent again, it answers with the deleted reset.",
+        "operationId" : "deleteOdometerReset",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/UUID"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/TripDeleteInput"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Reset deleted.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/OdometerReset"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed, please check the response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Reset not found for a car you own."
+          }
+        },
+        "summary" : "Delete Odometer Reset",
+        "tags" : [ "Odometer Reset Resource" ]
       }
     },
     "/api/trip/{carId}/years" : {

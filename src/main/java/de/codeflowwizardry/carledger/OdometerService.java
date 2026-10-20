@@ -20,6 +20,9 @@ import jakarta.persistence.TypedQuery;
  * the ones of maintenance bills and the start and end of trips. The latest
  * reading is the base, the distances of the refuels or charges after its day
  * are added.
+ * <p>
+ * After an odometer reset only the reset and the readings after it count: the
+ * trips from its time on, the other readings from the day after it.
  */
 @ApplicationScoped
 public class OdometerService
@@ -37,7 +40,23 @@ public class OdometerService
 	}
 
 	/**
-	 * Four queries, independent of the number of cars, bills and trips.
+	 * the latest reset of a car, its odometer is a reading
+	 */
+	private record Reset(OffsetDateTime time, LocalDate day, int odometer)
+	{
+		boolean counts(LocalDate date)
+		{
+			return date.isAfter(day);
+		}
+
+		boolean counts(OffsetDateTime at)
+		{
+			return !at.isBefore(time);
+		}
+	}
+
+	/**
+	 * Six queries, independent of the number of cars, bills and trips.
 	 *
 	 * @param carId
 	 *            or {@link CarRepository#ALL_CARS}
@@ -46,28 +65,38 @@ public class OdometerService
 	public Map<Long, Odometer> current(long carId, String username)
 	{
 		Map<Long, List<Reading>> readings = new HashMap<>();
+		Map<Long, Reset> resets = new HashMap<>();
+		for (Object[] row : query("select r.car.id, r.resetAt, r.odometer from odometer_reset r"
+				+ " where r.deletedAt is null and " + CarAccess.condition("r.car", Action.READ), "r.car", carId,
+				username, " order by r.resetAt"))
+		{
+			// the latest one last
+			OffsetDateTime time = (OffsetDateTime) row[1];
+			resets.put((Long) row[0], new Reset(time, TripService.day(time), (Integer) row[2]));
+		}
 		for (Object[] row : query(
 				"select c.id, c.odometerDate, c.odometer from Car c where " + CarAccess.condition("c", Action.READ),
 				"c", carId, username))
 		{
-			add(readings, row);
+			addDay(readings, resets, row);
 		}
 		for (Object[] row : query("select b.car.id, b.date, m.odometer from MaintenanceBillEntity m join m.bill b"
 				+ " where " + CarAccess.condition("b.car", Action.READ) + " and m.odometer is not null", "b.car", carId,
 				username))
 		{
-			add(readings, row);
+			addDay(readings, resets, row);
 		}
 		for (Object[] row : query("select t.car.id, t.startedAt, t.startOdometer, t.endedAt, t.endOdometer from trip t"
 				+ " where t.deletedAt is null and " + CarAccess.condition("t.car", Action.READ), "t.car", carId,
 				username))
 		{
-			add(readings, (Long) row[0], TripService.day((OffsetDateTime) row[1]), (Integer) row[2]);
+			addTime(readings, resets, (Long) row[0], (OffsetDateTime) row[1], (Integer) row[2]);
 			if (row[4] != null)
 			{
-				add(readings, (Long) row[0], TripService.day((OffsetDateTime) row[3]), (Integer) row[4]);
+				addTime(readings, resets, (Long) row[0], (OffsetDateTime) row[3], (Integer) row[4]);
 			}
 		}
+		resets.forEach((id, reset) -> add(readings, id, reset.day(), reset.odometer()));
 
 		Map<Long, NavigableMap<LocalDate, BigDecimal>> refueled = drivenPerDay("FuelBillEntity", carId, username);
 		Map<Long, NavigableMap<LocalDate, BigDecimal>> charged = drivenPerDay("ChargingBillEntity", carId, username);
@@ -125,9 +154,29 @@ public class OdometerService
 				.intValue();
 	}
 
-	private static void add(Map<Long, List<Reading>> readings, Object[] row)
+	/**
+	 * A reading with a day, it counts after the day of a reset
+	 */
+	private static void addDay(Map<Long, List<Reading>> readings, Map<Long, Reset> resets, Object[] row)
 	{
-		add(readings, (Long) row[0], (LocalDate) row[1], (Integer) row[2]);
+		Reset reset = resets.get((Long) row[0]);
+		if (reset == null || reset.counts((LocalDate) row[1]))
+		{
+			add(readings, (Long) row[0], (LocalDate) row[1], (Integer) row[2]);
+		}
+	}
+
+	/**
+	 * A reading with a time, it counts from the time of a reset on
+	 */
+	private static void addTime(Map<Long, List<Reading>> readings, Map<Long, Reset> resets, long carId,
+			OffsetDateTime time, int value)
+	{
+		Reset reset = resets.get(carId);
+		if (reset == null || reset.counts(time))
+		{
+			add(readings, carId, TripService.day(time), value);
+		}
 	}
 
 	private static void add(Map<Long, List<Reading>> readings, long carId, LocalDate date, int value)
