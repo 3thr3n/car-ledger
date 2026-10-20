@@ -795,3 +795,11 @@ trip:
     subtitle: "Started or finished without a connection and kept on this device"
     start: "Start at {{odometer}}"
     finish: "Finish at {{odometer}}"
+  export:
+    button: "Export"
+    title: "Export the trip log"
+    period: "Period"
+    custom: "Choose days"
+    from: "From"
+    to: "To"
+    text: "The PDF is the trip log to print or to hand in, with the deleted trips and their reason and the sums per type. The CSV is for spreadsheets. Whether a tax office accepts it as an electronic trip log CarLedger can't guarantee."

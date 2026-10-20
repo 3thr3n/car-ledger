@@ -72,7 +72,10 @@ public record Trip(
 				entity.getDeletedBy(), entity.getDeleteReason(), enteredLater(entity));
 	}
 
-	static boolean enteredLater(TripEntity entity)
+	/**
+	 * @return see {@link #enteredLater()}
+	 */
+	public static boolean enteredLater(TripEntity entity)
 	{
 		return later(entity.getStartedAt(), entity.getCreatedAt())
 				|| entity.getFinishedAt() != null && later(entity.getEndedAt(), entity.getFinishedAt());

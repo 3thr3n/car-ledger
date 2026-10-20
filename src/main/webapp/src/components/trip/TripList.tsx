@@ -1,5 +1,6 @@
 import {
   Box,
+  Button,
   Chip,
   IconButton,
   Stack,
@@ -13,6 +14,7 @@ import {
   Typography,
 } from '@mui/material';
 import DeleteOutlineRounded from '@mui/icons-material/DeleteOutlineRounded';
+import FileDownloadRounded from '@mui/icons-material/FileDownloadRounded';
 import RestoreRounded from '@mui/icons-material/RestoreRounded';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
@@ -28,6 +30,7 @@ import YearFilter from '@/components/ui/YearFilter';
 import { useFormat } from '@/utils/format';
 import { localClient } from '@/utils/QueryClient';
 import TripDeleteDialog from './TripDeleteDialog';
+import TripExportDialog from './TripExportDialog';
 
 const PAGE_SIZES = [10, 25, 50];
 
@@ -96,6 +99,7 @@ export default function TripList({ carId }: { carId: number }) {
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(PAGE_SIZES[0]);
   const [toDelete, setToDelete] = useState<Trip>();
+  const [exporting, setExporting] = useState(false);
 
   const { data: years } = useQuery(
     getTripYearsOptions({ client: localClient, path: { carId } }),
@@ -116,6 +120,17 @@ export default function TripList({ carId }: { carId: number }) {
       flush
       title={t('trip.list.title')}
       subtitle={t('trip.list.subtitle')}
+      action={
+        !!years?.length && (
+          <Button
+            size="small"
+            startIcon={<FileDownloadRounded />}
+            onClick={() => setExporting(true)}
+          >
+            {t('trip.export.button')}
+          </Button>
+        )
+      }
     >
       <Box sx={{ px: 2.5, pb: 1.5 }}>
         <YearFilter
@@ -234,6 +249,13 @@ export default function TripList({ carId }: { carId: number }) {
       <TripDeleteDialog
         trip={toDelete}
         onClose={() => setToDelete(undefined)}
+      />
+      <TripExportDialog
+        carId={carId}
+        years={years ?? []}
+        year={year}
+        open={exporting}
+        onClose={() => setExporting(false)}
       />
     </Section>
   );

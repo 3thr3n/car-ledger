@@ -4328,6 +4328,133 @@
         "tags" : [ "Export Resource" ]
       }
     },
+    "/api/export/{carId}/trips/csv" : {
+      "get" : {
+        "description" : "Exports the trip log of the car as CSV, for spreadsheets: the oldest trip first, also the deleted ones with their deletion, in km, the times ISO-8601 in the zone. A year or a period (from, to), nothing for all trips. Not meant to be imported.",
+        "operationId" : "exportTripsCsv",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "from",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          }
+        }, {
+          "name" : "to",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          }
+        }, {
+          "name" : "year",
+          "in" : "query",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "name" : "zone",
+          "in" : "query",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "The trips as CSV.",
+            "content" : {
+              "text/csv" : {
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "A year and a period, a period that ends before it starts or an unknown zone."
+          },
+          "404" : {
+            "description" : "Car not found."
+          }
+        },
+        "summary" : "Export Trips Csv",
+        "tags" : [ "Export Resource" ]
+      }
+    },
+    "/api/export/{carId}/trips/pdf" : {
+      "get" : {
+        "description" : "Exports the trip log of the car as PDF (Fahrtenbuch): the oldest trip first, the deleted ones with the reason, the trips entered later with the time they were entered, the sums per type. In the units of the account and the language (de, en; the one of the account without), the times in the zone. A year or a period (from, to), nothing for all trips.",
+        "operationId" : "exportTripsPdf",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "from",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          }
+        }, {
+          "name" : "language",
+          "in" : "query",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "to",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          }
+        }, {
+          "name" : "year",
+          "in" : "query",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "name" : "zone",
+          "in" : "query",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "The trips as PDF.",
+            "content" : {
+              "application/pdf" : {
+                "schema" : {
+                  "format" : "binary",
+                  "type" : "string"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "A year and a period, a period that ends before it starts, an unknown zone or language."
+          },
+          "404" : {
+            "description" : "Car not found."
+          }
+        },
+        "summary" : "Export Trips Pdf",
+        "tags" : [ "Export Resource" ]
+      }
+    },
     "/api/import/{carId}" : {
       "post" : {
         "description" : "This is the description for the import of an csv of your fuel entities.<br />\n<br />\nYou need to add the csv and the order in the csv (starts with 0).<br />\nseparator between columns is ',' (comma)\n",

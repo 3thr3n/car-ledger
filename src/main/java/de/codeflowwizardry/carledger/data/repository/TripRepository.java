@@ -40,6 +40,34 @@ public class TripRepository implements PanacheRepositoryBase<TripEntity, UUID>
 	}
 
 	/**
+	 * @param from
+	 *            the trips started at or after it, <code>null</code> for all
+	 * @param until
+	 *            the trips started before it, <code>null</code> for all
+	 * @return the trips of the car with their driver, the oldest first, also the
+	 *         deleted ones
+	 */
+	public List<TripEntity> list(long carId, String username, OffsetDateTime from, OffsetDateTime until)
+	{
+		Map<String, Object> params = new HashMap<>();
+		String query = "from trip t join fetch t.driver where t.car.id = :carId and "
+				+ CarAccess.condition("t.car", Action.READ);
+		params.put("carId", carId);
+		params.put(CarAccess.USER, username);
+		if (from != null)
+		{
+			query += " and t.startedAt >= :from";
+			params.put("from", from);
+		}
+		if (until != null)
+		{
+			query += " and t.startedAt < :until";
+			params.put("until", until);
+		}
+		return list(query + " order by t.startedAt, t.id", params);
+	}
+
+	/**
 	 * @return the years with trips, the latest first
 	 */
 	public List<Integer> years(long carId, String username)

@@ -335,4 +335,32 @@ test.describe.serial('trips', () => {
     const added = (await trips()).find((trip) => trip.startOdometer === 19900);
     expect(new Date(added!.startedAt).getTime()).toBe(start.getTime());
   });
+
+  test('exports the trip log as PDF and CSV', async ({ page }) => {
+    await openTrips(page);
+    await page.getByRole('button', { name: 'Export' }).click();
+    const dialog = page.getByRole('dialog');
+    const year = `${new Date().getFullYear()}`;
+    await expect(dialog.getByRole('combobox', { name: 'Period' })).toHaveText(
+      year,
+    );
+
+    const [pdf] = await Promise.all([
+      page.waitForEvent('download'),
+      dialog.getByRole('link', { name: 'PDF' }).click(),
+    ]);
+    expect(pdf.suggestedFilename()).toBe(`e2e-trips-trips-${year}.pdf`);
+
+    const [csv] = await Promise.all([
+      page.waitForEvent('download'),
+      dialog.getByRole('link', { name: 'CSV' }).click(),
+    ]);
+    const { readFile } = await import('node:fs/promises');
+    const lines = (await readFile((await csv.path())!, 'utf-8'))
+      .trim()
+      .split('\n');
+    // the header and every trip, also the deleted one
+    expect(lines).toHaveLength((await trips()).length + 1);
+    expect(lines.some((line) => line.endsWith(',Entered twice'))).toBe(true);
+  });
 });
