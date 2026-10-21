@@ -178,6 +178,8 @@ with the role `user`, the roles are missing in the tokens of the client.
   (`Authorization: Bearer …`), e.g. of a script deciding car requests. See [Service accounts](#service-accounts).
 - **GPS trackers**: a tracker in the car (e.g. an ESP32) sends its points to `/api/device/points` with its own token,
   not with the login. See [GPS_TRACKER.md](GPS_TRACKER.md).
+- **Map**: `carLedger.map.styleUrl` shows the GPS tracks on a map, from a MapLibre style of an own tile server or a
+  provider; its origin is allowed in the CSP. See [GPS_TRACKER.md](GPS_TRACKER.md#map).
 - **E-mail**: `carLedger.mail.host` sends notifications by e-mail, see [E-mail](#e-mail).
 - **Push**: the notifications reach the browsers as push messages, on by default, see [Push](#push).
 - **Self-signed certificates**: the app trusts the CA of the ingresses and further certificates for its own HTTPS
@@ -403,6 +405,10 @@ kubectl set env deployment/car-ledger QUARKUS_FLYWAY_IGNORE_FUTURE_MIGRATIONS=tr
 - **GPS trackers** (0.7.0): the owner of a car creates trackers for it, each with its own token; a tracker sends its
   points to `/api/device/points` (migration 1.18.0). A proxy in front must pass the header `Authorization` on that
   path. Nothing to set up, see [GPS_TRACKER.md](GPS_TRACKER.md).
+- **Map** (0.7.0, optional): with `carLedger.map.styleUrl` the cars with a tracker get the tab *Map* with their tracks.
+  The browser loads the style and the tiles from there, see [GPS_TRACKER.md](GPS_TRACKER.md#map). The CSP of the
+  app is set by the app itself now (not by `quarkus.http.filter`); a proxy that sets its own CSP must allow the origins
+  of the map as well.
 - **Trip log** (0.6.0): trips with start and end odometer (Fahrtenbuch), turned on per car in *Edit car* (migration
   1.16.0 turns it on for cars with trips). Starting and finishing work offline as well; the app keeps the open trip
   and the minimum odometer on the device. A wrong trip is deleted with a reason by the owner of the car: it stays

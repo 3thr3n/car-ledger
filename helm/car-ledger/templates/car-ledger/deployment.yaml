@@ -130,6 +130,16 @@ spec:
             {{- end }}
             {{- end }}
             {{- end }}
+            {{- with .Values.carLedger.map }}
+            {{- if .styleUrl }}
+            - name: CARLEDGER_MAP_STYLE_URL
+              value: {{ .styleUrl | quote }}
+            {{- if .sources }}
+            - name: CARLEDGER_MAP_SOURCES
+              value: {{ join "," .sources | quote }}
+            {{- end }}
+            {{- end }}
+            {{- end }}
             {{- with .Values.carLedger.webhook }}
             {{- if .url }}
             - name: CARLEDGER_WEBHOOK_URL

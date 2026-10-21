@@ -186,6 +186,7 @@ car:
   tabs:
     overview: "Übersicht"
     trips: "Fahrten"
+    track: "Karte"
     reminders: "Erinnerungen"
   overview:
     totalCost: "Gesamtkosten"
@@ -299,6 +300,21 @@ tracker:
   revoked: "Tracker widerrufen"
   errors:
     name: "Bitte gib einen Namen ein"
+
+track:
+  title: "GPS-Strecken"
+  subtitle: "Die Strecken der GPS-Tracker dieses Autos"
+  summary_one: "{{distance}} GPS-Strecke in {{count}} Abschnitt"
+  summary_other: "{{distance}} GPS-Strecke in {{count}} Abschnitten"
+  earlier: "Früher"
+  later: "Später"
+  empty: "Keine Strecke in diesem Zeitraum."
+  tooLong: "Bitte wähle höchstens {{days}} Tage."
+  speed: "Geschwindigkeit ({{unit}})"
+  legendLabel: "Geschwindigkeit von {{from}} {{unit}} (hell) bis {{to}} {{unit}} (dunkel)"
+  noSpeed: "Keine Geschwindigkeit"
+  notSetUp: "Die Karte ist nicht eingerichtet"
+  notSetUpText: "Der Betreiber von CarLedger richtet einen Kartenserver ein, siehe docs/GPS_TRACKER.md."
 
 attachments:
   title: "Belege und Dateien"

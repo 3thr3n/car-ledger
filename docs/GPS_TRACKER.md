@@ -55,6 +55,31 @@ The last contact of a tracker (`lastSeenAt`) is updated at most once per minute.
 
 As environment variables: `CARLEDGER_TRACKER_RATE_LIMIT`, `CARLEDGER_TRACKER_MAX_BATCH`.
 
+## Map
+
+The tab *Map* of a car shows its tracks of a day or a period of at most 31 days, colored by speed (light: slow, dark:
+fast, 0 to 160 km/h). It appears for cars with a tracker once a map is set up:
+
+| Property                  | Helm value               | Meaning                                                                       |
+|---------------------------|--------------------------|-------------------------------------------------------------------------------|
+| `carledger.map.style-url` | `carLedger.map.styleUrl` | URL of a MapLibre style (`style.json`); without one the map is hidden         |
+| `carledger.map.sources`   | `carLedger.map.sources`  | further origins of tiles, glyphs or sprites, e.g. `https://tiles.example.com` |
+
+The browser loads the style and the tiles itself, CarLedger only adds their origins to its Content Security Policy:
+the origin of the style URL always, the further sources if the style loads from other hosts. Anything that isn't an
+origin (`https://host[:port]`) is left out with a warning in the log.
+
+Examples (check the terms of use of the provider):
+
+- [OpenFreeMap](https://openfreemap.org): `https://tiles.openfreemap.org/styles/liberty`, free and without a key,
+  used in dev mode
+- [MapTiler](https://www.maptiler.com): `https://api.maptiler.com/maps/streets-v2/style.json?key=<key>`
+- An own server, e.g. [Martin](https://martin.maplibre.org) or [tileserver-gl](https://github.com/maptiler/tileserver-gl)
+  with an OpenStreetMap extract
+
+The public tile servers of OpenStreetMap (`tile.openstreetmap.org`) aren't meant for apps like this and provide no
+MapLibre style.
+
 ## Not in the OpenAPI spec
 
 `/api/device/**` isn't part of `openapi.json` and the generated client of the frontend: the package

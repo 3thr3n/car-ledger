@@ -186,6 +186,7 @@ car:
   tabs:
     overview: "Overview"
     trips: "Trips"
+    track: "Map"
     reminders: "Reminders"
   overview:
     totalCost: "Total cost"
@@ -299,6 +300,21 @@ tracker:
   revoked: "Tracker revoked"
   errors:
     name: "Please enter a name"
+
+track:
+  title: "GPS tracks"
+  subtitle: "The tracks of the GPS trackers of this car"
+  summary_one: "{{distance}} GPS distance in {{count}} section"
+  summary_other: "{{distance}} GPS distance in {{count}} sections"
+  earlier: "Earlier"
+  later: "Later"
+  empty: "No track in this period."
+  tooLong: "Please choose at most {{days}} days."
+  speed: "Speed ({{unit}})"
+  legendLabel: "Speed from {{from}} {{unit}} (light) to {{to}} {{unit}} (dark)"
+  noSpeed: "No speed"
+  notSetUp: "The map is not set up"
+  notSetUpText: "The operator of CarLedger sets up a map server, see docs/GPS_TRACKER.md."
 
 attachments:
   title: "Receipts and files"
