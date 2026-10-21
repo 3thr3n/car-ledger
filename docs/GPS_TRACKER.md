@@ -11,7 +11,7 @@ SHA-256 of it. A lost token can't be shown again: revoke the tracker and create 
 The token works only for `/api/device/**`, never for the rest of the API, and the login of a user doesn't work there.
 A revoked tracker gets 401, its points stay.
 
-The trackers of a car are managed in the API of the users (the page in the app follows):
+The owner manages the trackers in *Edit car* → *GPS trackers*, scripts can use the API of the users:
 
 | Request                                  | Answer                                                         |
 |------------------------------------------|----------------------------------------------------------------|
