@@ -176,6 +176,8 @@ with the role `user`, the roles are missing in the tokens of the client.
   signature comes from `carLedger.webhook.existingSecret`. See [WEBHOOKS.md](WEBHOOKS.md).
 - **Service accounts**: besides the login of the browser, the API accepts access tokens of the identity provider
   (`Authorization: Bearer …`), e.g. of a script deciding car requests. See [Service accounts](#service-accounts).
+- **GPS trackers**: a tracker in the car (e.g. an ESP32) sends its points to `/api/device/points` with its own token,
+  not with the login. See [GPS_TRACKER.md](GPS_TRACKER.md).
 - **E-mail**: `carLedger.mail.host` sends notifications by e-mail, see [E-mail](#e-mail).
 - **Push**: the notifications reach the browsers as push messages, on by default, see [Push](#push).
 - **Self-signed certificates**: the app trusts the CA of the ingresses and further certificates for its own HTTPS
@@ -356,6 +358,7 @@ Use the image of a release (a git tag of `main`) or a dev build of `develop`. On
 | 1.15.0    | Id of the client for new entries, a request sent again (offline queue) doesn't create an entry twice (0.6.0)         |
 | 1.16.0    | Trip log per car (off), on for the cars with trips (0.6.0)                                                           |
 | 1.17.0    | Trips are deleted with a reason and stay listed, a trigger allows only that change (0.6.0)                           |
+| 1.18.0    | Tables for the GPS trackers of the cars and their track points (0.7.0)                                               |
 
 An older image refuses to start on the migrated database, as Flyway finds migrations it does not know. To go back,
 restore the backup. Without the backup, the older image runs on the migrated database (the new columns have defaults)
@@ -397,6 +400,9 @@ kubectl set env deployment/car-ledger QUARKUS_FLYWAY_IGNORE_FUTURE_MIGRATIONS=tr
 - **License** (0.6.0): CarLedger is licensed under the AGPL-3.0 from 0.6.0 on, the releases up to 0.5.x stay under
   MIT. Running it, also for others, needs nothing; whoever runs a **modified** version for other users has to offer
   them its source code, e.g. by changing the link to the source in the settings and on the start page.
+- **GPS trackers** (0.7.0): the owner of a car creates trackers for it, each with its own token; a tracker sends its
+  points to `/api/device/points` (migration 1.18.0). A proxy in front must pass the header `Authorization` on that
+  path. Nothing to set up, see [GPS_TRACKER.md](GPS_TRACKER.md).
 - **Trip log** (0.6.0): trips with start and end odometer (Fahrtenbuch), turned on per car in *Edit car* (migration
   1.16.0 turns it on for cars with trips). Starting and finishing work offline as well; the app keeps the open trip
   and the minimum odometer on the device. A wrong trip is deleted with a reason by the owner of the car: it stays

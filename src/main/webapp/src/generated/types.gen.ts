@@ -291,6 +291,23 @@ export type DashboardStats = {
     hiLo?: HiLoStats;
 };
 
+export type Device = {
+    id: number;
+    name: string;
+    createdAt: OffsetDateTime;
+    lastSeenAt?: OffsetDateTime;
+    revokedAt?: OffsetDateTime;
+};
+
+export type DeviceCreated = {
+    device: Device;
+    token: string;
+};
+
+export type DeviceInput = {
+    name?: string;
+};
+
 export enum EnergyType {
     PETROL = 'PETROL',
     DIESEL = 'DIESEL',
@@ -2483,6 +2500,78 @@ export type GetMonthlyStatsResponses = {
 };
 
 export type GetMonthlyStatsResponse = GetMonthlyStatsResponses[keyof GetMonthlyStatsResponses];
+
+export type GetTrackersData = {
+    body?: never;
+    path: {
+        carId: number;
+    };
+    query?: never;
+    url: '/api/tracker/{carId}';
+};
+
+export type GetTrackersResponses = {
+    /**
+     * OK
+     */
+    200: Array<Device>;
+};
+
+export type GetTrackersResponse = GetTrackersResponses[keyof GetTrackersResponses];
+
+export type AddTrackerData = {
+    body: DeviceInput;
+    path: {
+        carId: number;
+    };
+    query?: never;
+    url: '/api/tracker/{carId}';
+};
+
+export type AddTrackerErrors = {
+    /**
+     * Validation failed, please check the response
+     */
+    400: Array<unknown>;
+    /**
+     * Car is not for your user.
+     */
+    404: unknown;
+};
+
+export type AddTrackerError = AddTrackerErrors[keyof AddTrackerErrors];
+
+export type AddTrackerResponses = {
+    201: DeviceCreated;
+};
+
+export type AddTrackerResponse = AddTrackerResponses[keyof AddTrackerResponses];
+
+export type RevokeTrackerData = {
+    body?: never;
+    path: {
+        carId: number;
+        id: number;
+    };
+    query?: never;
+    url: '/api/tracker/{carId}/{id}/revoke';
+};
+
+export type RevokeTrackerErrors = {
+    /**
+     * Tracker not found for the car of your user.
+     */
+    404: unknown;
+};
+
+export type RevokeTrackerResponses = {
+    /**
+     * OK
+     */
+    200: Device;
+};
+
+export type RevokeTrackerResponse = RevokeTrackerResponses[keyof RevokeTrackerResponses];
 
 export type GetTripsData = {
     body?: never;

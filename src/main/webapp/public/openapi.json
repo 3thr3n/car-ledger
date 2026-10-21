@@ -817,6 +817,49 @@
           }
         }
       },
+      "Device" : {
+        "type" : "object",
+        "required" : [ "id", "name", "createdAt" ],
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "createdAt" : {
+            "type" : "string",
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          },
+          "lastSeenAt" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          },
+          "revokedAt" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          }
+        }
+      },
+      "DeviceCreated" : {
+        "type" : "object",
+        "required" : [ "device", "token" ],
+        "properties" : {
+          "device" : {
+            "$ref" : "#/components/schemas/Device"
+          },
+          "token" : {
+            "type" : "string"
+          }
+        }
+      },
+      "DeviceInput" : {
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          }
+        }
+      },
       "EnergyType" : {
         "type" : "string",
         "enum" : [ "PETROL", "DIESEL", "LPG", "CNG", "ELECTRIC", "PLUG_IN_HYBRID" ]
@@ -4895,6 +4938,128 @@
         },
         "summary" : "Get Monthly Stats",
         "tags" : [ "Stats Resource" ]
+      }
+    },
+    "/api/tracker/{carId}" : {
+      "get" : {
+        "description" : "GPS trackers of a car, the newest first. Empty for a car that isn't yours.",
+        "operationId" : "getTrackers",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/Device"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary" : "Get Trackers",
+        "tags" : [ "Tracker Resource" ]
+      },
+      "put" : {
+        "description" : "Creates a GPS tracker. The answer contains its token, it can't be shown again.",
+        "operationId" : "addTracker",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/DeviceInput"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DeviceCreated"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed, please check the response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Car is not for your user."
+          }
+        },
+        "summary" : "Add Tracker",
+        "tags" : [ "Tracker Resource" ]
+      }
+    },
+    "/api/tracker/{carId}/{id}/revoke" : {
+      "post" : {
+        "description" : "The token of the tracker stops working, its points stay.",
+        "operationId" : "revokeTracker",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Device"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Tracker not found for the car of your user."
+          }
+        },
+        "summary" : "Revoke Tracker",
+        "tags" : [ "Tracker Resource" ]
       }
     },
     "/api/trip/{carId}" : {
