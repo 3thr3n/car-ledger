@@ -57,8 +57,8 @@ As environment variables: `CARLEDGER_TRACKER_RATE_LIMIT`, `CARLEDGER_TRACKER_MAX
 
 ## Map
 
-The tab *Map* of a car shows its tracks of a day or a period of at most 31 days, colored by speed (light: slow, dark:
-fast, 0 to 160 km/h). It appears for cars with a tracker once a map is set up:
+The tab *Map* of a car shows its tracks of a day or a period of at most 31 days, colored by speed (orange: slow, dark
+blue: fast, 0 to 160 km/h). It appears for cars with a tracker once a map is set up:
 
 | Property                  | Helm value               | Meaning                                                                       |
 |---------------------------|--------------------------|-------------------------------------------------------------------------------|

@@ -3,16 +3,19 @@ import type { Feature, FeatureCollection, LineString, Point } from 'geojson';
 import type { TrackPoint } from '@/generated';
 
 /**
- * Speed is a magnitude: one hue from light (slow) to dark (fast), not a
- * rainbow, so the order reads without color vision. The scale is fixed in km/h
- * so that tracks are comparable. The lightest step stays visible on the map
- * with the white casing below the line.
+ * Speed is a magnitude: the plasma scale, orange (slow) over magenta and
+ * violet to dark blue (fast). One hue alone was too faint on the map; plasma
+ * changes the hue as well, keeps the lightness falling (the order reads without
+ * color vision) and differs from the colors of the map. The steps are closer at
+ * low speeds, where city driving is. The scale is fixed in km/h so that tracks
+ * are comparable.
  */
 export const SPEED_STOPS = [
-  { kmh: 0, color: '#86b6ef' },
-  { kmh: 50, color: '#3987e5' },
-  { kmh: 100, color: '#1c5cab' },
-  { kmh: 160, color: '#0d366b' },
+  { kmh: 0, color: '#fca636' },
+  { kmh: 30, color: '#e16462' },
+  { kmh: 60, color: '#b12a90' },
+  { kmh: 100, color: '#6a00a8' },
+  { kmh: 160, color: '#0d0887' },
 ] as const;
 
 export const MAX_SPEED = SPEED_STOPS[SPEED_STOPS.length - 1].kmh;
