@@ -15,7 +15,9 @@ import de.codeflowwizardry.carledger.TripService;
 import de.codeflowwizardry.carledger.TripService.Started;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.rest.AbstractResource;
+import de.codeflowwizardry.carledger.rest.car.track.Track;
 import de.codeflowwizardry.carledger.rest.records.BillPaged;
+import de.codeflowwizardry.carledger.tracker.TrackService;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -28,12 +30,15 @@ import jakarta.ws.rs.core.Response;
 public class TripResource extends AbstractResource
 {
 	private final TripService tripService;
+	private final TrackService trackService;
 
 	@Inject
-	public TripResource(SecurityIdentity identity, AccountRepository accountRepository, TripService tripService)
+	public TripResource(SecurityIdentity identity, AccountRepository accountRepository, TripService tripService,
+			TrackService trackService)
 	{
 		super(identity, accountRepository);
 		this.tripService = tripService;
+		this.trackService = trackService;
 	}
 
 	@GET
@@ -78,6 +83,17 @@ public class TripResource extends AbstractResource
 	public Trip getTrip(@PathParam("carId") long carId, @PathParam("id") UUID id)
 	{
 		return tripService.get(carId, id, context.getName());
+	}
+
+	@GET
+	@Path("{id}/track")
+	@Produces(MediaType.APPLICATION_JSON)
+	@Operation(operationId = "getTripTrack", description = "GPS track during the trip (until now while it is open), also of a deleted trip. Only a hint next to the odometers, without points the segments are empty.")
+	@APIResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = Track.class)))
+	@APIResponse(responseCode = "404", description = "Trip not found for the car of your user.")
+	public Track getTripTrack(@PathParam("carId") long carId, @PathParam("id") UUID id)
+	{
+		return trackService.tripTrack(carId, id, context.getName());
 	}
 
 	@PUT

@@ -5,7 +5,10 @@ import static org.hamcrest.Matchers.*;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,6 +16,7 @@ import org.junit.jupiter.api.Test;
 
 import de.codeflowwizardry.carledger.data.AccountEntity;
 import de.codeflowwizardry.carledger.data.CarEntity;
+import de.codeflowwizardry.carledger.data.TripType;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import de.codeflowwizardry.carledger.data.repository.TrackPointRepository;
@@ -23,6 +27,9 @@ import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
+import io.restassured.http.ContentType;
+import io.restassured.response.ValidatableResponse;
+import io.restassured.specification.RequestSpecification;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
@@ -84,6 +91,7 @@ class TrackResourceTest
 		CarEntity car = new CarEntity();
 		car.setUser(account);
 		car.setName(name);
+		car.setTripLog(true);
 		carRepository.persist(car);
 		return car.getId();
 	}
@@ -247,6 +255,107 @@ class TrackResourceTest
 				.queryParam("to", START.plusHours(1).toString())
 				.when()
 				.get()
+				.then()
+				.statusCode(404);
+	}
+
+	/** requests to the trips of the car, not to the track of TrackResource */
+	private static RequestSpecification trips(long car)
+	{
+		return given().basePath("/api/trip/{carId}").pathParam("carId", car);
+	}
+
+	private UUID pastTrip(OffsetDateTime start, OffsetDateTime end)
+	{
+		UUID id = UUID.randomUUID();
+		Map<String, Object> body = new HashMap<>();
+		body.put("type", TripType.PRIVATE);
+		body.put("startOdometer", 100);
+		body.put("startedAt", start.toString());
+		body.put("endOdometer", 101);
+		body.put("endedAt", end.toString());
+		trips(carId)
+				.contentType(ContentType.JSON)
+				.body(body)
+				.when()
+				.put("{id}/past", id)
+				.then()
+				.statusCode(201);
+		return id;
+	}
+
+	private ValidatableResponse tripTrack(UUID id)
+	{
+		return trips(carId)
+				.when()
+				.get("{id}/track", id)
+				.then();
+	}
+
+	@Test
+	void shouldReturnTheTrackDuringATrip()
+	{
+		drive(0, 101, 50);
+		UUID id = pastTrip(START.plusSeconds(10), START.plusSeconds(50));
+
+		// the end of the trip is part of it
+		tripTrack(id)
+				.statusCode(200)
+				.body("points", is(41))
+				.body("segments[0][0].ts", is("2026-10-20T08:00:10Z"))
+				.body("segments[0][-1].ts", is("2026-10-20T08:00:50Z"))
+				.body("distance", is(0.42f));
+	}
+
+	@Test
+	void shouldReturnTheTrackOfAnOpenTripUntilNow()
+	{
+		drive(0, 101, 50);
+		UUID id = UUID.randomUUID();
+		trips(carId)
+				.contentType(ContentType.JSON)
+				.body(Map.of("type", TripType.PRIVATE, "startOdometer", 100, "startedAt",
+						START.plusSeconds(60).toString()))
+				.when()
+				.put("{id}", id)
+				.then()
+				.statusCode(201);
+
+		tripTrack(id).statusCode(200).body("points", is(41));
+	}
+
+	@Test
+	void shouldReturnTheTrackOfADeletedTrip()
+	{
+		drive(0, 101, 50);
+		UUID id = pastTrip(START.plusSeconds(10), START.plusSeconds(50));
+		trips(carId)
+				.contentType(ContentType.JSON)
+				.body(Map.of("reason", "Wrong car"))
+				.when()
+				.post("{id}/delete", id)
+				.then()
+				.statusCode(200);
+
+		tripTrack(id).statusCode(200).body("points", is(41));
+	}
+
+	@Test
+	void shouldReturnAnEmptyTrackOfATripWithoutPoints()
+	{
+		UUID id = pastTrip(START.plusSeconds(10), START.plusSeconds(50));
+
+		tripTrack(id).statusCode(200).body("points", is(0)).body("segments", empty());
+	}
+
+	@Test
+	void shouldNotReturnTheTrackOfATripOfAnotherCar()
+	{
+		UUID id = pastTrip(START.plusSeconds(10), START.plusSeconds(50));
+
+		trips(otherCarId)
+				.when()
+				.get("{id}/track", id)
 				.then()
 				.statusCode(404);
 	}

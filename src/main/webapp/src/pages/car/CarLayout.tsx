@@ -13,16 +13,13 @@ import ArrowBackRounded from '@mui/icons-material/ArrowBackRounded';
 import { useQuery } from '@tanstack/react-query';
 import { Outlet, useLocation } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
-import {
-  getMapSettingsOptions,
-  getMyCarOptions,
-  getTrackersOptions,
-} from '@/generated/@tanstack/react-query.gen';
+import { getMyCarOptions } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
 import { BackendError } from '@/utils/BackendError';
 import { BillType, EnergyType } from '@/generated';
 import { billTypes, billTypesFor } from '@/utils/billTypes';
 import CarAvatar from '@/components/layout/CarAvatar';
+import useTrackMap from '@/components/track/useTrackMap';
 import OdometerValue from '@/components/ui/OdometerValue';
 import {
   RouterButton,
@@ -63,14 +60,7 @@ export default function CarLayout({ id }: { id: number }) {
     isError,
     error,
   } = useQuery(getMyCarOptions({ client: localClient, path: { id } }));
-  const { data: mapSettings } = useQuery(
-    getMapSettingsOptions({ client: localClient }),
-  );
-  const { data: trackers } = useQuery({
-    ...getTrackersOptions({ client: localClient, path: { carId: id } }),
-    enabled: !!mapSettings?.styleUrl,
-  });
-  const showMap = !!mapSettings?.styleUrl && !!trackers?.length;
+  const showMap = !!useTrackMap(id);
 
   if (isError) {
     if (error instanceof BackendError && error.status === 404) {

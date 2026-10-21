@@ -2885,6 +2885,32 @@ export type AddPastTripResponses = {
 
 export type AddPastTripResponse = AddPastTripResponses[keyof AddPastTripResponses];
 
+export type GetTripTrackData = {
+    body?: never;
+    path: {
+        carId: number;
+        id: Uuid;
+    };
+    query?: never;
+    url: '/api/trip/{carId}/{id}/track';
+};
+
+export type GetTripTrackErrors = {
+    /**
+     * Trip not found for the car of your user.
+     */
+    404: unknown;
+};
+
+export type GetTripTrackResponses = {
+    /**
+     * OK
+     */
+    200: Track;
+};
+
+export type GetTripTrackResponse = GetTripTrackResponses[keyof GetTripTrackResponses];
+
 export type DeleteMyselfData = {
     body?: never;
     path?: never;

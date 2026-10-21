@@ -8,12 +8,14 @@ const LAT_PER_METER = 1 / 111_195;
 test.describe.serial('GPS track', () => {
   let page: Page;
   let carId: number;
+  /** time of the first point */
+  let start: number;
 
   test.beforeAll(async ({ browser }) => {
     await deleteAllCars();
     const api = await aliceApi();
     const created = await api.put('/api/car/my', {
-      data: { name: 'E2E Polo', year: 2020, odometer: 50000 },
+      data: { name: 'E2E Polo', year: 2020, odometer: 50000, tripLog: true },
     });
     expect(created.ok()).toBeTruthy();
     const cars = (await (await api.get('/api/car/my')).json()) as {
@@ -43,7 +45,7 @@ test.describe.serial('GPS track', () => {
     await api.dispose();
 
     // 11 points in the last minute, 10 m apart to the north, faster and faster
-    const start = Date.now() - 60_000;
+    start = Date.now() - 60_000;
     const device = await request.newContext({ baseURL: API_URL });
     const sent = await device.post('/api/device/points', {
       headers: { Authorization: `Bearer ${token}` },
@@ -82,5 +84,35 @@ test.describe.serial('GPS track', () => {
 
     await expect(page.getByText('No track in this period.')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Later' })).toBeEnabled();
+  });
+
+  test('shows the track of a trip next to its odometer distance', async () => {
+    const api = await aliceApi();
+    const trip = await api.put(
+      `/api/trip/${carId}/${crypto.randomUUID()}/past`,
+      {
+        data: {
+          type: 'PRIVATE',
+          startOdometer: 50000,
+          startedAt: new Date(start - 1000).toISOString(),
+          endOdometer: 50001,
+          endedAt: new Date(start + 11_000).toISOString(),
+        },
+      },
+    );
+    expect(trip.status()).toBe(201);
+    await api.dispose();
+
+    await page.getByRole('tab', { name: 'Trips' }).click();
+    const show = page.getByRole('button', { name: 'Show GPS track' });
+    await show.click();
+    await expect(show).toHaveAttribute('aria-expanded', 'true');
+
+    const track = page.getByTestId('trip-track');
+    await expect(track).toContainText('GPS distance 0.1 km · by odometer 1 km');
+    await expect(track).toContainText('Only a hint');
+    await expect(
+      track.getByTestId('track-map').locator('canvas'),
+    ).toBeVisible();
   });
 });

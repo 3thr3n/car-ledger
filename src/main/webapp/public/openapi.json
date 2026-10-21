@@ -5637,6 +5637,45 @@
         "tags" : [ "Trip Resource" ]
       }
     },
+    "/api/trip/{carId}/{id}/track" : {
+      "get" : {
+        "description" : "GPS track during the trip (until now while it is open), also of a deleted trip. Only a hint next to the odometers, without points the segments are empty.",
+        "operationId" : "getTripTrack",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/UUID"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Track"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Trip not found for the car of your user."
+          }
+        },
+        "summary" : "Get Trip Track",
+        "tags" : [ "Trip Resource" ]
+      }
+    },
     "/api/user/me" : {
       "get" : {
         "operationId" : "getMyself",
