@@ -27,8 +27,9 @@ export default defineConfig({
       injectManifest: {
         globPatterns: ['**/*.{js,css,html,svg,png,ico,woff2}'],
         // the spec of the API is no part of the app, the flags are loaded when
-        // the list of the countries is opened
-        globIgnores: ['openapi.json', 'assets/flags/**'],
+        // the list of the countries is opened, the map (MapLibre, 1 MB) when
+        // it is shown: it needs a connection for its tiles anyway
+        globIgnores: ['openapi.json', 'assets/flags/**', 'assets/TrackMap-*'],
       },
       manifest: {
         name: 'CarLedger',

@@ -58,6 +58,14 @@ carLedger:
     secretKey: "webhook-secret"
     # event types to send, all without a list, e.g. [car-request.created, car-request.decided]
     events: []
+  # map of the GPS tracks (see docs/GPS_TRACKER.md): the browser loads a MapLibre style and its tiles,
+  # e.g. of an own tile server or of a provider with a key. Without a styleUrl the map is hidden
+  map:
+    # e.g. https://tiles.openfreemap.org/styles/liberty or https://api.maptiler.com/maps/streets-v2/style.json?key=…
+    styleUrl:
+    # further origins the style loads tiles, glyphs or sprites from, e.g. ["https://tiles.example.com"];
+    # the origin of the styleUrl is allowed anyway
+    sources: []
   # notifications as push messages to the browsers that turn them on in the settings (see
   # docs/DEPLOYMENT.md#push). Needs no other service: the chart generates the key of the server
   # into the secret car-ledger-push and keeps it, a new key ends all subscriptions

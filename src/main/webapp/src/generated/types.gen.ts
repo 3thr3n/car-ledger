@@ -385,6 +385,10 @@ export type MaintenanceBillInput = {
     workshop?: string;
 };
 
+export type MapSettings = {
+    styleUrl?: string;
+};
+
 export type MaxCarsInput = {
     maxCars?: number;
 };
@@ -2329,6 +2333,22 @@ export type GetCsvFieldsResponses = {
 };
 
 export type GetCsvFieldsResponse = GetCsvFieldsResponses[keyof GetCsvFieldsResponses];
+
+export type GetMapSettingsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/map';
+};
+
+export type GetMapSettingsResponses = {
+    /**
+     * OK
+     */
+    200: MapSettings;
+};
+
+export type GetMapSettingsResponse = GetMapSettingsResponses[keyof GetMapSettingsResponses];
 
 export type GetRemindersData = {
     body?: never;

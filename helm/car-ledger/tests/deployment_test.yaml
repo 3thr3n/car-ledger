@@ -211,6 +211,30 @@ tests:
       - failedTemplate:
           errorPattern: carLedger.mail.existingSecret is needed with carLedger.mail.username
 
+  - it: shows the map with a style
+    set:
+      carLedger.map.styleUrl: https://maps.example.com/style.json?key=abc
+      carLedger.map.sources: [https://tiles.example.com, https://glyphs.example.com]
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: CARLEDGER_MAP_STYLE_URL
+            value: https://maps.example.com/style.json?key=abc
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: CARLEDGER_MAP_SOURCES
+            value: https://tiles.example.com,https://glyphs.example.com
+
+  - it: hides the map without a style
+    asserts:
+      - notContains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: CARLEDGER_MAP_STYLE_URL
+          any: true
+
   - it: sends webhooks with a URL, signed with the secret
     set:
       carLedger.webhook.url: https://hooks.example.com/car-ledger

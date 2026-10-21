@@ -13,7 +13,11 @@ import ArrowBackRounded from '@mui/icons-material/ArrowBackRounded';
 import { useQuery } from '@tanstack/react-query';
 import { Outlet, useLocation } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
-import { getMyCarOptions } from '@/generated/@tanstack/react-query.gen';
+import {
+  getMapSettingsOptions,
+  getMyCarOptions,
+  getTrackersOptions,
+} from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
 import { BackendError } from '@/utils/BackendError';
 import { BillType, EnergyType } from '@/generated';
@@ -30,20 +34,21 @@ import ErrorPage from '@/pages/ErrorPage';
 
 /**
  * The entry types of the car between the overview and the reminders, the trips
- * only with the trip log
+ * only with the trip log, the map only with a GPS tracker and a map set up
  */
-const tabsFor = (energyType?: EnergyType, tripLog?: boolean) => [
+const tabsFor = (energyType?: EnergyType, tripLog?: boolean, map?: boolean) => [
   { key: 'overview', to: '/car/$id' } as const,
   ...billTypesFor(energyType).map((meta) => ({
     key: meta.type,
     to: meta.listRoute,
   })),
   ...(tripLog ? [{ key: 'trips', to: '/car/$id/trips' } as const] : []),
+  ...(map ? [{ key: 'track', to: '/car/$id/track' } as const] : []),
   { key: 'reminders', to: '/car/$id/reminders' } as const,
 ];
 
 /** the tabs of the car that are no entry type */
-const pageTabs = ['overview', 'trips', 'reminders'] as const;
+const pageTabs = ['overview', 'trips', 'track', 'reminders'] as const;
 type PageTab = (typeof pageTabs)[number];
 const isPageTab = (key: string): key is PageTab =>
   (pageTabs as readonly string[]).includes(key);
@@ -58,6 +63,14 @@ export default function CarLayout({ id }: { id: number }) {
     isError,
     error,
   } = useQuery(getMyCarOptions({ client: localClient, path: { id } }));
+  const { data: mapSettings } = useQuery(
+    getMapSettingsOptions({ client: localClient }),
+  );
+  const { data: trackers } = useQuery({
+    ...getTrackersOptions({ client: localClient, path: { carId: id } }),
+    enabled: !!mapSettings?.styleUrl,
+  });
+  const showMap = !!mapSettings?.styleUrl && !!trackers?.length;
 
   if (isError) {
     if (error instanceof BackendError && error.status === 404) {
@@ -71,7 +84,9 @@ export default function CarLayout({ id }: { id: number }) {
   const activeTab =
     rest === ''
       ? 'overview'
-      : rest === '/reminders' || (rest === '/trips' && car?.tripLog)
+      : rest === '/reminders' ||
+          (rest === '/trips' && car?.tripLog) ||
+          (rest === '/track' && showMap)
         ? (rest.slice(1) as PageTab)
         : (Object.values(BillType).find(
             (type) => rest === `/bill/${type.toLowerCase()}`,
@@ -184,7 +199,7 @@ export default function CarLayout({ id }: { id: number }) {
               allowScrollButtonsMobile
               sx={{ mb: 3, borderBottom: 1, borderColor: 'divider' }}
             >
-              {tabsFor(car?.energyType, car?.tripLog).map((tab) => (
+              {tabsFor(car?.energyType, car?.tripLog, showMap).map((tab) => (
                 <RouterTab
                   key={tab.key}
                   value={tab.key}

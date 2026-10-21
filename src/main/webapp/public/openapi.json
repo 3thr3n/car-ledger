@@ -1055,6 +1055,14 @@
           }
         }
       },
+      "MapSettings" : {
+        "type" : "object",
+        "properties" : {
+          "styleUrl" : {
+            "type" : "string"
+          }
+        }
+      },
       "MaxCarsInput" : {
         "type" : "object",
         "properties" : {
@@ -4653,6 +4661,26 @@
         },
         "summary" : "Get Field Definitions",
         "tags" : [ "Import Resource" ]
+      }
+    },
+    "/api/map" : {
+      "get" : {
+        "description" : "Style of the map, without one the map isn't set up and hidden.",
+        "operationId" : "getMapSettings",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MapSettings"
+                }
+              }
+            }
+          }
+        },
+        "summary" : "Get Map Settings",
+        "tags" : [ "Map Resource" ]
       }
     },
     "/api/reminder/{carId}" : {
