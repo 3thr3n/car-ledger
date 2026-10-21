@@ -1527,6 +1527,51 @@
           }
         }
       },
+      "Track" : {
+        "type" : "object",
+        "required" : [ "segments", "distance", "points" ],
+        "properties" : {
+          "segments" : {
+            "type" : "array",
+            "items" : {
+              "type" : "array",
+              "items" : {
+                "$ref" : "#/components/schemas/TrackPoint"
+              }
+            }
+          },
+          "distance" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "points" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "TrackPoint" : {
+        "type" : "object",
+        "required" : [ "ts", "lat", "lon" ],
+        "properties" : {
+          "ts" : {
+            "type" : "string",
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          },
+          "lat" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "lon" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "speed" : {
+            "type" : "number",
+            "format" : "double"
+          }
+        }
+      },
       "Trip" : {
         "type" : "object",
         "required" : [ "id", "carId", "type", "startOdometer", "startedAt", "restored", "createdAt", "enteredLater" ],
@@ -4938,6 +4983,65 @@
         },
         "summary" : "Get Monthly Stats",
         "tags" : [ "Stats Resource" ]
+      }
+    },
+    "/api/track/{carId}" : {
+      "get" : {
+        "description" : "GPS track of a car in a time range of at most 31 days, simplified for the map and split into segments at gaps of more than 5 minutes.",
+        "operationId" : "getTrack",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "description" : "Start of the range, inclusive",
+          "required" : true,
+          "name" : "from",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          }
+        }, {
+          "description" : "End of the range, exclusive",
+          "required" : true,
+          "name" : "to",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Track"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Range missing, empty or too long",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Car is not for your user."
+          }
+        },
+        "summary" : "Get Track",
+        "tags" : [ "Track Resource" ]
       }
     },
     "/api/tracker/{carId}" : {

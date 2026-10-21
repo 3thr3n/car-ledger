@@ -583,6 +583,19 @@ export type TotalStats = {
     miscellaneousBills?: number;
 };
 
+export type Track = {
+    segments: Array<Array<TrackPoint>>;
+    distance: number;
+    points: number;
+};
+
+export type TrackPoint = {
+    ts: OffsetDateTime;
+    lat: number;
+    lon: number;
+    speed?: number;
+};
+
 export type Trip = {
     id: Uuid;
     carId: number;
@@ -2500,6 +2513,46 @@ export type GetMonthlyStatsResponses = {
 };
 
 export type GetMonthlyStatsResponse = GetMonthlyStatsResponses[keyof GetMonthlyStatsResponses];
+
+export type GetTrackData = {
+    body?: never;
+    path: {
+        carId: number;
+    };
+    query: {
+        /**
+         * Start of the range, inclusive
+         */
+        from: OffsetDateTime;
+        /**
+         * End of the range, exclusive
+         */
+        to: OffsetDateTime;
+    };
+    url: '/api/track/{carId}';
+};
+
+export type GetTrackErrors = {
+    /**
+     * Range missing, empty or too long
+     */
+    400: Array<unknown>;
+    /**
+     * Car is not for your user.
+     */
+    404: unknown;
+};
+
+export type GetTrackError = GetTrackErrors[keyof GetTrackErrors];
+
+export type GetTrackResponses = {
+    /**
+     * OK
+     */
+    200: Track;
+};
+
+export type GetTrackResponse = GetTrackResponses[keyof GetTrackResponses];
 
 export type GetTrackersData = {
     body?: never;
