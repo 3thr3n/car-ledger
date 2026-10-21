@@ -45,6 +45,7 @@ import NumberField from '@/components/bill/NumberField';
 import Page from '@/components/layout/Page';
 import PageHeader from '@/components/ui/PageHeader';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
+import TrackerSection from '@/components/car/TrackerSection';
 
 export interface CarFormPageProps {
   /** set when editing an existing car */
@@ -77,6 +78,7 @@ export default function CarFormPage({ id }: CarFormPageProps) {
         initial={car ?? {}}
         current={car?.currentOdometer.value}
       />
+      {id !== undefined && <TrackerSection carId={id} />}
       {id !== undefined && car && (
         <DeleteCar
           id={id}
