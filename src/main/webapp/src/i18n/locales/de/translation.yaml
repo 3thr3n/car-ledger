@@ -798,6 +798,13 @@ trip:
     beforeStart: "Nicht vor dem Start ({{time}})"
     endBeforeStart: "Nicht vor dem Start"
     endBelowStart: "Nicht unter dem Start"
+  track:
+    button: "GPS-Strecke anzeigen"
+    empty: "Keine GPS-Strecke während dieser Fahrt."
+    deleted: "Gelöschte Fahrt, ihre Kilometerstände zählen nicht."
+    distance: "GPS-Strecke {{gps}}"
+    odometer: "laut Kilometerstand {{odometer}}"
+    hint: "Nur ein Hinweis: Das Fahrtenbuch zählt die Kilometerstände."
   list:
     title: "Fahrtenbuch"
     subtitle: "Gestartete und beendete Fahrten, neueste zuerst"

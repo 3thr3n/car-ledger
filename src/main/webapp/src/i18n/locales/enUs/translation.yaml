@@ -798,6 +798,13 @@ trip:
     beforeStart: "Not before the start ({{time}})"
     endBeforeStart: "Not before the start"
     endBelowStart: "Not below the start"
+  track:
+    button: "Show GPS track"
+    empty: "No GPS track during this trip."
+    deleted: "Deleted trip, its odometers don't count."
+    distance: "GPS distance {{gps}}"
+    odometer: "by odometer {{odometer}}"
+    hint: "Only a hint: the trip log counts the odometer readings."
   list:
     title: "Trip log"
     subtitle: "Started and finished trips, newest first"

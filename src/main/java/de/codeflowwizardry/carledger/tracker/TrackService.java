@@ -4,17 +4,21 @@ import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import de.codeflowwizardry.carledger.Utils;
 import de.codeflowwizardry.carledger.data.repository.CarAccess.Action;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import de.codeflowwizardry.carledger.data.repository.TrackPointRepository;
+import de.codeflowwizardry.carledger.data.repository.TripRepository;
+import de.codeflowwizardry.carledger.data.TripEntity;
 import de.codeflowwizardry.carledger.exception.WrongUserException;
 import de.codeflowwizardry.carledger.rest.car.track.Track;
 import de.codeflowwizardry.carledger.rest.car.track.TrackPoint;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.NotFoundException;
 
 /**
  * The GPS tracks of the cars, simplified for the map
@@ -34,12 +38,15 @@ public class TrackService
 
 	private final CarRepository carRepository;
 	private final TrackPointRepository trackPointRepository;
+	private final TripRepository tripRepository;
 
 	@Inject
-	public TrackService(CarRepository carRepository, TrackPointRepository trackPointRepository)
+	public TrackService(CarRepository carRepository, TrackPointRepository trackPointRepository,
+			TripRepository tripRepository)
 	{
 		this.carRepository = carRepository;
 		this.trackPointRepository = trackPointRepository;
+		this.tripRepository = tripRepository;
 	}
 
 	/**
@@ -58,11 +65,36 @@ public class TrackService
 			throw new WrongUserException();
 		}
 
-		double tolerance = tolerance(Duration.between(from, to));
-		Collector collector = new Collector(tolerance);
+		return collect(carId, from, to);
+	}
+
+	/**
+	 * The track during a trip, from its start to its end (now while it is open),
+	 * also of a deleted trip. Only a hint next to the odometers: the trip log
+	 * doesn't depend on it. A trip left open for longer is cut after
+	 * {@link #MAX_RANGE}.
+	 */
+	@Transactional
+	public Track tripTrack(long carId, UUID tripId, String username)
+	{
+		TripEntity trip = tripRepository.find(carId, tripId, username, Action.READ)
+				.orElseThrow(() -> new NotFoundException("Trip not found"));
+		OffsetDateTime from = trip.getStartedAt();
+		OffsetDateTime end = trip.getEndedAt() != null ? trip.getEndedAt() : OffsetDateTime.now();
+		// the end is part of the trip, the range excludes its end
+		OffsetDateTime to = end.plusNanos(1_000);
+		if (Duration.between(from, to).compareTo(MAX_RANGE) > 0)
+		{
+			to = from.plus(MAX_RANGE);
+		}
+		return collect(carId, from, to);
+	}
+
+	private Track collect(long carId, OffsetDateTime from, OffsetDateTime to)
+	{
+		Collector collector = new Collector(tolerance(Duration.between(from, to)));
 		trackPointRepository.forEach(carId, from, to, collector::add);
 		collector.finish();
-
 		return new Track(collector.segments, Math.round(collector.meters / 10) / 100.0, collector.count);
 	}
 
