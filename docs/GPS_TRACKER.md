@@ -50,14 +50,18 @@ The last contact of a tracker (`lastSeenAt`) is updated at most once per minute.
 
 ## Settings
 
-| Property                         | Default | Meaning                                                             |
-|----------------------------------|---------|---------------------------------------------------------------------|
-| `carledger.tracker.rate-limit`   | 60      | requests per tracker and minute, counted per instance of the app    |
-| `carledger.tracker.max-batch`    | 500     | points per request                                                  |
-| `carledger.tracker.firmware-dir` |         | directory with a release of the firmware, see [Flashing](#flashing) |
+| Property                               | Default | Meaning                                                                      |
+|----------------------------------------|---------|------------------------------------------------------------------------------|
+| `carledger.tracker.rate-limit`         | 60      | requests per tracker and minute, counted per instance of the app             |
+| `carledger.tracker.max-batch`          | 500     | points per request                                                           |
+| `carledger.tracker.firmware-dir`       |         | directory with a release of the firmware, see [Flashing](#flashing)          |
+| `carledger.tracker.stop`               | 5M      | a drive ends after a stop this long, see [Suggested trips](#suggested-trips) |
+| `carledger.tracker.min-drive-distance` | 500     | meters a drive needs to be suggested                                         |
+| `carledger.tracker.min-drive-duration` | 2M      | how long a drive needs to be suggested                                       |
 
 As environment variables: `CARLEDGER_TRACKER_RATE_LIMIT`, `CARLEDGER_TRACKER_MAX_BATCH`,
-`CARLEDGER_TRACKER_FIRMWARE_DIR`.
+`CARLEDGER_TRACKER_FIRMWARE_DIR`, `CARLEDGER_TRACKER_STOP`, `CARLEDGER_TRACKER_MIN_DRIVE_DISTANCE`,
+`CARLEDGER_TRACKER_MIN_DRIVE_DURATION`. Durations like `5M` (minutes) or `PT90S`.
 
 ## Flashing
 
@@ -182,6 +186,27 @@ one, set it up again with a new token. The points are in the backup only for car
 car (`tracker,ts,lat,lon,speed,alt,hdop`); a car that keeps them for a while is backed up without its points, so a
 backup kept for longer doesn't keep them either. A restore takes the points that are in the file and skips invalid
 ones like the ingest.
+
+## Suggested trips
+
+With the trip log on, the tab *Trips* shows the drives of the GPS tracks without a trip as *Drives without a trip*:
+since the end of the last trip, of at most the last 7 days. GPS never adds a trip on its own: *Add as trip* opens the
+past trip, prefilled, and the user confirms or corrects it; the checks of the trip log apply. *Dismiss* hides a drive
+for good, also when it is found a little differently later. Dismissed drives are not part of the backup.
+
+- A drive ends after a stop longer than `carledger.tracker.stop`: no points (the tracker is off), or a car that stays
+  within 30 m (the drift of the GPS) while the tracker keeps sending. A red light or a jam that moves doesn't end it.
+- A drive needs a stop before it: the rest of a drive that was on the road at the end of the last trip isn't one.
+- Drives shorter than `carledger.tracker.min-drive-distance` or `carledger.tracker.min-drive-duration` (parking, GPS
+  drift) and drives overlapping a trip, also an open one, are not suggested.
+- The odometers are prefilled: the start with the highest odometer known before the drive (of the car, a maintenance
+  or a trip; the one of the car without any) or the end of the suggestion before, the end with the start and the GPS
+  distance rounded to km. Start and end are a few seconds off: the drift radius delays them.
+
+| Request                                      | Answer                                                                |
+|----------------------------------------------|-----------------------------------------------------------------------|
+| `GET /api/trip/{carId}/suggestions`          | the drives with `startedAt`, `endedAt`, `distance` and the odometers  |
+| `POST /api/trip/{carId}/suggestions/dismiss` | 204, `{"startedAt":…,"endedAt":…}` of the drive                       |
 
 ## Map
 

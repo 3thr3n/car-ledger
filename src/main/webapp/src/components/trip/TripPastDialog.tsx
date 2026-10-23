@@ -14,11 +14,11 @@ import dayjs, { Dayjs } from 'dayjs';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
-import { TripType } from '@/generated';
+import { TripSuggestion, TripType } from '@/generated';
 import NumberField from '@/components/bill/NumberField';
 import { isOfflineError } from '@/offline';
 import { useFormat } from '@/utils/format';
-import { odometerToApi } from '@/utils/units';
+import { odometerToApi, odometerToField } from '@/utils/units';
 import { DetailFields } from './TripDialogs';
 import {
   Details,
@@ -39,27 +39,46 @@ import { useTripActions } from './useTrip';
 export default function TripPastDialog({
   carId,
   open,
+  initial,
   onClose,
 }: {
   carId: number;
   open: boolean;
+  /** a drive of the GPS tracks, the user confirms or corrects it */
+  initial?: TripSuggestion;
   onClose: () => void;
 }) {
   return (
     <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
-      {open && <PastForm carId={carId} onClose={onClose} />}
+      {open && <PastForm carId={carId} initial={initial} onClose={onClose} />}
     </Dialog>
   );
 }
 
-function PastForm({ carId, onClose }: { carId: number; onClose: () => void }) {
+function PastForm({
+  carId,
+  initial,
+  onClose,
+}: {
+  carId: number;
+  initial?: TripSuggestion;
+  onClose: () => void;
+}) {
   const { t } = useTranslation();
   const { units } = useFormat();
   const [type, setType] = useState<TripType>(TripType.BUSINESS);
-  const [startedAt, setStartedAt] = useState<Dayjs | null>(null);
-  const [endedAt, setEndedAt] = useState<Dayjs | null>(null);
-  const [start, setStart] = useState<number>();
-  const [end, setEnd] = useState<number>();
+  const [startedAt, setStartedAt] = useState<Dayjs | null>(
+    initial ? dayjs(initial.startedAt) : null,
+  );
+  const [endedAt, setEndedAt] = useState<Dayjs | null>(
+    initial ? dayjs(initial.endedAt) : null,
+  );
+  const [start, setStart] = useState(() =>
+    odometerToField(units, initial?.startOdometer),
+  );
+  const [end, setEnd] = useState(() =>
+    odometerToField(units, initial?.endOdometer),
+  );
   const [details, setDetails] = useState<Details>({});
   const [touched, setTouched] = useState(false);
   const [conflict, setConflict] = useState<OdometerConflict>({});
@@ -136,7 +155,7 @@ function PastForm({ carId, onClose }: { carId: number; onClose: () => void }) {
       <DialogContent>
         <Stack spacing={2.5} sx={{ pt: 1 }}>
           <Alert severity="info" variant="outlined">
-            {t('trip.past.text')}
+            {initial ? t('trip.suggestions.prefilled') : t('trip.past.text')}
           </Alert>
           <TextField
             select

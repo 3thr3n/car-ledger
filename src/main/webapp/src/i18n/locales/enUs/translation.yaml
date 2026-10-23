@@ -907,6 +907,15 @@ trip:
     confirm: "Delete trip"
     deleted: "Trip deleted"
     offline: "Deleting needs a connection, try again when you are online"
+  suggestions:
+    title: "Drives without a trip"
+    subtitle: "Found in the GPS tracks since the last trip, of the last 7 days. Only a suggestion: GPS never adds a trip on its own."
+    when: "{{start}} – {{end}}"
+    distance: "{{distance}} by GPS"
+    add: "Add as trip"
+    dismiss: "Dismiss"
+    dismissed: "Not suggested again"
+    prefilled: "Prefilled from the GPS track: the odometers follow the last known reading and the GPS distance. Check them against the odometer of the car."
   past:
     button: "Add past trip"
     title: "Add a past trip"
