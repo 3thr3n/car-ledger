@@ -34,6 +34,11 @@ public class TrackPointRepository
 			WHERE tk_car_id = ? AND tk_ts >= ? AND tk_ts < ?
 			ORDER BY tk_ts, id""";
 
+	private static final String SELECT_ALL = """
+			SELECT tk_device_id, tk_ts, tk_lat, tk_lon, tk_speed, tk_alt, tk_hdop FROM track_point
+			WHERE tk_car_id = ?
+			ORDER BY tk_ts, id""";
+
 	/** rows per round trip, a month of points isn't loaded at once */
 	private static final int FETCH_SIZE = 2000;
 
@@ -110,6 +115,73 @@ public class TrackPointRepository
 		catch (SQLException e)
 		{
 			throw new PersistenceException("Track points of car " + carId + " could not be read", e);
+		}
+	}
+
+	/**
+	 * A point as stored, with its tracker
+	 */
+	public record StoredPoint(long deviceId, OffsetDateTime ts, double lat, double lon, Double speed, Double alt,
+			Double hdop)
+	{
+	}
+
+	/**
+	 * Passes all points of the car to the consumer, in the order of time, e.g.
+	 * for the backup. Needs a transaction: the rows are read with a cursor.
+	 */
+	public void forEachStored(long carId, Consumer<StoredPoint> consumer)
+	{
+		try (Connection connection = dataSource.getConnection();
+				PreparedStatement statement = connection.prepareStatement(SELECT_ALL))
+		{
+			statement.setFetchSize(FETCH_SIZE);
+			statement.setLong(1, carId);
+			try (ResultSet result = statement.executeQuery())
+			{
+				while (result.next())
+				{
+					consumer.accept(new StoredPoint(result.getLong(1), result.getObject(2, OffsetDateTime.class),
+							result.getDouble(3), result.getDouble(4), result.getObject(5, Double.class),
+							result.getObject(6, Double.class), result.getObject(7, Double.class)));
+				}
+			}
+		}
+		catch (SQLException e)
+		{
+			throw new PersistenceException("Track points of car " + carId + " could not be read", e);
+		}
+	}
+
+	/**
+	 * Deletes the points of the car, all of them without <code>before</code>
+	 *
+	 * @param before
+	 *            exclusive, the points of this time stay
+	 * @return the amount of points deleted
+	 */
+	public int delete(long carId, OffsetDateTime before)
+	{
+		return before == null
+				? update("DELETE FROM track_point WHERE tk_car_id = ?", carId, null)
+				: update("DELETE FROM track_point WHERE tk_car_id = ? AND tk_ts < ?", carId, before);
+	}
+
+	private int update(String sql, long carId, OffsetDateTime time)
+	{
+		try (Connection connection = dataSource.getConnection();
+				PreparedStatement statement = connection.prepareStatement(sql))
+		{
+			statement.setLong(1, carId);
+			if (time != null)
+			{
+				statement.setObject(2, time);
+			}
+			return statement.executeUpdate();
+		}
+		catch (SQLException e)
+		{
+			throw new PersistenceException("Track points of car " + carId + " could not be deleted", e);
 		}
 	}
 }
