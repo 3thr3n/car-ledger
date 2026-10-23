@@ -54,3 +54,22 @@ test('downloads a backup and restores it into the empty account', async ({
   await deleteAllCars();
   await api.dispose();
 });
+
+test('explains a backup larger than the server accepts', async ({ page }) => {
+  await deleteAllCars();
+  await page.goto('/settings');
+  await expect(
+    page.getByRole('button', { name: 'Restore backup' }),
+  ).toBeEnabled();
+
+  // above the limit of 12 MB, the server answers 413 before reading it
+  await page.getByTestId('backup-input').setInputFiles({
+    name: 'backup.zip',
+    mimeType: 'application/zip',
+    buffer: Buffer.alloc(13 * 1024 * 1024),
+  });
+
+  await expect(
+    page.getByText('The backup is larger than the server accepts'),
+  ).toBeVisible();
+});

@@ -616,6 +616,7 @@ backup:
   restoreOnlyEmpty: "A backup can only be restored into an account without cars."
   restored: "Backup restored: {{cars}} car(s), {{bills}} entries, {{files}} files"
   failed: "The backup could not be restored"
+  tooLarge: "The backup is larger than the server accepts. Its operator can raise the limit (carLedger.attachments.maxRequestSize, see docs/DEPLOYMENT.md)."
 
 settings:
   title: "Settings"

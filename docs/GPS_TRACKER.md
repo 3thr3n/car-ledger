@@ -185,9 +185,15 @@ Deleting a car deletes its trackers and points as well.
 The backup of a user contains the trackers of each car, with the SHA-256 of their tokens, never the tokens: after a
 restore on another server the trackers keep sending. A tracker whose hash is taken on the server already gets a new
 one, set it up again with a new token. The points are in the backup only for cars that keep them forever, as a CSV per
-car (`tracker,ts,lat,lon,speed,alt,hdop`); a car that keeps them for a while is backed up without its points, so a
+car (`tracker,ts,lat,lon,speed,alt,hdop`: the time in epoch seconds, latitude and longitude with 6 decimals, about
+0.1 m, speed, altitude and hdop with 1); a car that keeps them for a while is backed up without its points, so a
 backup kept for longer doesn't keep them either. A restore takes the points that are in the file and skips invalid
-ones like the ingest.
+ones like the ingest; it also reads the ISO times of the backups of the dev builds before 0.7.0.
+
+A point takes about 6 bytes in the ZIP, a year of commuting at one point per second (2.3 million points) 14 MB: above
+the upload limit of 12 MB (`carLedger.attachments.maxRequestSize`), raise it to restore such a backup, see
+[DEPLOYMENT.md](DEPLOYMENT.md). `hack/perf/measure.cjs` measures the map, the suggested trips, the backup and the
+deletions with a year of points in the dev mode.
 
 ## Suggested trips
 
