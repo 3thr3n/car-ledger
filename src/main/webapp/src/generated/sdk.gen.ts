@@ -628,7 +628,7 @@ export const getMonthlyStats = <ThrowOnError extends boolean = false>(options: O
 /**
  * Delete Tracks
  *
- * Deletes all GPS track points of the car, its trackers stay.
+ * Deletes the GPS track points of the car in a range, e.g. a wrong track, or all without one. Its trackers stay.
  */
 export const deleteTracks = <ThrowOnError extends boolean = false>(options: Options<DeleteTracksData, ThrowOnError>): RequestResult<DeleteTracksResponses, DeleteTracksErrors, ThrowOnError> => (options.client ?? client).delete<DeleteTracksResponses, DeleteTracksErrors, ThrowOnError>({ url: '/api/track/{carId}', ...options });
 

@@ -34,6 +34,7 @@ import io.restassured.http.ContentType;
 import io.restassured.response.ValidatableResponse;
 import io.restassured.specification.RequestSpecification;
 import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 
 @QuarkusTest
@@ -58,6 +59,9 @@ class TrackResourceTest
 
 	@Inject
 	TrackPointRepository trackPointRepository;
+
+	@Inject
+	EntityManager entityManager;
 
 	long carId;
 	long otherCarId;
@@ -415,5 +419,54 @@ class TrackResourceTest
 		given().contentType(ContentType.JSON).pathParam("carId", otherCarId).body(Map.of("days", 30))
 				.when().put("retention").then().statusCode(404);
 		given().pathParam("carId", otherCarId).when().delete().then().statusCode(404);
+	}
+
+	@Test
+	void shouldDeleteOnlyThePointsOfThePeriod()
+	{
+		drive(0, 10, 50);
+		long otherDevice = deviceService.create(otherCarId, new DeviceInput("ESP32"), "paul").device().id();
+		QuarkusTransaction.requiringNew().run(() -> trackPointRepository.insert(otherDevice, otherCarId,
+				List.of(new TrackPointInput(START.plusSeconds(5), 50.0, 10.0, null, null, null))));
+
+		// from inclusive, to exclusive: seconds 3 to 6
+		given().pathParam("carId", carId)
+				.queryParam("from", START.plusSeconds(3).toString())
+				.queryParam("to", START.plusSeconds(7).toString())
+				.when().delete().then().statusCode(200).body("points", is(4));
+
+		given().pathParam("carId", carId).queryParam("from", START.toString())
+				.queryParam("to", START.plusHours(1).toString()).when().get().then().body("points", is(6));
+		assertEquals(1, QuarkusTransaction.requiringNew().call(() -> ((Number) entityManager
+				.createNativeQuery("select count(*) from track_point where tk_car_id = " + otherCarId)
+				.getSingleResult()).intValue()));
+	}
+
+	@Test
+	void shouldValidateThePeriodToDelete()
+	{
+		drive(0, 10, 50);
+
+		given().pathParam("carId", carId).queryParam("from", START.toString())
+				.when().delete().then().statusCode(400)
+				.body("", contains("From and to must be set both, or none for all points!"));
+		given().pathParam("carId", carId).queryParam("to", START.toString())
+				.when().delete().then().statusCode(400);
+		given().pathParam("carId", carId).queryParam("from", START.toString()).queryParam("to", START.toString())
+				.when().delete().then().statusCode(400)
+				.body("", contains("To must be after from!"));
+
+		// longer than a query may be, nothing to fear in deleting
+		given().pathParam("carId", carId).queryParam("from", START.minusYears(1).toString())
+				.queryParam("to", START.plusYears(1).toString())
+				.when().delete().then().statusCode(200).body("points", is(10));
+	}
+
+	@Test
+	void shouldNotDeleteThePeriodOfAnotherCar()
+	{
+		given().pathParam("carId", otherCarId).queryParam("from", START.toString())
+				.queryParam("to", START.plusHours(1).toString())
+				.when().delete().then().statusCode(404);
 	}
 }
