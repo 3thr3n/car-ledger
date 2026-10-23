@@ -1992,6 +1992,11 @@
   resolved "https://registry.yarnpkg.com/@types/trusted-types/-/trusted-types-2.0.7.tgz#baccb07a970b91707df3a3e8ba6896c57ead2d11"
   integrity sha512-ScaPdn1dQczgbl0QFTeTOmVHFULt394XJgOQNoyVhZ6r2vLnMLJfBPd53SB52T/3G36VI1/g2MZaX0cwDuXsfw==
 
+"@types/w3c-web-serial@^1.0.8":
+  version "1.0.9"
+  resolved "https://registry.yarnpkg.com/@types/w3c-web-serial/-/w3c-web-serial-1.0.9.tgz#b0f45a25b4623e87ffefbeaef4c577466dfa4ea7"
+  integrity sha512-IVPnnhE1IC3Za0j+ykQDMvRwe3m92hcDIAJjUA4aZW+7f+osL48SDS+02Xsqj5dHluXOCsEA9HS10isX4O59EA==
+
 "@typescript-eslint/eslint-plugin@8.71.0", "@typescript-eslint/eslint-plugin@^8.71.0":
   version "8.71.0"
   resolved "https://registry.yarnpkg.com/@typescript-eslint/eslint-plugin/-/eslint-plugin-8.71.0.tgz#99f474391c3e54bfcb73b1934ea2dba6d6a59bef"
@@ -2210,6 +2215,11 @@ at-least-node@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/at-least-node/-/at-least-node-1.0.0.tgz#602cd4b46e844ad4effc92a8011a3c46e0238dc2"
   integrity sha512-+q/t7Ekv1EDY2l6Gda6LLiX14rU9TV20Wa3ofeQmwPFZbOMo9DXrLbOjFaaclkXKWidIaopwAObQDqwWtGUjqg==
+
+atob-lite@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/atob-lite/-/atob-lite-2.0.0.tgz#0fef5ad46f1bd7a8502c65727f0367d5ee43d696"
+  integrity sha512-LEeSAWeh2Gfa2FtlQE1shxQ8zi5F9GHarrGKz08TMdODD5T4eH6BMsvtnhbWZ+XQn+Gb6om/917ucvRu7l7ukw==
 
 available-typed-arrays@^1.0.7:
   version "1.0.7"
@@ -2963,6 +2973,14 @@ espree@^11.2.0:
     acorn "^8.16.0"
     acorn-jsx "^5.3.2"
     eslint-visitor-keys "^5.0.1"
+
+esptool-js@^0.7.0:
+  version "0.7.0"
+  resolved "https://registry.yarnpkg.com/esptool-js/-/esptool-js-0.7.0.tgz#9b891bfa886a0b3373b63f1eefe5538fea56cbe8"
+  integrity sha512-9wHuW/s9t4Vs6HKcr3pra3gbRVWwaN0eabMWodWH4KEJHEYZxgmWwZ3s0F4xcWVCZOc/L98bGZ4uWoZvR8KBKA==
+  dependencies:
+    atob-lite "^2.0.0"
+    pako "^2.1.0"
 
 esquery@^1.7.0:
   version "1.7.0"
@@ -4050,6 +4068,11 @@ package-json-from-dist@^1.0.0:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/package-json-from-dist/-/package-json-from-dist-1.0.1.tgz#4f1471a010827a86f94cfd9b0727e36d267de505"
   integrity sha512-UEZIS3/by4OC8vL3P2dTXRETpebLI2NiI5vIrjaD/5UtrkFX/tNbwjTSRAGC/+7CAo2pIcBaRgWmcBBHcsaCIw==
+
+pako@^2.1.0:
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/pako/-/pako-2.2.0.tgz#246b9d4c841a8d308e484c0d03786651b143e63a"
+  integrity sha512-zJq6RP/5q+TO2OpFV3FHzlPnFjmkb7Nc99a5SNjJE+uu/PkpChs+NIZSSzbBoD+6kjiISXjfYdwj1ZRQ81dz/w==
 
 papaparse@^5.7.0:
   version "5.7.0"

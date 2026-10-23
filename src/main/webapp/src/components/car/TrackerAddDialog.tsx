@@ -12,10 +12,12 @@ import {
   Tooltip,
 } from '@mui/material';
 import ContentCopyRounded from '@mui/icons-material/ContentCopyRounded';
+import UsbRounded from '@mui/icons-material/UsbRounded';
 import { useMutation } from '@tanstack/react-query';
 import { SubmitEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
+import { DeviceCreated } from '@/generated';
 import {
   addTrackerMutation,
   getTrackersQueryKey,
@@ -27,6 +29,8 @@ export interface TrackerAddDialogProps {
   open: boolean;
   carId: number;
   onClose: () => void;
+  /** flashes the new tracker with its token, when this browser can */
+  onFlash?: (created: DeviceCreated) => void;
 }
 
 /**
@@ -35,13 +39,13 @@ export interface TrackerAddDialogProps {
  */
 export default function TrackerAddDialog({
   open,
-  carId,
   onClose,
+  ...props
 }: TrackerAddDialogProps) {
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       {/* the form starts fresh, the token is gone after closing */}
-      {open && <TrackerAddForm carId={carId} onClose={onClose} />}
+      {open && <TrackerAddForm {...props} onClose={onClose} />}
     </Dialog>
   );
 }
@@ -49,18 +53,20 @@ export default function TrackerAddDialog({
 function TrackerAddForm({
   carId,
   onClose,
+  onFlash,
 }: Omit<TrackerAddDialogProps, 'open'>) {
   const { t } = useTranslation();
   const [name, setName] = useState('');
   const [touched, setTouched] = useState(false);
-  const [token, setToken] = useState<string>();
+  const [created, setCreated] = useState<DeviceCreated>();
+  const token = created?.token;
 
   const error = !name.trim() ? t('tracker.errors.name') : undefined;
 
   const add = useMutation({
     ...addTrackerMutation({ client: localClient }),
     onSuccess: async (created) => {
-      setToken(created.token);
+      setCreated(created);
       await queryClient.invalidateQueries({
         queryKey: getTrackersQueryKey({ path: { carId } }),
       });
@@ -119,6 +125,14 @@ function TrackerAddForm({
           </Stack>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
+          {onFlash && (
+            <Button
+              startIcon={<UsbRounded />}
+              onClick={() => onFlash(created!)}
+            >
+              {t('tracker.flash.open')}
+            </Button>
+          )}
           <Button variant="contained" onClick={onClose}>
             {t('tracker.done')}
           </Button>
