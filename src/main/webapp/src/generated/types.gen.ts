@@ -715,6 +715,19 @@ export type TripStartInput = {
     queued?: boolean;
 };
 
+export type TripSuggestion = {
+    startedAt: OffsetDateTime;
+    endedAt: OffsetDateTime;
+    distance: number;
+    startOdometer: number;
+    endOdometer: number;
+};
+
+export type TripSuggestionDismissInput = {
+    startedAt?: OffsetDateTime;
+    endedAt?: OffsetDateTime;
+};
+
 export enum TripType {
     BUSINESS = 'BUSINESS',
     PRIVATE = 'PRIVATE',
@@ -2895,6 +2908,60 @@ export type GetCurrentTripResponses = {
 };
 
 export type GetCurrentTripResponse = GetCurrentTripResponses[keyof GetCurrentTripResponses];
+
+export type GetTripSuggestionsData = {
+    body?: never;
+    path: {
+        carId: number;
+    };
+    query?: never;
+    url: '/api/trip/{carId}/suggestions';
+};
+
+export type GetTripSuggestionsErrors = {
+    /**
+     * Car is not for your user.
+     */
+    404: unknown;
+};
+
+export type GetTripSuggestionsResponses = {
+    /**
+     * OK
+     */
+    200: Array<TripSuggestion>;
+};
+
+export type GetTripSuggestionsResponse = GetTripSuggestionsResponses[keyof GetTripSuggestionsResponses];
+
+export type DismissTripSuggestionData = {
+    body: TripSuggestionDismissInput;
+    path: {
+        carId: number;
+    };
+    query?: never;
+    url: '/api/trip/{carId}/suggestions/dismiss';
+};
+
+export type DismissTripSuggestionErrors = {
+    /**
+     * Times missing or the end before the start
+     */
+    400: unknown;
+    /**
+     * Car is not for your user.
+     */
+    404: unknown;
+};
+
+export type DismissTripSuggestionResponses = {
+    /**
+     * Dismissed.
+     */
+    204: void;
+};
+
+export type DismissTripSuggestionResponse = DismissTripSuggestionResponses[keyof DismissTripSuggestionResponses];
 
 export type GetTripYearsData = {
     body?: never;

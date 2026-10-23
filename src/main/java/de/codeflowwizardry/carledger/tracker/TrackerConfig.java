@@ -1,5 +1,6 @@
 package de.codeflowwizardry.carledger.tracker;
 
+import java.time.Duration;
 import java.util.Optional;
 
 import io.smallrye.config.ConfigMapping;
@@ -30,4 +31,23 @@ public interface TrackerConfig
 	 *         Without one, flashing is hidden.
 	 */
 	Optional<String> firmwareDir();
+
+	/**
+	 * @return a drive of the GPS tracks ends after a stop this long: no points, or
+	 *         a car that doesn't move. Drives are suggested as trips.
+	 */
+	@WithDefault("5M")
+	Duration stop();
+
+	/**
+	 * @return meters of GPS distance a drive needs to be suggested as a trip
+	 */
+	@WithDefault("500")
+	int minDriveDistance();
+
+	/**
+	 * @return how long a drive needs to be suggested as a trip
+	 */
+	@WithDefault("2M")
+	Duration minDriveDuration();
 }

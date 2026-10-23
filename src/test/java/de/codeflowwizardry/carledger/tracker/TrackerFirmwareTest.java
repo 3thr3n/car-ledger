@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
@@ -43,6 +44,24 @@ class TrackerFirmwareTest
 			public Optional<String> firmwareDir()
 			{
 				return Optional.ofNullable(dir);
+			}
+
+			@Override
+			public Duration stop()
+			{
+				return Duration.ofMinutes(5);
+			}
+
+			@Override
+			public int minDriveDistance()
+			{
+				return 500;
+			}
+
+			@Override
+			public Duration minDriveDuration()
+			{
+				return Duration.ofMinutes(2);
 			}
 		}, new ObjectMapper());
 	}

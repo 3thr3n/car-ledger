@@ -1893,6 +1893,43 @@
           }
         }
       },
+      "TripSuggestion" : {
+        "type" : "object",
+        "required" : [ "startedAt", "endedAt", "distance", "startOdometer", "endOdometer" ],
+        "properties" : {
+          "startedAt" : {
+            "type" : "string",
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          },
+          "endedAt" : {
+            "type" : "string",
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          },
+          "distance" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "startOdometer" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "endOdometer" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "TripSuggestionDismissInput" : {
+        "type" : "object",
+        "properties" : {
+          "startedAt" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          },
+          "endedAt" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          }
+        }
+      },
       "TripType" : {
         "type" : "string",
         "enum" : [ "BUSINESS", "PRIVATE", "COMMUTE" ]
@@ -5600,6 +5637,80 @@
           }
         },
         "summary" : "Get Current Trip",
+        "tags" : [ "Trip Resource" ]
+      }
+    },
+    "/api/trip/{carId}/suggestions" : {
+      "get" : {
+        "description" : "Drives of the GPS tracks without a trip since the end of the last trip, of at most 7 days, the oldest first: forgotten trips to add. Empty with the trip log off.",
+        "operationId" : "getTripSuggestions",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/TripSuggestion"
+                  }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Car is not for your user."
+          }
+        },
+        "summary" : "Get Trip Suggestions",
+        "tags" : [ "Trip Resource" ]
+      }
+    },
+    "/api/trip/{carId}/suggestions/dismiss" : {
+      "post" : {
+        "description" : "The drive isn't suggested as a trip anymore, also when it is found a little differently later.",
+        "operationId" : "dismissTripSuggestion",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/TripSuggestionDismissInput"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "204" : {
+            "description" : "Dismissed."
+          },
+          "400" : {
+            "description" : "Times missing or the end before the start",
+            "content" : { }
+          },
+          "404" : {
+            "description" : "Car is not for your user."
+          }
+        },
+        "summary" : "Dismiss Trip Suggestion",
         "tags" : [ "Trip Resource" ]
       }
     },
