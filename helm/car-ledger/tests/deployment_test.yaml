@@ -235,6 +235,46 @@ tests:
             name: CARLEDGER_MAP_STYLE_URL
           any: true
 
+  - it: suggests trips with the defaults of the app
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: CARLEDGER_TRACKER_STOP
+            value: "5M"
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: CARLEDGER_TRACKER_MIN_DRIVE_DISTANCE
+            value: "500"
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: CARLEDGER_TRACKER_MIN_DRIVE_DURATION
+            value: "2M"
+
+  - it: takes other limits of the suggested trips
+    set:
+      carLedger.tracker.suggestions.stop: 10M
+      carLedger.tracker.suggestions.minDriveDistance: 1000
+      carLedger.tracker.suggestions.minDriveDuration: PT90S
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: CARLEDGER_TRACKER_STOP
+            value: "10M"
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: CARLEDGER_TRACKER_MIN_DRIVE_DISTANCE
+            value: "1000"
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: CARLEDGER_TRACKER_MIN_DRIVE_DURATION
+            value: "PT90S"
+
   - it: mounts the tracker firmware from a volume
     set:
       carLedger.trust.ingressCA: false

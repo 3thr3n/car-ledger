@@ -61,7 +61,9 @@ The last contact of a tracker (`lastSeenAt`) is updated at most once per minute.
 
 As environment variables: `CARLEDGER_TRACKER_RATE_LIMIT`, `CARLEDGER_TRACKER_MAX_BATCH`,
 `CARLEDGER_TRACKER_FIRMWARE_DIR`, `CARLEDGER_TRACKER_STOP`, `CARLEDGER_TRACKER_MIN_DRIVE_DISTANCE`,
-`CARLEDGER_TRACKER_MIN_DRIVE_DURATION`. Durations like `5M` (minutes) or `PT90S`.
+`CARLEDGER_TRACKER_MIN_DRIVE_DURATION`. Durations like `5M` (minutes) or `PT90S`. With Helm, the limits of the
+suggested trips are `carLedger.tracker.suggestions.stop`, `.minDriveDistance` and `.minDriveDuration`, with the same
+defaults.
 
 ## Flashing
 

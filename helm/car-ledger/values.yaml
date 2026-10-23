@@ -85,6 +85,14 @@ carLedger:
       volume: {}
       # directory of the volume with the manifest.json, its root without one
       subPath: ""
+    # drives of the tracks are suggested as forgotten trips in the trip log: a drive ends after a stop
+    # this long (no points, or a car that doesn't move), shorter drives are ignored. Durations like
+    # 5M (minutes) or PT90S
+    suggestions:
+      stop: 5M
+      # meters
+      minDriveDistance: 500
+      minDriveDuration: 2M
   # notifications as push messages to the browsers that turn them on in the settings (see
   # docs/DEPLOYMENT.md#push). Needs no other service: the chart generates the key of the server
   # into the secret car-ledger-push and keeps it, a new key ends all subscriptions
