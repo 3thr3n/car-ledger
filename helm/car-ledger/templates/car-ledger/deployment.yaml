@@ -148,6 +148,14 @@ spec:
             - name: CARLEDGER_TRACKER_FIRMWARE_DIR
               value: /etc/car-ledger/tracker-firmware
             {{- end }}
+            {{- with .Values.carLedger.tracker.suggestions }}
+            - name: CARLEDGER_TRACKER_STOP
+              value: {{ .stop | quote }}
+            - name: CARLEDGER_TRACKER_MIN_DRIVE_DISTANCE
+              value: {{ .minDriveDistance | quote }}
+            - name: CARLEDGER_TRACKER_MIN_DRIVE_DURATION
+              value: {{ .minDriveDuration | quote }}
+            {{- end }}
             {{- with .Values.carLedger.webhook }}
             {{- if .url }}
             - name: CARLEDGER_WEBHOOK_URL
