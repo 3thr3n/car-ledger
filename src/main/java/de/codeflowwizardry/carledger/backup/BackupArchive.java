@@ -1,15 +1,20 @@
 package de.codeflowwizardry.carledger.backup;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -107,6 +112,82 @@ class BackupArchive implements AutoCloseable
 		{
 			Utils.requireValid(List.of("The file " + name + " of the backup cannot be read!"));
 			throw new UncheckedIOException(e);
+		}
+	}
+
+	/**
+	 * Reads the entry line by line, it isn't in memory at once
+	 *
+	 * @return whether there is such an entry
+	 * @throws jakarta.ws.rs.BadRequestException
+	 *             like {@link #read(String, long)}, without the limit of the
+	 *             entry
+	 */
+	boolean readLines(String name, Consumer<String> consumer)
+	{
+		ZipEntry entry = name == null ? null : zip.getEntry(name);
+		if (entry == null || entry.isDirectory())
+		{
+			return false;
+		}
+		if (!used.add(name))
+		{
+			Utils.requireValid(List.of("The file " + name + " is used twice in the backup!"));
+		}
+		try (BufferedReader reader = new BufferedReader(
+				new InputStreamReader(new CountingInputStream(zip.getInputStream(entry)), StandardCharsets.UTF_8)))
+		{
+			String line;
+			while ((line = reader.readLine()) != null)
+			{
+				consumer.accept(line);
+			}
+			return true;
+		}
+		catch (IOException e)
+		{
+			Utils.requireValid(List.of("The file " + name + " of the backup cannot be read!"));
+			throw new UncheckedIOException(e);
+		}
+	}
+
+	/** counts the unpacked bytes against the limit of the backup */
+	private final class CountingInputStream extends FilterInputStream
+	{
+		CountingInputStream(InputStream in)
+		{
+			super(in);
+		}
+
+		@Override
+		public int read() throws IOException
+		{
+			int b = super.read();
+			if (b >= 0)
+			{
+				count(1);
+			}
+			return b;
+		}
+
+		@Override
+		public int read(byte[] buffer, int offset, int length) throws IOException
+		{
+			int read = super.read(buffer, offset, length);
+			if (read > 0)
+			{
+				count(read);
+			}
+			return read;
+		}
+
+		private void count(int read)
+		{
+			unpacked += read;
+			if (unpacked > maxTotal)
+			{
+				Utils.requireValid(List.of("The backup is too large!"));
+			}
 		}
 	}
 

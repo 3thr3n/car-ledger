@@ -35,6 +35,11 @@ public class DeviceRepository implements PanacheRepository<DeviceEntity>
 				.firstResultOptional();
 	}
 
+	public boolean existsByTokenHash(String tokenHash)
+	{
+		return count("tokenHash", tokenHash) > 0;
+	}
+
 	/**
 	 * @return the tracker with the token, if it isn't revoked
 	 */
