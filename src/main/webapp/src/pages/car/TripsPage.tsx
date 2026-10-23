@@ -2,6 +2,7 @@ import { Stack } from '@mui/material';
 import CurrentTrip from '@/components/trip/CurrentTrip';
 import PendingTrips from '@/components/trip/PendingTrips';
 import TripList from '@/components/trip/TripList';
+import TripSuggestions from '@/components/trip/TripSuggestions';
 
 /**
  * The trip log of the car (Fahrtenbuch): trips are started and finished, not
@@ -12,6 +13,7 @@ export default function TripsPage({ carId }: { carId: number }) {
     <Stack spacing={3}>
       <CurrentTrip carId={carId} />
       <PendingTrips carId={carId} />
+      <TripSuggestions carId={carId} />
       <TripList carId={carId} />
     </Stack>
   );

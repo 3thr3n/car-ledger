@@ -46,8 +46,8 @@ authentik or any other provider).
 - **Trip log (Fahrtenbuch):** start and finish trips with the odometer, enter forgotten ones, delete with a reason
   (they stay in the log), export as PDF or CSV.
 - **GPS tracking:** a tracker in the car (e.g. an ESP32) sends its points, the app shows the tracks on a map colored
-  by speed and the track of a trip; the owner chooses how long the points are kept, see
-  [docs/GPS_TRACKER.md](docs/GPS_TRACKER.md).
+  by speed and the track of a trip, and suggests forgotten trips from the drives; the owner chooses how long the
+  points are kept, see [docs/GPS_TRACKER.md](docs/GPS_TRACKER.md).
 - **Reminders and notifications:** due reminders by e-mail and push message, once a day; each can be turned off.
 
 **Data and integration**

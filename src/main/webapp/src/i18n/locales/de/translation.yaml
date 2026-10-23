@@ -907,6 +907,15 @@ trip:
     confirm: "Fahrt löschen"
     deleted: "Fahrt gelöscht"
     offline: "Zum Löschen ist eine Verbindung nötig, versuche es wieder, wenn du online bist"
+  suggestions:
+    title: "Fahrten ohne Eintrag"
+    subtitle: "In den GPS-Strecken seit der letzten Fahrt gefunden, aus den letzten 7 Tagen. Nur ein Vorschlag: GPS trägt nie selbst eine Fahrt ein."
+    when: "{{start}} – {{end}}"
+    distance: "{{distance}} laut GPS"
+    add: "Als Fahrt eintragen"
+    dismiss: "Verwerfen"
+    dismissed: "Wird nicht mehr vorgeschlagen"
+    prefilled: "Aus der GPS-Strecke vorausgefüllt: die Kilometerstände folgen dem letzten bekannten Stand und der GPS-Strecke. Prüfe sie am Kilometerzähler des Autos."
   past:
     button: "Vergangene Fahrt nachtragen"
     title: "Vergangene Fahrt nachtragen"
