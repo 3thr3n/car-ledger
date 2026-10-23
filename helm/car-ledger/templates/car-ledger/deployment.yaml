@@ -140,6 +140,10 @@ spec:
             {{- end }}
             {{- end }}
             {{- end }}
+            {{- if .Values.carLedger.tracker.firmware.volume }}
+            - name: CARLEDGER_TRACKER_FIRMWARE_DIR
+              value: /etc/car-ledger/tracker-firmware
+            {{- end }}
             {{- with .Values.carLedger.webhook }}
             {{- if .url }}
             - name: CARLEDGER_WEBHOOK_URL
@@ -175,15 +179,33 @@ spec:
             {{- toYaml .Values.carLedger.readinessProbe | nindent 12 }}
           resources:
             {{- toYaml .Values.carLedger.resources | nindent 12 }}
-          {{- if include "carLedger.trustSources" . }}
+          {{- $firmware := .Values.carLedger.tracker.firmware }}
+          {{- if or (include "carLedger.trustSources" .) $firmware.volume }}
           volumeMounts:
+            {{- if include "carLedger.trustSources" . }}
             - name: trust
               mountPath: /etc/car-ledger/trust
               readOnly: true
+            {{- end }}
+            {{- if $firmware.volume }}
+            - name: tracker-firmware
+              mountPath: /etc/car-ledger/tracker-firmware
+              {{- with $firmware.subPath }}
+              subPath: {{ . | quote }}
+              {{- end }}
+              readOnly: true
+            {{- end }}
       volumes:
+        {{- if include "carLedger.trustSources" . }}
         # the certificates to trust, read once at the start (a renewed CA needs a restart)
         - name: trust
           projected:
             sources:
               {{- include "carLedger.trustSources" . | trim | nindent 14 }}
+        {{- end }}
+        {{- with $firmware.volume }}
+        # the release of the tracker firmware, read on every request
+        - name: tracker-firmware
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
           {{- end }}
