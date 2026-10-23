@@ -280,6 +280,14 @@
           "files" : {
             "type" : "integer",
             "format" : "int32"
+          },
+          "trackers" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "trackPoints" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         }
       },
@@ -562,6 +570,10 @@
           "pictureId" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "trackRetentionDays" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
         "required" : [ "currentOdometer", "energyType", "tripLog" ]
@@ -1659,6 +1671,25 @@
           "speed" : {
             "type" : "number",
             "format" : "double"
+          }
+        }
+      },
+      "TrackRetentionInput" : {
+        "type" : "object",
+        "properties" : {
+          "days" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "TracksDeleted" : {
+        "type" : "object",
+        "required" : [ "points" ],
+        "properties" : {
+          "points" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         }
       },
@@ -5151,6 +5182,75 @@
           }
         },
         "summary" : "Get Track",
+        "tags" : [ "Track Resource" ]
+      },
+      "delete" : {
+        "description" : "Deletes all GPS track points of the car, its trackers stay.",
+        "operationId" : "deleteTracks",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TracksDeleted"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Car is not yours."
+          }
+        },
+        "summary" : "Delete Tracks",
+        "tags" : [ "Track Resource" ]
+      }
+    },
+    "/api/track/{carId}/retention" : {
+      "put" : {
+        "description" : "Days the GPS track points of the car are kept, forever without. Older points are deleted every night; only the points of cars that keep them forever are in the backup.",
+        "operationId" : "setTrackRetention",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/TrackRetentionInput"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "204" : {
+            "description" : "Saved."
+          },
+          "400" : {
+            "description" : "Not 1 to 3650 days",
+            "content" : { }
+          },
+          "404" : {
+            "description" : "Car is not yours."
+          }
+        },
+        "summary" : "Set Track Retention",
         "tags" : [ "Track Resource" ]
       }
     },

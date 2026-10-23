@@ -96,4 +96,41 @@ test.describe.serial('GPS trackers', () => {
     );
     expect(await sendPoint()).toBe(401);
   });
+
+  test('keeps the tracks for a while after a confirmation', async () => {
+    const history = page.getByTestId('track-history');
+    await expect(history).toContainText('The tracks are part of the backup');
+
+    await history.getByRole('combobox', { name: 'Keep the tracks' }).click();
+    await page.getByRole('option', { name: '30 days' }).click();
+    const dialog = page.getByRole('dialog', {
+      name: 'Keep the tracks for 30 days?',
+    });
+    await expect(dialog).toContainText('deleted tonight');
+    await dialog.getByRole('button', { name: 'Keep for 30 days' }).click();
+
+    await expect(history).toContainText('not part of the backup');
+    await page.reload();
+    await expect(
+      page.getByRole('combobox', { name: 'Keep the tracks' }),
+    ).toHaveText('30 days');
+
+    // longer needs no confirmation
+    await page.getByRole('combobox', { name: 'Keep the tracks' }).click();
+    await page.getByRole('option', { name: 'Forever' }).click();
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    await expect(history).toContainText('The tracks are part of the backup');
+  });
+
+  test('deletes all tracks after a confirmation', async () => {
+    const history = page.getByTestId('track-history');
+    await history.getByRole('button', { name: 'Delete all tracks' }).click();
+
+    const dialog = page.getByRole('dialog', {
+      name: 'Delete all tracks of this car?',
+    });
+    await dialog.getByRole('button', { name: 'Delete all tracks' }).click();
+    // the point of the tracker before it was revoked
+    await expect(page.getByText('1 point deleted')).toBeVisible();
+  });
 });

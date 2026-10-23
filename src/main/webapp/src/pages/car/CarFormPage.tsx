@@ -78,7 +78,9 @@ export default function CarFormPage({ id }: CarFormPageProps) {
         initial={car ?? {}}
         current={car?.currentOdometer.value}
       />
-      {id !== undefined && <TrackerSection carId={id} />}
+      {id !== undefined && (
+        <TrackerSection carId={id} retentionDays={car?.trackRetentionDays} />
+      )}
       {id !== undefined && car && (
         <DeleteCar
           id={id}

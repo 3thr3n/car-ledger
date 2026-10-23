@@ -161,6 +161,25 @@ The settings are JSON followed by one NUL byte, padded with `0xFF` to a multiple
 Without valid settings the tracker keeps logging points but doesn't upload, its ERR LED blinks at 1 Hz and it prints
 the reason on boot, e.g. `Config: no token`.
 
+## Retention and deletion
+
+Track points are personal data. In *Edit car* → *GPS trackers* → *Track history* the owner chooses how long the points
+of the car are kept (forever by default, or 7 days to 2 years); every night at 02:30 (time zone of the server) the
+points older than that are deleted. *Delete all tracks* deletes all points of the car at once, its trackers stay.
+Deleting a car deletes its trackers and points as well.
+
+| Request                                          | Answer                                                  |
+|--------------------------------------------------|---------------------------------------------------------|
+| `PUT /api/track/{carId}/retention` `{"days":30}` | 204; `{"days":null}` keeps them forever, 1 to 3650 days |
+| `DELETE /api/track/{carId}`                      | `{"points":n}`, the points deleted                      |
+
+The backup of a user contains the trackers of each car, with the SHA-256 of their tokens, never the tokens: after a
+restore on another server the trackers keep sending. A tracker whose hash is taken on the server already gets a new
+one, set it up again with a new token. The points are in the backup only for cars that keep them forever, as a CSV per
+car (`tracker,ts,lat,lon,speed,alt,hdop`); a car that keeps them for a while is backed up without its points, so a
+backup kept for longer doesn't keep them either. A restore takes the points that are in the file and skips invalid
+ones like the ingest.
+
 ## Map
 
 The tab *Map* of a car shows its tracks of a day or a period of at most 31 days, colored by speed (orange: slow, dark
