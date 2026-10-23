@@ -492,6 +492,21 @@
         "type" : "string",
         "enum" : [ "FUEL", "CHARGING", "MAINTENANCE", "MISCELLANEOUS", "RECURRING" ]
       },
+      "Build" : {
+        "type" : "object",
+        "required" : [ "chipFamily", "parts" ],
+        "properties" : {
+          "chipFamily" : {
+            "type" : "string"
+          },
+          "parts" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Part"
+            }
+          }
+        }
+      },
       "Car" : {
         "type" : "object",
         "properties" : {
@@ -755,6 +770,28 @@
         "type" : "string",
         "enum" : [ "HOME", "PUBLIC" ]
       },
+      "ConfigPartition" : {
+        "type" : "object",
+        "required" : [ "offset", "size", "maxLength", "version" ],
+        "properties" : {
+          "offset" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "maxLength" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
       "CsvFields" : {
         "type" : "object",
         "properties" : {
@@ -863,6 +900,38 @@
       "EnergyType" : {
         "type" : "string",
         "enum" : [ "PETROL", "DIESEL", "LPG", "CNG", "ELECTRIC", "PLUG_IN_HYBRID" ]
+      },
+      "FirmwareManifest" : {
+        "type" : "object",
+        "required" : [ "name", "version", "builds", "config" ],
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "version" : {
+            "type" : "string"
+          },
+          "builds" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Build"
+            }
+          },
+          "config" : {
+            "$ref" : "#/components/schemas/ConfigPartition"
+          },
+          "valid" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "FirmwareSettings" : {
+        "type" : "object",
+        "properties" : {
+          "version" : {
+            "type" : "string"
+          }
+        }
       },
       "FuelBill" : {
         "type" : "object",
@@ -1238,6 +1307,19 @@
         "type" : "string",
         "format" : "date-time",
         "examples" : [ "2022-03-10T12:15:50-04:00" ]
+      },
+      "Part" : {
+        "type" : "object",
+        "required" : [ "path", "offset" ],
+        "properties" : {
+          "path" : {
+            "type" : "string"
+          },
+          "offset" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
       },
       "PushSettings" : {
         "type" : "object",
@@ -5072,6 +5154,81 @@
         "tags" : [ "Track Resource" ]
       }
     },
+    "/api/tracker/firmware" : {
+      "get" : {
+        "description" : "Version of the firmware, without one flashing isn't set up and hidden.",
+        "operationId" : "getFirmwareSettings",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/FirmwareSettings"
+                }
+              }
+            }
+          }
+        },
+        "summary" : "Get Firmware Settings",
+        "tags" : [ "Firmware Resource" ]
+      }
+    },
+    "/api/tracker/firmware/manifest.json" : {
+      "get" : {
+        "description" : "The files of the firmware and where they are written.",
+        "operationId" : "getFirmwareManifest",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/FirmwareManifest"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Flashing isn't set up."
+          }
+        },
+        "summary" : "Get Firmware Manifest",
+        "tags" : [ "Firmware Resource" ]
+      }
+    },
+    "/api/tracker/firmware/{file}" : {
+      "get" : {
+        "description" : "A file of the firmware, one of the parts of the manifest.",
+        "operationId" : "getFirmwareFile",
+        "parameters" : [ {
+          "name" : "file",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/octet-stream" : {
+                "schema" : {
+                  "format" : "binary",
+                  "type" : "string"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Not a file of the manifest, or flashing isn't set up."
+          }
+        },
+        "summary" : "Get Firmware File",
+        "tags" : [ "Firmware Resource" ]
+      }
+    },
     "/api/tracker/{carId}" : {
       "get" : {
         "description" : "GPS trackers of a car, the newest first. Empty for a car that isn't yours.",
@@ -5191,6 +5348,49 @@
           }
         },
         "summary" : "Revoke Tracker",
+        "tags" : [ "Tracker Resource" ]
+      }
+    },
+    "/api/tracker/{carId}/{id}/token" : {
+      "post" : {
+        "description" : "A new token for the tracker, the old one stops working. The answer contains it, it can't be shown again.",
+        "operationId" : "renewTrackerToken",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DeviceCreated"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Tracker not found for the car of your user."
+          },
+          "409" : {
+            "description" : "The tracker is revoked."
+          }
+        },
+        "summary" : "Renew Tracker Token",
         "tags" : [ "Tracker Resource" ]
       }
     },
