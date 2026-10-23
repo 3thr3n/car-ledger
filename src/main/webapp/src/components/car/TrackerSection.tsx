@@ -1,4 +1,5 @@
 import {
+  Alert,
   Box,
   Button,
   Card,
@@ -8,6 +9,7 @@ import {
   Typography,
 } from '@mui/material';
 import AddRounded from '@mui/icons-material/AddRounded';
+import UsbRounded from '@mui/icons-material/UsbRounded';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Fragment, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -23,15 +25,24 @@ import { errorMessage } from '@/utils/BackendError';
 import { useFormat } from '@/utils/format';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import TrackerAddDialog from '@/components/car/TrackerAddDialog';
+import LazyTrackerFlashDialog from '@/components/tracker/LazyTrackerFlashDialog';
+import useFirmware from '@/components/tracker/useFirmware';
 
 /**
  * The GPS trackers of a car: each sends its points with its own token, the
- * owner creates and revokes them
+ * owner creates and revokes them, and flashes them over USB when the server has
+ * the firmware
  */
 export default function TrackerSection({ carId }: { carId: number }) {
   const { t } = useTranslation();
   const [adding, setAdding] = useState(false);
   const [revoking, setRevoking] = useState<Device>();
+  const [flashing, setFlashing] = useState<{
+    tracker: Device;
+    token?: string;
+  }>();
+  const firmware = useFirmware();
+  const canFlash = !!firmware.version && firmware.serial;
   const { data: trackers } = useQuery(
     getTrackersOptions({ client: localClient, path: { carId } }),
   );
@@ -75,6 +86,9 @@ export default function TrackerSection({ carId }: { carId: number }) {
             {t('tracker.add')}
           </Button>
         </Stack>
+        {firmware.version && !firmware.serial && (
+          <Alert severity="info">{t('tracker.flash.noSerial')}</Alert>
+        )}
         {trackers && trackers.length > 0 && (
           <Box>
             {trackers.map((tracker, index) => (
@@ -82,6 +96,9 @@ export default function TrackerSection({ carId }: { carId: number }) {
                 {index > 0 && <Divider />}
                 <TrackerRow
                   tracker={tracker}
+                  onFlash={
+                    canFlash ? () => setFlashing({ tracker }) : undefined
+                  }
                   onRevoke={() => setRevoking(tracker)}
                   disabled={revoke.isPending}
                 />
@@ -94,7 +111,24 @@ export default function TrackerSection({ carId }: { carId: number }) {
         open={adding}
         carId={carId}
         onClose={() => setAdding(false)}
+        onFlash={
+          canFlash
+            ? ({ device, token }) => {
+                setAdding(false);
+                setFlashing({ tracker: device, token });
+              }
+            : undefined
+        }
       />
+      {flashing && (
+        <LazyTrackerFlashDialog
+          open
+          carId={carId}
+          tracker={flashing.tracker}
+          token={flashing.token}
+          onClose={() => setFlashing(undefined)}
+        />
+      )}
       <ConfirmDialog
         open={revoking !== undefined}
         title={t('tracker.revokeTitle', { name: revoking?.name })}
@@ -109,10 +143,12 @@ export default function TrackerSection({ carId }: { carId: number }) {
 
 function TrackerRow({
   tracker,
+  onFlash,
   onRevoke,
   disabled,
 }: {
   tracker: Device;
+  onFlash?: () => void;
   onRevoke: () => void;
   disabled: boolean;
 }) {
@@ -155,6 +191,16 @@ function TrackerRow({
           {t('tracker.createdOn', { date: format.date(tracker.createdAt) })}
         </Typography>
       </Box>
+      {!tracker.revokedAt && onFlash && (
+        <Button
+          size="small"
+          startIcon={<UsbRounded />}
+          onClick={onFlash}
+          sx={{ flexShrink: 0 }}
+        >
+          {t('tracker.flash.open')}
+        </Button>
+      )}
       {!tracker.revokedAt && (
         <Button
           color="error"
