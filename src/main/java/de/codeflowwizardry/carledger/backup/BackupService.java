@@ -1,16 +1,13 @@
 package de.codeflowwizardry.carledger.backup;
 
-import java.io.BufferedWriter;
-import java.io.ByteArrayOutputStream;
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.UncheckedIOException;
-import java.io.Writer;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
@@ -52,6 +49,7 @@ import de.codeflowwizardry.carledger.rest.records.CarInput;
 import de.codeflowwizardry.carledger.rest.device.TrackPointInput;
 import de.codeflowwizardry.carledger.rest.records.input.SettingsInput;
 import de.codeflowwizardry.carledger.tracker.DeviceTokens;
+import io.quarkus.narayana.jta.runtime.TransactionConfiguration;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
@@ -74,8 +72,11 @@ public class BackupService
 	static final long MAX_UNPACKED = 1024L * 1024 * 1024;
 	static final int MAX_ENTRIES = 100_000;
 	static final long MAX_JSON = 16L * 1024 * 1024;
-	/** track points per insert of a restore */
-	static final int TRACK_BATCH = 1000;
+	/**
+	 * seconds of the transaction of a backup or a restore, a year of track points
+	 * takes a while
+	 */
+	static final String TIMEOUT = "carledger.backup.transaction-timeout";
 	private static final Pattern SHA_256 = Pattern.compile("[0-9a-f]{64}");
 
 	private final AccountRepository accountRepository;
@@ -116,13 +117,14 @@ public class BackupService
 	}
 
 	/**
-	 * @return the ZIP with all data of the user
+	 * Writes the ZIP with all data of the user, as it goes: a year of track points
+	 * is never in memory at once
 	 */
 	@Transactional
-	public byte[] create(String user)
+	@TransactionConfiguration(timeoutFromConfigProperty = TIMEOUT)
+	public void create(String user, OutputStream out)
 	{
 		AccountEntity account = accountRepository.findByIdentifier(user);
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		try (ZipOutputStream zip = new ZipOutputStream(out))
 		{
 			Files files = new Files(zip);
@@ -143,7 +145,6 @@ public class BackupService
 		{
 			throw new UncheckedIOException(e);
 		}
-		return out.toByteArray();
 	}
 
 	/**
@@ -175,9 +176,15 @@ public class BackupService
 		 */
 		BackupFile.File track(CarEntity car, Map<Long, Integer> trackers) throws IOException
 		{
+			if (!trackPointRepository.exists(car.getId()))
+			{
+				return null;
+			}
 			String path = "tracks/" + next++;
-			// the ZIP stays open for the next entries
-			OutputStream entry = new FilterOutputStream(zip) {
+			zip.putNextEntry(new ZipEntry(path));
+			zip.write((BackupFile.TRACK_HEADER + "\n").getBytes(StandardCharsets.UTF_8));
+			// straight from the database, the ZIP stays open for the next entries
+			trackPointRepository.copyOut(car.getId(), trackers, new FilterOutputStream(zip) {
 				@Override
 				public void write(byte[] bytes, int offset, int length) throws IOException
 				{
@@ -185,54 +192,13 @@ public class BackupService
 				}
 
 				@Override
-				public void close() throws IOException
+				public void close()
 				{
-					flush();
 				}
-			};
-			Writer writer = new BufferedWriter(new OutputStreamWriter(entry, StandardCharsets.UTF_8));
-			boolean[] any = {
-					false
-			};
-			try
-			{
-				trackPointRepository.forEachStored(car.getId(), point -> {
-					try
-					{
-						if (!any[0])
-						{
-							zip.putNextEntry(new ZipEntry(path));
-							writer.write(BackupFile.TRACK_HEADER + "\n");
-							any[0] = true;
-						}
-						writer.write(trackers.get(point.deviceId()) + ","
-								+ point.ts().withOffsetSameInstant(ZoneOffset.UTC) + "," + point.lat() + ","
-								+ point.lon() + "," + value(point.speed()) + "," + value(point.alt()) + ","
-								+ value(point.hdop()) + "\n");
-					}
-					catch (IOException e)
-					{
-						throw new UncheckedIOException(e);
-					}
-				});
-			}
-			catch (UncheckedIOException e)
-			{
-				throw e.getCause();
-			}
-			if (!any[0])
-			{
-				return null;
-			}
-			writer.close();
+			});
 			zip.closeEntry();
 			return new BackupFile.File(null, "text/csv", path);
 		}
-	}
-
-	private static String value(Double value)
-	{
-		return value == null ? "" : value.toString();
 	}
 
 	private BackupFile.Car car(CarEntity car, String user, Files files) throws IOException
@@ -345,6 +311,7 @@ public class BackupService
 	 *             if the account has cars already
 	 */
 	@Transactional
+	@TransactionConfiguration(timeoutFromConfigProperty = TIMEOUT)
 	public BackupSummary restore(String user, InputStream zip)
 	{
 		try (BackupArchive entries = new BackupArchive(zip, MAX_ENTRIES, MAX_UNPACKED))
@@ -564,67 +531,69 @@ public class BackupService
 		// the points refer to the car and the trackers by id, outside of Hibernate
 		em.flush();
 		OffsetDateTime now = OffsetDateTime.now();
-		Map<Long, List<TrackPointInput>> batches = new HashMap<>();
-		int[] restored = {
-				0
-		};
 		boolean[] header = {
 				true
 		};
-		boolean found = entries.readLines(track.path(), line -> {
-			if (header[0])
-			{
-				if (!BackupFile.TRACK_HEADER.equals(line.strip()))
+		try (TrackPointRepository.Bulk bulk = trackPointRepository.bulk(car.getId()))
+		{
+			boolean found = entries.readLines(track.path(), line -> {
+				if (header[0])
+				{
+					if (!BackupFile.TRACK_HEADER.equals(line.strip()))
+					{
+						Utils.requireValid(List.of("The track of a car of the backup cannot be read!"));
+					}
+					header[0] = false;
+					return;
+				}
+				if (line.isBlank())
+				{
+					return;
+				}
+				String[] values = line.split(",", -1);
+				long device;
+				TrackPointInput point;
+				try
+				{
+					if (values.length != 7)
+					{
+						throw new IllegalArgumentException("7 values expected");
+					}
+					device = devices.get(Integer.parseInt(values[0]));
+					point = new TrackPointInput(time(values[1]), Double.valueOf(values[2]),
+							Double.valueOf(values[3]), number(values[4]), number(values[5]), number(values[6]));
+				}
+				catch (RuntimeException e)
 				{
 					Utils.requireValid(List.of("The track of a car of the backup cannot be read!"));
+					throw e;
 				}
-				header[0] = false;
-				return;
-			}
-			if (line.isBlank())
-			{
-				return;
-			}
-			String[] values = line.split(",", -1);
-			long device;
-			TrackPointInput point;
-			try
-			{
-				if (values.length != 7)
+				if (point.isValid(now))
 				{
-					throw new IllegalArgumentException("7 values expected");
+					bulk.add(device, point);
 				}
-				device = devices.get(Integer.parseInt(values[0]));
-				point = new TrackPointInput(OffsetDateTime.parse(values[1]), Double.valueOf(values[2]),
-						Double.valueOf(values[3]), number(values[4]), number(values[5]), number(values[6]));
-			}
-			catch (RuntimeException e)
+			});
+			if (!found)
 			{
-				Utils.requireValid(List.of("The track of a car of the backup cannot be read!"));
-				throw e;
+				Utils.requireValid(List.of("The file " + track.path() + " is missing in the backup!"));
 			}
-			if (point.isValid(now))
-			{
-				List<TrackPointInput> batch = batches.computeIfAbsent(device, d -> new ArrayList<>());
-				batch.add(point);
-				if (batch.size() == TRACK_BATCH)
-				{
-					restored[0] += trackPointRepository.insert(device, car.getId(), batch);
-					batch.clear();
-				}
-			}
-		});
-		if (!found)
-		{
-			Utils.requireValid(List.of("The file " + track.path() + " is missing in the backup!"));
+			return bulk.finish();
 		}
-		batches.forEach((device, batch) -> {
-			if (!batch.isEmpty())
-			{
-				restored[0] += trackPointRepository.insert(device, car.getId(), batch);
-			}
-		});
-		return restored[0];
+	}
+
+	/**
+	 * @return the time of epoch seconds, or ISO-8601 as in the backups of the dev
+	 *         builds before 0.7.0
+	 */
+	private static OffsetDateTime time(String value)
+	{
+		if (value.indexOf('T') >= 0)
+		{
+			return OffsetDateTime.parse(value);
+		}
+		BigDecimal seconds = new BigDecimal(value);
+		return Instant.ofEpochSecond(seconds.longValue(),
+				seconds.remainder(BigDecimal.ONE).movePointRight(9).longValue()).atOffset(ZoneOffset.UTC);
 	}
 
 	private static Double number(String value)

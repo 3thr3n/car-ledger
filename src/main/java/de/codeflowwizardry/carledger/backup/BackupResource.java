@@ -21,6 +21,7 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.StreamingOutput;
 
 /**
  * Backup of the own data, and its restore into an account without cars
@@ -47,7 +48,10 @@ public class BackupResource extends AbstractResource
 	public Response download()
 	{
 		String name = context.getName().toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]+", "-");
-		return Response.ok(backupService.create(context.getName()), ZIP)
+		String user = context.getName();
+		// streamed: a backup with a year of track points has tens of MB
+		StreamingOutput zip = out -> backupService.create(user, out);
+		return Response.ok(zip, ZIP)
 				.header("Content-Disposition",
 						"attachment; filename=\"car-ledger-backup-" + name + "-" + LocalDate.now() + ".zip\"")
 				.build();
