@@ -2579,16 +2579,31 @@ export type DeleteTracksData = {
     path: {
         carId: number;
     };
-    query?: never;
+    query?: {
+        /**
+         * Start of the range, inclusive
+         */
+        from?: OffsetDateTime;
+        /**
+         * End of the range, exclusive
+         */
+        to?: OffsetDateTime;
+    };
     url: '/api/track/{carId}';
 };
 
 export type DeleteTracksErrors = {
     /**
+     * Only one end of the range, or an empty range
+     */
+    400: Array<unknown>;
+    /**
      * Car is not yours.
      */
     404: unknown;
 };
+
+export type DeleteTracksError = DeleteTracksErrors[keyof DeleteTracksErrors];
 
 export type DeleteTracksResponses = {
     /**

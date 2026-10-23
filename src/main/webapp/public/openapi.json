@@ -5185,7 +5185,7 @@
         "tags" : [ "Track Resource" ]
       },
       "delete" : {
-        "description" : "Deletes all GPS track points of the car, its trackers stay.",
+        "description" : "Deletes the GPS track points of the car in a range, e.g. a wrong track, or all without one. Its trackers stay.",
         "operationId" : "deleteTracks",
         "parameters" : [ {
           "name" : "carId",
@@ -5195,6 +5195,20 @@
             "type" : "integer",
             "format" : "int64"
           }
+        }, {
+          "description" : "Start of the range, inclusive",
+          "name" : "from",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          }
+        }, {
+          "description" : "End of the range, exclusive",
+          "name" : "to",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          }
         } ],
         "responses" : {
           "200" : {
@@ -5203,6 +5217,17 @@
               "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/TracksDeleted"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Only one end of the range, or an empty range",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
                 }
               }
             }

@@ -64,11 +64,14 @@ public class TrackResource extends AbstractResource
 
 	@DELETE
 	@Produces(MediaType.APPLICATION_JSON)
-	@Operation(operationId = "deleteTracks", description = "Deletes all GPS track points of the car, its trackers stay.")
+	@Operation(operationId = "deleteTracks", description = "Deletes the GPS track points of the car in a range, e.g. a wrong track, or all without one. Its trackers stay.")
 	@APIResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = TracksDeleted.class)))
+	@APIResponse(responseCode = "400", description = "Only one end of the range, or an empty range", content = @Content(schema = @Schema(implementation = List.class)))
 	@APIResponse(responseCode = "404", description = "Car is not yours.")
-	public TracksDeleted deleteTracks(@PathParam("carId") long carId)
+	public TracksDeleted deleteTracks(@PathParam("carId") long carId,
+			@Parameter(description = "Start of the range, inclusive") @QueryParam("from") OffsetDateTime from,
+			@Parameter(description = "End of the range, exclusive") @QueryParam("to") OffsetDateTime to)
 	{
-		return new TracksDeleted(trackRetention.deleteAll(carId, context.getName()));
+		return new TracksDeleted(trackRetention.delete(carId, from, to, context.getName()));
 	}
 }

@@ -1,6 +1,7 @@
 package de.codeflowwizardry.carledger.tracker;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -21,7 +22,8 @@ import jakarta.transaction.Transactional;
 
 /**
  * How long the GPS track points of a car are kept: they are personal data, the
- * owner sets the days or deletes them all. Older points are deleted every
+ * owner sets the days or deletes them, all or of a period. Older points are
+ * deleted every
  * night.
  */
 @ApplicationScoped
@@ -50,12 +52,27 @@ public class TrackRetention
 	}
 
 	/**
+	 * Deletes the points of a period, e.g. a wrong track, or all without one
+	 *
+	 * @param from
+	 *            inclusive, with <code>to</code> or without both
+	 * @param to
+	 *            exclusive
 	 * @return the amount of points deleted
 	 */
 	@Transactional
-	public int deleteAll(long carId, String username)
+	public int delete(long carId, OffsetDateTime from, OffsetDateTime to, String username)
 	{
-		return trackPointRepository.delete(owned(carId, username).getId(), null);
+		List<String> errors = new ArrayList<>();
+		if ((from == null) != (to == null))
+		{
+			errors.add("From and to must be set both, or none for all points!");
+		} else if (from != null && !to.isAfter(from))
+		{
+			errors.add("To must be after from!");
+		}
+		Utils.requireValid(errors);
+		return trackPointRepository.delete(owned(carId, username).getId(), from, to);
 	}
 
 	private CarEntity owned(long carId, String username)
@@ -92,7 +109,7 @@ public class TrackRetention
 			try
 			{
 				// one transaction per car, a failing car must not keep the points of the others
-				deleted += QuarkusTransaction.requiringNew().call(() -> trackPointRepository.delete(car.getId(),
+				deleted += QuarkusTransaction.requiringNew().call(() -> trackPointRepository.delete(car.getId(), null,
 						now.minusDays(car.getTrackRetentionDays())));
 			}
 			catch (Exception e)

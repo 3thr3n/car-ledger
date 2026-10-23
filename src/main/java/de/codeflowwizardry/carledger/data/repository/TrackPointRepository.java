@@ -154,28 +154,30 @@ public class TrackPointRepository
 	}
 
 	/**
-	 * Deletes the points of the car, all of them without <code>before</code>
+	 * Deletes the points of the car in the range, open on a side without a time
 	 *
-	 * @param before
+	 * @param from
+	 *            inclusive
+	 * @param to
 	 *            exclusive, the points of this time stay
 	 * @return the amount of points deleted
 	 */
-	public int delete(long carId, OffsetDateTime before)
+	public int delete(long carId, OffsetDateTime from, OffsetDateTime to)
 	{
-		return before == null
-				? update("DELETE FROM track_point WHERE tk_car_id = ?", carId, null)
-				: update("DELETE FROM track_point WHERE tk_car_id = ? AND tk_ts < ?", carId, before);
-	}
-
-	private int update(String sql, long carId, OffsetDateTime time)
-	{
+		String sql = "DELETE FROM track_point WHERE tk_car_id = ?" + (from == null ? "" : " AND tk_ts >= ?")
+				+ (to == null ? "" : " AND tk_ts < ?");
 		try (Connection connection = dataSource.getConnection();
 				PreparedStatement statement = connection.prepareStatement(sql))
 		{
-			statement.setLong(1, carId);
-			if (time != null)
+			int index = 1;
+			statement.setLong(index++, carId);
+			if (from != null)
 			{
-				statement.setObject(2, time);
+				statement.setObject(index++, from);
+			}
+			if (to != null)
+			{
+				statement.setObject(index, to);
 			}
 			return statement.executeUpdate();
 		}
