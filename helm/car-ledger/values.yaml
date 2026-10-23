@@ -53,6 +53,11 @@ carLedger:
     # ingress gets the annotation nginx.ingress.kubernetes.io/proxy-body-size with this value (unless
     # set in ingress.annotations); other proxies in front of the app need a similar limit
     maxRequestSize: 12M
+  # backup of the users in the settings: seconds a download or a restore may take, a car that keeps its
+  # track points forever has millions of them. A restore is an upload: a larger backup needs a larger
+  # attachments.maxRequestSize
+  backup:
+    transactionTimeout: 1800
   # events as signed HTTP webhooks (see docs/WEBHOOKS.md); without a url nothing is sent
   webhook:
     url:
