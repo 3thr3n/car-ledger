@@ -47,6 +47,18 @@ public class DeviceEntity
 		this.tokenHash = tokenHash;
 	}
 
+	/**
+	 * A tracker of a backup, with its times
+	 */
+	public DeviceEntity(CarEntity car, String name, String tokenHash, OffsetDateTime createdAt,
+			OffsetDateTime lastSeenAt, OffsetDateTime revokedAt)
+	{
+		this(car, name, tokenHash);
+		this.createdAt = createdAt;
+		this.lastSeenAt = lastSeenAt;
+		this.revokedAt = revokedAt;
+	}
+
 	public Long getId()
 	{
 		return id;

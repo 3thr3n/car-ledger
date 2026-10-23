@@ -33,6 +33,11 @@ public record BackupFile(String format, int version, OffsetDateTime createdAt, S
 	public static final int VERSION = 1;
 	/** name of this content in the ZIP */
 	public static final String ENTRY = "backup.json";
+	/**
+	 * first line of the CSV of the track points, tracker is the index in
+	 * {@link Car#trackers()}, times in ISO-8601, km/h and meters
+	 */
+	public static final String TRACK_HEADER = "tracker,ts,lat,lon,speed,alt,hdop";
 
 	public record Settings(String vatCountry, String currency, String language, UnitSystem unitSystem)
 	{
@@ -46,11 +51,28 @@ public record BackupFile(String format, int version, OffsetDateTime createdAt, S
 	 * @param tripLog
 	 *            missing in backups before it could be turned off: on with
 	 *            trips
+	 * @param trackRetentionDays
+	 *            days the track points are kept, forever without
+	 * @param trackers
+	 *            the GPS trackers, missing in backups before them
+	 * @param track
+	 *            CSV with the track points ({@link #TRACK_HEADER}), only for a
+	 *            car that keeps them forever and has some
 	 */
 	public record Car(String name, int year, int odometer, LocalDate odometerDate, String licensePlate, String vin,
 			LocalDate purchaseDate, BigDecimal purchasePrice, EnergyType energyType, BigDecimal tankSize,
 			BigDecimal batteryCapacity, File picture, List<Bill> bills, List<RecurringBill> recurringBills,
-			List<Reminder> reminders, List<Trip> trips, Boolean tripLog)
+			List<Reminder> reminders, List<Trip> trips, Boolean tripLog, Integer trackRetentionDays,
+			List<Tracker> trackers, File track)
+	{
+	}
+
+	/**
+	 * A GPS tracker. Its token isn't in the backup, only the SHA-256 the server
+	 * stores: after a restore on another server it keeps sending.
+	 */
+	public record Tracker(String name, String tokenHash, OffsetDateTime createdAt, OffsetDateTime lastSeenAt,
+			OffsetDateTime revokedAt)
 	{
 	}
 
