@@ -262,6 +262,28 @@ tests:
             persistentVolumeClaim:
               claimName: tracker-firmware
 
+  - it: pulls the app and the firmware image with the pull secrets
+    set:
+      carLedger.imagePullSecrets: [{name: regcred}]
+      carLedger.tracker.firmware.volume:
+        image:
+          reference: registry.example.com/tracker-firmware:v1.0.0
+    asserts:
+      - equal:
+          path: spec.template.spec.imagePullSecrets
+          value: [{name: regcred}]
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: tracker-firmware
+            image:
+              reference: registry.example.com/tracker-firmware:v1.0.0
+
+  - it: needs no pull secrets for public images
+    asserts:
+      - notExists:
+          path: spec.template.spec.imagePullSecrets
+
   - it: hides flashing without a firmware volume
     asserts:
       - notContains:

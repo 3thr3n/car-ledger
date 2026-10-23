@@ -20,6 +20,9 @@ carLedger:
     repository: ghcr.io/3thr3n/car-ledger
     # defaults to the appVersion of the chart: the image of the same build for published charts
     tag: ""
+  # secrets of type kubernetes.io/dockerconfigjson for private registries, e.g. [{name: regcred}]. They
+  # apply to every image of the pod: the app and an image volume of tracker.firmware
+  imagePullSecrets: []
   securityContext:
     runAsNonRoot: true
   # OpenID Connect provider, Keycloak of the keycloak chart by default, any other works as well
@@ -75,7 +78,7 @@ carLedger:
       # a volume source, e.g.
       # persistentVolumeClaim:
       #   claimName: tracker-firmware
-      # or an OCI image with the files (Kubernetes 1.33+):
+      # or an OCI image with the files (Kubernetes 1.33+), from a private registry with imagePullSecrets:
       # image:
       #   reference: registry.example.com/car-ledger/tracker-firmware:v1.0.0
       #   pullPolicy: IfNotPresent

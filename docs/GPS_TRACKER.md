@@ -83,6 +83,9 @@ ConfigMap is too small for the firmware:
 
 ```yaml
 carLedger:
+  # for an image from a private registry, applies to the app image as well
+  imagePullSecrets:
+    - name: regcred
   tracker:
     firmware:
       # an OCI image with the files (Kubernetes 1.33+), or e.g. persistentVolumeClaim: {claimName: tracker-firmware}

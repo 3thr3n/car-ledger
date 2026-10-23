@@ -16,6 +16,10 @@ spec:
     spec:
       automountServiceAccountToken: false
       serviceAccountName: "car-ledger-sa"
+      {{- with .Values.carLedger.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: car-ledger
           image: "{{ .Values.carLedger.image.repository }}:{{ .Values.carLedger.image.tag | default .Chart.AppVersion }}"
