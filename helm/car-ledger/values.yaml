@@ -66,6 +66,22 @@ carLedger:
     # further origins the style loads tiles, glyphs or sprites from, e.g. ["https://tiles.example.com"];
     # the origin of the styleUrl is allowed anyway
     sources: []
+  # GPS trackers (see docs/GPS_TRACKER.md)
+  tracker:
+    # release of the tracker firmware (manifest.json and the files it lists), the users flash it from the
+    # browser. It isn't part of the image and only served to logged-in users. Without a volume, flashing
+    # is hidden
+    firmware:
+      # a volume source, e.g.
+      # persistentVolumeClaim:
+      #   claimName: tracker-firmware
+      # or an OCI image with the files (Kubernetes 1.33+):
+      # image:
+      #   reference: registry.example.com/car-ledger/tracker-firmware:v1.0.0
+      #   pullPolicy: IfNotPresent
+      volume: {}
+      # directory of the volume with the manifest.json, its root without one
+      subPath: ""
   # notifications as push messages to the browsers that turn them on in the settings (see
   # docs/DEPLOYMENT.md#push). Needs no other service: the chart generates the key of the server
   # into the secret car-ledger-push and keeps it, a new key ends all subscriptions
