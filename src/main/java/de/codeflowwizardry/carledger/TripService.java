@@ -58,7 +58,8 @@ public class TripService
 	/** a time of the device may be ahead of the server by this */
 	static final Duration CLOCK_TOLERANCE = Duration.ofMinutes(5);
 
-	private static final UUID NONE = new UUID(0, 0);
+	/** excludes no trip of the queries */
+	public static final UUID NONE = new UUID(0, 0);
 
 	private final TripRepository tripRepository;
 	private final CarRepository carRepository;
@@ -235,6 +236,15 @@ public class TripService
 	 * @return the highest reading before the time: the odometer of the car,
 	 *         maintenance bills and trips
 	 */
+	/**
+	 * @return the lowest start of a trip at the time: the highest odometer known
+	 *         before, of the car, a maintenance or another trip
+	 */
+	public int minimumOdometer(CarEntity car, OffsetDateTime time)
+	{
+		return highestBefore(car, time, NONE);
+	}
+
 	private int highestBefore(CarEntity car, OffsetDateTime time, UUID exclude)
 	{
 		LocalDate day = day(time);

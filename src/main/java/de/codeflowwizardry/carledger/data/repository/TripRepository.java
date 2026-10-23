@@ -95,6 +95,17 @@ public class TripRepository implements PanacheRepositoryBase<TripEntity, UUID>
 	}
 
 	/**
+	 * @return the latest end of the finished trips, not of deleted ones
+	 */
+	public Optional<OffsetDateTime> latestEnd(CarEntity car)
+	{
+		return Optional.ofNullable(getEntityManager().createQuery(
+				"select max(t.endedAt) from trip t where t.car = :car and t.deletedAt is null", OffsetDateTime.class)
+				.setParameter("car", car)
+				.getSingleResult());
+	}
+
+	/**
 	 * @return the highest odometer of the trips started before the time, the end
 	 *         or the start of an open one; not of deleted trips, like the
 	 *         methods below
