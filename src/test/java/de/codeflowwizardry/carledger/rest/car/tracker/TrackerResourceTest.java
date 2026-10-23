@@ -3,6 +3,7 @@ package de.codeflowwizardry.carledger.rest.car.tracker;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.OffsetDateTime;
@@ -247,6 +248,59 @@ class TrackerResourceTest
 				.pathParam("carId", otherCarId)
 				.when()
 				.post("{id}/revoke", id)
+				.then()
+				.statusCode(404);
+	}
+
+	@Test
+	void shouldRenewTheToken()
+	{
+		Map<String, Object> created = add(carId, "ESP32");
+		String old = (String) created.get("token");
+		long id = id(created);
+
+		String token = given()
+				.pathParam("carId", carId)
+				.when()
+				.post("{id}/token", id)
+				.then()
+				.statusCode(200)
+				.body("device.id", is((int) id))
+				.body("device.name", is("ESP32"))
+				.extract()
+				.path("token");
+
+		assertNotEquals(old, token);
+		assertTrue(deviceService.authenticate(old).isEmpty());
+		assertEquals(id, deviceService.authenticate(token).orElseThrow().deviceId());
+	}
+
+	@Test
+	void shouldNotRenewTheTokenOfARevokedTracker()
+	{
+		Map<String, Object> created = add(carId, "ESP32");
+		long id = id(created);
+		given().pathParam("carId", carId).when().post("{id}/revoke", id).then().statusCode(200);
+
+		given()
+				.pathParam("carId", carId)
+				.when()
+				.post("{id}/token", id)
+				.then()
+				.statusCode(409);
+
+		assertTrue(deviceService.authenticate((String) created.get("token")).isEmpty());
+	}
+
+	@Test
+	void shouldNotRenewTheTokenOfAnotherUser()
+	{
+		long id = deviceService.create(otherCarId, new DeviceInput("ESP32"), "paul").device().id();
+
+		given()
+				.pathParam("carId", otherCarId)
+				.when()
+				.post("{id}/token", id)
 				.then()
 				.statusCode(404);
 	}

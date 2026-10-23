@@ -55,6 +55,18 @@ public class TrackerResource extends AbstractResource
 	}
 
 	@POST
+	@Path("{id}/token")
+	@Produces(MediaType.APPLICATION_JSON)
+	@Operation(operationId = "renewTrackerToken", description = "A new token for the tracker, the old one stops working. The answer contains it, it can't be shown again.")
+	@APIResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = DeviceCreated.class)))
+	@APIResponse(responseCode = "404", description = "Tracker not found for the car of your user.")
+	@APIResponse(responseCode = "409", description = "The tracker is revoked.")
+	public DeviceCreated renewTrackerToken(@PathParam("carId") long carId, @PathParam("id") long id)
+	{
+		return deviceService.renewToken(carId, id, context.getName());
+	}
+
+	@POST
 	@Path("{id}/revoke")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "revokeTracker", description = "The token of the tracker stops working, its points stay.")

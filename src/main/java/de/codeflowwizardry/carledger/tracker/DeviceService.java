@@ -20,7 +20,9 @@ import de.codeflowwizardry.carledger.rest.device.TrackPointInput;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.ClientErrorException;
 import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.core.Response;
 
 /**
  * The GPS trackers of the cars: the owner creates and revokes them, a tracker
@@ -71,6 +73,28 @@ public class DeviceService
 		String token = DeviceTokens.generate();
 		DeviceEntity entity = new DeviceEntity(car, input.name().strip(), DeviceTokens.hash(token));
 		deviceRepository.persist(entity);
+		return new DeviceCreated(Device.convert(entity), token);
+	}
+
+	/**
+	 * A new token for the tracker, e.g. to set it up again after its token got
+	 * lost; the old token stops working, the tracker and its points stay.
+	 *
+	 * @throws ClientErrorException
+	 *             409 for a revoked tracker, it stays revoked
+	 */
+	@Transactional
+	public DeviceCreated renewToken(long carId, long id, String username)
+	{
+		DeviceEntity entity = deviceRepository.find(carId, id, username)
+				.orElseThrow(() -> new NotFoundException("Tracker not found for the car of your user."));
+		if (entity.getRevokedAt() != null)
+		{
+			throw new ClientErrorException(Response.status(Response.Status.CONFLICT)
+					.entity("The tracker is revoked!").build());
+		}
+		String token = DeviceTokens.generate();
+		entity.setTokenHash(DeviceTokens.hash(token));
 		return new DeviceCreated(Device.convert(entity), token);
 	}
 
