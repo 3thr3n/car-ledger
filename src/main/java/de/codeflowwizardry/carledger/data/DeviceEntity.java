@@ -24,7 +24,7 @@ public class DeviceEntity
 	private String name;
 
 	/** SHA-256 of the token, hex */
-	@Column(name = "dv_token_hash", nullable = false, updatable = false, length = 64)
+	@Column(name = "dv_token_hash", nullable = false, length = 64)
 	private String tokenHash;
 
 	@Column(name = "dv_created_at", nullable = false, updatable = false)
@@ -80,6 +80,14 @@ public class DeviceEntity
 	public OffsetDateTime getRevokedAt()
 	{
 		return revokedAt;
+	}
+
+	/**
+	 * A new token, the old one stops working
+	 */
+	public void setTokenHash(String tokenHash)
+	{
+		this.tokenHash = tokenHash;
 	}
 
 	public void revoke()
