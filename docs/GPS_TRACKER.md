@@ -165,13 +165,16 @@ the reason on boot, e.g. `Config: no token`.
 
 Track points are personal data. In *Edit car* → *GPS trackers* → *Track history* the owner chooses how long the points
 of the car are kept (forever by default, or 7 days to 2 years); every night at 02:30 (time zone of the server) the
-points older than that are deleted. *Delete all tracks* deletes all points of the car at once, its trackers stay.
+points older than that are deleted. *Delete all tracks* deletes all points of the car at once, its trackers stay. A
+wrong track, e.g. GPS jumps after a cold start, goes with *Delete this track* on the tab *Map*: the points of the day or
+period shown. Trips and odometers never depend on the track, only the track of a trip and its GPS distance follow.
 Deleting a car deletes its trackers and points as well.
 
-| Request                                          | Answer                                                  |
-|--------------------------------------------------|---------------------------------------------------------|
-| `PUT /api/track/{carId}/retention` `{"days":30}` | 204; `{"days":null}` keeps them forever, 1 to 3650 days |
-| `DELETE /api/track/{carId}`                      | `{"points":n}`, the points deleted                      |
+| Request                                          | Answer                                                                         |
+|--------------------------------------------------|--------------------------------------------------------------------------------|
+| `PUT /api/track/{carId}/retention` `{"days":30}` | 204; `{"days":null}` keeps them forever, 1 to 3650 days                        |
+| `DELETE /api/track/{carId}?from=…&to=…`          | `{"points":n}`, the points deleted from `from` (inclusive) to `to` (exclusive) |
+| `DELETE /api/track/{carId}`                      | `{"points":n}`, all points of the car                                          |
 
 The backup of a user contains the trackers of each car, with the SHA-256 of their tokens, never the tokens: after a
 restore on another server the trackers keep sending. A tracker whose hash is taken on the server already gets a new

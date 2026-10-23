@@ -10,6 +10,7 @@ test.describe.serial('GPS track', () => {
   let carId: number;
   /** time of the first point */
   let start: number;
+  let token: string;
 
   test.beforeAll(async ({ browser }) => {
     await deleteAllCars();
@@ -41,7 +42,7 @@ test.describe.serial('GPS track', () => {
       data: { name: 'ESP32' },
     });
     expect(tracker.status()).toBe(201);
-    const { token } = (await tracker.json()) as { token: string };
+    token = ((await tracker.json()) as { token: string }).token;
     await api.dispose();
 
     // 11 points in the last minute, 10 m apart to the north, faster and faster
@@ -114,5 +115,43 @@ test.describe.serial('GPS track', () => {
     await expect(
       track.getByTestId('track-map').locator('canvas'),
     ).toBeVisible();
+  });
+
+  test('deletes the track of a day, the day before stays', async () => {
+    const device = await request.newContext({ baseURL: API_URL });
+    const sent = await device.post('/api/device/points', {
+      headers: { Authorization: `Bearer ${token}` },
+      data: [
+        {
+          ts: new Date(Date.now() - 24 * 3600_000).toISOString(),
+          lat: 50,
+          lon: 10,
+        },
+      ],
+    });
+    expect(sent.status()).toBe(200);
+    await device.dispose();
+
+    await page.getByRole('tab', { name: 'Map' }).click();
+    await expect(
+      page.getByText('0.1 km GPS distance in 1 section'),
+    ).toBeVisible();
+    await page.getByRole('button', { name: 'Delete this track' }).click();
+
+    const dialog = page.getByRole('dialog', { name: /^Delete the track of/ });
+    await expect(dialog).toContainText('11 points of this period');
+    await dialog.getByRole('button', { name: 'Delete this track' }).click();
+
+    await expect(page.getByText('11 points deleted')).toBeVisible();
+    await expect(page.getByText('No track in this period.')).toBeVisible();
+    await expect(
+      page.getByRole('button', { name: 'Delete this track' }),
+    ).toHaveCount(0);
+
+    await page.getByRole('button', { name: 'Earlier' }).click();
+    await expect(
+      page.getByRole('button', { name: 'Delete this track' }),
+    ).toBeVisible();
+    await expect(page.getByText('No track in this period.')).toHaveCount(0);
   });
 });
