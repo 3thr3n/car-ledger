@@ -362,6 +362,10 @@ track:
   noSpeed: "No speed"
   notSetUp: "The map is not set up"
   notSetUpText: "The operator of CarLedger sets up a map server, see docs/GPS_TRACKER.md."
+  deletePeriod: "Delete this track"
+  deletePeriodTitle: "Delete the track of {{period}}?"
+  deletePeriodText_one: "{{count}} point of this period is deleted and can't be restored. Trips and odometers stay as they are."
+  deletePeriodText_other: "{{count}} points of this period are deleted and can't be restored. Trips and odometers stay as they are."
   history:
     title: "Track history"
     text: "The points of the trackers are personal data. Points older than the chosen period are deleted every night."

@@ -1,16 +1,28 @@
-import { Alert, IconButton, Stack, Tooltip, Typography } from '@mui/material';
+import {
+  Alert,
+  Button,
+  IconButton,
+  Stack,
+  Tooltip,
+  Typography,
+} from '@mui/material';
 import ChevronLeftRounded from '@mui/icons-material/ChevronLeftRounded';
 import ChevronRightRounded from '@mui/icons-material/ChevronRightRounded';
+import DeleteOutlineRounded from '@mui/icons-material/DeleteOutlineRounded';
 import MapRounded from '@mui/icons-material/MapRounded';
-import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'react-toastify';
 import {
+  deleteTracksMutation,
   getMapSettingsOptions,
   getTrackOptions,
 } from '@/generated/@tanstack/react-query.gen';
-import { localClient } from '@/utils/QueryClient';
+import { invalidateCar, localClient } from '@/utils/QueryClient';
+import { errorMessage } from '@/utils/BackendError';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import { toApiDate, useFormat } from '@/utils/format';
 import Section from '@/components/ui/Section';
 import EmptyState from '@/components/ui/EmptyState';
@@ -43,19 +55,36 @@ export default function TrackPage({ carId }: { carId: number }) {
   const days = from && to ? to.diff(from, 'day') + 1 : 0;
   const valid = days >= 1 && days <= MAX_DAYS;
 
-  const { data: track } = useQuery({
+  const period = {
+    from: from?.startOf('day').toISOString() ?? '',
+    to: to?.add(1, 'day').startOf('day').toISOString() ?? '',
+  };
+  const [deleting, setDeleting] = useState(false);
+
+  const { data: track, isPlaceholderData } = useQuery({
     ...getTrackOptions({
       client: localClient,
       path: { carId },
-      query: {
-        from: from?.startOf('day').toISOString() ?? '',
-        to: to?.add(1, 'day').startOf('day').toISOString() ?? '',
-      },
+      query: period,
     }),
     enabled: valid && !!settings?.styleUrl,
     // the old track stays on the map while the next one loads
     placeholderData: keepPreviousData,
   });
+
+  const remove = useMutation({
+    ...deleteTracksMutation({ client: localClient }),
+    onSuccess: async ({ points }) => {
+      toast.success(t('track.history.deleted', { count: points }));
+      await invalidateCar(carId);
+    },
+    onError: (e) => toast.error(errorMessage(e, t('errors.backend'))),
+  });
+
+  const shown =
+    days === 1
+      ? format.date(range.from)
+      : `${format.date(range.from)} – ${format.date(range.to)}`;
 
   /** the same amount of days before or after */
   const shift = (direction: -1 | 1) =>
@@ -139,8 +168,38 @@ export default function TrackPage({ carId }: { carId: number }) {
             track={track ?? { segments: [], distance: 0, points: 0 }}
           />
         )}
-        <SpeedLegend />
+        <Stack
+          direction={{ xs: 'column', sm: 'row' }}
+          spacing={1}
+          sx={{
+            alignItems: { sm: 'center' },
+            justifyContent: 'space-between',
+          }}
+        >
+          <SpeedLegend />
+          {/* not while the track of another period is loading */}
+          {track && valid && track.points > 0 && !isPlaceholderData && (
+            <Button
+              color="error"
+              size="small"
+              startIcon={<DeleteOutlineRounded />}
+              onClick={() => setDeleting(true)}
+              disabled={remove.isPending}
+              sx={{ alignSelf: { xs: 'flex-start', sm: 'center' } }}
+            >
+              {t('track.deletePeriod')}
+            </Button>
+          )}
+        </Stack>
       </Stack>
+      <ConfirmDialog
+        open={deleting}
+        title={t('track.deletePeriodTitle', { period: shown })}
+        text={t('track.deletePeriodText', { count: track?.points ?? 0 })}
+        confirmLabel={t('track.deletePeriod')}
+        onClose={() => setDeleting(false)}
+        onConfirm={() => remove.mutate({ path: { carId }, query: period })}
+      />
     </Section>
   );
 }

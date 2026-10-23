@@ -362,6 +362,10 @@ track:
   noSpeed: "Keine Geschwindigkeit"
   notSetUp: "Die Karte ist nicht eingerichtet"
   notSetUpText: "Der Betreiber von CarLedger richtet einen Kartenserver ein, siehe docs/GPS_TRACKER.md."
+  deletePeriod: "Diese Strecke löschen"
+  deletePeriodTitle: "Strecke vom {{period}} löschen?"
+  deletePeriodText_one: "{{count}} Punkt dieses Zeitraums wird gelöscht und kann nicht wiederhergestellt werden. Fahrten und Kilometerstände bleiben, wie sie sind."
+  deletePeriodText_other: "{{count}} Punkte dieses Zeitraums werden gelöscht und können nicht wiederhergestellt werden. Fahrten und Kilometerstände bleiben, wie sie sind."
   history:
     title: "Streckenverlauf"
     text: "Die Punkte der Tracker sind personenbezogene Daten. Punkte, die älter als der gewählte Zeitraum sind, werden jede Nacht gelöscht."
