@@ -616,6 +616,7 @@ backup:
   restoreOnlyEmpty: "Eine Sicherung kann nur in einem Konto ohne Fahrzeuge wiederhergestellt werden."
   restored: "Sicherung wiederhergestellt: {{cars}} Fahrzeug(e), {{bills}} Einträge, {{files}} Dateien"
   failed: "Die Sicherung konnte nicht wiederhergestellt werden"
+  tooLarge: "Das Backup ist größer, als der Server annimmt. Sein Betreiber kann die Grenze erhöhen (carLedger.attachments.maxRequestSize, siehe docs/DEPLOYMENT.md)."
 
 settings:
   title: "Einstellungen"

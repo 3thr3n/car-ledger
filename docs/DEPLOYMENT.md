@@ -171,7 +171,10 @@ with the role `user`, the roles are missing in the tokens of the client.
   413.
 - **Backups**: users download all of their data as ZIP in the settings and restore it into an account without cars.
   The restore is an upload as well and limited by `carLedger.attachments.maxRequestSize`: a backup with many receipts
-  can be larger, raise the limit (and the one of the proxies) for the restore.
+  or with GPS tracks kept forever can be larger, raise the limit (and the one of the proxies) for the restore; the app
+  explains a backup that is too large. The track points take about 6 bytes each in the ZIP: a year of commuting at
+  one point per second (2.3 million points) is 14 MB. A download or a restore may take
+  `carLedger.backup.transactionTimeout` seconds (1800), the other requests 60 s; such a restore takes under a minute.
 - **Webhooks**: `carLedger.webhook.url` sends events like a new car request as signed HTTP requests; the key of the
   signature comes from `carLedger.webhook.existingSecret`. See [WEBHOOKS.md](WEBHOOKS.md).
 - **Service accounts**: besides the login of the browser, the API accepts access tokens of the identity provider

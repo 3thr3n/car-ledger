@@ -10,7 +10,7 @@ import {
   restoreBackupMutation,
 } from '@/generated/@tanstack/react-query.gen';
 import queryClient, { baseUrl, localClient } from '@/utils/QueryClient';
-import { errorMessage } from '@/utils/BackendError';
+import { BackendError, errorMessage } from '@/utils/BackendError';
 
 /** where the browser downloads the backup */
 export const backupUrl = `${baseUrl}/api/user/me/backup`;
@@ -38,7 +38,13 @@ export default function BackupSection() {
       // the settings, the cars and everything below them
       return queryClient.invalidateQueries();
     },
-    onError: (error) => toast.error(errorMessage(error, t('backup.failed'))),
+    onError: (error) =>
+      toast.error(
+        // the limit of the server or of a proxy in front of it
+        error instanceof BackendError && error.status === 413
+          ? t('backup.tooLarge')
+          : errorMessage(error, t('backup.failed')),
+      ),
   });
 
   const pick = (event: ChangeEvent<HTMLInputElement>) => {
