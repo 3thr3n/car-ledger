@@ -95,6 +95,8 @@ export type BackupSummary = {
     reminders?: number;
     trips?: number;
     files?: number;
+    trackers?: number;
+    trackPoints?: number;
 };
 
 export type Bill = {
@@ -202,6 +204,7 @@ export type Car = {
     batteryCapacity?: number;
     tripLog: boolean;
     pictureId?: number;
+    trackRetentionDays?: number;
 };
 
 export type CarInput = {
@@ -627,6 +630,14 @@ export type TrackPoint = {
     lat: number;
     lon: number;
     speed?: number;
+};
+
+export type TrackRetentionInput = {
+    days?: number;
+};
+
+export type TracksDeleted = {
+    points: number;
 };
 
 export type Trip = {
@@ -2563,6 +2574,31 @@ export type GetMonthlyStatsResponses = {
 
 export type GetMonthlyStatsResponse = GetMonthlyStatsResponses[keyof GetMonthlyStatsResponses];
 
+export type DeleteTracksData = {
+    body?: never;
+    path: {
+        carId: number;
+    };
+    query?: never;
+    url: '/api/track/{carId}';
+};
+
+export type DeleteTracksErrors = {
+    /**
+     * Car is not yours.
+     */
+    404: unknown;
+};
+
+export type DeleteTracksResponses = {
+    /**
+     * OK
+     */
+    200: TracksDeleted;
+};
+
+export type DeleteTracksResponse = DeleteTracksResponses[keyof DeleteTracksResponses];
+
 export type GetTrackData = {
     body?: never;
     path: {
@@ -2602,6 +2638,35 @@ export type GetTrackResponses = {
 };
 
 export type GetTrackResponse = GetTrackResponses[keyof GetTrackResponses];
+
+export type SetTrackRetentionData = {
+    body: TrackRetentionInput;
+    path: {
+        carId: number;
+    };
+    query?: never;
+    url: '/api/track/{carId}/retention';
+};
+
+export type SetTrackRetentionErrors = {
+    /**
+     * Not 1 to 3650 days
+     */
+    400: unknown;
+    /**
+     * Car is not yours.
+     */
+    404: unknown;
+};
+
+export type SetTrackRetentionResponses = {
+    /**
+     * Saved.
+     */
+    204: void;
+};
+
+export type SetTrackRetentionResponse = SetTrackRetentionResponses[keyof SetTrackRetentionResponses];
 
 export type GetFirmwareSettingsData = {
     body?: never;

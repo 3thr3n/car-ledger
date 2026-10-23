@@ -25,6 +25,7 @@ import { errorMessage } from '@/utils/BackendError';
 import { useFormat } from '@/utils/format';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import TrackerAddDialog from '@/components/car/TrackerAddDialog';
+import TrackHistory from '@/components/car/TrackHistory';
 import LazyTrackerFlashDialog from '@/components/tracker/LazyTrackerFlashDialog';
 import useFirmware from '@/components/tracker/useFirmware';
 
@@ -33,7 +34,14 @@ import useFirmware from '@/components/tracker/useFirmware';
  * owner creates and revokes them, and flashes them over USB when the server has
  * the firmware
  */
-export default function TrackerSection({ carId }: { carId: number }) {
+export default function TrackerSection({
+  carId,
+  retentionDays,
+}: {
+  carId: number;
+  /** of the track points, forever without */
+  retentionDays?: number | null;
+}) {
   const { t } = useTranslation();
   const [adding, setAdding] = useState(false);
   const [revoking, setRevoking] = useState<Device>();
@@ -105,6 +113,12 @@ export default function TrackerSection({ carId }: { carId: number }) {
               </Fragment>
             ))}
           </Box>
+        )}
+        {trackers && trackers.length > 0 && (
+          <>
+            <Divider />
+            <TrackHistory carId={carId} retentionDays={retentionDays} />
+          </>
         )}
       </Stack>
       <TrackerAddDialog
