@@ -235,6 +235,24 @@ tests:
             name: CARLEDGER_MAP_STYLE_URL
           any: true
 
+  - it: gives a backup half an hour, or the time set
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: CARLEDGER_BACKUP_TRANSACTION_TIMEOUT
+            value: "1800"
+
+  - it: takes another time of a backup
+    set:
+      carLedger.backup.transactionTimeout: 3600
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: CARLEDGER_BACKUP_TRANSACTION_TIMEOUT
+            value: "3600"
+
   - it: suggests trips with the defaults of the app
     asserts:
       - contains:
