@@ -195,13 +195,13 @@ described in [values.yaml](helm/car-ledger/values.yaml), the options in [docs/DE
 
 ### Versions
 
-A [release](https://github.com/3thr3n/car-ledger/releases) (e.g. `0.6.0`) publishes the image
-`ghcr.io/3thr3n/car-ledger:0.6.0` and the charts `car-ledger` and `stack` in the same version, which run that image.
+A [release](https://github.com/3thr3n/car-ledger/releases) (e.g. `0.7.0`) publishes the image
+`ghcr.io/3thr3n/car-ledger:0.7.0` and the charts `car-ledger` and `stack` in the same version, which run that image.
 `keycloak` and `authentik` have their own versions, the release notes name them. Without `--version`, Helm installs the
 latest release.
 
-Every build of `develop` is published as a prerelease, `<next release>-dev.<run number>` (e.g. `0.7.0-dev.123`): `--devel`
-installs the latest one, a version range takes them only with a prerelease suffix (`>=0.7.0-0`). Leave
+Every build of `develop` is published as a prerelease, `<next release>-dev.<run number>` (e.g. `0.8.0-dev.123`): `--devel`
+installs the latest one, a version range takes them only with a prerelease suffix (`>=0.8.0-0`). Leave
 `carLedger.image.tag` empty, the chart runs the image of its own build.
 
 Up to 0.3.x the app chart was `oci://ghcr.io/3thr3n/car-ledger/helm`, since 0.4.0 it is `car-ledger`.
