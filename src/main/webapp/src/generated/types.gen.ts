@@ -180,6 +180,11 @@ export enum BillType {
     RECURRING = 'RECURRING'
 }
 
+export type Build = {
+    chipFamily: string;
+    parts: Array<Part>;
+};
+
 export type Car = {
     id?: number;
     name?: string;
@@ -272,6 +277,13 @@ export enum ChargingLocation {
     PUBLIC = 'PUBLIC'
 }
 
+export type ConfigPartition = {
+    offset: number;
+    size: number;
+    maxLength: number;
+    version: number;
+};
+
 export type CsvFields = {
     all?: Array<string>;
     required?: Array<string>;
@@ -316,6 +328,18 @@ export enum EnergyType {
     ELECTRIC = 'ELECTRIC',
     PLUG_IN_HYBRID = 'PLUG_IN_HYBRID'
 }
+
+export type FirmwareManifest = {
+    name: string;
+    version: string;
+    builds: Array<Build>;
+    config: ConfigPartition;
+    valid?: boolean;
+};
+
+export type FirmwareSettings = {
+    version?: string;
+};
 
 export type FuelBill = {
     attachments?: number;
@@ -452,6 +476,11 @@ export type Odometer = {
 };
 
 export type OffsetDateTime = string;
+
+export type Part = {
+    path: string;
+    offset: number;
+};
 
 export type PushSettings = {
     available: boolean;
@@ -2574,6 +2603,70 @@ export type GetTrackResponses = {
 
 export type GetTrackResponse = GetTrackResponses[keyof GetTrackResponses];
 
+export type GetFirmwareSettingsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/tracker/firmware';
+};
+
+export type GetFirmwareSettingsResponses = {
+    /**
+     * OK
+     */
+    200: FirmwareSettings;
+};
+
+export type GetFirmwareSettingsResponse = GetFirmwareSettingsResponses[keyof GetFirmwareSettingsResponses];
+
+export type GetFirmwareManifestData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/tracker/firmware/manifest.json';
+};
+
+export type GetFirmwareManifestErrors = {
+    /**
+     * Flashing isn't set up.
+     */
+    404: unknown;
+};
+
+export type GetFirmwareManifestResponses = {
+    /**
+     * OK
+     */
+    200: FirmwareManifest;
+};
+
+export type GetFirmwareManifestResponse = GetFirmwareManifestResponses[keyof GetFirmwareManifestResponses];
+
+export type GetFirmwareFileData = {
+    body?: never;
+    path: {
+        file: string;
+    };
+    query?: never;
+    url: '/api/tracker/firmware/{file}';
+};
+
+export type GetFirmwareFileErrors = {
+    /**
+     * Not a file of the manifest, or flashing isn't set up.
+     */
+    404: unknown;
+};
+
+export type GetFirmwareFileResponses = {
+    /**
+     * OK
+     */
+    200: Blob | File;
+};
+
+export type GetFirmwareFileResponse = GetFirmwareFileResponses[keyof GetFirmwareFileResponses];
+
 export type GetTrackersData = {
     body?: never;
     path: {
@@ -2645,6 +2738,36 @@ export type RevokeTrackerResponses = {
 };
 
 export type RevokeTrackerResponse = RevokeTrackerResponses[keyof RevokeTrackerResponses];
+
+export type RenewTrackerTokenData = {
+    body?: never;
+    path: {
+        carId: number;
+        id: number;
+    };
+    query?: never;
+    url: '/api/tracker/{carId}/{id}/token';
+};
+
+export type RenewTrackerTokenErrors = {
+    /**
+     * Tracker not found for the car of your user.
+     */
+    404: unknown;
+    /**
+     * The tracker is revoked.
+     */
+    409: unknown;
+};
+
+export type RenewTrackerTokenResponses = {
+    /**
+     * OK
+     */
+    200: DeviceCreated;
+};
+
+export type RenewTrackerTokenResponse = RenewTrackerTokenResponses[keyof RenewTrackerTokenResponses];
 
 export type GetTripsData = {
     body?: never;

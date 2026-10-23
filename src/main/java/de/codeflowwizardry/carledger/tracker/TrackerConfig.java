@@ -1,5 +1,7 @@
 package de.codeflowwizardry.carledger.tracker;
 
+import java.util.Optional;
+
 import io.smallrye.config.ConfigMapping;
 import io.smallrye.config.WithDefault;
 
@@ -21,4 +23,11 @@ public interface TrackerConfig
 	 */
 	@WithDefault("500")
 	int maxBatch();
+
+	/**
+	 * @return directory with a release of the tracker firmware (manifest.json and
+	 *         the files it lists), logged-in users flash it from the browser.
+	 *         Without one, flashing is hidden.
+	 */
+	Optional<String> firmwareDir();
 }
