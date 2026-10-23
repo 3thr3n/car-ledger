@@ -13,6 +13,7 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.rest.AbstractResource;
+import de.codeflowwizardry.carledger.tracker.TrackRetention;
 import de.codeflowwizardry.carledger.tracker.TrackService;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
@@ -25,12 +26,15 @@ import jakarta.ws.rs.core.MediaType;
 public class TrackResource extends AbstractResource
 {
 	private final TrackService trackService;
+	private final TrackRetention trackRetention;
 
 	@Inject
-	public TrackResource(SecurityIdentity identity, AccountRepository accountRepository, TrackService trackService)
+	public TrackResource(SecurityIdentity identity, AccountRepository accountRepository, TrackService trackService,
+			TrackRetention trackRetention)
 	{
 		super(identity, accountRepository);
 		this.trackService = trackService;
+		this.trackRetention = trackRetention;
 	}
 
 	@GET
@@ -44,5 +48,27 @@ public class TrackResource extends AbstractResource
 			@Parameter(description = "End of the range, exclusive", required = true) @QueryParam("to") OffsetDateTime to)
 	{
 		return trackService.track(carId, from, to, context.getName());
+	}
+
+	@PUT
+	@Path("retention")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Operation(operationId = "setTrackRetention", description = "Days the GPS track points of the car are kept, forever without. Older points are deleted every night; only the points of cars that keep them forever are in the backup.")
+	@APIResponse(responseCode = "204", description = "Saved.")
+	@APIResponse(responseCode = "400", description = "Not 1 to 3650 days", content = @Content(schema = @Schema(implementation = List.class)))
+	@APIResponse(responseCode = "404", description = "Car is not yours.")
+	public void setTrackRetention(@PathParam("carId") long carId, TrackRetentionInput input)
+	{
+		trackRetention.setRetention(carId, input, context.getName());
+	}
+
+	@DELETE
+	@Produces(MediaType.APPLICATION_JSON)
+	@Operation(operationId = "deleteTracks", description = "Deletes all GPS track points of the car, its trackers stay.")
+	@APIResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = TracksDeleted.class)))
+	@APIResponse(responseCode = "404", description = "Car is not yours.")
+	public TracksDeleted deleteTracks(@PathParam("carId") long carId)
+	{
+		return new TracksDeleted(trackRetention.deleteAll(carId, context.getName()));
 	}
 }

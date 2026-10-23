@@ -2,6 +2,8 @@ package de.codeflowwizardry.carledger.rest.car.track;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -18,6 +20,7 @@ import de.codeflowwizardry.carledger.data.AccountEntity;
 import de.codeflowwizardry.carledger.data.CarEntity;
 import de.codeflowwizardry.carledger.data.TripType;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
+import de.codeflowwizardry.carledger.data.repository.CarAccess.Action;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import de.codeflowwizardry.carledger.data.repository.TrackPointRepository;
 import de.codeflowwizardry.carledger.rest.car.tracker.DeviceInput;
@@ -358,5 +361,59 @@ class TrackResourceTest
 				.get("{id}/track", id)
 				.then()
 				.statusCode(404);
+	}
+
+	private Integer retention()
+	{
+		return QuarkusTransaction.requiringNew()
+				.call(() -> carRepository.findById(carId, "peter", Action.READ).getTrackRetentionDays());
+	}
+
+	@Test
+	void shouldSetTheRetention()
+	{
+		given().contentType(ContentType.JSON).pathParam("carId", carId).body(Map.of("days", 30))
+				.when().put("retention").then().statusCode(204);
+		assertEquals(30, retention());
+
+		// forever
+		given().contentType(ContentType.JSON).pathParam("carId", carId).body("{\"days\": null}")
+				.when().put("retention").then().statusCode(204);
+		assertNull(retention());
+	}
+
+	@Test
+	void shouldValidateTheRetention()
+	{
+		for (int days : new int[] {
+				0, -1, 3651
+		})
+		{
+			given().contentType(ContentType.JSON).pathParam("carId", carId).body(Map.of("days", days))
+					.when().put("retention").then().statusCode(400)
+					.body("", contains("The track points must be kept for 1 to 3650 days, or forever!"));
+		}
+		given().contentType(ContentType.JSON).pathParam("carId", carId).body(Map.of("days", 3650))
+				.when().put("retention").then().statusCode(204);
+	}
+
+	@Test
+	void shouldDeleteAllTracksAndKeepTheTrackers()
+	{
+		drive(0, 10, 50);
+
+		given().pathParam("carId", carId).when().delete().then().statusCode(200).body("points", is(10));
+
+		given().pathParam("carId", carId).queryParam("from", START.toString())
+				.queryParam("to", START.plusHours(1).toString()).when().get().then().body("points", is(0));
+		assertEquals(1, deviceService.list(carId, "peter").size());
+	}
+
+	@Test
+	void shouldNotChangeTheTracksOfAnotherCar()
+	{
+		given().contentType(ContentType.JSON).pathParam("carId", otherCarId).body(Map.of("days", 30))
+				.when().put("retention").then().statusCode(404);
+		given().pathParam("carId", otherCarId).when().delete().then().statusCode(404);
 	}
 }

@@ -34,11 +34,14 @@ import de.codeflowwizardry.carledger.data.EnergyType;
  *            the trip log is used, trips can be started
  * @param pictureId
  *            id of the own picture, changes with every new picture
+ * @param trackRetentionDays
+ *            days the GPS track points are kept, missing for forever
  */
 public record Car(Long id, String name, int year, int odometer, LocalDate odometerDate,
 		@Schema(required = true) Odometer currentOdometer, long amountBills, String licensePlate, String vin,
 		LocalDate purchaseDate, BigDecimal purchasePrice, @Schema(required = true) EnergyType energyType,
-		BigDecimal tankSize, BigDecimal batteryCapacity, @Schema(required = true) boolean tripLog, Long pictureId)
+		BigDecimal tankSize, BigDecimal batteryCapacity, @Schema(required = true) boolean tripLog, Long pictureId,
+		Integer trackRetentionDays)
 {
 	public static Car convert(CarEntity carEntity, long amountBills, Odometer currentOdometer)
 	{
@@ -47,6 +50,6 @@ public record Car(Long id, String name, int year, int odometer, LocalDate odomet
 				carEntity.getVin(),
 				carEntity.getPurchaseDate(), carEntity.getPurchasePrice(), carEntity.getEnergyType(),
 				carEntity.getTankSize(), carEntity.getBatteryCapacity(), carEntity.isTripLog(),
-				carEntity.getPictureId());
+				carEntity.getPictureId(), carEntity.getTrackRetentionDays());
 	}
 }
