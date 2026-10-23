@@ -98,7 +98,7 @@ class BackupTrackTest
 		QuarkusTransaction.requiringNew().run(() -> {
 			trackPointRepository.insert(created.device().id(), carId, List.of(
 					new TrackPointInput(START, 50.1, 10.2, 42.5, 250.0, 1.2),
-					new TrackPointInput(START.plusSeconds(1), 50.10001, 10.20001, null, null, null)));
+					new TrackPointInput(START.plusSeconds(1), 50.1000123, 10.2000149, null, null, null)));
 			trackPointRepository.insert(old, carId,
 					List.of(new TrackPointInput(START.minusDays(1), -33.9, 151.2, 0.0, -2.5, 0.8)));
 		});
@@ -210,9 +210,9 @@ class BackupTrackTest
 
 		assertEquals("""
 				tracker,ts,lat,lon,speed,alt,hdop
-				1,2026-10-19T08:00Z,-33.9,151.2,0.0,-2.5,0.8
-				0,2026-10-20T08:00Z,50.1,10.2,42.5,250.0,1.2
-				0,2026-10-20T08:00:01Z,50.10001,10.20001,,,
+				1,1792396800,-33.9,151.2,0,-2.5,0.8
+				0,1792483200,50.1,10.2,42.5,250,1.2
+				0,1792483201,50.100012,10.200015,,,
 				""", track(entries, car));
 	}
 
@@ -281,6 +281,24 @@ class BackupTrackTest
 		long restored = restoredCar();
 		assertNotEquals(restored, deviceService.authenticate(token).orElseThrow().carId());
 		assertEquals(3, points(restored));
+	}
+
+	@Test
+	void shouldRestoreTheIsoTimesOfTheDevBuilds() throws IOException
+	{
+		Map<String, byte[]> entries = unzip(download());
+		deleteCar();
+		JsonNode car = mapper.readTree(entries.get("backup.json")).get("cars").get(0);
+		entries.put(car.get("track").get("path").asText(), """
+				tracker,ts,lat,lon,speed,alt,hdop
+				1,2026-10-19T08:00Z,-33.9,151.2,0.0,-2.5,0.8
+				0,2026-10-20T08:00:00.5+02:00,50.1,10.2,42.5,250.0,1.2
+				""".getBytes(StandardCharsets.UTF_8));
+
+		restore(zip(entries)).statusCode(200).body("trackPoints", is(2));
+		given().queryParam("from", START.minusHours(3).toString()).queryParam("to", START.toString())
+				.when().get("/api/track/{carId}", restoredCar()).then().body("points", is(1))
+				.body("segments[0][0].ts", is("2026-10-20T06:00:00.5Z"));
 	}
 
 	@Test
