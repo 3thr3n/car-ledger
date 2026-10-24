@@ -189,6 +189,7 @@ car:
     track: "Karte"
     reminders: "Erinnerungen"
     modifications: "Umbauten"
+    inspections: "HU"
   overview:
     totalCost: "Gesamtkosten"
     avgConsumption: "Ø Verbrauch"
@@ -204,6 +205,7 @@ car:
     running: "Laufende Kosten"
     reminders: "Erinnerungen"
     modifications: "Umbauten"
+    inspections: "HU"
     remindersEmpty: "Noch keine Erinnerungen"
     runningEmpty: "Keine laufenden Kosten"
     addRecurring: "Laufende Kosten anlegen"
@@ -1061,3 +1063,49 @@ modification:
       INSPECTION: "Abnahmebericht"
       PHOTO: "Foto"
       OTHER: "Sonstiges"
+
+inspection:
+  title: "HU"
+  subtitle: "Die Hauptuntersuchung mit AU: das Ergebnis, die Mängel und der Prüfbericht. Der nächste Termin verschiebt die Erinnerung an die HU."
+  add:
+    button: "HU hinzufügen"
+    title: "HU hinzufügen"
+  edit:
+    title: "HU bearbeiten"
+  added: "HU hinzugefügt"
+  updated: "HU gespeichert"
+  deleted: "HU gelöscht"
+  delete:
+    title: "Diese HU löschen?"
+    text: "Sie ist samt Prüfbericht weg. Die Erinnerung an die HU bleibt."
+  empty:
+    title: "Noch keine HU"
+    text: "Trage die letzte mit ihrem Prüfbericht ein: Der nächste Termin wird zur Erinnerung an die HU."
+  details: "Details"
+  nextDue: "Nächste HU {{month}}"
+  nextDueHint: "Die Erinnerung an die HU wird auf diesen Monat verschoben."
+  fields:
+    date: "Datum"
+    odometer: "Kilometerstand"
+    testingBody: "Prüforganisation"
+    result: "Ergebnis"
+    defects: "Mängel"
+    nextDue: "Nächste HU"
+  results:
+    NO_DEFECTS: "Ohne Mängel"
+    MINOR_DEFECTS: "Geringe Mängel"
+    MAJOR_DEFECTS: "Erhebliche Mängel"
+    DANGEROUS_DEFECTS: "Gefährliche Mängel"
+    UNSAFE: "Verkehrsunsicher"
+  resultHints:
+    MINOR_DEFECTS: "Bestanden, die Mängel sind sofort zu beheben."
+    MAJOR_DEFECTS: "Nicht bestanden: Trage die Nachprüfung innerhalb eines Monats als eigene HU ein."
+    DANGEROUS_DEFECTS: "Nicht bestanden, das Auto darf nur noch zur Werkstatt gefahren werden."
+    UNSAFE: "Nicht bestanden, das Auto darf nicht mehr gefahren werden."
+  errors:
+    nextDue: "Nach dem Monat der HU."
+  files:
+    title: "Prüfbericht und Dateien"
+    add: "Datei hinzufügen"
+    empty: "Noch kein Prüfbericht."
+    deleteText: "Die Datei wird endgültig gelöscht, die HU bleibt."

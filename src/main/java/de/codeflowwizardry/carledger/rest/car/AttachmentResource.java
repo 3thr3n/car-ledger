@@ -28,8 +28,8 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 /**
- * Files attached to the bills of a car (e.g. receipts) and the documents of its
- * modifications
+ * Files attached to the bills of a car (e.g. receipts), the documents of its
+ * modifications and the reports of its HUs
  */
 @Path("attachment/{carId}")
 public class AttachmentResource extends AbstractResource
@@ -115,6 +115,44 @@ public class AttachmentResource extends AbstractResource
 
 		AttachmentEntity attachment = attachmentService.addToModification(carId, modificationId, context.getName(),
 				file.fileName(), kind, read(file));
+		return Response.created(URI.create("attachment/" + carId + "/" + attachment.getId()))
+				.entity(Attachment.convert(attachment))
+				.build();
+	}
+
+	@GET
+	@Path("technical-inspection/{inspectionId}")
+	@Produces(MediaType.APPLICATION_JSON)
+	@Operation(operationId = "getTechnicalInspectionFiles", description = "Files of the HU, e.g. the report, oldest first")
+	@APIResponse(responseCode = "200", description = "Files found.")
+	@APIResponse(responseCode = "404", description = "Technical inspection not found.")
+	public List<Attachment> getTechnicalInspectionFiles(@PathParam("carId") long carId,
+			@PathParam("inspectionId") long inspectionId)
+	{
+		return attachmentService.listForTechnicalInspection(carId, inspectionId, context.getName()).stream()
+				.map(Attachment::convert)
+				.toList();
+	}
+
+	@POST
+	@Path("technical-inspection/{inspectionId}")
+	@Consumes(MediaType.MULTIPART_FORM_DATA)
+	@Produces(MediaType.APPLICATION_JSON)
+	@Operation(operationId = "addTechnicalInspectionFile", description = "Attaches a JPEG, PNG, WebP or PDF file to the HU, e.g. the report")
+	@APIResponse(responseCode = "201", description = "File attached.", content = @Content(schema = @Schema(implementation = Attachment.class)))
+	@APIResponse(responseCode = "400", description = "File empty, too large, of another type or too many files", content = @Content(schema = @Schema(implementation = List.class)))
+	@APIResponse(responseCode = "404", description = "Technical inspection not found.")
+	@APIResponse(responseCode = "413", description = "Request larger than allowed by the server.")
+	public Response addTechnicalInspectionFile(@PathParam("carId") long carId,
+			@PathParam("inspectionId") long inspectionId, @RestForm("file") FileUpload file)
+	{
+		if (file == null)
+		{
+			throw new BadRequestException(Response.status(400).entity(List.of("No file uploaded!")).build());
+		}
+
+		AttachmentEntity attachment = attachmentService.addToTechnicalInspection(carId, inspectionId,
+				context.getName(), file.fileName(), read(file));
 		return Response.created(URI.create("attachment/" + carId + "/" + attachment.getId()))
 				.entity(Attachment.convert(attachment))
 				.build();

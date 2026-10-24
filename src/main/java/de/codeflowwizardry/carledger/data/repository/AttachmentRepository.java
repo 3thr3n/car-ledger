@@ -51,6 +51,23 @@ public class AttachmentRepository implements PanacheRepository<AttachmentEntity>
 	}
 
 	/**
+	 * @return files of the technical inspection, if the user may see its car,
+	 *         oldest first
+	 */
+	public List<AttachmentEntity> listForTechnicalInspection(long carId, long inspectionId, String userId)
+	{
+		return list("technicalInspection.id = :inspectionId and car.id = :carId and "
+				+ CarAccess.condition("car", Action.READ),
+				Sort.by("createdAt").and("id"),
+				Map.of("inspectionId", inspectionId, "carId", carId, CarAccess.USER, userId));
+	}
+
+	public long countForTechnicalInspection(long inspectionId)
+	{
+		return count("technicalInspection.id", inspectionId);
+	}
+
+	/**
 	 * @return the attachment, if the user may do the action with its car
 	 */
 	public Optional<AttachmentEntity> findForUser(long carId, long id, String userId, Action action)
@@ -75,6 +92,15 @@ public class AttachmentRepository implements PanacheRepository<AttachmentEntity>
 	public Map<Long, Long> countPerModification(Collection<Long> modificationIds)
 	{
 		return countPer("modification", modificationIds);
+	}
+
+	/**
+	 * @return amount of files per technical inspection, inspections without any
+	 *         are missing
+	 */
+	public Map<Long, Long> countPerTechnicalInspection(Collection<Long> inspectionIds)
+	{
+		return countPer("technicalInspection", inspectionIds);
 	}
 
 	private Map<Long, Long> countPer(String owner, Collection<Long> ids)

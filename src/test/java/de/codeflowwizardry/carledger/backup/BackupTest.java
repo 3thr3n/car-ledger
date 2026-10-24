@@ -2,6 +2,7 @@ package de.codeflowwizardry.carledger.backup;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
@@ -36,6 +37,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import de.codeflowwizardry.carledger.ModificationService;
 import de.codeflowwizardry.carledger.ReminderService;
+import de.codeflowwizardry.carledger.TechnicalInspectionService;
 import de.codeflowwizardry.carledger.TripService;
 import de.codeflowwizardry.carledger.attachment.AttachmentService;
 import de.codeflowwizardry.carledger.data.Accent;
@@ -47,6 +49,7 @@ import de.codeflowwizardry.carledger.data.CarEntity;
 import de.codeflowwizardry.carledger.data.ChargingLocation;
 import de.codeflowwizardry.carledger.data.DocumentKind;
 import de.codeflowwizardry.carledger.data.EnergyType;
+import de.codeflowwizardry.carledger.data.InspectionResult;
 import de.codeflowwizardry.carledger.data.TripType;
 import de.codeflowwizardry.carledger.data.factory.ChargingBillFactory;
 import de.codeflowwizardry.carledger.data.factory.FuelBillFactory;
@@ -58,6 +61,7 @@ import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import de.codeflowwizardry.carledger.rest.car.charging.ChargingBillInput;
 import de.codeflowwizardry.carledger.rest.car.fuel.FuelBillInput;
 import de.codeflowwizardry.carledger.rest.car.maintenance.MaintenanceBillInput;
+import de.codeflowwizardry.carledger.rest.car.inspection.TechnicalInspectionInput;
 import de.codeflowwizardry.carledger.rest.car.miscellaneous.MiscellaneousBillInput;
 import de.codeflowwizardry.carledger.rest.car.modification.ModificationInput;
 import de.codeflowwizardry.carledger.rest.car.recurring.RecurringBillInput;
@@ -105,6 +109,8 @@ class BackupTest
 	@Inject
 	ModificationService modificationService;
 	@Inject
+	TechnicalInspectionService technicalInspectionService;
+	@Inject
 	AttachmentService attachmentService;
 	@Inject
 	ObjectMapper mapper;
@@ -140,6 +146,11 @@ class BackupTest
 						LocalDate.of(2025, 1, 20), 41_000, null, null, null, List.of(maintenance)),
 				"peter").id();
 		attachmentService.addToModification(carId, coilovers, "peter", "gutachten.pdf", DocumentKind.APPROVAL, PDF);
+
+		long hu = technicalInspectionService.create(carId, new TechnicalInspectionInput(LocalDate.of(2025, 3, 3),
+				41_300, "DEKRA", InspectionResult.MINOR_DEFECTS, "Wiper blades", LocalDate.of(2027, 3, 1)), "peter")
+				.id();
+		attachmentService.addToTechnicalInspection(carId, hu, "peter", "hu.pdf", PDF);
 
 		UUID business = UUID.randomUUID();
 		tripService.start(carId, business, new TripStartInput(TripType.BUSINESS, 41_500,
@@ -263,6 +274,17 @@ class BackupTest
 		assertArrayEquals(PNG, entries.get(car.get("picture").get("path").asText()));
 		assertEquals(2, car.get("recurringBills").get(0).get("payments").size());
 		assertEquals(15_000, car.get("reminders").get(0).get("intervalKm").asInt());
+		JsonNode hu = car.get("technicalInspections").get(0);
+		assertEquals("MINOR_DEFECTS", hu.get("result").asText());
+		assertEquals("2027-03-01", hu.get("nextDue").asText());
+		assertArrayEquals(PDF, entries.get(hu.get("files").get(0).get("path").asText()));
+		// the reminder of the HU, kept by the app
+		boolean kept = false;
+		for (JsonNode reminder : car.get("reminders"))
+		{
+			kept |= "TECHNICAL_INSPECTION".equals(reminder.path("kind").asText());
+		}
+		assertTrue(kept);
 		// the bill by its index, the maintenance is the oldest
 		JsonNode modification = car.get("modifications").get(0);
 		assertEquals("PARTS_REPORT", modification.get("approvalType").asText());
@@ -292,10 +314,11 @@ class BackupTest
 				.body("cars", is(1))
 				.body("bills", is(4))
 				.body("recurringBills", is(1))
-				.body("reminders", is(1))
 				.body("trips", is(2))
 				.body("modifications", is(1))
-				.body("files", is(4));
+				.body("technicalInspections", is(1))
+				.body("reminders", is(2))
+				.body("files", is(5));
 
 		long restored = given().when().get("/api/car/my").then().statusCode(200)
 				.body("name", contains("Golf GTE"))
@@ -318,7 +341,10 @@ class BackupTest
 				.body("data[0].name", is("Insurance"))
 				.body("data[0].total", is(90.0F));
 		given().when().get("/api/reminder/{carId}", restored).then()
-				.body("[0].title", is("Service"));
+				.body("title", containsInAnyOrder("Service", "HU"));
+		given().when().get("/api/technical-inspection/{carId}", restored).then()
+				.body("[0].defects", is("Wiper blades"))
+				.body("[0].documents", is(1));
 		long maintenance = given().when().get("/api/bill/{carId}/maintenance/all", restored).then()
 				.extract().jsonPath().getLong("data[0].id");
 		given().when().get("/api/modification/{carId}", restored).then()

@@ -306,6 +306,10 @@
           "modifications" : {
             "type" : "integer",
             "format" : "int32"
+          },
+          "technicalInspections" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         }
       },
@@ -1103,6 +1107,10 @@
           }
         }
       },
+      "InspectionResult" : {
+        "type" : "string",
+        "enum" : [ "NO_DEFECTS", "MINOR_DEFECTS", "MAJOR_DEFECTS", "DANGEROUS_DEFECTS", "UNSAFE" ]
+      },
       "LinkedBill" : {
         "type" : "object",
         "required" : [ "id", "type", "date", "total" ],
@@ -1783,6 +1791,71 @@
       "SortOrder" : {
         "type" : "string",
         "enum" : [ "ASC", "DESC" ]
+      },
+      "TechnicalInspection" : {
+        "type" : "object",
+        "required" : [ "id", "carId", "date", "result", "passed", "documents" ],
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "carId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "date" : {
+            "type" : "string",
+            "$ref" : "#/components/schemas/LocalDate"
+          },
+          "odometer" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "testingBody" : {
+            "type" : "string"
+          },
+          "result" : {
+            "$ref" : "#/components/schemas/InspectionResult"
+          },
+          "defects" : {
+            "type" : "string"
+          },
+          "nextDue" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          },
+          "passed" : {
+            "type" : "boolean"
+          },
+          "documents" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      },
+      "TechnicalInspectionInput" : {
+        "type" : "object",
+        "properties" : {
+          "date" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          },
+          "odometer" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "testingBody" : {
+            "type" : "string"
+          },
+          "result" : {
+            "$ref" : "#/components/schemas/InspectionResult"
+          },
+          "defects" : {
+            "type" : "string"
+          },
+          "nextDue" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          }
+        }
       },
       "TotalStats" : {
         "type" : "object",
@@ -2696,6 +2769,117 @@
           }
         },
         "summary" : "Add Modification Document",
+        "tags" : [ "Attachment Resource" ]
+      }
+    },
+    "/api/attachment/{carId}/technical-inspection/{inspectionId}" : {
+      "get" : {
+        "description" : "Files of the HU, e.g. the report, oldest first",
+        "operationId" : "getTechnicalInspectionFiles",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "inspectionId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Files found.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/Attachment"
+                  }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Technical inspection not found."
+          }
+        },
+        "summary" : "Get Technical Inspection Files",
+        "tags" : [ "Attachment Resource" ]
+      },
+      "post" : {
+        "description" : "Attaches a JPEG, PNG, WebP or PDF file to the HU, e.g. the report",
+        "operationId" : "addTechnicalInspectionFile",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "inspectionId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "multipart/form-data" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "file" : {
+                    "type" : "string",
+                    "format" : "binary"
+                  }
+                }
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "File attached.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Attachment"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "File empty, too large, of another type or too many files",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Technical inspection not found."
+          },
+          "413" : {
+            "description" : "Request larger than allowed by the server."
+          }
+        },
+        "summary" : "Add Technical Inspection File",
         "tags" : [ "Attachment Resource" ]
       }
     },
@@ -5709,6 +5893,179 @@
         },
         "summary" : "Get Monthly Stats",
         "tags" : [ "Stats Resource" ]
+      }
+    },
+    "/api/technical-inspection/{carId}" : {
+      "get" : {
+        "description" : "The HUs of a car, the latest first.",
+        "operationId" : "getTechnicalInspections",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/TechnicalInspection"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary" : "Get Technical Inspections",
+        "tags" : [ "Technical Inspection Resource" ]
+      },
+      "put" : {
+        "description" : "Adds an HU. The next due month of the latest one moves the reminder of the HU of the car.",
+        "operationId" : "addTechnicalInspection",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/TechnicalInspectionInput"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "202" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TechnicalInspection"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed, please check the response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Car is not for your user."
+          }
+        },
+        "summary" : "Add Technical Inspection",
+        "tags" : [ "Technical Inspection Resource" ]
+      }
+    },
+    "/api/technical-inspection/{carId}/{id}" : {
+      "post" : {
+        "operationId" : "updateTechnicalInspection",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/TechnicalInspectionInput"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TechnicalInspection"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed, please check the response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Technical inspection not found for the car of your user."
+          }
+        },
+        "summary" : "Update Technical Inspection",
+        "tags" : [ "Technical Inspection Resource" ]
+      },
+      "delete" : {
+        "description" : "Deletes an HU with its files, the reminder stays.",
+        "operationId" : "deleteTechnicalInspection",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "Deleted"
+          },
+          "404" : {
+            "description" : "Technical inspection not found for the car of your user."
+          }
+        },
+        "summary" : "Delete Technical Inspection",
+        "tags" : [ "Technical Inspection Resource" ]
       }
     },
     "/api/track/{carId}" : {
