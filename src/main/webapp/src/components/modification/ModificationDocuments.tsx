@@ -9,7 +9,7 @@ import {
 } from '@mui/material';
 import AttachFileRounded from '@mui/icons-material/AttachFileRounded';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { ChangeEvent, useRef, useState } from 'react';
+import { ChangeEvent, MouseEvent, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
 import { addModificationDocument, DocumentKind } from '@/generated';
@@ -23,6 +23,7 @@ import { prepareUpload } from '@/utils/image';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import AttachmentTile from '@/components/bill/AttachmentTile';
 import { ACCEPT, contentUrl } from '@/components/bill/attachments';
+import { openKeptDocument } from './useOfflineDocuments';
 
 export interface ModificationDocumentsProps {
   carId: number;
@@ -80,6 +81,15 @@ export default function ModificationDocuments({
     },
     onError: () => toast.error(t('errors.backend')),
   });
+
+  /** without a connection the kept copy, if there is one */
+  const open = (url: string) => (event: MouseEvent<HTMLAnchorElement>) => {
+    if (navigator.onLine) return;
+    event.preventDefault();
+    void openKeptDocument(url, window.open('', '_blank')).then(
+      (opened) => opened || toast.info(t('modification.offline.notKept')),
+    );
+  };
 
   const pick = (chosen: DocumentKind) => {
     setMenu(undefined);
@@ -153,6 +163,7 @@ export default function ModificationDocuments({
                       pdf={document.contentType === 'application/pdf'}
                       url={contentUrl(carId, document.id!)}
                       onRemove={() => setToDelete(document.id)}
+                      onOpen={open(contentUrl(carId, document.id!))}
                     />
                   ))}
               </Stack>

@@ -5,15 +5,24 @@ import {
   Query,
   QueryClient,
 } from '@tanstack/react-query';
+import { forgetDocuments } from './documents';
 import { OfflineStore } from './store';
 
 /**
  * The queries a form needs without a connection: the account (units, VAT,
  * currency), the cars (energy type, tank size, odometer) and their open trip
- * with the minimum odometer of the next start. Not the lists of the bills and
- * trips.
+ * with the minimum odometer of the next start, and the modifications with
+ * their documents to show them at a roadside check. Not the lists of the bills
+ * and trips.
  */
-const KEPT = new Set(['getMyself', 'getMyCars', 'getMyCar', 'getCurrentTrip']);
+const KEPT = new Set([
+  'getMyself',
+  'getMyCars',
+  'getMyCar',
+  'getCurrentTrip',
+  'getModifications',
+  'getModificationDocuments',
+]);
 const KEY = 'queries';
 /** writes at most once per this many ms */
 const DELAY = 500;
@@ -54,7 +63,11 @@ export function keepQueries(client: QueryClient, store: OfflineStore) {
   });
 }
 
-/** on the logout: the next user of the device doesn't see them */
-export function forgetQueries(store: OfflineStore) {
-  return store.delete('cache', KEY).catch(() => undefined);
+/**
+ * On the logout: the next user of the device doesn't see them, nor the kept
+ * documents
+ */
+export async function forgetQueries(store: OfflineStore) {
+  await store.delete('cache', KEY).catch(() => undefined);
+  await forgetDocuments(store).catch(() => undefined);
 }

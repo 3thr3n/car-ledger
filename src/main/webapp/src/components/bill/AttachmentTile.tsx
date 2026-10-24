@@ -1,6 +1,7 @@
 import { Box, IconButton, Tooltip, Typography } from '@mui/material';
 import CloseRounded from '@mui/icons-material/CloseRounded';
 import PictureAsPdfRounded from '@mui/icons-material/PictureAsPdfRounded';
+import { MouseEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 
 export const TILE = 88;
@@ -11,12 +12,15 @@ export default function AttachmentTile({
   pdf,
   url,
   onRemove,
+  onOpen,
 }: {
   name: string;
   pdf: boolean;
   /** undefined while the preview of a picked file is prepared */
   url?: string;
   onRemove: () => void;
+  /** before the link opens the file, e.g. to open a kept copy offline */
+  onOpen?: (event: MouseEvent<HTMLAnchorElement>) => void;
 }) {
   const { t } = useTranslation();
 
@@ -28,6 +32,7 @@ export default function AttachmentTile({
           href={url}
           target="_blank"
           rel="noopener"
+          onClick={onOpen}
           aria-label={t('attachments.open', { name })}
           sx={{
             display: 'flex',

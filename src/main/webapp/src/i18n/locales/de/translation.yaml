@@ -1041,6 +1041,16 @@ modification:
     removedDate: "Gib an, wann es ausgebaut wurde."
     removedBeforeInstalled: "Vor dem Einbau."
     removedBelowInstalled: "Unter dem Kilometerstand beim Einbau."
+  offline:
+    label: "Dokumente offline verfügbar"
+    text: "Speichert die Dokumente der verbauten Teile auf diesem Gerät, z. B. für eine Verkehrskontrolle ohne Verbindung."
+    saving: "Dokumente werden gespeichert…"
+    saved_one: "{{count}} Dokument gespeichert {{time}}. Ohne Verbindung zeigt es diesen Stand, es kann veraltet sein."
+    saved_other: "{{count}} Dokumente gespeichert {{time}}. Ohne Verbindung zeigen sie diesen Stand, sie können veraltet sein."
+    skipped_one: "Nicht gespeichert, über {{size}} auf diesem Gerät: {{names}}"
+    skipped_other: "{{count}} nicht gespeichert, über {{size}} auf diesem Gerät: {{names}}"
+    failed: "Die Dokumente konnten nicht auf diesem Gerät gespeichert werden"
+    notKept: "Dieses Dokument ist nicht offline verfügbar"
   documents:
     title: "Dokumente"
     add: "Dokument hinzufügen"
