@@ -6,11 +6,13 @@ package de.codeflowwizardry.carledger.data;
 public enum ApprovalType {
 	/** Allgemeine Betriebserlaubnis of the part, no inspection */
 	ABE,
+	/** Teiletypgenehmigung of the part, no inspection */
+	PART_TYPE_APPROVAL,
 	/** Teilegutachten, needs an Änderungsabnahme (§19.3 StVZO) */
 	PARTS_REPORT,
 	/** Einzelabnahme of the car with the part (§21 StVZO) */
 	SINGLE_APPROVAL,
-	/** EG type approval or E-mark of the part */
+	/** EG type approval of the car or an E-mark of the part */
 	EC_TYPE_APPROVAL,
 	/** the part needs no approval */
 	NONE;

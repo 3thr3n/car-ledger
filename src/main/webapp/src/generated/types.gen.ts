@@ -75,6 +75,7 @@ export type AdminStats = {
 
 export enum ApprovalType {
     ABE = 'ABE',
+    PART_TYPE_APPROVAL = 'PART_TYPE_APPROVAL',
     PARTS_REPORT = 'PARTS_REPORT',
     SINGLE_APPROVAL = 'SINGLE_APPROVAL',
     EC_TYPE_APPROVAL = 'EC_TYPE_APPROVAL',
