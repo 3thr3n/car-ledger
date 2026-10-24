@@ -31,6 +31,7 @@ import de.codeflowwizardry.carledger.rest.AbstractResource;
 import de.codeflowwizardry.carledger.tripexport.TripCsvWriter;
 import de.codeflowwizardry.carledger.tripexport.TripExport;
 import de.codeflowwizardry.carledger.tripexport.TripExportService;
+import de.codeflowwizardry.carledger.papers.CarPapersService;
 import de.codeflowwizardry.carledger.tripexport.TripPdfWriter;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
@@ -50,6 +51,7 @@ public class ExportResource extends AbstractResource
 	private final BillRepository billRepository;
 	private final RecurringBillPaymentRepository recurringBillPaymentRepository;
 	private final TripExportService tripExportService;
+	private final CarPapersService carPapersService;
 
 	@Inject
 	public ExportResource(SecurityIdentity identity, AccountRepository accountRepository,
@@ -57,7 +59,8 @@ public class ExportResource extends AbstractResource
 			ChargingBillRepository chargingBillRepository,
 			MaintenanceBillRepository maintenanceBillRepository,
 			MiscellaneousBillRepository miscellaneousBillRepository, BillRepository billRepository,
-			RecurringBillPaymentRepository recurringBillPaymentRepository, TripExportService tripExportService)
+			RecurringBillPaymentRepository recurringBillPaymentRepository, TripExportService tripExportService,
+			CarPapersService carPapersService)
 	{
 		super(identity, accountRepository);
 		this.carRepository = carRepository;
@@ -68,6 +71,7 @@ public class ExportResource extends AbstractResource
 		this.billRepository = billRepository;
 		this.recurringBillPaymentRepository = recurringBillPaymentRepository;
 		this.tripExportService = tripExportService;
+		this.carPapersService = carPapersService;
 	}
 
 	@GET
@@ -176,6 +180,36 @@ public class ExportResource extends AbstractResource
 		return Response.ok(TripPdfWriter.write(export), APPLICATION_PDF)
 				.header("Content-Disposition", "attachment; filename=\"" + tripFileName(export, "pdf") + "\"")
 				.build();
+	}
+
+	@GET
+	@Path("papers/pdf")
+	@Produces(APPLICATION_PDF)
+	@Operation(operationId = "exportCarPapersPdf", description = """
+			Exports the modifications and the HUs of the car as PDF: the car, the modifications with their \
+			approval and the HUs, then their documents and reports, a PDF page by page and a photo per page. The \
+			installed parts and the latest HU, with history also the removed parts and all HUs. In the units of the \
+			account and the language (de, en; the one of the account without).""")
+	@APIResponse(responseCode = "200", description = "The papers as PDF.", content = @Content(mediaType = APPLICATION_PDF, schema = @Schema(type = SchemaType.STRING, format = "binary")))
+	@APIResponse(responseCode = "400", description = "An unknown language.")
+	@APIResponse(responseCode = "404", description = "Car not found.")
+	public Response exportCarPapersPdf(@PathParam("carId") long carId, @QueryParam("history") boolean history,
+			@QueryParam("language") String language)
+	{
+		byte[] pdf = carPapersService.pdf(carId, context.getName(), history, Optional.ofNullable(language));
+		CarEntity car = carRepository.findById(carId, context.getName(), Action.READ);
+		return Response.ok(pdf, APPLICATION_PDF)
+				.header("Content-Disposition",
+						"attachment; filename=\"" + papersFileName(car.getName(), LocalDate.now()) + "\"")
+				.build();
+	}
+
+	/**
+	 * @return e.g. <code>golf-gti-papers-2026-10-25.pdf</code>
+	 */
+	static String papersFileName(String carName, LocalDate date)
+	{
+		return name(carName) + "-papers-" + date + ".pdf";
 	}
 
 	/**

@@ -1109,3 +1109,11 @@ inspection:
     add: "Datei hinzufügen"
     empty: "Noch kein Prüfbericht."
     deleteText: "Die Datei wird endgültig gelöscht, die HU bleibt."
+
+papers:
+  button: "PDF exportieren"
+  title: "Umbauten und HU als PDF"
+  content:
+    current: "Für eine Kontrolle: die verbauten Teile und die letzte HU"
+    history: "Für den Verkauf: mit den ausgebauten Teilen und allen HUs"
+  text: "Die ersten Seiten listen die Umbauten mit ihren Genehmigungen und die HUs, danach folgen ihre Dokumente und Prüfberichte. Eine Kopie zur Information, die Originale müssen weiterhin im Auto sein."

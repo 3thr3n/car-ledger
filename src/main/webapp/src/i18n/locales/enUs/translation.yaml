@@ -1109,3 +1109,11 @@ inspection:
     add: "Add file"
     empty: "No report yet."
     deleteText: "The file is deleted permanently, the HU stays."
+
+papers:
+  button: "Export PDF"
+  title: "Modifications and HU as PDF"
+  content:
+    current: "For a check: the installed parts and the latest HU"
+    history: "For selling: with the removed parts and all HUs"
+  text: "The cover pages list the modifications with their approvals and the HUs, then their documents and reports follow. A copy for information, the originals still have to be in the car."

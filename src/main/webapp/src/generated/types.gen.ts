@@ -2509,6 +2509,38 @@ export type ExportAllExpensesCsvResponses = {
 
 export type ExportAllExpensesCsvResponse = ExportAllExpensesCsvResponses[keyof ExportAllExpensesCsvResponses];
 
+export type ExportCarPapersPdfData = {
+    body?: never;
+    path: {
+        carId: number;
+    };
+    query?: {
+        history?: boolean;
+        language?: string;
+    };
+    url: '/api/export/{carId}/papers/pdf';
+};
+
+export type ExportCarPapersPdfErrors = {
+    /**
+     * An unknown language.
+     */
+    400: unknown;
+    /**
+     * Car not found.
+     */
+    404: unknown;
+};
+
+export type ExportCarPapersPdfResponses = {
+    /**
+     * The papers as PDF.
+     */
+    200: Blob | File;
+};
+
+export type ExportCarPapersPdfResponse = ExportCarPapersPdfResponses[keyof ExportCarPapersPdfResponses];
+
 export type ExportTripsCsvData = {
     body?: never;
     path: {

@@ -8,6 +8,7 @@ import {
   useTheme,
 } from '@mui/material';
 import AddRounded from '@mui/icons-material/AddRounded';
+import FileDownloadRounded from '@mui/icons-material/FileDownloadRounded';
 import BuildRounded from '@mui/icons-material/BuildRounded';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
@@ -23,6 +24,7 @@ import { invalidateCar, localClient } from '@/utils/QueryClient';
 import Section from '@/components/ui/Section';
 import EmptyState from '@/components/ui/EmptyState';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
+import CarPapersDialog from '@/components/papers/CarPapersDialog';
 import ModificationList from '@/components/modification/ModificationList';
 import ModificationDialog from '@/components/modification/ModificationDialog';
 import RemoveModificationDialog from '@/components/modification/RemoveModificationDialog';
@@ -40,6 +42,7 @@ export default function ModificationsPage({ carId }: { carId: number }) {
   const isPhone = useMediaQuery(theme.breakpoints.down('sm'));
   const [shown, setShown] = useState<Shown>(ModificationState.INSTALLED);
   const [formOpen, setFormOpen] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const [toEdit, setToEdit] = useState<Modification>();
   const [toRemove, setToRemove] = useState<Modification>();
   const [toDelete, setToDelete] = useState<Modification>();
@@ -84,15 +87,34 @@ export default function ModificationsPage({ carId }: { carId: number }) {
 
   const installed = shown === ModificationState.INSTALLED;
 
+  const papersButton = (
+    <Button
+      size="small"
+      startIcon={<FileDownloadRounded />}
+      onClick={() => setExporting(true)}
+      sx={{ flexShrink: 0, whiteSpace: 'nowrap' }}
+    >
+      {t('papers.button')}
+    </Button>
+  );
+
   return (
     <Section
       title={t('modification.title')}
       subtitle={t('modification.subtitle')}
       // next to the title it would be cut off on a phone
-      action={!isPhone && addButton}
+      action={
+        !isPhone && (
+          <Stack direction="row" spacing={1} sx={{ flexShrink: 0 }}>
+            {papersButton}
+            {addButton}
+          </Stack>
+        )
+      }
     >
       <Stack spacing={2}>
         {isPhone && addButton}
+        {isPhone && papersButton}
         <ToggleButtonGroup
           size="small"
           exclusive
@@ -148,6 +170,11 @@ export default function ModificationsPage({ carId }: { carId: number }) {
         modification={toRemove}
         odometer={odometer}
         onClose={() => setToRemove(undefined)}
+      />
+      <CarPapersDialog
+        carId={carId}
+        open={exporting}
+        onClose={() => setExporting(false)}
       />
       <ConfirmDialog
         open={!!toDelete}
