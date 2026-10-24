@@ -29,6 +29,7 @@ import { currencySymbol, DEFAULT_CURRENCY, useFormat } from '@/utils/format';
 import Page from '@/components/layout/Page';
 import BackupSection, { backupUrl } from '@/components/settings/BackupSection';
 import OfflineSection from '@/components/settings/OfflineSection';
+import AppearanceSection from '@/components/settings/AppearanceSection';
 import NotificationSection from '@/components/settings/NotificationSection';
 import InstallSection from '@/components/install/InstallSection';
 import PageHeader from '@/components/ui/PageHeader';
@@ -68,6 +69,7 @@ export default function SettingsPage() {
       />
       {/* keyed, so the form starts with the loaded settings */}
       {account && <SettingsForm key={account.name} account={account} />}
+      {account && <AppearanceSection account={account} />}
       {account && <NotificationSection />}
       {account && <InstallSection />}
       {account && <BackupSection />}

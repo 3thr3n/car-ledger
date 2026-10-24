@@ -135,7 +135,7 @@ public class BackupService
 			}
 			BackupFile backup = new BackupFile(BackupFile.FORMAT, BackupFile.VERSION, OffsetDateTime.now(),
 					new BackupFile.Settings(account.getVatCountry(), account.getCurrency(), account.getLanguage(),
-							account.getUnitSystem()),
+							account.getUnitSystem(), account.getAccent()),
 					cars);
 			zip.putNextEntry(new ZipEntry(BackupFile.ENTRY));
 			zip.write(mapper.writerWithDefaultPrettyPrinter().writeValueAsBytes(backup));
@@ -392,7 +392,7 @@ public class BackupService
 			return;
 		}
 		SettingsInput input = new SettingsInput(settings.vatCountry(), settings.currency(), settings.language(),
-				settings.unitSystem());
+				settings.unitSystem(), settings.accent());
 		Utils.requireValid(input.validate());
 		account.setVatCountry(input.vatCountry());
 		account.setCurrency(input.currency());
@@ -400,6 +400,10 @@ public class BackupService
 		if (input.unitSystem() != null)
 		{
 			account.setUnitSystem(input.unitSystem());
+		}
+		if (input.accent() != null)
+		{
+			account.setAccent(input.accent());
 		}
 	}
 

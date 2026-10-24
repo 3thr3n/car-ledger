@@ -647,6 +647,15 @@ settings:
     EN: "English"
     DE: "Deutsch"
   saved: "Einstellungen gespeichert"
+  appearance:
+    title: "Darstellung"
+    text: "Die Akzentfarbe von Schaltflächen, Links und Hervorhebungen, gespeichert mit deinem Konto. Die Farben der Kategorien bleiben."
+    accents:
+      TEAL: "Petrol"
+      BLUE: "Blau"
+      VIOLET: "Violett"
+      ROSE: "Rosé"
+      AMBER: "Bernstein"
   deleteAccount:
     title: "Konto löschen"
     text: "Entfernt dein Konto mit allen Autos, Einträgen, laufenden Kosten und Erinnerungen."

@@ -37,6 +37,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.codeflowwizardry.carledger.ReminderService;
 import de.codeflowwizardry.carledger.TripService;
 import de.codeflowwizardry.carledger.attachment.AttachmentService;
+import de.codeflowwizardry.carledger.data.Accent;
 import de.codeflowwizardry.carledger.data.AccountEntity;
 import de.codeflowwizardry.carledger.data.BillCategory;
 import de.codeflowwizardry.carledger.data.BillInterval;
@@ -144,6 +145,7 @@ class BackupTest
 		account.setUserId("peter");
 		account.setMaxCars(1);
 		account.setCurrency("CHF");
+		account.setAccent(Accent.VIOLET);
 		accountRepository.persist(account);
 
 		CarEntity car = new CarEntity();
@@ -234,6 +236,7 @@ class BackupTest
 		assertEquals("car-ledger-backup", backup.get("format").asText());
 		assertEquals(1, backup.get("version").asInt());
 		assertEquals("CHF", backup.get("settings").get("currency").asText());
+		assertEquals("VIOLET", backup.get("settings").get("accent").asText());
 		JsonNode car = backup.get("cars").get(0);
 		assertEquals("Golf GTE", car.get("name").asText());
 		assertEquals("PLUG_IN_HYBRID", car.get("energyType").asText());

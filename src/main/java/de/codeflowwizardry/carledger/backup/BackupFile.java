@@ -12,6 +12,7 @@ import de.codeflowwizardry.carledger.data.ChargingLocation;
 import de.codeflowwizardry.carledger.data.EnergyType;
 import de.codeflowwizardry.carledger.data.TripReview;
 import de.codeflowwizardry.carledger.data.TripType;
+import de.codeflowwizardry.carledger.data.Accent;
 import de.codeflowwizardry.carledger.data.UnitSystem;
 
 /**
@@ -39,7 +40,12 @@ public record BackupFile(String format, int version, OffsetDateTime createdAt, S
 	 */
 	public static final String TRACK_HEADER = "tracker,ts,lat,lon,speed,alt,hdop";
 
-	public record Settings(String vatCountry, String currency, String language, UnitSystem unitSystem)
+	/**
+	 * @param accent
+	 *            missing in backups before the presets
+	 */
+	public record Settings(String vatCountry, String currency, String language, UnitSystem unitSystem,
+			Accent accent)
 	{
 	}
 

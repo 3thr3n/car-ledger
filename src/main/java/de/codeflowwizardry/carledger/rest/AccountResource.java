@@ -186,6 +186,10 @@ public class AccountResource extends AbstractResource
 		{
 			account.setUnitSystem(input.unitSystem());
 		}
+		if (input.accent() != null)
+		{
+			account.setAccent(input.accent());
+		}
 
 		return Account.convert(account, isAdmin());
 	}
