@@ -3,6 +3,8 @@ import {
   Button,
   IconButton,
   Stack,
+  ToggleButton,
+  ToggleButtonGroup,
   Tooltip,
   Typography,
 } from '@mui/material';
@@ -18,6 +20,7 @@ import { toast } from 'react-toastify';
 import {
   deleteTracksMutation,
   getMapSettingsOptions,
+  getTrackFrequencyOptions,
   getTrackOptions,
 } from '@/generated/@tanstack/react-query.gen';
 import { invalidateCar, localClient } from '@/utils/QueryClient';
@@ -29,9 +32,12 @@ import EmptyState from '@/components/ui/EmptyState';
 import DateRangeFields from '@/components/dashboard/DateRangeFields';
 import LazyTrackMap from '@/components/track/LazyTrackMap';
 import SpeedLegend from '@/components/track/SpeedLegend';
+import FrequencyLegend from '@/components/track/FrequencyLegend';
 
 /** the server returns at most this many days */
 export const MAX_DAYS = 31;
+
+type Mode = 'speed' | 'frequency';
 
 /**
  * The GPS tracks of the car on a day or in a period, in the local time zone
@@ -60,6 +66,7 @@ export default function TrackPage({ carId }: { carId: number }) {
     to: to?.add(1, 'day').startOf('day').toISOString() ?? '',
   };
   const [deleting, setDeleting] = useState(false);
+  const [mode, setMode] = useState<Mode>('speed');
 
   const { data: track, isPlaceholderData } = useQuery({
     ...getTrackOptions({
@@ -69,6 +76,16 @@ export default function TrackPage({ carId }: { carId: number }) {
     }),
     enabled: valid && !!settings?.styleUrl,
     // the old track stays on the map while the next one loads
+    placeholderData: keepPreviousData,
+  });
+
+  const { data: frequency } = useQuery({
+    ...getTrackFrequencyOptions({
+      client: localClient,
+      path: { carId },
+      query: period,
+    }),
+    enabled: mode === 'frequency' && valid && !!settings?.styleUrl,
     placeholderData: keepPreviousData,
   });
 
@@ -115,6 +132,22 @@ export default function TrackPage({ carId }: { carId: number }) {
               count: track.segments.length,
             })
           : t('track.subtitle')
+      }
+      action={
+        <ToggleButtonGroup
+          size="small"
+          exclusive
+          value={mode}
+          onChange={(_, value: Mode | null) => value && setMode(value)}
+          aria-label={t('track.mode.label')}
+        >
+          <ToggleButton value="speed" sx={{ px: 1.5 }}>
+            {t('track.mode.speed')}
+          </ToggleButton>
+          <ToggleButton value="frequency" sx={{ px: 1.5 }}>
+            {t('track.mode.frequency')}
+          </ToggleButton>
+        </ToggleButtonGroup>
       }
     >
       <Stack spacing={2}>
@@ -166,6 +199,11 @@ export default function TrackPage({ carId }: { carId: number }) {
           <LazyTrackMap
             styleUrl={settings.styleUrl}
             track={track ?? { segments: [], distance: 0, points: 0 }}
+            frequency={
+              mode === 'frequency'
+                ? (frequency ?? { lines: [], maxPasses: 0 })
+                : undefined
+            }
           />
         )}
         <Stack
@@ -176,7 +214,11 @@ export default function TrackPage({ carId }: { carId: number }) {
             justifyContent: 'space-between',
           }}
         >
-          <SpeedLegend />
+          {mode === 'speed' ? (
+            <SpeedLegend />
+          ) : (
+            <FrequencyLegend maxPasses={frequency?.maxPasses ?? 0} />
+          )}
           {/* not while the track of another period is loading */}
           {track && valid && track.points > 0 && !isPlaceholderData && (
             <Button

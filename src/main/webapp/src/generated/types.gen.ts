@@ -344,6 +344,12 @@ export type FirmwareSettings = {
     version?: string;
 };
 
+export type FrequencyLine = {
+    passes: number;
+    last: OffsetDateTime;
+    coordinates: Array<Array<number>>;
+};
+
 export type FuelBill = {
     attachments?: number;
     id?: number;
@@ -623,6 +629,11 @@ export type Track = {
     segments: Array<Array<TrackPoint>>;
     distance: number;
     points: number;
+};
+
+export type TrackFrequency = {
+    lines: Array<FrequencyLine>;
+    maxPasses: number;
 };
 
 export type TrackPoint = {
@@ -2666,6 +2677,46 @@ export type GetTrackResponses = {
 };
 
 export type GetTrackResponse = GetTrackResponses[keyof GetTrackResponses];
+
+export type GetTrackFrequencyData = {
+    body?: never;
+    path: {
+        carId: number;
+    };
+    query: {
+        /**
+         * Start of the range, inclusive
+         */
+        from: OffsetDateTime;
+        /**
+         * End of the range, exclusive
+         */
+        to: OffsetDateTime;
+    };
+    url: '/api/track/{carId}/frequency';
+};
+
+export type GetTrackFrequencyErrors = {
+    /**
+     * Range missing, empty or too long
+     */
+    400: Array<unknown>;
+    /**
+     * Car is not for your user.
+     */
+    404: unknown;
+};
+
+export type GetTrackFrequencyError = GetTrackFrequencyErrors[keyof GetTrackFrequencyErrors];
+
+export type GetTrackFrequencyResponses = {
+    /**
+     * OK
+     */
+    200: TrackFrequency;
+};
+
+export type GetTrackFrequencyResponse = GetTrackFrequencyResponses[keyof GetTrackFrequencyResponses];
 
 export type SetTrackRetentionData = {
     body: TrackRetentionInput;

@@ -14,6 +14,7 @@ import de.codeflowwizardry.carledger.data.repository.TripRepository;
 import de.codeflowwizardry.carledger.data.TripEntity;
 import de.codeflowwizardry.carledger.exception.WrongUserException;
 import de.codeflowwizardry.carledger.rest.car.track.Track;
+import de.codeflowwizardry.carledger.rest.car.track.TrackFrequency;
 import de.codeflowwizardry.carledger.rest.car.track.TrackPoint;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -66,6 +67,28 @@ public class TrackService
 		}
 
 		return collect(carId, from, to);
+	}
+
+	/**
+	 * How often the car passed the roads of its track: reads the points twice, to
+	 * count and then to draw the lines
+	 *
+	 * @param to
+	 *            exclusive
+	 */
+	@Transactional
+	public TrackFrequency frequency(long carId, OffsetDateTime from, OffsetDateTime to, String username)
+	{
+		Utils.requireValid(validate(from, to));
+		if (carRepository.findById(carId, username, Action.READ) == null)
+		{
+			throw new WrongUserException();
+		}
+
+		PassCounter counter = new PassCounter(GAP, tolerance(Duration.between(from, to)));
+		trackPointRepository.forEach(carId, from, to, counter::count);
+		trackPointRepository.forEach(carId, from, to, counter::trace);
+		return counter.frequency();
 	}
 
 	/**
