@@ -92,6 +92,7 @@ export type Attachment = {
     contentType?: string;
     size?: number;
     createdAt?: OffsetDateTime;
+    kind?: DocumentKind;
 };
 
 export type AverageStats = {
@@ -342,6 +343,13 @@ export type DeviceInput = {
     name?: string;
 };
 
+export enum DocumentKind {
+    APPROVAL = 'APPROVAL',
+    INSPECTION = 'INSPECTION',
+    PHOTO = 'PHOTO',
+    OTHER = 'OTHER'
+}
+
 export enum EnergyType {
     PETROL = 'PETROL',
     DIESEL = 'DIESEL',
@@ -481,6 +489,7 @@ export type Modification = {
     billId?: number;
     installed: boolean;
     inspectionOpen: boolean;
+    documents: number;
 };
 
 export type ModificationInput = {
@@ -1070,6 +1079,71 @@ export type AddBillAttachmentResponses = {
 };
 
 export type AddBillAttachmentResponse = AddBillAttachmentResponses[keyof AddBillAttachmentResponses];
+
+export type GetModificationDocumentsData = {
+    body?: never;
+    path: {
+        carId: number;
+        modificationId: number;
+    };
+    query?: never;
+    url: '/api/attachment/{carId}/modification/{modificationId}';
+};
+
+export type GetModificationDocumentsErrors = {
+    /**
+     * Modification not found.
+     */
+    404: unknown;
+};
+
+export type GetModificationDocumentsResponses = {
+    /**
+     * Documents found.
+     */
+    200: Array<Attachment>;
+};
+
+export type GetModificationDocumentsResponse = GetModificationDocumentsResponses[keyof GetModificationDocumentsResponses];
+
+export type AddModificationDocumentData = {
+    body: {
+        file?: Blob | File;
+        kind?: DocumentKind;
+    };
+    path: {
+        carId: number;
+        modificationId: number;
+    };
+    query?: never;
+    url: '/api/attachment/{carId}/modification/{modificationId}';
+};
+
+export type AddModificationDocumentErrors = {
+    /**
+     * Kind missing, file empty, too large, of another type or too many documents
+     */
+    400: Array<unknown>;
+    /**
+     * Modification not found.
+     */
+    404: unknown;
+    /**
+     * Request larger than allowed by the server.
+     */
+    413: unknown;
+};
+
+export type AddModificationDocumentError = AddModificationDocumentErrors[keyof AddModificationDocumentErrors];
+
+export type AddModificationDocumentResponses = {
+    /**
+     * Document attached.
+     */
+    201: Attachment;
+};
+
+export type AddModificationDocumentResponse = AddModificationDocumentResponses[keyof AddModificationDocumentResponses];
 
 export type DeleteAttachmentData = {
     body?: never;

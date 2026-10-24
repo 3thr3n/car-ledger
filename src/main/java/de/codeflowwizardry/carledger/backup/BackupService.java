@@ -172,7 +172,8 @@ public class BackupService
 			zip.putNextEntry(new ZipEntry(path));
 			zip.write(attachmentService.content(attachment));
 			zip.closeEntry();
-			return new BackupFile.File(attachment.getFileName(), attachment.getContentType(), path);
+			return new BackupFile.File(attachment.getFileName(), attachment.getContentType(), path,
+					attachment.getKind());
 		}
 
 		/**
@@ -203,16 +204,19 @@ public class BackupService
 				}
 			});
 			zip.closeEntry();
-			return new BackupFile.File(null, "text/csv", path);
+			return new BackupFile.File(null, "text/csv", path, null);
 		}
 	}
 
 	private BackupFile.Car car(CarEntity car, String user, Files files) throws IOException
 	{
-		Map<Long, List<AttachmentEntity>> attachments = attachmentRepository.list("car = ?1 order by id", car)
-				.stream()
+		List<AttachmentEntity> carFiles = attachmentRepository.list("car = ?1 order by id", car);
+		Map<Long, List<AttachmentEntity>> attachments = carFiles.stream()
 				.filter(attachment -> attachment.getBill() != null)
 				.collect(Collectors.groupingBy(attachment -> attachment.getBill().getId()));
+		Map<Long, List<AttachmentEntity>> documents = carFiles.stream()
+				.filter(attachment -> attachment.getModification() != null)
+				.collect(Collectors.groupingBy(attachment -> attachment.getModification().getId()));
 
 		List<BackupFile.Bill> bills = new ArrayList<>();
 		Map<Long, Integer> billIndexes = new HashMap<>();
@@ -256,15 +260,22 @@ public class BackupService
 						trip.getFinishedAt(), trip.getDeletedAt(), trip.getDeletedBy(), trip.getDeleteReason()))
 				.toList();
 
-		List<BackupFile.Modification> modifications = modificationRepository.list(car.getId(), user).stream()
-				.map(modification -> new BackupFile.Modification(modification.getPart(),
-						modification.getManufacturer(), modification.getApprovalType(),
-						modification.getApprovalNumber(), modification.getConditions(),
-						modification.getInspectionDate(), modification.getTestingBody(), modification.isRegistered(),
-						modification.getInstalledDate(), modification.getInstalledOdometer(),
-						modification.getRemovedDate(), modification.getRemovedOdometer(), modification.getNotes(),
-						modification.getBill() == null ? null : billIndexes.get(modification.getBill().getId())))
-				.toList();
+		List<BackupFile.Modification> modifications = new ArrayList<>();
+		for (ModificationEntity modification : modificationRepository.list(car.getId(), user))
+		{
+			List<BackupFile.File> modificationFiles = new ArrayList<>();
+			for (AttachmentEntity document : documents.getOrDefault(modification.getId(), List.of()))
+			{
+				modificationFiles.add(files.add(document));
+			}
+			modifications.add(new BackupFile.Modification(modification.getPart(), modification.getManufacturer(),
+					modification.getApprovalType(), modification.getApprovalNumber(), modification.getConditions(),
+					modification.getInspectionDate(), modification.getTestingBody(), modification.isRegistered(),
+					modification.getInstalledDate(), modification.getInstalledOdometer(),
+					modification.getRemovedDate(), modification.getRemovedOdometer(), modification.getNotes(),
+					modification.getBill() == null ? null : billIndexes.get(modification.getBill().getId()),
+					modificationFiles));
+		}
 
 		List<DeviceEntity> devices = deviceRepository.list("car = ?1 order by id", car);
 		Map<Long, Integer> indexes = new HashMap<>();
@@ -484,7 +495,7 @@ public class BackupService
 		}
 		for (BackupFile.Modification modification : list(backup.modifications()))
 		{
-			restoreModification(car, modification, bills);
+			restoreModification(car, modification, bills, entries, counter);
 			counter.modifications++;
 		}
 		boolean open = false;
@@ -682,7 +693,8 @@ public class BackupService
 	 * @param bills
 	 *            the restored bills of the car, in the order of the backup
 	 */
-	private void restoreModification(CarEntity car, BackupFile.Modification backup, List<BillEntity> bills)
+	private void restoreModification(CarEntity car, BackupFile.Modification backup, List<BillEntity> bills,
+			BackupArchive entries, Counter counter)
 	{
 		ModificationInput input = new ModificationInput(backup.part(), backup.manufacturer(), backup.approvalType(),
 				backup.approvalNumber(), backup.conditions(), backup.inspectionDate(), backup.testingBody(),
@@ -699,6 +711,13 @@ public class BackupService
 		ModificationService.apply(entity, input);
 		entity.setBill(backup.bill() == null ? null : bills.get(backup.bill()));
 		modificationRepository.persist(entity);
+
+		int documents = 0;
+		for (BackupFile.File file : list(backup.documents()))
+		{
+			attachmentService.restore(entity, file.kind(), file.fileName(), content(entries, file), documents++);
+			counter.files++;
+		}
 	}
 
 	private BillEntity restoreBill(CarEntity car, BackupFile.Bill backup, BackupArchive entries, Counter counter)

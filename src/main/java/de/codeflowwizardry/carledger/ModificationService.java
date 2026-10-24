@@ -1,11 +1,13 @@
 package de.codeflowwizardry.carledger;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import de.codeflowwizardry.carledger.data.BillEntity;
 import de.codeflowwizardry.carledger.data.CarEntity;
 import de.codeflowwizardry.carledger.data.ModificationEntity;
+import de.codeflowwizardry.carledger.data.repository.AttachmentRepository;
 import de.codeflowwizardry.carledger.data.repository.BillRepository;
 import de.codeflowwizardry.carledger.data.repository.CarAccess.Action;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
@@ -29,14 +31,16 @@ public class ModificationService
 	private final ModificationRepository modificationRepository;
 	private final CarRepository carRepository;
 	private final BillRepository billRepository;
+	private final AttachmentRepository attachmentRepository;
 
 	@Inject
 	public ModificationService(ModificationRepository modificationRepository, CarRepository carRepository,
-			BillRepository billRepository)
+			BillRepository billRepository, AttachmentRepository attachmentRepository)
 	{
 		this.modificationRepository = modificationRepository;
 		this.carRepository = carRepository;
 		this.billRepository = billRepository;
+		this.attachmentRepository = attachmentRepository;
 	}
 
 	/**
@@ -44,7 +48,7 @@ public class ModificationService
 	 */
 	public List<Modification> list(long carId, String username, ModificationState state)
 	{
-		return modificationRepository.list(carId, username)
+		List<ModificationEntity> entities = modificationRepository.list(carId, username)
 				.stream()
 				.filter(entity -> switch (state)
 				{
@@ -52,7 +56,11 @@ public class ModificationService
 					case REMOVED -> !entity.isInstalled();
 					case ALL -> true;
 				})
-				.map(ModificationService::convert)
+				.toList();
+		Map<Long, Long> documents = attachmentRepository
+				.countPerModification(entities.stream().map(ModificationEntity::getId).toList());
+		return entities.stream()
+				.map(entity -> convert(entity, documents.getOrDefault(entity.getId(), 0L)))
 				.toList();
 	}
 
@@ -71,7 +79,7 @@ public class ModificationService
 		apply(entity, input);
 		entity.setBill(bill(car, input.billId()));
 		modificationRepository.persist(entity);
-		return convert(entity);
+		return convert(entity, 0);
 	}
 
 	@Transactional
@@ -82,7 +90,7 @@ public class ModificationService
 		ModificationEntity entity = find(carId, id, username);
 		apply(entity, input);
 		entity.setBill(bill(entity.getCar(), input.billId()));
-		return convert(entity);
+		return convert(entity, attachmentRepository.countForModification(id));
 	}
 
 	@Transactional
@@ -139,7 +147,7 @@ public class ModificationService
 		return value == null || value.isBlank() ? null : value.strip();
 	}
 
-	public static Modification convert(ModificationEntity entity)
+	private static Modification convert(ModificationEntity entity, long documents)
 	{
 		boolean inspectionOpen = entity.isInstalled() && entity.getApprovalType().needsInspection()
 				&& entity.getInspectionDate() == null;
@@ -148,6 +156,6 @@ public class ModificationService
 				entity.getInspectionDate(), entity.getTestingBody(), entity.isRegistered(), entity.getInstalledDate(),
 				entity.getInstalledOdometer(), entity.getRemovedDate(), entity.getRemovedOdometer(),
 				entity.getNotes(), entity.getBill() == null ? null : entity.getBill().getId(), entity.isInstalled(),
-				inspectionOpen);
+				inspectionOpen, documents);
 	}
 }

@@ -230,6 +230,9 @@
           },
           "createdAt" : {
             "$ref" : "#/components/schemas/OffsetDateTime"
+          },
+          "kind" : {
+            "$ref" : "#/components/schemas/DocumentKind"
           }
         }
       },
@@ -924,6 +927,10 @@
           }
         }
       },
+      "DocumentKind" : {
+        "type" : "string",
+        "enum" : [ "APPROVAL", "INSPECTION", "PHOTO", "OTHER" ]
+      },
       "EnergyType" : {
         "type" : "string",
         "enum" : [ "PETROL", "DIESEL", "LPG", "CNG", "ELECTRIC", "PLUG_IN_HYBRID" ]
@@ -1242,7 +1249,7 @@
       },
       "Modification" : {
         "type" : "object",
-        "required" : [ "id", "carId", "part", "approvalType", "registered", "installed", "inspectionOpen" ],
+        "required" : [ "id", "carId", "part", "approvalType", "registered", "installed", "inspectionOpen", "documents" ],
         "properties" : {
           "id" : {
             "type" : "integer",
@@ -1302,6 +1309,10 @@
           },
           "inspectionOpen" : {
             "type" : "boolean"
+          },
+          "documents" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         }
       },
@@ -2543,6 +2554,120 @@
           }
         },
         "summary" : "Add Bill Attachment",
+        "tags" : [ "Attachment Resource" ]
+      }
+    },
+    "/api/attachment/{carId}/modification/{modificationId}" : {
+      "get" : {
+        "description" : "Documents of the modification by their kind, then oldest first",
+        "operationId" : "getModificationDocuments",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "modificationId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Documents found.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/Attachment"
+                  }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Modification not found."
+          }
+        },
+        "summary" : "Get Modification Documents",
+        "tags" : [ "Attachment Resource" ]
+      },
+      "post" : {
+        "description" : "Attaches a JPEG, PNG, WebP or PDF file of the kind to the modification",
+        "operationId" : "addModificationDocument",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "modificationId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "multipart/form-data" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "file" : {
+                    "type" : "string",
+                    "format" : "binary"
+                  },
+                  "kind" : {
+                    "$ref" : "#/components/schemas/DocumentKind"
+                  }
+                }
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Document attached.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Attachment"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Kind missing, file empty, too large, of another type or too many documents",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Modification not found."
+          },
+          "413" : {
+            "description" : "Request larger than allowed by the server."
+          }
+        },
+        "summary" : "Add Modification Document",
         "tags" : [ "Attachment Resource" ]
       }
     },

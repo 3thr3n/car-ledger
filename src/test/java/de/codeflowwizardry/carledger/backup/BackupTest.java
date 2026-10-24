@@ -45,6 +45,7 @@ import de.codeflowwizardry.carledger.data.BillCategory;
 import de.codeflowwizardry.carledger.data.BillInterval;
 import de.codeflowwizardry.carledger.data.CarEntity;
 import de.codeflowwizardry.carledger.data.ChargingLocation;
+import de.codeflowwizardry.carledger.data.DocumentKind;
 import de.codeflowwizardry.carledger.data.EnergyType;
 import de.codeflowwizardry.carledger.data.TripType;
 import de.codeflowwizardry.carledger.data.factory.ChargingBillFactory;
@@ -133,9 +134,12 @@ class BackupTest
 		reminderService.create(carId, new ReminderInput("Service", "Oil", LocalDate.of(2026, 5, 1), 60_000, 12,
 				15_000), "peter");
 		attachmentService.setCarPicture(carId, "peter", "golf.png", PNG);
-		modificationService.create(carId, new ModificationInput("Coilovers", "KW", ApprovalType.PARTS_REPORT,
-				"TG 123", "Only with the rims of the Gutachten", LocalDate.of(2025, 1, 25), "TÜV Süd", true,
-				LocalDate.of(2025, 1, 20), 41_000, null, null, null, maintenance), "peter");
+		long coilovers = modificationService.create(carId,
+				new ModificationInput("Coilovers", "KW", ApprovalType.PARTS_REPORT,
+						"TG 123", "Only with the rims of the Gutachten", LocalDate.of(2025, 1, 25), "TÜV Süd", true,
+						LocalDate.of(2025, 1, 20), 41_000, null, null, null, maintenance),
+				"peter").id();
+		attachmentService.addToModification(carId, coilovers, "peter", "gutachten.pdf", DocumentKind.APPROVAL, PDF);
 
 		UUID business = UUID.randomUUID();
 		tripService.start(carId, business, new TripStartInput(TripType.BUSINESS, 41_500,
@@ -264,6 +268,9 @@ class BackupTest
 		assertEquals("PARTS_REPORT", modification.get("approvalType").asText());
 		assertEquals("TÜV Süd", modification.get("testingBody").asText());
 		assertEquals(0, modification.get("bill").asInt());
+		JsonNode document = modification.get("documents").get(0);
+		assertEquals("APPROVAL", document.get("kind").asText());
+		assertArrayEquals(PDF, entries.get(document.get("path").asText()));
 		// oldest first, without the ids
 		assertEquals(2, car.get("trips").size());
 		JsonNode trip = car.get("trips").get(0);
@@ -288,7 +295,7 @@ class BackupTest
 				.body("reminders", is(1))
 				.body("trips", is(2))
 				.body("modifications", is(1))
-				.body("files", is(3));
+				.body("files", is(4));
 
 		long restored = given().when().get("/api/car/my").then().statusCode(200)
 				.body("name", contains("Golf GTE"))
@@ -318,7 +325,13 @@ class BackupTest
 				.body("[0].part", is("Coilovers"))
 				.body("[0].registered", is(true))
 				.body("[0].installedOdometer", is(41_000))
-				.body("[0].billId", is((int) maintenance));
+				.body("[0].billId", is((int) maintenance))
+				.body("[0].documents", is(1));
+		long modification = given().when().get("/api/modification/{carId}", restored).then()
+				.extract().jsonPath().getLong("[0].id");
+		given().when().get("/api/attachment/{carId}/modification/{id}", restored, modification).then()
+				.body("kind", contains("APPROVAL"))
+				.body("fileName", contains("gutachten.pdf"));
 		// the latest first, marked as restored, the times of the backup
 		given().when().get("/api/trip/{carId}", restored).then()
 				.body("total", is(2))
@@ -371,6 +384,20 @@ class BackupTest
 
 		restore(zip(entries)).statusCode(400)
 				.body("", contains("A modification of the backup links an entry that isn't in it!"));
+		given().when().get("/api/car/my").then().body("size()", is(0));
+	}
+
+	@Test
+	void shouldRestoreNothingWithADocumentWithoutKind() throws IOException
+	{
+		Map<String, byte[]> entries = unzip(download());
+		deleteCar();
+		ObjectNode json = (ObjectNode) mapper.readTree(entries.get("backup.json"));
+		((ObjectNode) json.withArray("cars").get(0).withArray("modifications").get(0).withArray("documents").get(0))
+				.remove("kind");
+		entries.put("backup.json", mapper.writeValueAsBytes(json));
+
+		restore(zip(entries)).statusCode(400).body("", contains("The kind of the document must be set!"));
 		given().when().get("/api/car/my").then().body("size()", is(0));
 	}
 
