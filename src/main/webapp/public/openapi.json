@@ -945,6 +945,30 @@
           }
         }
       },
+      "FrequencyLine" : {
+        "type" : "object",
+        "required" : [ "passes", "last", "coordinates" ],
+        "properties" : {
+          "passes" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "last" : {
+            "type" : "string",
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          },
+          "coordinates" : {
+            "type" : "array",
+            "items" : {
+              "type" : "array",
+              "items" : {
+                "type" : "number",
+                "format" : "double"
+              }
+            }
+          }
+        }
+      },
       "FuelBill" : {
         "type" : "object",
         "properties" : {
@@ -1647,6 +1671,22 @@
             "format" : "double"
           },
           "points" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "TrackFrequency" : {
+        "type" : "object",
+        "required" : [ "lines", "maxPasses" ],
+        "properties" : {
+          "lines" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/FrequencyLine"
+            }
+          },
+          "maxPasses" : {
             "type" : "integer",
             "format" : "int32"
           }
@@ -5274,6 +5314,65 @@
           }
         },
         "summary" : "Delete Tracks",
+        "tags" : [ "Track Resource" ]
+      }
+    },
+    "/api/track/{carId}/frequency" : {
+      "get" : {
+        "description" : "How often the car passed the roads of its GPS track in a time range of at most 31 days, both directions: the track cut into lines where the amount changes, simplified for the map.",
+        "operationId" : "getTrackFrequency",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "description" : "Start of the range, inclusive",
+          "required" : true,
+          "name" : "from",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          }
+        }, {
+          "description" : "End of the range, exclusive",
+          "required" : true,
+          "name" : "to",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TrackFrequency"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Range missing, empty or too long",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Car is not for your user."
+          }
+        },
+        "summary" : "Get Track Frequency",
         "tags" : [ "Track Resource" ]
       }
     },

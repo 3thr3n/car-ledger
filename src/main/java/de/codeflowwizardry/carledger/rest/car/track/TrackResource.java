@@ -50,6 +50,20 @@ public class TrackResource extends AbstractResource
 		return trackService.track(carId, from, to, context.getName());
 	}
 
+	@GET
+	@Path("frequency")
+	@Produces(MediaType.APPLICATION_JSON)
+	@Operation(operationId = "getTrackFrequency", description = "How often the car passed the roads of its GPS track in a time range of at most 31 days, both directions: the track cut into lines where the amount changes, simplified for the map.")
+	@APIResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = TrackFrequency.class)))
+	@APIResponse(responseCode = "400", description = "Range missing, empty or too long", content = @Content(schema = @Schema(implementation = List.class)))
+	@APIResponse(responseCode = "404", description = "Car is not for your user.")
+	public TrackFrequency getTrackFrequency(@PathParam("carId") long carId,
+			@Parameter(description = "Start of the range, inclusive", required = true) @QueryParam("from") OffsetDateTime from,
+			@Parameter(description = "End of the range, exclusive", required = true) @QueryParam("to") OffsetDateTime to)
+	{
+		return trackService.frequency(carId, from, to, context.getName());
+	}
+
 	@PUT
 	@Path("retention")
 	@Consumes(MediaType.APPLICATION_JSON)

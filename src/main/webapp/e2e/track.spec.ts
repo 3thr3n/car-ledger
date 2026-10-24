@@ -80,6 +80,22 @@ test.describe.serial('GPS track', () => {
     );
   });
 
+  test('colors the track by how often it was driven', async () => {
+    await page.getByRole('button', { name: 'Frequency' }).click();
+
+    const legend = page.getByTestId('frequency-legend');
+    await expect(legend).toContainText('Times driven');
+    // driven once, the scale still has a range
+    await expect(legend.getByRole('img')).toHaveAttribute(
+      'aria-label',
+      'Driven from 1× (light, thin) to 2× (dark, wide)',
+    );
+    await expect(page.getByTestId('speed-legend')).toHaveCount(0);
+
+    await page.getByRole('button', { name: 'Speed' }).click();
+    await expect(page.getByTestId('speed-legend')).toBeVisible();
+  });
+
   test('shows no track on the day before', async () => {
     await page.getByRole('button', { name: 'Earlier' }).click();
 

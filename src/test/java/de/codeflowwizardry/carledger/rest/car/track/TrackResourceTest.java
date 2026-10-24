@@ -110,12 +110,21 @@ class TrackResourceTest
 	 */
 	private void drive(int start, int count, double speed)
 	{
+		drive(start, count, speed, 0);
+	}
+
+	/**
+	 * @param later
+	 *            seconds the points are sent later, on the same road
+	 */
+	private void drive(int start, int count, double speed, int later)
+	{
 		List<TrackPointInput> points = new ArrayList<>();
 		for (int i = 0; i < count; i++)
 		{
 			int second = start + i;
 			double east = i % 2 == 0 ? 0 : 3;
-			points.add(new TrackPointInput(START.plusSeconds(second), 50 + second * 10 * LAT_PER_METER,
+			points.add(new TrackPointInput(START.plusSeconds(later + second), 50 + second * 10 * LAT_PER_METER,
 					10 + east * LAT_PER_METER / Math.cos(Math.toRadians(50)), speed, null, null));
 		}
 		QuarkusTransaction.requiringNew().run(() -> trackPointRepository.insert(deviceId, carId, points));
@@ -262,6 +271,53 @@ class TrackResourceTest
 				.queryParam("to", START.plusHours(1).toString())
 				.when()
 				.get()
+				.then()
+				.statusCode(404);
+	}
+
+	@Test
+	void shouldCountThePasses()
+	{
+		drive(0, 101, 50);
+		// the same road an hour later
+		drive(0, 101, 50, 3600);
+
+		given()
+				.pathParam("carId", carId)
+				.queryParam("from", START.toString())
+				.queryParam("to", START.plusHours(2).toString())
+				.when()
+				.get("frequency")
+				.then()
+				.statusCode(200)
+				.body("maxPasses", is(2))
+				.body("lines.passes", everyItem(is(2)))
+				.body("lines[0].last", is("2026-10-20T09:01:40Z"))
+				.body("lines[0].coordinates[0]", contains(10.0f, 50.0f));
+	}
+
+	@Test
+	void shouldValidateTheRangeOfTheFrequency()
+	{
+		given()
+				.pathParam("carId", carId)
+				.queryParam("from", START.toString())
+				.queryParam("to", START.plusDays(32).toString())
+				.when()
+				.get("frequency")
+				.then()
+				.statusCode(400);
+	}
+
+	@Test
+	void shouldNotReturnTheFrequencyOfAnotherUser()
+	{
+		given()
+				.pathParam("carId", otherCarId)
+				.queryParam("from", START.toString())
+				.queryParam("to", START.plusHours(1).toString())
+				.when()
+				.get("frequency")
 				.then()
 				.statusCode(404);
 	}
