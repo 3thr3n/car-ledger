@@ -18,7 +18,7 @@ export default function SpeedLegend() {
     <Stack
       direction={{ xs: 'column', sm: 'row' }}
       spacing={{ xs: 1, sm: 3 }}
-      sx={{ alignItems: { sm: 'center' } }}
+      sx={{ flexGrow: 1, alignItems: { sm: 'center' } }}
       data-testid="speed-legend"
     >
       <Box sx={{ flexGrow: 1, maxWidth: 360 }}>
