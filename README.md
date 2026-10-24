@@ -42,6 +42,8 @@ authentik or any other provider).
   history of the car.
 - **HU:** the Hauptuntersuchung with its result, the defects and the report; the next due month moves the reminder of
   the HU.
+- **Papers as PDF:** the modifications with their approvals and the HUs on the first pages, their documents and
+  reports appended; for a check the installed parts and the latest HU, for selling the whole history.
 
 **On the road**
 
