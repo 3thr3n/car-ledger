@@ -273,7 +273,7 @@ public class BackupService
 					modification.getInspectionDate(), modification.getTestingBody(), modification.isRegistered(),
 					modification.getInstalledDate(), modification.getInstalledOdometer(),
 					modification.getRemovedDate(), modification.getRemovedOdometer(), modification.getNotes(),
-					modification.getBill() == null ? null : billIndexes.get(modification.getBill().getId()),
+					modification.getBills().stream().map(bill -> billIndexes.get(bill.getId())).sorted().toList(), null,
 					modificationFiles));
 		}
 
@@ -700,16 +700,26 @@ public class BackupService
 				backup.approvalNumber(), backup.conditions(), backup.inspectionDate(), backup.testingBody(),
 				backup.registered(), backup.installedDate(), backup.installedOdometer(), backup.removedDate(),
 				backup.removedOdometer(), backup.notes(), null);
-		List<String> errors = new ArrayList<>(input.validate());
-		if (backup.bill() != null && (backup.bill() < 0 || backup.bill() >= bills.size()))
+		List<Integer> indexes = new ArrayList<>(list(backup.bills()));
+		if (backup.bill() != null)
 		{
-			errors.add("A modification of the backup links an entry that isn't in it!");
+			indexes.add(backup.bill());
+		}
+		List<String> errors = new ArrayList<>(input.validate());
+		if (indexes.size() > ModificationInput.MAX_BILLS)
+		{
+			errors.add("A modification can have at most " + ModificationInput.MAX_BILLS + " bills!");
+		}
+		if (indexes.stream().anyMatch(index -> index == null || index < 0 || index >= bills.size()
+				|| !ModificationService.LINKABLE.contains(bills.get(index).getType())))
+		{
+			errors.add("A modification of the backup links an entry that isn't in it or can't be linked!");
 		}
 		Utils.requireValid(errors);
 
 		ModificationEntity entity = new ModificationEntity(car);
 		ModificationService.apply(entity, input);
-		entity.setBill(backup.bill() == null ? null : bills.get(backup.bill()));
+		entity.setBills(indexes.stream().map(bills::get).toList());
 		modificationRepository.persist(entity);
 
 		int documents = 0;

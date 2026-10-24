@@ -14,14 +14,20 @@ import {
   Typography,
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import dayjs, { Dayjs } from 'dayjs';
 import { SubmitEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
-import { ApprovalType, Modification, ModificationInput } from '@/generated';
+import {
+  ApprovalType,
+  LinkedBill,
+  Modification,
+  ModificationInput,
+} from '@/generated';
 import {
   addModificationMutation,
+  getLinkableBillsOptions,
   updateModificationMutation,
 } from '@/generated/@tanstack/react-query.gen';
 import { invalidateCar, localClient } from '@/utils/QueryClient';
@@ -29,7 +35,12 @@ import { errorMessage } from '@/utils/BackendError';
 import { toApiDate, useFormat } from '@/utils/format';
 import { odometerToApi, odometerToField } from '@/utils/units';
 import NumberField from '@/components/bill/NumberField';
-import { hasApproval, needsInspection, TESTING_BODIES } from './approval';
+import {
+  billText,
+  hasApproval,
+  needsInspection,
+  TESTING_BODIES,
+} from './approval';
 
 export interface ModificationDialogProps {
   open: boolean;
@@ -112,6 +123,10 @@ function ModificationForm({
     odometerToField(units, modification?.removedOdometer),
   );
   const [notes, setNotes] = useState(modification?.notes ?? '');
+  const [bills, setBills] = useState<LinkedBill[]>(modification?.bills ?? []);
+  const { data: linkable = [] } = useQuery(
+    getLinkableBillsOptions({ client: localClient, path: { carId } }),
+  );
   // only a removed one shows when, removing is a separate action
   const removed = !!modification && !modification.installed;
 
@@ -179,8 +194,7 @@ function ModificationForm({
         ? odometerToApi(units, removedOdometer)
         : undefined,
       notes: notes.trim() || undefined,
-      // not changed here, kept as it is
-      billId: modification?.billId,
+      billIds: bills.map((bill) => bill.id),
     };
     if (modification) {
       update.mutate({ path: { carId, id: modification.id }, body });
@@ -370,6 +384,23 @@ function ModificationForm({
               </Stack>
             </Box>
           )}
+
+          <Autocomplete
+            multiple
+            options={linkable}
+            value={bills}
+            onChange={(_, value) => setBills(value)}
+            getOptionLabel={(bill) => billText(bill, format, t)}
+            isOptionEqualToValue={(option, value) => option.id === value.id}
+            noOptionsText={t('modification.billsEmpty')}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label={t('modification.fields.bills')}
+                helperText={t('modification.billsHint')}
+              />
+            )}
+          />
 
           <TextField
             label={t('modification.fields.notes')}

@@ -20,7 +20,7 @@ import { useTranslation } from 'react-i18next';
 import { Modification } from '@/generated';
 import { useFormat } from '@/utils/format';
 import ModificationDocuments from './ModificationDocuments';
-import { needsInspection, registrationOpen } from './approval';
+import { billText, needsInspection, registrationOpen } from './approval';
 
 export interface ModificationListProps {
   carId: number;
@@ -268,6 +268,22 @@ export default function ModificationList({
                           ? 'modification.registered'
                           : 'modification.notRegistered',
                       )}
+                    </Detail>
+                  )}
+                  {modification.bills.length > 0 && (
+                    <Detail label={t('modification.fields.bills')}>
+                      {modification.bills
+                        .map((bill) => billText(bill, format, t))
+                        .join('\n')}
+                      {modification.bills.length > 1 &&
+                        `\n${t('modification.billsTotal', {
+                          total: format.money(
+                            modification.bills.reduce(
+                              (sum, bill) => sum + bill.total,
+                              0,
+                            ),
+                          ),
+                        })}`}
                     </Detail>
                   )}
                   {modification.notes && (

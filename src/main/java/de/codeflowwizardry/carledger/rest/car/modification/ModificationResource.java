@@ -38,6 +38,17 @@ public class ModificationResource extends AbstractResource
 		return modificationService.list(carId, context.getName(), state);
 	}
 
+	@GET
+	@Path("bills")
+	@Produces(MediaType.APPLICATION_JSON)
+	@Operation(operationId = "getLinkableBills", description = "The maintenance and other entries of the car a modification can have, the latest first.")
+	@APIResponse(responseCode = "200", description = "Bills found.")
+	@APIResponse(responseCode = "404", description = "Car is not for your user.")
+	public List<LinkedBill> getLinkableBills(@PathParam("carId") long carId)
+	{
+		return modificationService.linkableBills(carId, context.getName());
+	}
+
 	@PUT
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)

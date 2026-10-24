@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.AfterEach;
@@ -15,11 +16,15 @@ import org.junit.jupiter.api.Test;
 
 import de.codeflowwizardry.carledger.data.AccountEntity;
 import de.codeflowwizardry.carledger.data.CarEntity;
+import de.codeflowwizardry.carledger.data.factory.FuelBillFactory;
+import de.codeflowwizardry.carledger.data.factory.MaintenanceBillFactory;
 import de.codeflowwizardry.carledger.data.factory.MiscellaneousBillFactory;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.BillRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import de.codeflowwizardry.carledger.data.repository.ModificationRepository;
+import de.codeflowwizardry.carledger.rest.car.fuel.FuelBillInput;
+import de.codeflowwizardry.carledger.rest.car.maintenance.MaintenanceBillInput;
 import de.codeflowwizardry.carledger.rest.car.miscellaneous.MiscellaneousBillInput;
 import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
@@ -50,6 +55,12 @@ class ModificationResourceTest
 
 	@Inject
 	MiscellaneousBillFactory miscellaneousBillFactory;
+
+	@Inject
+	MaintenanceBillFactory maintenanceBillFactory;
+
+	@Inject
+	FuelBillFactory fuelBillFactory;
 
 	long carId;
 	long otherCarId;
@@ -88,10 +99,10 @@ class ModificationResourceTest
 		return car.getId();
 	}
 
-	private long bill(long car, String user)
+	private long bill(long car, String user, String description, LocalDate date)
 	{
-		return miscellaneousBillFactory.create(new MiscellaneousBillInput(BigDecimal.valueOf(1200), 19,
-				LocalDate.of(2025, 4, 1), "Rims"), car, user).getBill().getId();
+		return miscellaneousBillFactory.create(new MiscellaneousBillInput(BigDecimal.valueOf(1200), 19, date,
+				description), car, user).getBill().getId();
 	}
 
 	private static Map<String, Object> rims()
@@ -237,32 +248,53 @@ class ModificationResourceTest
 	}
 
 	@Test
-	void shouldLinkABillOfTheSameCar()
+	void shouldLinkSeveralBillsOfTheSameCar()
 	{
-		long billId = bill(carId, "peter");
-		long otherBillId = bill(otherCarId, "paul");
+		long part = bill(carId, "peter", "Rims", LocalDate.of(2025, 4, 1));
+		long abnahme = bill(carId, "peter", "Abnahme", LocalDate.of(2025, 4, 10));
+		long workshop = maintenanceBillFactory.create(new MaintenanceBillInput(BigDecimal.valueOf(150), 19,
+				LocalDate.of(2025, 4, 2), 41_000, null, null, "Mounting", "Garage"), carId, "peter").getBill().getId();
+		long fuel = fuelBillFactory.create(new FuelBillInput(LocalDate.of(2025, 4, 3), null, 19,
+				BigDecimal.valueOf(500), BigDecimal.valueOf(40), BigDecimal.valueOf(70), null), carId, "peter")
+				.getBill().getId();
+		long other = bill(otherCarId, "paul", "Rims", LocalDate.of(2025, 4, 1));
+
+		// only maintenance and other entries, the latest first
+		given().pathParam("carId", carId).when().get("bills").then()
+				.statusCode(200)
+				.body("id", contains((int) abnahme, (int) workshop, (int) part))
+				.body("[1].description", is("Mounting"))
+				.body("[1].type", is("MAINTENANCE"));
 
 		Map<String, Object> input = rims();
-		input.put("billId", otherBillId);
-		given()
-				.contentType(ContentType.JSON)
-				.pathParam("carId", carId)
-				.body(input)
-				.when()
-				.put()
-				.then()
-				.statusCode(400)
-				.body("", contains("The bill must be an entry of the same car!"));
+		for (long wrong : new long[] {
+				fuel, other
+		})
+		{
+			input.put("billIds", List.of(part, wrong));
+			given()
+					.contentType(ContentType.JSON)
+					.pathParam("carId", carId)
+					.body(input)
+					.when()
+					.put()
+					.then()
+					.statusCode(400)
+					.body("", contains("The bills must be maintenance or other entries of the same car!"));
+		}
 
-		input.put("billId", billId);
+		input.put("billIds", List.of(abnahme, part, workshop));
 		add(input);
-		given().pathParam("carId", carId).when().get().then().body("[0].billId", is((int) billId));
+		given().pathParam("carId", carId).when().get().then()
+				.body("[0].bills.id", contains((int) part, (int) workshop, (int) abnahme))
+				.body("[0].bills[0].description", is("Rims"))
+				.body("[0].bills[0].total", is(1200.0F));
 
-		// the modification stays without the bill
-		QuarkusTransaction.requiringNew().run(() -> billRepository.delete(carId, billId, "peter"));
+		// the modification keeps the others
+		QuarkusTransaction.requiringNew().run(() -> billRepository.delete(carId, workshop, "peter"));
 		given().pathParam("carId", carId).when().get().then()
 				.body("size()", is(1))
-				.body("[0].billId", nullValue());
+				.body("[0].bills.id", contains((int) part, (int) abnahme));
 	}
 
 	@Test

@@ -3,6 +3,7 @@ package de.codeflowwizardry.carledger.rest.car.modification;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import de.codeflowwizardry.carledger.data.ApprovalType;
 import de.codeflowwizardry.carledger.rest.car.reminder.ReminderInput;
@@ -22,13 +23,16 @@ import de.codeflowwizardry.carledger.rest.car.reminder.ReminderInput;
  *            entered in the Zulassungsbescheinigung Teil I
  * @param removedOdometer
  *            needs a removed date
- * @param billId
- *            of the part or the installation, an entry of the same car
+ * @param billIds
+ *            e.g. of the part, the workshop and the Abnahme: maintenance and
+ *            other entries of the same car
  */
 public record ModificationInput(String part, String manufacturer, ApprovalType approvalType, String approvalNumber,
 		String conditions, LocalDate inspectionDate, String testingBody, boolean registered, LocalDate installedDate,
-		Integer installedOdometer, LocalDate removedDate, Integer removedOdometer, String notes, Long billId)
+		Integer installedOdometer, LocalDate removedDate, Integer removedOdometer, String notes, List<Long> billIds)
 {
+	public static final int MAX_BILLS = 20;
+
 	public List<String> validate()
 	{
 		List<String> errors = new ArrayList<>();
@@ -59,6 +63,14 @@ public record ModificationInput(String part, String manufacturer, ApprovalType a
 		if (installedOdometer != null && removedOdometer != null && removedOdometer < installedOdometer)
 		{
 			errors.add("Removed odometer must not be below the installed odometer!");
+		}
+		if (billIds != null && billIds.size() > MAX_BILLS)
+		{
+			errors.add("A modification can have at most " + MAX_BILLS + " bills!");
+		}
+		if (billIds != null && billIds.stream().anyMatch(Objects::isNull))
+		{
+			errors.add("A bill must not be empty!");
 		}
 		return errors;
 	}

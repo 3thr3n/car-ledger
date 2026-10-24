@@ -16,6 +16,24 @@ test.describe.serial('modifications', () => {
     carId = (
       (await (await api.get('/api/car/my')).json()) as { id: number }[]
     )[0].id;
+    // the part and the workshop
+    await api.put(`/api/bill/${carId}/miscellaneous`, {
+      data: {
+        date: '2025-04-20',
+        vatRate: 19,
+        total: 1450,
+        description: 'KW coilovers',
+      },
+    });
+    await api.put(`/api/bill/${carId}/maintenance`, {
+      data: {
+        date: '2025-04-28',
+        vatRate: 19,
+        total: 320,
+        odometer: 80000,
+        description: 'Mounting',
+      },
+    });
     await api.dispose();
     page = await browser.newPage();
   });
@@ -70,6 +88,10 @@ test.describe.serial('modifications', () => {
     await expect(dialog.getByRole('textbox', { name: 'Odometer' })).toHaveValue(
       '80,000 km',
     );
+    for (const bill of ['KW coilovers', 'Mounting']) {
+      await dialog.getByRole('combobox', { name: 'Bills' }).click();
+      await page.getByRole('option', { name: new RegExp(bill) }).click();
+    }
     await dialog.getByRole('button', { name: 'Save' }).click();
 
     await expect(page.getByText('Modification added')).toBeVisible();
@@ -114,6 +136,11 @@ test.describe.serial('modifications', () => {
     const details = modification('Coilovers');
     await expect(details).toContainText('Only with 225/40 R18');
     await expect(details).toContainText('May 2, 2025 · TÜV');
+    await expect(details).toContainText(
+      'Apr 20, 2025 · KW coilovers · €1,450.00',
+    );
+    await expect(details).toContainText('Apr 28, 2025 · Mounting · €320.00');
+    await expect(details).toContainText('Total €1,770.00');
 
     await details.getByRole('button', { name: 'Add document' }).click();
     await page.getByRole('menuitem', { name: 'Gutachten / ABE' }).click();

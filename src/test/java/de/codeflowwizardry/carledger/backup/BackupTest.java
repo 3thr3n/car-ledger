@@ -137,7 +137,7 @@ class BackupTest
 		long coilovers = modificationService.create(carId,
 				new ModificationInput("Coilovers", "KW", ApprovalType.PARTS_REPORT,
 						"TG 123", "Only with the rims of the Gutachten", LocalDate.of(2025, 1, 25), "TÜV Süd", true,
-						LocalDate.of(2025, 1, 20), 41_000, null, null, null, maintenance),
+						LocalDate.of(2025, 1, 20), 41_000, null, null, null, List.of(maintenance)),
 				"peter").id();
 		attachmentService.addToModification(carId, coilovers, "peter", "gutachten.pdf", DocumentKind.APPROVAL, PDF);
 
@@ -267,7 +267,7 @@ class BackupTest
 		JsonNode modification = car.get("modifications").get(0);
 		assertEquals("PARTS_REPORT", modification.get("approvalType").asText());
 		assertEquals("TÜV Süd", modification.get("testingBody").asText());
-		assertEquals(0, modification.get("bill").asInt());
+		assertEquals(0, modification.get("bills").get(0).asInt());
 		JsonNode document = modification.get("documents").get(0);
 		assertEquals("APPROVAL", document.get("kind").asText());
 		assertArrayEquals(PDF, entries.get(document.get("path").asText()));
@@ -325,7 +325,7 @@ class BackupTest
 				.body("[0].part", is("Coilovers"))
 				.body("[0].registered", is(true))
 				.body("[0].installedOdometer", is(41_000))
-				.body("[0].billId", is((int) maintenance))
+				.body("[0].bills.id", contains((int) maintenance))
 				.body("[0].documents", is(1));
 		long modification = given().when().get("/api/modification/{carId}", restored).then()
 				.extract().jsonPath().getLong("[0].id");
@@ -379,12 +379,37 @@ class BackupTest
 		Map<String, byte[]> entries = unzip(download());
 		deleteCar();
 		ObjectNode json = (ObjectNode) mapper.readTree(entries.get("backup.json"));
-		((ObjectNode) json.withArray("cars").get(0).withArray("modifications").get(0)).put("bill", 4);
+		ObjectNode modification = (ObjectNode) json.withArray("cars").get(0).withArray("modifications").get(0);
+		// 4 is out of the bills, 1 is the refuel
+		for (int bill : new int[] {
+				4, 1
+		})
+		{
+			modification.putArray("bills").add(bill);
+			entries.put("backup.json", mapper.writeValueAsBytes(json));
+
+			restore(zip(entries)).statusCode(400)
+					.body("", contains(
+							"A modification of the backup links an entry that isn't in it or can't be linked!"));
+		}
+		given().when().get("/api/car/my").then().body("size()", is(0));
+	}
+
+	@Test
+	void shouldRestoreTheOneBillOfAPrerelease() throws IOException
+	{
+		Map<String, byte[]> entries = unzip(download());
+		deleteCar();
+		ObjectNode json = (ObjectNode) mapper.readTree(entries.get("backup.json"));
+		ObjectNode modification = (ObjectNode) json.withArray("cars").get(0).withArray("modifications").get(0);
+		modification.remove("bills");
+		modification.put("bill", 0);
 		entries.put("backup.json", mapper.writeValueAsBytes(json));
 
-		restore(zip(entries)).statusCode(400)
-				.body("", contains("A modification of the backup links an entry that isn't in it!"));
-		given().when().get("/api/car/my").then().body("size()", is(0));
+		restore(zip(entries)).statusCode(200);
+		long restored = given().when().get("/api/car/my").then().extract().jsonPath().getLong("[0].id");
+		given().when().get("/api/modification/{carId}", restored).then()
+				.body("[0].bills.description", contains("Oil change"));
 	}
 
 	@Test
