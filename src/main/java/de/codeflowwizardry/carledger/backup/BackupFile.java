@@ -13,6 +13,7 @@ import de.codeflowwizardry.carledger.data.EnergyType;
 import de.codeflowwizardry.carledger.data.TripReview;
 import de.codeflowwizardry.carledger.data.TripType;
 import de.codeflowwizardry.carledger.data.Accent;
+import de.codeflowwizardry.carledger.data.ApprovalType;
 import de.codeflowwizardry.carledger.data.UnitSystem;
 
 /**
@@ -64,12 +65,14 @@ public record BackupFile(String format, int version, OffsetDateTime createdAt, S
 	 * @param track
 	 *            CSV with the track points ({@link #TRACK_HEADER}), only for a
 	 *            car that keeps them forever and has some
+	 * @param modifications
+	 *            missing in backups before them
 	 */
 	public record Car(String name, int year, int odometer, LocalDate odometerDate, String licensePlate, String vin,
 			LocalDate purchaseDate, BigDecimal purchasePrice, EnergyType energyType, BigDecimal tankSize,
 			BigDecimal batteryCapacity, File picture, List<Bill> bills, List<RecurringBill> recurringBills,
 			List<Reminder> reminders, List<Trip> trips, Boolean tripLog, Integer trackRetentionDays,
-			List<Tracker> trackers, File track)
+			List<Tracker> trackers, File track, List<Modification> modifications)
 	{
 	}
 
@@ -142,6 +145,18 @@ public record BackupFile(String format, int version, OffsetDateTime createdAt, S
 			OffsetDateTime endedAt, String destination, String purpose, String businessPartner,
 			TripReview reviewReason, OffsetDateTime createdAt, OffsetDateTime finishedAt, OffsetDateTime deletedAt,
 			String deletedBy, String deleteReason)
+	{
+	}
+
+	/**
+	 * @param bill
+	 *            index in {@link Car#bills()} of the bill of the part or the
+	 *            installation
+	 */
+	public record Modification(String part, String manufacturer, ApprovalType approvalType, String approvalNumber,
+			String conditions, LocalDate inspectionDate, String testingBody, boolean registered,
+			LocalDate installedDate, Integer installedOdometer, LocalDate removedDate, Integer removedOdometer,
+			String notes, Integer bill)
 	{
 	}
 }

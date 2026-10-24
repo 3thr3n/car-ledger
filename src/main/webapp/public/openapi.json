@@ -198,6 +198,10 @@
           }
         }
       },
+      "ApprovalType" : {
+        "type" : "string",
+        "enum" : [ "ABE", "PARTS_REPORT", "SINGLE_APPROVAL", "EC_TYPE_APPROVAL", "NONE" ]
+      },
       "ApproveCarRequestInput" : {
         "type" : "object",
         "properties" : {
@@ -293,6 +297,10 @@
             "format" : "int32"
           },
           "trackPoints" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "modifications" : {
             "type" : "integer",
             "format" : "int32"
           }
@@ -1231,6 +1239,125 @@
             "type" : "string"
           }
         }
+      },
+      "Modification" : {
+        "type" : "object",
+        "required" : [ "id", "carId", "part", "approvalType", "registered", "installed", "inspectionOpen" ],
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "carId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "part" : {
+            "type" : "string"
+          },
+          "manufacturer" : {
+            "type" : "string"
+          },
+          "approvalType" : {
+            "$ref" : "#/components/schemas/ApprovalType"
+          },
+          "approvalNumber" : {
+            "type" : "string"
+          },
+          "conditions" : {
+            "type" : "string"
+          },
+          "inspectionDate" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          },
+          "testingBody" : {
+            "type" : "string"
+          },
+          "registered" : {
+            "type" : "boolean"
+          },
+          "installedDate" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          },
+          "installedOdometer" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "removedDate" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          },
+          "removedOdometer" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "notes" : {
+            "type" : "string"
+          },
+          "billId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "installed" : {
+            "type" : "boolean"
+          },
+          "inspectionOpen" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "ModificationInput" : {
+        "type" : "object",
+        "properties" : {
+          "part" : {
+            "type" : "string"
+          },
+          "manufacturer" : {
+            "type" : "string"
+          },
+          "approvalType" : {
+            "$ref" : "#/components/schemas/ApprovalType"
+          },
+          "approvalNumber" : {
+            "type" : "string"
+          },
+          "conditions" : {
+            "type" : "string"
+          },
+          "inspectionDate" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          },
+          "testingBody" : {
+            "type" : "string"
+          },
+          "registered" : {
+            "type" : "boolean"
+          },
+          "installedDate" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          },
+          "installedOdometer" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "removedDate" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          },
+          "removedOdometer" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "notes" : {
+            "type" : "string"
+          },
+          "billId" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      },
+      "ModificationState" : {
+        "type" : "string",
+        "enum" : [ "INSTALLED", "REMOVED", "ALL" ]
       },
       "MonthStats" : {
         "type" : "object",
@@ -4881,6 +5008,189 @@
         },
         "summary" : "Get Map Settings",
         "tags" : [ "Map Resource" ]
+      }
+    },
+    "/api/modification/{carId}" : {
+      "get" : {
+        "description" : "Modifications of a car, the installed ones first, then the latest installed.",
+        "operationId" : "getModifications",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "state",
+          "in" : "query",
+          "schema" : {
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/ModificationState"
+            }, {
+              "default" : "ALL"
+            } ]
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/Modification"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary" : "Get Modifications",
+        "tags" : [ "Modification Resource" ]
+      },
+      "put" : {
+        "operationId" : "addModification",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ModificationInput"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "202" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Modification"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed, please check the response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Car is not for your user."
+          }
+        },
+        "summary" : "Add Modification",
+        "tags" : [ "Modification Resource" ]
+      }
+    },
+    "/api/modification/{carId}/{id}" : {
+      "post" : {
+        "description" : "Changes a modification, a removed date moves it into the history.",
+        "operationId" : "updateModification",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ModificationInput"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Modification"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed, please check the response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Modification not found for the car of your user."
+          }
+        },
+        "summary" : "Update Modification",
+        "tags" : [ "Modification Resource" ]
+      },
+      "delete" : {
+        "description" : "Deletes a modification including its history, remove it with a removed date to keep that.",
+        "operationId" : "deleteModification",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "Deleted"
+          },
+          "404" : {
+            "description" : "Modification not found for the car of your user."
+          }
+        },
+        "summary" : "Delete Modification",
+        "tags" : [ "Modification Resource" ]
       }
     },
     "/api/reminder/{carId}" : {

@@ -26,6 +26,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import de.codeflowwizardry.carledger.ModificationService;
 import de.codeflowwizardry.carledger.Utils;
 import de.codeflowwizardry.carledger.attachment.AttachmentService;
 import de.codeflowwizardry.carledger.data.*;
@@ -34,12 +35,14 @@ import de.codeflowwizardry.carledger.data.repository.AttachmentRepository;
 import de.codeflowwizardry.carledger.data.repository.BillRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import de.codeflowwizardry.carledger.data.repository.DeviceRepository;
+import de.codeflowwizardry.carledger.data.repository.ModificationRepository;
 import de.codeflowwizardry.carledger.data.repository.RecurringBillPaymentRepository;
 import de.codeflowwizardry.carledger.data.repository.RecurringBillRepository;
 import de.codeflowwizardry.carledger.data.repository.ReminderRepository;
 import de.codeflowwizardry.carledger.data.repository.TrackPointRepository;
 import de.codeflowwizardry.carledger.data.repository.TripRepository;
 import de.codeflowwizardry.carledger.exception.AlreadyPresentException;
+import de.codeflowwizardry.carledger.rest.car.modification.ModificationInput;
 import de.codeflowwizardry.carledger.rest.car.track.TrackRetentionInput;
 import de.codeflowwizardry.carledger.rest.car.tracker.DeviceInput;
 import de.codeflowwizardry.carledger.rest.car.trip.TripDeleteInput;
@@ -57,7 +60,8 @@ import jakarta.transaction.Transactional;
 
 /**
  * The backup of the own data as ZIP: backup.json with the settings, cars,
- * bills, recurring costs, reminders, trips and GPS trackers, and the files
+ * bills, recurring costs, reminders, trips, GPS trackers and modifications, and
+ * the files
  * (receipts, pictures, the track points of the cars that keep them forever). A
  * restore fills an account without cars, all at once or nothing.
  * Restored trips are marked, as a backup is a file anyone can edit.
@@ -89,6 +93,7 @@ public class BackupService
 	private final TripRepository tripRepository;
 	private final DeviceRepository deviceRepository;
 	private final TrackPointRepository trackPointRepository;
+	private final ModificationRepository modificationRepository;
 	private final AttachmentService attachmentService;
 	private final ObjectMapper mapper;
 	private final EntityManager em;
@@ -98,8 +103,8 @@ public class BackupService
 			BillRepository billRepository, AttachmentRepository attachmentRepository,
 			RecurringBillRepository recurringBillRepository, RecurringBillPaymentRepository paymentRepository,
 			ReminderRepository reminderRepository, TripRepository tripRepository, DeviceRepository deviceRepository,
-			TrackPointRepository trackPointRepository, AttachmentService attachmentService, ObjectMapper mapper,
-			EntityManager em)
+			TrackPointRepository trackPointRepository, ModificationRepository modificationRepository,
+			AttachmentService attachmentService, ObjectMapper mapper, EntityManager em)
 	{
 		this.accountRepository = accountRepository;
 		this.carRepository = carRepository;
@@ -111,6 +116,7 @@ public class BackupService
 		this.tripRepository = tripRepository;
 		this.deviceRepository = deviceRepository;
 		this.trackPointRepository = trackPointRepository;
+		this.modificationRepository = modificationRepository;
 		this.attachmentService = attachmentService;
 		this.mapper = mapper;
 		this.em = em;
@@ -209,6 +215,7 @@ public class BackupService
 				.collect(Collectors.groupingBy(attachment -> attachment.getBill().getId()));
 
 		List<BackupFile.Bill> bills = new ArrayList<>();
+		Map<Long, Integer> billIndexes = new HashMap<>();
 		List<BillEntity> entities = new ArrayList<>(
 				billRepository.getBills(car.getId(), user, Optional.empty(), Optional.empty()));
 		entities.sort(Comparator.comparing(BillEntity::getDate).thenComparing(BillEntity::getId));
@@ -219,6 +226,7 @@ public class BackupService
 			{
 				billFiles.add(files.add(attachment));
 			}
+			billIndexes.put(bill.getId(), bills.size());
 			bills.add(bill(bill, billFiles));
 		}
 
@@ -246,6 +254,16 @@ public class BackupService
 						trip.getStartedAt(), trip.getEndedAt(), trip.getDestination(), trip.getPurpose(),
 						trip.getBusinessPartner(), trip.getReviewReason(), trip.getCreatedAt(),
 						trip.getFinishedAt(), trip.getDeletedAt(), trip.getDeletedBy(), trip.getDeleteReason()))
+				.toList();
+
+		List<BackupFile.Modification> modifications = modificationRepository.list(car.getId(), user).stream()
+				.map(modification -> new BackupFile.Modification(modification.getPart(),
+						modification.getManufacturer(), modification.getApprovalType(),
+						modification.getApprovalNumber(), modification.getConditions(),
+						modification.getInspectionDate(), modification.getTestingBody(), modification.isRegistered(),
+						modification.getInstalledDate(), modification.getInstalledOdometer(),
+						modification.getRemovedDate(), modification.getRemovedOdometer(), modification.getNotes(),
+						modification.getBill() == null ? null : billIndexes.get(modification.getBill().getId())))
 				.toList();
 
 		List<DeviceEntity> devices = deviceRepository.list("car = ?1 order by id", car);
@@ -276,7 +294,7 @@ public class BackupService
 		return new BackupFile.Car(car.getName(), car.getManufactureYear(), car.getOdometer(), car.getOdometerDate(),
 				car.getLicensePlate(), car.getVin(), car.getPurchaseDate(), car.getPurchasePrice(),
 				car.getEnergyType(), car.getTankSize(), car.getBatteryCapacity(), picture, bills, recurringBills,
-				reminders, trips, car.isTripLog(), car.getTrackRetentionDays(), trackers, track);
+				reminders, trips, car.isTripLog(), car.getTrackRetentionDays(), trackers, track, modifications);
 	}
 
 	private static BackupFile.Bill bill(BillEntity bill, List<BackupFile.File> files)
@@ -343,7 +361,7 @@ public class BackupService
 			restoreCar(account, car, entries, counter);
 		}
 		return new BackupSummary(cars.size(), counter.bills, counter.recurringBills, counter.reminders,
-				counter.trips, counter.files, counter.trackers, counter.trackPoints);
+				counter.trips, counter.files, counter.trackers, counter.trackPoints, counter.modifications);
 	}
 
 	private static final class Counter
@@ -355,6 +373,7 @@ public class BackupService
 		int files;
 		int trackers;
 		int trackPoints;
+		int modifications;
 	}
 
 	private BackupFile parse(byte[] json)
@@ -441,9 +460,10 @@ public class BackupService
 		car.setTrackRetentionDays(backup.trackRetentionDays());
 		carRepository.persist(car);
 
+		List<BillEntity> bills = new ArrayList<>();
 		for (BackupFile.Bill bill : list(backup.bills()))
 		{
-			restoreBill(car, bill, entries, counter);
+			bills.add(restoreBill(car, bill, entries, counter));
 		}
 		for (BackupFile.RecurringBill recurring : list(backup.recurringBills()))
 		{
@@ -461,6 +481,11 @@ public class BackupService
 			entity.setIntervalKm(reminder.intervalKm());
 			reminderRepository.persist(entity);
 			counter.reminders++;
+		}
+		for (BackupFile.Modification modification : list(backup.modifications()))
+		{
+			restoreModification(car, modification, bills);
+			counter.modifications++;
 		}
 		boolean open = false;
 		for (BackupFile.Trip trip : list(backup.trips()))
@@ -653,7 +678,30 @@ public class BackupService
 		tripRepository.persist(entity);
 	}
 
-	private void restoreBill(CarEntity car, BackupFile.Bill backup, BackupArchive entries, Counter counter)
+	/**
+	 * @param bills
+	 *            the restored bills of the car, in the order of the backup
+	 */
+	private void restoreModification(CarEntity car, BackupFile.Modification backup, List<BillEntity> bills)
+	{
+		ModificationInput input = new ModificationInput(backup.part(), backup.manufacturer(), backup.approvalType(),
+				backup.approvalNumber(), backup.conditions(), backup.inspectionDate(), backup.testingBody(),
+				backup.registered(), backup.installedDate(), backup.installedOdometer(), backup.removedDate(),
+				backup.removedOdometer(), backup.notes(), null);
+		List<String> errors = new ArrayList<>(input.validate());
+		if (backup.bill() != null && (backup.bill() < 0 || backup.bill() >= bills.size()))
+		{
+			errors.add("A modification of the backup links an entry that isn't in it!");
+		}
+		Utils.requireValid(errors);
+
+		ModificationEntity entity = new ModificationEntity(car);
+		ModificationService.apply(entity, input);
+		entity.setBill(backup.bill() == null ? null : bills.get(backup.bill()));
+		modificationRepository.persist(entity);
+	}
+
+	private BillEntity restoreBill(CarEntity car, BackupFile.Bill backup, BackupArchive entries, Counter counter)
 	{
 		if (backup.type() == null || backup.date() == null || backup.total() == null)
 		{
@@ -725,6 +773,7 @@ public class BackupService
 			attachmentService.restore(car, bill, file.fileName(), content(entries, file));
 			counter.files++;
 		}
+		return bill;
 	}
 
 	private void restoreRecurringBill(CarEntity car, BackupFile.RecurringBill backup)
