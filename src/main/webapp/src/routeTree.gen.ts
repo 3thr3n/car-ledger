@@ -30,6 +30,7 @@ const Dev404LazyRouteImport = createFileRoute('/dev/404')()
 const CarIdIndexLazyRouteImport = createFileRoute('/car/$id/')()
 const CarIdEditLazyRouteImport = createFileRoute('/car/$id/edit')()
 const CarIdRemindersLazyRouteImport = createFileRoute('/car/$id/reminders')()
+const CarIdTrackLazyRouteImport = createFileRoute('/car/$id/track')()
 const CarIdTripsLazyRouteImport = createFileRoute('/car/$id/trips')()
 const CarIdBillChargingIndexLazyRouteImport = createFileRoute(
   '/car/$id/bill/charging/',
@@ -124,6 +125,11 @@ const CarIdRemindersLazyRoute = CarIdRemindersLazyRouteImport.update({
 } as any).lazy(() =>
   import('./routes/car/$id/reminders.lazy').then((d) => d.Route),
 )
+const CarIdTrackLazyRoute = CarIdTrackLazyRouteImport.update({
+  id: '/track',
+  path: '/track',
+  getParentRoute: () => CarIdRouteRoute,
+} as any).lazy(() => import('./routes/car/$id/track.lazy').then((d) => d.Route))
 const CarIdTripsLazyRoute = CarIdTripsLazyRouteImport.update({
   id: '/trips',
   path: '/trips',
@@ -201,6 +207,7 @@ export interface FileRoutesByFullPath {
   '/car/': typeof CarIndexLazyRoute
   '/car/$id/edit': typeof CarIdEditLazyRoute
   '/car/$id/reminders': typeof CarIdRemindersLazyRoute
+  '/car/$id/track': typeof CarIdTrackLazyRoute
   '/car/$id/trips': typeof CarIdTripsLazyRoute
   '/car/$id/': typeof CarIdIndexLazyRoute
   '/car/$id/bill/add': typeof CarIdBillAddRoute
@@ -226,6 +233,7 @@ export interface FileRoutesByTo {
   '/car': typeof CarIndexLazyRoute
   '/car/$id/edit': typeof CarIdEditLazyRoute
   '/car/$id/reminders': typeof CarIdRemindersLazyRoute
+  '/car/$id/track': typeof CarIdTrackLazyRoute
   '/car/$id/trips': typeof CarIdTripsLazyRoute
   '/car/$id': typeof CarIdIndexLazyRoute
   '/car/$id/bill/add': typeof CarIdBillAddRoute
@@ -253,6 +261,7 @@ export interface FileRoutesById {
   '/car/': typeof CarIndexLazyRoute
   '/car/$id/edit': typeof CarIdEditLazyRoute
   '/car/$id/reminders': typeof CarIdRemindersLazyRoute
+  '/car/$id/track': typeof CarIdTrackLazyRoute
   '/car/$id/trips': typeof CarIdTripsLazyRoute
   '/car/$id/': typeof CarIdIndexLazyRoute
   '/car/$id/bill/add': typeof CarIdBillAddRoute
@@ -281,6 +290,7 @@ export interface FileRouteTypes {
     | '/car/'
     | '/car/$id/edit'
     | '/car/$id/reminders'
+    | '/car/$id/track'
     | '/car/$id/trips'
     | '/car/$id/'
     | '/car/$id/bill/add'
@@ -306,6 +316,7 @@ export interface FileRouteTypes {
     | '/car'
     | '/car/$id/edit'
     | '/car/$id/reminders'
+    | '/car/$id/track'
     | '/car/$id/trips'
     | '/car/$id'
     | '/car/$id/bill/add'
@@ -332,6 +343,7 @@ export interface FileRouteTypes {
     | '/car/'
     | '/car/$id/edit'
     | '/car/$id/reminders'
+    | '/car/$id/track'
     | '/car/$id/trips'
     | '/car/$id/'
     | '/car/$id/bill/add'
@@ -466,6 +478,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CarIdRemindersLazyRouteImport
       parentRoute: typeof CarIdRouteRoute
     }
+    '/car/$id/track': {
+      id: '/car/$id/track'
+      path: '/track'
+      fullPath: '/car/$id/track'
+      preLoaderRoute: typeof CarIdTrackLazyRouteImport
+      parentRoute: typeof CarIdRouteRoute
+    }
     '/car/$id/trips': {
       id: '/car/$id/trips'
       path: '/trips'
@@ -535,6 +554,7 @@ declare module '@tanstack/react-router' {
 interface CarIdRouteRouteChildren {
   CarIdEditLazyRoute: typeof CarIdEditLazyRoute
   CarIdRemindersLazyRoute: typeof CarIdRemindersLazyRoute
+  CarIdTrackLazyRoute: typeof CarIdTrackLazyRoute
   CarIdTripsLazyRoute: typeof CarIdTripsLazyRoute
   CarIdIndexLazyRoute: typeof CarIdIndexLazyRoute
   CarIdBillAddRoute: typeof CarIdBillAddRoute
@@ -550,6 +570,7 @@ interface CarIdRouteRouteChildren {
 const CarIdRouteRouteChildren: CarIdRouteRouteChildren = {
   CarIdEditLazyRoute: CarIdEditLazyRoute,
   CarIdRemindersLazyRoute: CarIdRemindersLazyRoute,
+  CarIdTrackLazyRoute: CarIdTrackLazyRoute,
   CarIdTripsLazyRoute: CarIdTripsLazyRoute,
   CarIdIndexLazyRoute: CarIdIndexLazyRoute,
   CarIdBillAddRoute: CarIdBillAddRoute,

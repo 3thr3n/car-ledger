@@ -44,6 +44,10 @@ public class CarEntity
 	@Column(name = "c_trip_log", nullable = false)
 	private boolean tripLog;
 
+	/** days the GPS track points are kept, forever without */
+	@Column(name = "c_track_retention_days")
+	private Integer trackRetentionDays;
+
 	/** attachment with the picture, the generated avatar is shown without */
 	@Column(name = "c_picture_id")
 	private Long pictureId;
@@ -185,6 +189,16 @@ public class CarEntity
 	public void setTripLog(boolean tripLog)
 	{
 		this.tripLog = tripLog;
+	}
+
+	public Integer getTrackRetentionDays()
+	{
+		return trackRetentionDays;
+	}
+
+	public void setTrackRetentionDays(Integer trackRetentionDays)
+	{
+		this.trackRetentionDays = trackRetentionDays;
 	}
 
 	public Long getPictureId()

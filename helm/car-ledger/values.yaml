@@ -20,6 +20,9 @@ carLedger:
     repository: ghcr.io/3thr3n/car-ledger
     # defaults to the appVersion of the chart: the image of the same build for published charts
     tag: ""
+  # secrets of type kubernetes.io/dockerconfigjson for private registries, e.g. [{name: regcred}]. They
+  # apply to every image of the pod: the app and an image volume of tracker.firmware
+  imagePullSecrets: []
   securityContext:
     runAsNonRoot: true
   # OpenID Connect provider, Keycloak of the keycloak chart by default, any other works as well
@@ -50,6 +53,11 @@ carLedger:
     # ingress gets the annotation nginx.ingress.kubernetes.io/proxy-body-size with this value (unless
     # set in ingress.annotations); other proxies in front of the app need a similar limit
     maxRequestSize: 12M
+  # backup of the users in the settings: seconds a download or a restore may take, a car that keeps its
+  # track points forever has millions of them. A restore is an upload: a larger backup needs a larger
+  # attachments.maxRequestSize
+  backup:
+    transactionTimeout: 1800
   # events as signed HTTP webhooks (see docs/WEBHOOKS.md); without a url nothing is sent
   webhook:
     url:
@@ -58,6 +66,38 @@ carLedger:
     secretKey: "webhook-secret"
     # event types to send, all without a list, e.g. [car-request.created, car-request.decided]
     events: []
+  # map of the GPS tracks (see docs/GPS_TRACKER.md): the browser loads a MapLibre style and its tiles,
+  # e.g. of an own tile server or of a provider with a key. Without a styleUrl the map is hidden
+  map:
+    # e.g. https://tiles.openfreemap.org/styles/liberty or https://api.maptiler.com/maps/streets-v2/style.json?key=…
+    styleUrl:
+    # further origins the style loads tiles, glyphs or sprites from, e.g. ["https://tiles.example.com"];
+    # the origin of the styleUrl is allowed anyway
+    sources: []
+  # GPS trackers (see docs/GPS_TRACKER.md)
+  tracker:
+    # release of the tracker firmware (manifest.json and the files it lists), the users flash it from the
+    # browser. It isn't part of the image and only served to logged-in users. Without a volume, flashing
+    # is hidden
+    firmware:
+      # a volume source, e.g.
+      # persistentVolumeClaim:
+      #   claimName: tracker-firmware
+      # or an OCI image with the files (Kubernetes 1.33+), from a private registry with imagePullSecrets:
+      # image:
+      #   reference: registry.example.com/car-ledger/tracker-firmware:v1.0.0
+      #   pullPolicy: IfNotPresent
+      volume: {}
+      # directory of the volume with the manifest.json, its root without one
+      subPath: ""
+    # drives of the tracks are suggested as forgotten trips in the trip log: a drive ends after a stop
+    # this long (no points, or a car that doesn't move), shorter drives are ignored. Durations like
+    # 5M (minutes) or PT90S
+    suggestions:
+      stop: 5M
+      # meters
+      minDriveDistance: 500
+      minDriveDuration: 2M
   # notifications as push messages to the browsers that turn them on in the settings (see
   # docs/DEPLOYMENT.md#push). Needs no other service: the chart generates the key of the server
   # into the secret car-ledger-push and keeps it, a new key ends all subscriptions

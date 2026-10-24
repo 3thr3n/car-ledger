@@ -23,7 +23,7 @@ helm install car-ledger oci://ghcr.io/3thr3n/car-ledger/stack \
   --set global.authentik.enabled=true
 ```
 
-The stack has the version of the app: the release `0.6.0` runs the image `0.6.0` and contains the other charts of the
+The stack has the version of the app: the release `0.7.0` runs the image `0.7.0` and contains the other charts of the
 same commit. Builds of `develop` are published as prereleases like the app chart (`--devel`).
 
 Name the release `car-ledger` and install it once per namespace: the names of the resources are fixed (e.g. the

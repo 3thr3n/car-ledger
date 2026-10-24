@@ -1,0 +1,77 @@
+package de.codeflowwizardry.carledger.rest.car.track;
+
+import java.time.OffsetDateTime;
+import java.util.List;
+
+import io.quarkus.security.identity.SecurityIdentity;
+
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
+
+import de.codeflowwizardry.carledger.data.repository.AccountRepository;
+import de.codeflowwizardry.carledger.rest.AbstractResource;
+import de.codeflowwizardry.carledger.tracker.TrackRetention;
+import de.codeflowwizardry.carledger.tracker.TrackService;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
+
+/**
+ * The GPS track of a car, from the points of its trackers
+ */
+@Path("track/{carId}")
+public class TrackResource extends AbstractResource
+{
+	private final TrackService trackService;
+	private final TrackRetention trackRetention;
+
+	@Inject
+	public TrackResource(SecurityIdentity identity, AccountRepository accountRepository, TrackService trackService,
+			TrackRetention trackRetention)
+	{
+		super(identity, accountRepository);
+		this.trackService = trackService;
+		this.trackRetention = trackRetention;
+	}
+
+	@GET
+	@Produces(MediaType.APPLICATION_JSON)
+	@Operation(operationId = "getTrack", description = "GPS track of a car in a time range of at most 31 days, simplified for the map and split into segments at gaps of more than 5 minutes.")
+	@APIResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = Track.class)))
+	@APIResponse(responseCode = "400", description = "Range missing, empty or too long", content = @Content(schema = @Schema(implementation = List.class)))
+	@APIResponse(responseCode = "404", description = "Car is not for your user.")
+	public Track getTrack(@PathParam("carId") long carId,
+			@Parameter(description = "Start of the range, inclusive", required = true) @QueryParam("from") OffsetDateTime from,
+			@Parameter(description = "End of the range, exclusive", required = true) @QueryParam("to") OffsetDateTime to)
+	{
+		return trackService.track(carId, from, to, context.getName());
+	}
+
+	@PUT
+	@Path("retention")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Operation(operationId = "setTrackRetention", description = "Days the GPS track points of the car are kept, forever without. Older points are deleted every night; only the points of cars that keep them forever are in the backup.")
+	@APIResponse(responseCode = "204", description = "Saved.")
+	@APIResponse(responseCode = "400", description = "Not 1 to 3650 days", content = @Content(schema = @Schema(implementation = List.class)))
+	@APIResponse(responseCode = "404", description = "Car is not yours.")
+	public void setTrackRetention(@PathParam("carId") long carId, TrackRetentionInput input)
+	{
+		trackRetention.setRetention(carId, input, context.getName());
+	}
+
+	@DELETE
+	@Produces(MediaType.APPLICATION_JSON)
+	@Operation(operationId = "deleteTracks", description = "Deletes the GPS track points of the car in a range, e.g. a wrong track, or all without one. Its trackers stay.")
+	@APIResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = TracksDeleted.class)))
+	@APIResponse(responseCode = "400", description = "Only one end of the range, or an empty range", content = @Content(schema = @Schema(implementation = List.class)))
+	@APIResponse(responseCode = "404", description = "Car is not yours.")
+	public TracksDeleted deleteTracks(@PathParam("carId") long carId,
+			@Parameter(description = "Start of the range, inclusive") @QueryParam("from") OffsetDateTime from,
+			@Parameter(description = "End of the range, exclusive") @QueryParam("to") OffsetDateTime to)
+	{
+		return new TracksDeleted(trackRetention.delete(carId, from, to, context.getName()));
+	}
+}

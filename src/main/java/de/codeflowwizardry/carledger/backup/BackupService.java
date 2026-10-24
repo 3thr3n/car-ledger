@@ -1,17 +1,23 @@
 package de.codeflowwizardry.carledger.backup;
 
-import java.io.ByteArrayOutputStream;
+import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -27,16 +33,23 @@ import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.AttachmentRepository;
 import de.codeflowwizardry.carledger.data.repository.BillRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
+import de.codeflowwizardry.carledger.data.repository.DeviceRepository;
 import de.codeflowwizardry.carledger.data.repository.RecurringBillPaymentRepository;
 import de.codeflowwizardry.carledger.data.repository.RecurringBillRepository;
 import de.codeflowwizardry.carledger.data.repository.ReminderRepository;
+import de.codeflowwizardry.carledger.data.repository.TrackPointRepository;
 import de.codeflowwizardry.carledger.data.repository.TripRepository;
 import de.codeflowwizardry.carledger.exception.AlreadyPresentException;
+import de.codeflowwizardry.carledger.rest.car.track.TrackRetentionInput;
+import de.codeflowwizardry.carledger.rest.car.tracker.DeviceInput;
 import de.codeflowwizardry.carledger.rest.car.trip.TripDeleteInput;
 import de.codeflowwizardry.carledger.rest.car.trip.TripFinishInput;
 import de.codeflowwizardry.carledger.rest.car.trip.TripStartInput;
 import de.codeflowwizardry.carledger.rest.records.CarInput;
+import de.codeflowwizardry.carledger.rest.device.TrackPointInput;
 import de.codeflowwizardry.carledger.rest.records.input.SettingsInput;
+import de.codeflowwizardry.carledger.tracker.DeviceTokens;
+import io.quarkus.narayana.jta.runtime.TransactionConfiguration;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
@@ -44,8 +57,9 @@ import jakarta.transaction.Transactional;
 
 /**
  * The backup of the own data as ZIP: backup.json with the settings, cars,
- * bills, recurring costs, reminders and trips, and the files (receipts,
- * pictures). A restore fills an account without cars, all at once or nothing.
+ * bills, recurring costs, reminders, trips and GPS trackers, and the files
+ * (receipts, pictures, the track points of the cars that keep them forever). A
+ * restore fills an account without cars, all at once or nothing.
  * Restored trips are marked, as a backup is a file anyone can edit.
  */
 @ApplicationScoped
@@ -58,6 +72,12 @@ public class BackupService
 	static final long MAX_UNPACKED = 1024L * 1024 * 1024;
 	static final int MAX_ENTRIES = 100_000;
 	static final long MAX_JSON = 16L * 1024 * 1024;
+	/**
+	 * seconds of the transaction of a backup or a restore, a year of track points
+	 * takes a while
+	 */
+	static final String TIMEOUT = "carledger.backup.transaction-timeout";
+	private static final Pattern SHA_256 = Pattern.compile("[0-9a-f]{64}");
 
 	private final AccountRepository accountRepository;
 	private final CarRepository carRepository;
@@ -67,6 +87,8 @@ public class BackupService
 	private final RecurringBillPaymentRepository paymentRepository;
 	private final ReminderRepository reminderRepository;
 	private final TripRepository tripRepository;
+	private final DeviceRepository deviceRepository;
+	private final TrackPointRepository trackPointRepository;
 	private final AttachmentService attachmentService;
 	private final ObjectMapper mapper;
 	private final EntityManager em;
@@ -75,8 +97,9 @@ public class BackupService
 	public BackupService(AccountRepository accountRepository, CarRepository carRepository,
 			BillRepository billRepository, AttachmentRepository attachmentRepository,
 			RecurringBillRepository recurringBillRepository, RecurringBillPaymentRepository paymentRepository,
-			ReminderRepository reminderRepository, TripRepository tripRepository, AttachmentService attachmentService,
-			ObjectMapper mapper, EntityManager em)
+			ReminderRepository reminderRepository, TripRepository tripRepository, DeviceRepository deviceRepository,
+			TrackPointRepository trackPointRepository, AttachmentService attachmentService, ObjectMapper mapper,
+			EntityManager em)
 	{
 		this.accountRepository = accountRepository;
 		this.carRepository = carRepository;
@@ -86,19 +109,22 @@ public class BackupService
 		this.paymentRepository = paymentRepository;
 		this.reminderRepository = reminderRepository;
 		this.tripRepository = tripRepository;
+		this.deviceRepository = deviceRepository;
+		this.trackPointRepository = trackPointRepository;
 		this.attachmentService = attachmentService;
 		this.mapper = mapper;
 		this.em = em;
 	}
 
 	/**
-	 * @return the ZIP with all data of the user
+	 * Writes the ZIP with all data of the user, as it goes: a year of track points
+	 * is never in memory at once
 	 */
 	@Transactional
-	public byte[] create(String user)
+	@TransactionConfiguration(timeoutFromConfigProperty = TIMEOUT)
+	public void create(String user, OutputStream out)
 	{
 		AccountEntity account = accountRepository.findByIdentifier(user);
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		try (ZipOutputStream zip = new ZipOutputStream(out))
 		{
 			Files files = new Files(zip);
@@ -119,7 +145,6 @@ public class BackupService
 		{
 			throw new UncheckedIOException(e);
 		}
-		return out.toByteArray();
 	}
 
 	/**
@@ -142,6 +167,37 @@ public class BackupService
 			zip.write(attachmentService.content(attachment));
 			zip.closeEntry();
 			return new BackupFile.File(attachment.getFileName(), attachment.getContentType(), path);
+		}
+
+		/**
+		 * @param trackers
+		 *            index of each tracker in the backup, by its id
+		 * @return the CSV with the points, <code>null</code> without any
+		 */
+		BackupFile.File track(CarEntity car, Map<Long, Integer> trackers) throws IOException
+		{
+			if (!trackPointRepository.exists(car.getId()))
+			{
+				return null;
+			}
+			String path = "tracks/" + next++;
+			zip.putNextEntry(new ZipEntry(path));
+			zip.write((BackupFile.TRACK_HEADER + "\n").getBytes(StandardCharsets.UTF_8));
+			// straight from the database, the ZIP stays open for the next entries
+			trackPointRepository.copyOut(car.getId(), trackers, new FilterOutputStream(zip) {
+				@Override
+				public void write(byte[] bytes, int offset, int length) throws IOException
+				{
+					out.write(bytes, offset, length);
+				}
+
+				@Override
+				public void close()
+				{
+				}
+			});
+			zip.closeEntry();
+			return new BackupFile.File(null, "text/csv", path);
 		}
 	}
 
@@ -192,6 +248,21 @@ public class BackupService
 						trip.getFinishedAt(), trip.getDeletedAt(), trip.getDeletedBy(), trip.getDeleteReason()))
 				.toList();
 
+		List<DeviceEntity> devices = deviceRepository.list("car = ?1 order by id", car);
+		Map<Long, Integer> indexes = new HashMap<>();
+		List<BackupFile.Tracker> trackers = new ArrayList<>();
+		for (DeviceEntity device : devices)
+		{
+			indexes.put(device.getId(), trackers.size());
+			trackers.add(new BackupFile.Tracker(device.getName(), device.getTokenHash(), device.getCreatedAt(),
+					device.getLastSeenAt(), device.getRevokedAt()));
+		}
+		// points kept for a while are left out, a backup kept for longer would keep
+		// them
+		BackupFile.File track = car.getTrackRetentionDays() == null && !devices.isEmpty()
+				? files.track(car, indexes)
+				: null;
+
 		BackupFile.File picture = null;
 		if (car.getPictureId() != null)
 		{
@@ -205,7 +276,7 @@ public class BackupService
 		return new BackupFile.Car(car.getName(), car.getManufactureYear(), car.getOdometer(), car.getOdometerDate(),
 				car.getLicensePlate(), car.getVin(), car.getPurchaseDate(), car.getPurchasePrice(),
 				car.getEnergyType(), car.getTankSize(), car.getBatteryCapacity(), picture, bills, recurringBills,
-				reminders, trips, car.isTripLog());
+				reminders, trips, car.isTripLog(), car.getTrackRetentionDays(), trackers, track);
 	}
 
 	private static BackupFile.Bill bill(BillEntity bill, List<BackupFile.File> files)
@@ -240,6 +311,7 @@ public class BackupService
 	 *             if the account has cars already
 	 */
 	@Transactional
+	@TransactionConfiguration(timeoutFromConfigProperty = TIMEOUT)
 	public BackupSummary restore(String user, InputStream zip)
 	{
 		try (BackupArchive entries = new BackupArchive(zip, MAX_ENTRIES, MAX_UNPACKED))
@@ -271,7 +343,7 @@ public class BackupService
 			restoreCar(account, car, entries, counter);
 		}
 		return new BackupSummary(cars.size(), counter.bills, counter.recurringBills, counter.reminders,
-				counter.trips, counter.files);
+				counter.trips, counter.files, counter.trackers, counter.trackPoints);
 	}
 
 	private static final class Counter
@@ -281,6 +353,8 @@ public class BackupService
 		int reminders;
 		int trips;
 		int files;
+		int trackers;
+		int trackPoints;
 	}
 
 	private BackupFile parse(byte[] json)
@@ -359,6 +433,8 @@ public class BackupService
 		car.setTankSize(input.normalizedTankSize());
 		car.setBatteryCapacity(input.normalizedBatteryCapacity());
 		car.setTripLog(backup.tripLog() != null ? backup.tripLog() : !list(backup.trips()).isEmpty());
+		Utils.requireValid(new TrackRetentionInput(backup.trackRetentionDays()).validate());
+		car.setTrackRetentionDays(backup.trackRetentionDays());
 		carRepository.persist(car);
 
 		for (BackupFile.Bill bill : list(backup.bills()))
@@ -397,12 +473,132 @@ public class BackupService
 			restoreTrip(account, car, trip);
 			counter.trips++;
 		}
+		List<Long> devices = new ArrayList<>();
+		for (BackupFile.Tracker tracker : list(backup.trackers()))
+		{
+			devices.add(restoreTracker(car, tracker));
+			counter.trackers++;
+		}
+		if (backup.track() != null)
+		{
+			counter.trackPoints += restoreTrack(car, devices, backup.track(), entries);
+		}
 		if (backup.picture() != null)
 		{
 			car.setPictureId(attachmentService
 					.restore(car, null, backup.picture().fileName(), content(entries, backup.picture())).getId());
 			counter.files++;
 		}
+	}
+
+	/**
+	 * With the hash of its token, so it keeps sending. A hash that another tracker
+	 * has already (e.g. the account of the backup still exists) or that is no
+	 * SHA-256 gets a random one: the owner issues a new token.
+	 *
+	 * @return the id of the tracker
+	 */
+	private long restoreTracker(CarEntity car, BackupFile.Tracker backup)
+	{
+		List<String> errors = new ArrayList<>(new DeviceInput(backup.name()).validate());
+		if (backup.createdAt() == null)
+		{
+			errors.add("A tracker of the backup has no creation time!");
+		}
+		Utils.requireValid(errors);
+
+		String hash = backup.tokenHash();
+		if (hash == null || !SHA_256.matcher(hash).matches() || deviceRepository.existsByTokenHash(hash))
+		{
+			hash = DeviceTokens.hash(DeviceTokens.generate());
+		}
+		DeviceEntity device = new DeviceEntity(car, backup.name().strip(), hash, backup.createdAt(),
+				backup.lastSeenAt(), backup.revokedAt());
+		deviceRepository.persist(device);
+		return device.getId();
+	}
+
+	/**
+	 * The points of the CSV, invalid ones are skipped like the ones a tracker
+	 * sends
+	 *
+	 * @param devices
+	 *            ids of the restored trackers, in the order of the backup
+	 * @return the amount of points restored
+	 */
+	private int restoreTrack(CarEntity car, List<Long> devices, BackupFile.File track, BackupArchive entries)
+	{
+		// the points refer to the car and the trackers by id, outside of Hibernate
+		em.flush();
+		OffsetDateTime now = OffsetDateTime.now();
+		boolean[] header = {
+				true
+		};
+		try (TrackPointRepository.Bulk bulk = trackPointRepository.bulk(car.getId()))
+		{
+			boolean found = entries.readLines(track.path(), line -> {
+				if (header[0])
+				{
+					if (!BackupFile.TRACK_HEADER.equals(line.strip()))
+					{
+						Utils.requireValid(List.of("The track of a car of the backup cannot be read!"));
+					}
+					header[0] = false;
+					return;
+				}
+				if (line.isBlank())
+				{
+					return;
+				}
+				String[] values = line.split(",", -1);
+				long device;
+				TrackPointInput point;
+				try
+				{
+					if (values.length != 7)
+					{
+						throw new IllegalArgumentException("7 values expected");
+					}
+					device = devices.get(Integer.parseInt(values[0]));
+					point = new TrackPointInput(time(values[1]), Double.valueOf(values[2]),
+							Double.valueOf(values[3]), number(values[4]), number(values[5]), number(values[6]));
+				}
+				catch (RuntimeException e)
+				{
+					Utils.requireValid(List.of("The track of a car of the backup cannot be read!"));
+					throw e;
+				}
+				if (point.isValid(now))
+				{
+					bulk.add(device, point);
+				}
+			});
+			if (!found)
+			{
+				Utils.requireValid(List.of("The file " + track.path() + " is missing in the backup!"));
+			}
+			return bulk.finish();
+		}
+	}
+
+	/**
+	 * @return the time of epoch seconds, or ISO-8601 as in the backups of the dev
+	 *         builds before 0.7.0
+	 */
+	private static OffsetDateTime time(String value)
+	{
+		if (value.indexOf('T') >= 0)
+		{
+			return OffsetDateTime.parse(value);
+		}
+		BigDecimal seconds = new BigDecimal(value);
+		return Instant.ofEpochSecond(seconds.longValue(),
+				seconds.remainder(BigDecimal.ONE).movePointRight(9).longValue()).atOffset(ZoneOffset.UTC);
+	}
+
+	private static Double number(String value)
+	{
+		return value.isEmpty() ? null : Double.valueOf(value);
 	}
 
 	/**

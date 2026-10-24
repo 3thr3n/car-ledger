@@ -8,6 +8,8 @@ export interface DateRangeFieldsProps {
   from?: string;
   to?: string;
   onChange: (range: { from?: string; to?: string }) => void;
+  /** below each other on small screens, filling the width */
+  stacked?: boolean;
 }
 
 /** From and to of a custom period, loaded on demand with the date pickers */
@@ -15,11 +17,16 @@ export default function DateRangeFields({
   from,
   to,
   onChange,
+  stacked,
 }: DateRangeFieldsProps) {
   const { t } = useTranslation();
 
   return (
-    <Stack direction="row" spacing={1.5}>
+    <Stack
+      direction={stacked ? { xs: 'column', sm: 'row' } : 'row'}
+      spacing={1.5}
+      sx={stacked ? { flexGrow: 1, '& > *': { flex: 1 } } : undefined}
+    >
       <DatePicker
         label={t('dashboard.filter.from')}
         value={from ? dayjs(from) : null}

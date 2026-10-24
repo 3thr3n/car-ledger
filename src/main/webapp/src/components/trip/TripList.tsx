@@ -16,8 +16,9 @@ import {
 import DeleteOutlineRounded from '@mui/icons-material/DeleteOutlineRounded';
 import FileDownloadRounded from '@mui/icons-material/FileDownloadRounded';
 import RestoreRounded from '@mui/icons-material/RestoreRounded';
+import RouteRounded from '@mui/icons-material/RouteRounded';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Trip } from '@/generated';
 import {
@@ -31,6 +32,8 @@ import { useFormat } from '@/utils/format';
 import { localClient } from '@/utils/QueryClient';
 import TripDeleteDialog from './TripDeleteDialog';
 import TripExportDialog from './TripExportDialog';
+import TripTrack from './TripTrack';
+import useTrackMap from '@/components/track/useTrackMap';
 
 const PAGE_SIZES = [10, 25, 50];
 
@@ -100,6 +103,9 @@ export default function TripList({ carId }: { carId: number }) {
   const [size, setSize] = useState(PAGE_SIZES[0]);
   const [toDelete, setToDelete] = useState<Trip>();
   const [exporting, setExporting] = useState(false);
+  /** the trip whose GPS track is shown below it */
+  const [routeOf, setRouteOf] = useState<string>();
+  const styleUrl = useTrackMap(carId);
 
   const { data: years } = useQuery(
     getTripYearsOptions({ client: localClient, path: { carId } }),
@@ -163,71 +169,104 @@ export default function TripList({ carId }: { carId: number }) {
               </TableHead>
               <TableBody>
                 {trips.map((trip) => (
-                  <TableRow key={trip.id}>
-                    <TableCell>
-                      <Stack
-                        direction="row"
-                        spacing={0.5}
-                        sx={{ alignItems: 'center' }}
+                  <Fragment key={trip.id}>
+                    <TableRow>
+                      <TableCell>
+                        <Stack
+                          direction="row"
+                          spacing={0.5}
+                          sx={{ alignItems: 'center' }}
+                        >
+                          <span>{format.dateTime(trip.startedAt)}</span>
+                          {trip.restored && (
+                            <Tooltip title={t('trip.list.restored')}>
+                              <RestoreRounded
+                                fontSize="small"
+                                color="action"
+                                aria-label={t('trip.list.restored')}
+                              />
+                            </Tooltip>
+                          )}
+                        </Stack>
+                        <Box sx={{ display: { md: 'none' } }}>
+                          <Typography
+                            variant="body2"
+                            sx={{ color: 'text.secondary' }}
+                          >
+                            {t(`trip.types.${trip.type}`)}
+                          </Typography>
+                          <Details trip={trip} />
+                        </Box>
+                      </TableCell>
+                      <TableCell sx={wide}>
+                        {t(`trip.types.${trip.type}`)}
+                      </TableCell>
+                      <TableCell
+                        sx={{ ...wide, ...struck(trip), whiteSpace: 'nowrap' }}
+                        className="tabular"
                       >
-                        <span>{format.dateTime(trip.startedAt)}</span>
-                        {trip.restored && (
-                          <Tooltip title={t('trip.list.restored')}>
-                            <RestoreRounded
-                              fontSize="small"
-                              color="action"
-                              aria-label={t('trip.list.restored')}
-                            />
-                          </Tooltip>
-                        )}
-                      </Stack>
-                      <Box sx={{ display: { md: 'none' } }}>
-                        <Typography
-                          variant="body2"
-                          sx={{ color: 'text.secondary' }}
-                        >
-                          {t(`trip.types.${trip.type}`)}
-                        </Typography>
+                        {format.distance(trip.startOdometer)} →{' '}
+                        {trip.endOdometer == null
+                          ? t('trip.list.open')
+                          : format.distance(trip.endOdometer)}
+                      </TableCell>
+                      <TableCell
+                        align="right"
+                        className="tabular"
+                        sx={struck(trip)}
+                      >
+                        {trip.distance == null
+                          ? t('trip.list.open')
+                          : format.distance(trip.distance)}
+                      </TableCell>
+                      <TableCell sx={wide}>
                         <Details trip={trip} />
-                      </Box>
-                    </TableCell>
-                    <TableCell sx={wide}>
-                      {t(`trip.types.${trip.type}`)}
-                    </TableCell>
-                    <TableCell
-                      sx={{ ...wide, ...struck(trip), whiteSpace: 'nowrap' }}
-                      className="tabular"
-                    >
-                      {format.distance(trip.startOdometer)} →{' '}
-                      {trip.endOdometer == null
-                        ? t('trip.list.open')
-                        : format.distance(trip.endOdometer)}
-                    </TableCell>
-                    <TableCell
-                      align="right"
-                      className="tabular"
-                      sx={struck(trip)}
-                    >
-                      {trip.distance == null
-                        ? t('trip.list.open')
-                        : format.distance(trip.distance)}
-                    </TableCell>
-                    <TableCell sx={wide}>
-                      <Details trip={trip} />
-                    </TableCell>
-                    <TableCell padding="checkbox">
-                      {!trip.deletedAt && (
-                        <IconButton
-                          size="small"
-                          aria-label={t('trip.delete.button')}
-                          title={t('trip.delete.button')}
-                          onClick={() => setToDelete(trip)}
-                        >
-                          <DeleteOutlineRounded fontSize="small" />
-                        </IconButton>
-                      )}
-                    </TableCell>
-                  </TableRow>
+                      </TableCell>
+                      <TableCell padding="checkbox">
+                        <Stack direction="row">
+                          {styleUrl && (
+                            <IconButton
+                              size="small"
+                              aria-label={t('trip.track.button')}
+                              title={t('trip.track.button')}
+                              aria-expanded={routeOf === trip.id}
+                              color={
+                                routeOf === trip.id ? 'primary' : 'default'
+                              }
+                              onClick={() =>
+                                setRouteOf(
+                                  routeOf === trip.id ? undefined : trip.id,
+                                )
+                              }
+                            >
+                              <RouteRounded fontSize="small" />
+                            </IconButton>
+                          )}
+                          {!trip.deletedAt && (
+                            <IconButton
+                              size="small"
+                              aria-label={t('trip.delete.button')}
+                              title={t('trip.delete.button')}
+                              onClick={() => setToDelete(trip)}
+                            >
+                              <DeleteOutlineRounded fontSize="small" />
+                            </IconButton>
+                          )}
+                        </Stack>
+                      </TableCell>
+                    </TableRow>
+                    {styleUrl && routeOf === trip.id && (
+                      <TableRow>
+                        <TableCell colSpan={6} sx={{ py: 2 }}>
+                          <TripTrack
+                            carId={carId}
+                            trip={trip}
+                            styleUrl={styleUrl}
+                          />
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </Fragment>
                 ))}
               </TableBody>
             </Table>

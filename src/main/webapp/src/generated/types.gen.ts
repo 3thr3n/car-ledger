@@ -95,6 +95,8 @@ export type BackupSummary = {
     reminders?: number;
     trips?: number;
     files?: number;
+    trackers?: number;
+    trackPoints?: number;
 };
 
 export type Bill = {
@@ -180,6 +182,11 @@ export enum BillType {
     RECURRING = 'RECURRING'
 }
 
+export type Build = {
+    chipFamily: string;
+    parts: Array<Part>;
+};
+
 export type Car = {
     id?: number;
     name?: string;
@@ -197,6 +204,7 @@ export type Car = {
     batteryCapacity?: number;
     tripLog: boolean;
     pictureId?: number;
+    trackRetentionDays?: number;
 };
 
 export type CarInput = {
@@ -272,6 +280,13 @@ export enum ChargingLocation {
     PUBLIC = 'PUBLIC'
 }
 
+export type ConfigPartition = {
+    offset: number;
+    size: number;
+    maxLength: number;
+    version: number;
+};
+
 export type CsvFields = {
     all?: Array<string>;
     required?: Array<string>;
@@ -291,6 +306,23 @@ export type DashboardStats = {
     hiLo?: HiLoStats;
 };
 
+export type Device = {
+    id: number;
+    name: string;
+    createdAt: OffsetDateTime;
+    lastSeenAt?: OffsetDateTime;
+    revokedAt?: OffsetDateTime;
+};
+
+export type DeviceCreated = {
+    device: Device;
+    token: string;
+};
+
+export type DeviceInput = {
+    name?: string;
+};
+
 export enum EnergyType {
     PETROL = 'PETROL',
     DIESEL = 'DIESEL',
@@ -299,6 +331,18 @@ export enum EnergyType {
     ELECTRIC = 'ELECTRIC',
     PLUG_IN_HYBRID = 'PLUG_IN_HYBRID'
 }
+
+export type FirmwareManifest = {
+    name: string;
+    version: string;
+    builds: Array<Build>;
+    config: ConfigPartition;
+    valid?: boolean;
+};
+
+export type FirmwareSettings = {
+    version?: string;
+};
 
 export type FuelBill = {
     attachments?: number;
@@ -368,6 +412,10 @@ export type MaintenanceBillInput = {
     workshop?: string;
 };
 
+export type MapSettings = {
+    styleUrl?: string;
+};
+
 export type MaxCarsInput = {
     maxCars?: number;
 };
@@ -431,6 +479,11 @@ export type Odometer = {
 };
 
 export type OffsetDateTime = string;
+
+export type Part = {
+    path: string;
+    offset: number;
+};
 
 export type PushSettings = {
     available: boolean;
@@ -566,6 +619,27 @@ export type TotalStats = {
     miscellaneousBills?: number;
 };
 
+export type Track = {
+    segments: Array<Array<TrackPoint>>;
+    distance: number;
+    points: number;
+};
+
+export type TrackPoint = {
+    ts: OffsetDateTime;
+    lat: number;
+    lon: number;
+    speed?: number;
+};
+
+export type TrackRetentionInput = {
+    days?: number;
+};
+
+export type TracksDeleted = {
+    points: number;
+};
+
 export type Trip = {
     id: Uuid;
     carId: number;
@@ -639,6 +713,19 @@ export type TripStartInput = {
     purpose?: string;
     businessPartner?: string;
     queued?: boolean;
+};
+
+export type TripSuggestion = {
+    startedAt: OffsetDateTime;
+    endedAt: OffsetDateTime;
+    distance: number;
+    startOdometer: number;
+    endOdometer: number;
+};
+
+export type TripSuggestionDismissInput = {
+    startedAt?: OffsetDateTime;
+    endedAt?: OffsetDateTime;
 };
 
 export enum TripType {
@@ -2300,6 +2387,22 @@ export type GetCsvFieldsResponses = {
 
 export type GetCsvFieldsResponse = GetCsvFieldsResponses[keyof GetCsvFieldsResponses];
 
+export type GetMapSettingsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/map';
+};
+
+export type GetMapSettingsResponses = {
+    /**
+     * OK
+     */
+    200: MapSettings;
+};
+
+export type GetMapSettingsResponse = GetMapSettingsResponses[keyof GetMapSettingsResponses];
+
 export type GetRemindersData = {
     body?: never;
     path: {
@@ -2484,6 +2587,281 @@ export type GetMonthlyStatsResponses = {
 
 export type GetMonthlyStatsResponse = GetMonthlyStatsResponses[keyof GetMonthlyStatsResponses];
 
+export type DeleteTracksData = {
+    body?: never;
+    path: {
+        carId: number;
+    };
+    query?: {
+        /**
+         * Start of the range, inclusive
+         */
+        from?: OffsetDateTime;
+        /**
+         * End of the range, exclusive
+         */
+        to?: OffsetDateTime;
+    };
+    url: '/api/track/{carId}';
+};
+
+export type DeleteTracksErrors = {
+    /**
+     * Only one end of the range, or an empty range
+     */
+    400: Array<unknown>;
+    /**
+     * Car is not yours.
+     */
+    404: unknown;
+};
+
+export type DeleteTracksError = DeleteTracksErrors[keyof DeleteTracksErrors];
+
+export type DeleteTracksResponses = {
+    /**
+     * OK
+     */
+    200: TracksDeleted;
+};
+
+export type DeleteTracksResponse = DeleteTracksResponses[keyof DeleteTracksResponses];
+
+export type GetTrackData = {
+    body?: never;
+    path: {
+        carId: number;
+    };
+    query: {
+        /**
+         * Start of the range, inclusive
+         */
+        from: OffsetDateTime;
+        /**
+         * End of the range, exclusive
+         */
+        to: OffsetDateTime;
+    };
+    url: '/api/track/{carId}';
+};
+
+export type GetTrackErrors = {
+    /**
+     * Range missing, empty or too long
+     */
+    400: Array<unknown>;
+    /**
+     * Car is not for your user.
+     */
+    404: unknown;
+};
+
+export type GetTrackError = GetTrackErrors[keyof GetTrackErrors];
+
+export type GetTrackResponses = {
+    /**
+     * OK
+     */
+    200: Track;
+};
+
+export type GetTrackResponse = GetTrackResponses[keyof GetTrackResponses];
+
+export type SetTrackRetentionData = {
+    body: TrackRetentionInput;
+    path: {
+        carId: number;
+    };
+    query?: never;
+    url: '/api/track/{carId}/retention';
+};
+
+export type SetTrackRetentionErrors = {
+    /**
+     * Not 1 to 3650 days
+     */
+    400: unknown;
+    /**
+     * Car is not yours.
+     */
+    404: unknown;
+};
+
+export type SetTrackRetentionResponses = {
+    /**
+     * Saved.
+     */
+    204: void;
+};
+
+export type SetTrackRetentionResponse = SetTrackRetentionResponses[keyof SetTrackRetentionResponses];
+
+export type GetFirmwareSettingsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/tracker/firmware';
+};
+
+export type GetFirmwareSettingsResponses = {
+    /**
+     * OK
+     */
+    200: FirmwareSettings;
+};
+
+export type GetFirmwareSettingsResponse = GetFirmwareSettingsResponses[keyof GetFirmwareSettingsResponses];
+
+export type GetFirmwareManifestData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/tracker/firmware/manifest.json';
+};
+
+export type GetFirmwareManifestErrors = {
+    /**
+     * Flashing isn't set up.
+     */
+    404: unknown;
+};
+
+export type GetFirmwareManifestResponses = {
+    /**
+     * OK
+     */
+    200: FirmwareManifest;
+};
+
+export type GetFirmwareManifestResponse = GetFirmwareManifestResponses[keyof GetFirmwareManifestResponses];
+
+export type GetFirmwareFileData = {
+    body?: never;
+    path: {
+        file: string;
+    };
+    query?: never;
+    url: '/api/tracker/firmware/{file}';
+};
+
+export type GetFirmwareFileErrors = {
+    /**
+     * Not a file of the manifest, or flashing isn't set up.
+     */
+    404: unknown;
+};
+
+export type GetFirmwareFileResponses = {
+    /**
+     * OK
+     */
+    200: Blob | File;
+};
+
+export type GetFirmwareFileResponse = GetFirmwareFileResponses[keyof GetFirmwareFileResponses];
+
+export type GetTrackersData = {
+    body?: never;
+    path: {
+        carId: number;
+    };
+    query?: never;
+    url: '/api/tracker/{carId}';
+};
+
+export type GetTrackersResponses = {
+    /**
+     * OK
+     */
+    200: Array<Device>;
+};
+
+export type GetTrackersResponse = GetTrackersResponses[keyof GetTrackersResponses];
+
+export type AddTrackerData = {
+    body: DeviceInput;
+    path: {
+        carId: number;
+    };
+    query?: never;
+    url: '/api/tracker/{carId}';
+};
+
+export type AddTrackerErrors = {
+    /**
+     * Validation failed, please check the response
+     */
+    400: Array<unknown>;
+    /**
+     * Car is not for your user.
+     */
+    404: unknown;
+};
+
+export type AddTrackerError = AddTrackerErrors[keyof AddTrackerErrors];
+
+export type AddTrackerResponses = {
+    201: DeviceCreated;
+};
+
+export type AddTrackerResponse = AddTrackerResponses[keyof AddTrackerResponses];
+
+export type RevokeTrackerData = {
+    body?: never;
+    path: {
+        carId: number;
+        id: number;
+    };
+    query?: never;
+    url: '/api/tracker/{carId}/{id}/revoke';
+};
+
+export type RevokeTrackerErrors = {
+    /**
+     * Tracker not found for the car of your user.
+     */
+    404: unknown;
+};
+
+export type RevokeTrackerResponses = {
+    /**
+     * OK
+     */
+    200: Device;
+};
+
+export type RevokeTrackerResponse = RevokeTrackerResponses[keyof RevokeTrackerResponses];
+
+export type RenewTrackerTokenData = {
+    body?: never;
+    path: {
+        carId: number;
+        id: number;
+    };
+    query?: never;
+    url: '/api/tracker/{carId}/{id}/token';
+};
+
+export type RenewTrackerTokenErrors = {
+    /**
+     * Tracker not found for the car of your user.
+     */
+    404: unknown;
+    /**
+     * The tracker is revoked.
+     */
+    409: unknown;
+};
+
+export type RenewTrackerTokenResponses = {
+    /**
+     * OK
+     */
+    200: DeviceCreated;
+};
+
+export type RenewTrackerTokenResponse = RenewTrackerTokenResponses[keyof RenewTrackerTokenResponses];
+
 export type GetTripsData = {
     body?: never;
     path: {
@@ -2530,6 +2908,60 @@ export type GetCurrentTripResponses = {
 };
 
 export type GetCurrentTripResponse = GetCurrentTripResponses[keyof GetCurrentTripResponses];
+
+export type GetTripSuggestionsData = {
+    body?: never;
+    path: {
+        carId: number;
+    };
+    query?: never;
+    url: '/api/trip/{carId}/suggestions';
+};
+
+export type GetTripSuggestionsErrors = {
+    /**
+     * Car is not for your user.
+     */
+    404: unknown;
+};
+
+export type GetTripSuggestionsResponses = {
+    /**
+     * OK
+     */
+    200: Array<TripSuggestion>;
+};
+
+export type GetTripSuggestionsResponse = GetTripSuggestionsResponses[keyof GetTripSuggestionsResponses];
+
+export type DismissTripSuggestionData = {
+    body: TripSuggestionDismissInput;
+    path: {
+        carId: number;
+    };
+    query?: never;
+    url: '/api/trip/{carId}/suggestions/dismiss';
+};
+
+export type DismissTripSuggestionErrors = {
+    /**
+     * Times missing or the end before the start
+     */
+    400: unknown;
+    /**
+     * Car is not for your user.
+     */
+    404: unknown;
+};
+
+export type DismissTripSuggestionResponses = {
+    /**
+     * Dismissed.
+     */
+    204: void;
+};
+
+export type DismissTripSuggestionResponse = DismissTripSuggestionResponses[keyof DismissTripSuggestionResponses];
 
 export type GetTripYearsData = {
     body?: never;
@@ -2722,6 +3154,32 @@ export type AddPastTripResponses = {
 };
 
 export type AddPastTripResponse = AddPastTripResponses[keyof AddPastTripResponses];
+
+export type GetTripTrackData = {
+    body?: never;
+    path: {
+        carId: number;
+        id: Uuid;
+    };
+    query?: never;
+    url: '/api/trip/{carId}/{id}/track';
+};
+
+export type GetTripTrackErrors = {
+    /**
+     * Trip not found for the car of your user.
+     */
+    404: unknown;
+};
+
+export type GetTripTrackResponses = {
+    /**
+     * OK
+     */
+    200: Track;
+};
+
+export type GetTripTrackResponse = GetTripTrackResponses[keyof GetTripTrackResponses];
 
 export type DeleteMyselfData = {
     body?: never;

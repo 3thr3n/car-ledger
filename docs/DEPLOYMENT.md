@@ -135,14 +135,14 @@ shorter ones), 32 or more are recommended, and all replicas need the same one.
 helm install car-ledger oci://ghcr.io/3thr3n/car-ledger/car-ledger --set ingress.host=example.com
 ```
 
-Without `--version` the latest release is installed. A release (e.g. `0.6.0`, see the
-[releases](https://github.com/3thr3n/car-ledger/releases)) publishes the image `ghcr.io/3thr3n/car-ledger:0.6.0` and the
-chart `oci://ghcr.io/3thr3n/car-ledger/car-ledger` in version `0.6.0`, which runs that image (up to 0.3.x the chart was
+Without `--version` the latest release is installed. A release (e.g. `0.7.0`, see the
+[releases](https://github.com/3thr3n/car-ledger/releases)) publishes the image `ghcr.io/3thr3n/car-ledger:0.7.0` and the
+chart `oci://ghcr.io/3thr3n/car-ledger/car-ledger` in version `0.7.0`, which runs that image (up to 0.3.x the chart was
 `oci://ghcr.io/3thr3n/car-ledger/helm`).
 
 Every build of `develop` publishes the image `ghcr.io/3thr3n/car-ledger:<run number>` and the chart as the prerelease
-`<next release>-dev.<run number>`, e.g. `0.7.0-dev.123`, which runs the image of the same build: `--version
-0.7.0-dev.123` installs build 123, `--devel` the latest build. Leave `carLedger.image.tag` empty, it would override
+`<next release>-dev.<run number>`, e.g. `0.8.0-dev.123`, which runs the image of the same build: `--version
+0.8.0-dev.123` installs build 123, `--devel` the latest build. Leave `carLedger.image.tag` empty, it would override
 the image of the chart.
 
 From the repository (`helm dependency update helm/car-ledger`, `helm install car-ledger helm/car-ledger ...`) the chart
@@ -171,11 +171,18 @@ with the role `user`, the roles are missing in the tokens of the client.
   413.
 - **Backups**: users download all of their data as ZIP in the settings and restore it into an account without cars.
   The restore is an upload as well and limited by `carLedger.attachments.maxRequestSize`: a backup with many receipts
-  can be larger, raise the limit (and the one of the proxies) for the restore.
+  or with GPS tracks kept forever can be larger, raise the limit (and the one of the proxies) for the restore; the app
+  explains a backup that is too large. The track points take about 6 bytes each in the ZIP: a year of commuting at
+  one point per second (2.3 million points) is 14 MB. A download or a restore may take
+  `carLedger.backup.transactionTimeout` seconds (1800), the other requests 60 s; such a restore takes under a minute.
 - **Webhooks**: `carLedger.webhook.url` sends events like a new car request as signed HTTP requests; the key of the
   signature comes from `carLedger.webhook.existingSecret`. See [WEBHOOKS.md](WEBHOOKS.md).
 - **Service accounts**: besides the login of the browser, the API accepts access tokens of the identity provider
   (`Authorization: Bearer …`), e.g. of a script deciding car requests. See [Service accounts](#service-accounts).
+- **GPS trackers**: a tracker in the car (e.g. an ESP32) sends its points to `/api/device/points` with its own token,
+  not with the login. See [GPS_TRACKER.md](GPS_TRACKER.md).
+- **Map**: `carLedger.map.styleUrl` shows the GPS tracks on a map, from a MapLibre style of an own tile server or a
+  provider; its origin is allowed in the CSP. See [GPS_TRACKER.md](GPS_TRACKER.md#map).
 - **E-mail**: `carLedger.mail.host` sends notifications by e-mail, see [E-mail](#e-mail).
 - **Push**: the notifications reach the browsers as push messages, on by default, see [Push](#push).
 - **Self-signed certificates**: the app trusts the CA of the ingresses and further certificates for its own HTTPS
@@ -356,6 +363,9 @@ Use the image of a release (a git tag of `main`) or a dev build of `develop`. On
 | 1.15.0    | Id of the client for new entries, a request sent again (offline queue) doesn't create an entry twice (0.6.0)         |
 | 1.16.0    | Trip log per car (off), on for the cars with trips (0.6.0)                                                           |
 | 1.17.0    | Trips are deleted with a reason and stay listed, a trigger allows only that change (0.6.0)                           |
+| 1.18.0    | Tables for the GPS trackers of the cars and their track points (0.7.0)                                               |
+| 1.19.0    | How long the track points of a car are kept, forever for the existing cars (0.7.0)                                   |
+| 1.20.0    | Table for the drives dismissed as suggested trips (0.7.0)                                                            |
 
 An older image refuses to start on the migrated database, as Flyway finds migrations it does not know. To go back,
 restore the backup. Without the backup, the older image runs on the migrated database (the new columns have defaults)
@@ -397,6 +407,25 @@ kubectl set env deployment/car-ledger QUARKUS_FLYWAY_IGNORE_FUTURE_MIGRATIONS=tr
 - **License** (0.6.0): CarLedger is licensed under the AGPL-3.0 from 0.6.0 on, the releases up to 0.5.x stay under
   MIT. Running it, also for others, needs nothing; whoever runs a **modified** version for other users has to offer
   them its source code, e.g. by changing the link to the source in the settings and on the start page.
+- **GPS trackers** (0.7.0): the owner of a car creates trackers for it, each with its own token; a tracker sends its
+  points to `/api/device/points` (migration 1.18.0). A proxy in front must pass the header `Authorization` on that
+  path. Nothing to set up, see [GPS_TRACKER.md](GPS_TRACKER.md).
+- **Map** (0.7.0, optional): with `carLedger.map.styleUrl` the cars with a tracker get the tab *Map* with their tracks.
+  The browser loads the style and the tiles from there, see [GPS_TRACKER.md](GPS_TRACKER.md#map). The CSP of the
+  app is set by the app itself now (not by `quarkus.http.filter`); a proxy that sets its own CSP must allow the origins
+  of the map as well.
+- **Tracks** (0.7.0): the owner chooses per car how long the track points are kept (forever by default, migration
+  1.19.0), a nightly job deletes older ones; tracks are deleted all at once or for a period. The trackers and the
+  tracks kept forever are part of the backup: about 6 bytes per point, 14 MB for a year at one point per second, above
+  the default upload limit of the restore (`carLedger.attachments.maxRequestSize`). A backup or a restore may take
+  `carLedger.backup.transactionTimeout` (30 minutes). See [GPS_TRACKER.md](GPS_TRACKER.md#retention-and-deletion).
+- **Suggested trips** (0.7.0): with the trip log on, drives of the tracks without a trip are suggested as forgotten
+  trips; the limits are `carLedger.tracker.suggestions.*` (migration 1.20.0 stores the dismissed ones). Nothing to set
+  up, see [GPS_TRACKER.md](GPS_TRACKER.md#suggested-trips).
+- **Flashing trackers** (0.7.0, optional): with `carLedger.tracker.firmware.volume` (e.g. an OCI image volume) the
+  users flash the firmware and the settings of a tracker from Chrome or Edge over USB; the firmware is not part of
+  CarLedger. `carLedger.imagePullSecrets` pulls the images of the pod from a private registry, see
+  [GPS_TRACKER.md](GPS_TRACKER.md#flashing).
 - **Trip log** (0.6.0): trips with start and end odometer (Fahrtenbuch), turned on per car in *Edit car* (migration
   1.16.0 turns it on for cars with trips). Starting and finishing work offline as well; the app keeps the open trip
   and the minimum odometer on the device. A wrong trip is deleted with a reason by the owner of the car: it stays

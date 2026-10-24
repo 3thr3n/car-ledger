@@ -280,6 +280,14 @@
           "files" : {
             "type" : "integer",
             "format" : "int32"
+          },
+          "trackers" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "trackPoints" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         }
       },
@@ -492,6 +500,21 @@
         "type" : "string",
         "enum" : [ "FUEL", "CHARGING", "MAINTENANCE", "MISCELLANEOUS", "RECURRING" ]
       },
+      "Build" : {
+        "type" : "object",
+        "required" : [ "chipFamily", "parts" ],
+        "properties" : {
+          "chipFamily" : {
+            "type" : "string"
+          },
+          "parts" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Part"
+            }
+          }
+        }
+      },
       "Car" : {
         "type" : "object",
         "properties" : {
@@ -547,6 +570,10 @@
           "pictureId" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "trackRetentionDays" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
         "required" : [ "currentOdometer", "energyType", "tripLog" ]
@@ -755,6 +782,28 @@
         "type" : "string",
         "enum" : [ "HOME", "PUBLIC" ]
       },
+      "ConfigPartition" : {
+        "type" : "object",
+        "required" : [ "offset", "size", "maxLength", "version" ],
+        "properties" : {
+          "offset" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "maxLength" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
       "CsvFields" : {
         "type" : "object",
         "properties" : {
@@ -817,9 +866,84 @@
           }
         }
       },
+      "Device" : {
+        "type" : "object",
+        "required" : [ "id", "name", "createdAt" ],
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "createdAt" : {
+            "type" : "string",
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          },
+          "lastSeenAt" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          },
+          "revokedAt" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          }
+        }
+      },
+      "DeviceCreated" : {
+        "type" : "object",
+        "required" : [ "device", "token" ],
+        "properties" : {
+          "device" : {
+            "$ref" : "#/components/schemas/Device"
+          },
+          "token" : {
+            "type" : "string"
+          }
+        }
+      },
+      "DeviceInput" : {
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          }
+        }
+      },
       "EnergyType" : {
         "type" : "string",
         "enum" : [ "PETROL", "DIESEL", "LPG", "CNG", "ELECTRIC", "PLUG_IN_HYBRID" ]
+      },
+      "FirmwareManifest" : {
+        "type" : "object",
+        "required" : [ "name", "version", "builds", "config" ],
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "version" : {
+            "type" : "string"
+          },
+          "builds" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Build"
+            }
+          },
+          "config" : {
+            "$ref" : "#/components/schemas/ConfigPartition"
+          },
+          "valid" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "FirmwareSettings" : {
+        "type" : "object",
+        "properties" : {
+          "version" : {
+            "type" : "string"
+          }
+        }
       },
       "FuelBill" : {
         "type" : "object",
@@ -1012,6 +1136,14 @@
           }
         }
       },
+      "MapSettings" : {
+        "type" : "object",
+        "properties" : {
+          "styleUrl" : {
+            "type" : "string"
+          }
+        }
+      },
       "MaxCarsInput" : {
         "type" : "object",
         "properties" : {
@@ -1187,6 +1319,19 @@
         "type" : "string",
         "format" : "date-time",
         "examples" : [ "2022-03-10T12:15:50-04:00" ]
+      },
+      "Part" : {
+        "type" : "object",
+        "required" : [ "path", "offset" ],
+        "properties" : {
+          "path" : {
+            "type" : "string"
+          },
+          "offset" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
       },
       "PushSettings" : {
         "type" : "object",
@@ -1484,6 +1629,70 @@
           }
         }
       },
+      "Track" : {
+        "type" : "object",
+        "required" : [ "segments", "distance", "points" ],
+        "properties" : {
+          "segments" : {
+            "type" : "array",
+            "items" : {
+              "type" : "array",
+              "items" : {
+                "$ref" : "#/components/schemas/TrackPoint"
+              }
+            }
+          },
+          "distance" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "points" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "TrackPoint" : {
+        "type" : "object",
+        "required" : [ "ts", "lat", "lon" ],
+        "properties" : {
+          "ts" : {
+            "type" : "string",
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          },
+          "lat" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "lon" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "speed" : {
+            "type" : "number",
+            "format" : "double"
+          }
+        }
+      },
+      "TrackRetentionInput" : {
+        "type" : "object",
+        "properties" : {
+          "days" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "TracksDeleted" : {
+        "type" : "object",
+        "required" : [ "points" ],
+        "properties" : {
+          "points" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
       "Trip" : {
         "type" : "object",
         "required" : [ "id", "carId", "type", "startOdometer", "startedAt", "restored", "createdAt", "enteredLater" ],
@@ -1681,6 +1890,43 @@
           },
           "queued" : {
             "type" : "boolean"
+          }
+        }
+      },
+      "TripSuggestion" : {
+        "type" : "object",
+        "required" : [ "startedAt", "endedAt", "distance", "startOdometer", "endOdometer" ],
+        "properties" : {
+          "startedAt" : {
+            "type" : "string",
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          },
+          "endedAt" : {
+            "type" : "string",
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          },
+          "distance" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "startOdometer" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "endOdometer" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "TripSuggestionDismissInput" : {
+        "type" : "object",
+        "properties" : {
+          "startedAt" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          },
+          "endedAt" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
           }
         }
       },
@@ -4567,6 +4813,26 @@
         "tags" : [ "Import Resource" ]
       }
     },
+    "/api/map" : {
+      "get" : {
+        "description" : "Style of the map, without one the map isn't set up and hidden.",
+        "operationId" : "getMapSettings",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MapSettings"
+                }
+              }
+            }
+          }
+        },
+        "summary" : "Get Map Settings",
+        "tags" : [ "Map Resource" ]
+      }
+    },
     "/api/reminder/{carId}" : {
       "get" : {
         "description" : "Reminders of a car, the most urgent first. Use -1 as carId for all your cars.",
@@ -4897,6 +5163,399 @@
         "tags" : [ "Stats Resource" ]
       }
     },
+    "/api/track/{carId}" : {
+      "get" : {
+        "description" : "GPS track of a car in a time range of at most 31 days, simplified for the map and split into segments at gaps of more than 5 minutes.",
+        "operationId" : "getTrack",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "description" : "Start of the range, inclusive",
+          "required" : true,
+          "name" : "from",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          }
+        }, {
+          "description" : "End of the range, exclusive",
+          "required" : true,
+          "name" : "to",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Track"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Range missing, empty or too long",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Car is not for your user."
+          }
+        },
+        "summary" : "Get Track",
+        "tags" : [ "Track Resource" ]
+      },
+      "delete" : {
+        "description" : "Deletes the GPS track points of the car in a range, e.g. a wrong track, or all without one. Its trackers stay.",
+        "operationId" : "deleteTracks",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "description" : "Start of the range, inclusive",
+          "name" : "from",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          }
+        }, {
+          "description" : "End of the range, exclusive",
+          "name" : "to",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TracksDeleted"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Only one end of the range, or an empty range",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Car is not yours."
+          }
+        },
+        "summary" : "Delete Tracks",
+        "tags" : [ "Track Resource" ]
+      }
+    },
+    "/api/track/{carId}/retention" : {
+      "put" : {
+        "description" : "Days the GPS track points of the car are kept, forever without. Older points are deleted every night; only the points of cars that keep them forever are in the backup.",
+        "operationId" : "setTrackRetention",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/TrackRetentionInput"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "204" : {
+            "description" : "Saved."
+          },
+          "400" : {
+            "description" : "Not 1 to 3650 days",
+            "content" : { }
+          },
+          "404" : {
+            "description" : "Car is not yours."
+          }
+        },
+        "summary" : "Set Track Retention",
+        "tags" : [ "Track Resource" ]
+      }
+    },
+    "/api/tracker/firmware" : {
+      "get" : {
+        "description" : "Version of the firmware, without one flashing isn't set up and hidden.",
+        "operationId" : "getFirmwareSettings",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/FirmwareSettings"
+                }
+              }
+            }
+          }
+        },
+        "summary" : "Get Firmware Settings",
+        "tags" : [ "Firmware Resource" ]
+      }
+    },
+    "/api/tracker/firmware/manifest.json" : {
+      "get" : {
+        "description" : "The files of the firmware and where they are written.",
+        "operationId" : "getFirmwareManifest",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/FirmwareManifest"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Flashing isn't set up."
+          }
+        },
+        "summary" : "Get Firmware Manifest",
+        "tags" : [ "Firmware Resource" ]
+      }
+    },
+    "/api/tracker/firmware/{file}" : {
+      "get" : {
+        "description" : "A file of the firmware, one of the parts of the manifest.",
+        "operationId" : "getFirmwareFile",
+        "parameters" : [ {
+          "name" : "file",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/octet-stream" : {
+                "schema" : {
+                  "format" : "binary",
+                  "type" : "string"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Not a file of the manifest, or flashing isn't set up."
+          }
+        },
+        "summary" : "Get Firmware File",
+        "tags" : [ "Firmware Resource" ]
+      }
+    },
+    "/api/tracker/{carId}" : {
+      "get" : {
+        "description" : "GPS trackers of a car, the newest first. Empty for a car that isn't yours.",
+        "operationId" : "getTrackers",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/Device"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary" : "Get Trackers",
+        "tags" : [ "Tracker Resource" ]
+      },
+      "put" : {
+        "description" : "Creates a GPS tracker. The answer contains its token, it can't be shown again.",
+        "operationId" : "addTracker",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/DeviceInput"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DeviceCreated"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed, please check the response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Car is not for your user."
+          }
+        },
+        "summary" : "Add Tracker",
+        "tags" : [ "Tracker Resource" ]
+      }
+    },
+    "/api/tracker/{carId}/{id}/revoke" : {
+      "post" : {
+        "description" : "The token of the tracker stops working, its points stay.",
+        "operationId" : "revokeTracker",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Device"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Tracker not found for the car of your user."
+          }
+        },
+        "summary" : "Revoke Tracker",
+        "tags" : [ "Tracker Resource" ]
+      }
+    },
+    "/api/tracker/{carId}/{id}/token" : {
+      "post" : {
+        "description" : "A new token for the tracker, the old one stops working. The answer contains it, it can't be shown again.",
+        "operationId" : "renewTrackerToken",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DeviceCreated"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Tracker not found for the car of your user."
+          },
+          "409" : {
+            "description" : "The tracker is revoked."
+          }
+        },
+        "summary" : "Renew Tracker Token",
+        "tags" : [ "Tracker Resource" ]
+      }
+    },
     "/api/trip/{carId}" : {
       "get" : {
         "description" : "Trips of a car, the latest first. Pages starting at 1",
@@ -4978,6 +5637,80 @@
           }
         },
         "summary" : "Get Current Trip",
+        "tags" : [ "Trip Resource" ]
+      }
+    },
+    "/api/trip/{carId}/suggestions" : {
+      "get" : {
+        "description" : "Drives of the GPS tracks without a trip since the end of the last trip, of at most 7 days, the oldest first: forgotten trips to add. Empty with the trip log off.",
+        "operationId" : "getTripSuggestions",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/TripSuggestion"
+                  }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Car is not for your user."
+          }
+        },
+        "summary" : "Get Trip Suggestions",
+        "tags" : [ "Trip Resource" ]
+      }
+    },
+    "/api/trip/{carId}/suggestions/dismiss" : {
+      "post" : {
+        "description" : "The drive isn't suggested as a trip anymore, also when it is found a little differently later.",
+        "operationId" : "dismissTripSuggestion",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/TripSuggestionDismissInput"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "204" : {
+            "description" : "Dismissed."
+          },
+          "400" : {
+            "description" : "Times missing or the end before the start",
+            "content" : { }
+          },
+          "404" : {
+            "description" : "Car is not for your user."
+          }
+        },
+        "summary" : "Dismiss Trip Suggestion",
         "tags" : [ "Trip Resource" ]
       }
     },
@@ -5337,6 +6070,45 @@
           }
         },
         "summary" : "Add Past Trip",
+        "tags" : [ "Trip Resource" ]
+      }
+    },
+    "/api/trip/{carId}/{id}/track" : {
+      "get" : {
+        "description" : "GPS track during the trip (until now while it is open), also of a deleted trip. Only a hint next to the odometers, without points the segments are empty.",
+        "operationId" : "getTripTrack",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/UUID"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Track"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Trip not found for the car of your user."
+          }
+        },
+        "summary" : "Get Trip Track",
         "tags" : [ "Trip Resource" ]
       }
     },

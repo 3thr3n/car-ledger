@@ -211,6 +211,150 @@ tests:
       - failedTemplate:
           errorPattern: carLedger.mail.existingSecret is needed with carLedger.mail.username
 
+  - it: shows the map with a style
+    set:
+      carLedger.map.styleUrl: https://maps.example.com/style.json?key=abc
+      carLedger.map.sources: [https://tiles.example.com, https://glyphs.example.com]
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: CARLEDGER_MAP_STYLE_URL
+            value: https://maps.example.com/style.json?key=abc
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: CARLEDGER_MAP_SOURCES
+            value: https://tiles.example.com,https://glyphs.example.com
+
+  - it: hides the map without a style
+    asserts:
+      - notContains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: CARLEDGER_MAP_STYLE_URL
+          any: true
+
+  - it: gives a backup half an hour, or the time set
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: CARLEDGER_BACKUP_TRANSACTION_TIMEOUT
+            value: "1800"
+
+  - it: takes another time of a backup
+    set:
+      carLedger.backup.transactionTimeout: 3600
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: CARLEDGER_BACKUP_TRANSACTION_TIMEOUT
+            value: "3600"
+
+  - it: suggests trips with the defaults of the app
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: CARLEDGER_TRACKER_STOP
+            value: "5M"
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: CARLEDGER_TRACKER_MIN_DRIVE_DISTANCE
+            value: "500"
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: CARLEDGER_TRACKER_MIN_DRIVE_DURATION
+            value: "2M"
+
+  - it: takes other limits of the suggested trips
+    set:
+      carLedger.tracker.suggestions.stop: 10M
+      carLedger.tracker.suggestions.minDriveDistance: 1000
+      carLedger.tracker.suggestions.minDriveDuration: PT90S
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: CARLEDGER_TRACKER_STOP
+            value: "10M"
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: CARLEDGER_TRACKER_MIN_DRIVE_DISTANCE
+            value: "1000"
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: CARLEDGER_TRACKER_MIN_DRIVE_DURATION
+            value: "PT90S"
+
+  - it: mounts the tracker firmware from a volume
+    set:
+      carLedger.trust.ingressCA: false
+      carLedger.tracker.firmware.volume:
+        persistentVolumeClaim:
+          claimName: tracker-firmware
+      carLedger.tracker.firmware.subPath: v1.0.0
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: CARLEDGER_TRACKER_FIRMWARE_DIR
+            value: /etc/car-ledger/tracker-firmware
+      - contains:
+          path: spec.template.spec.containers[0].volumeMounts
+          content:
+            name: tracker-firmware
+            mountPath: /etc/car-ledger/tracker-firmware
+            subPath: v1.0.0
+            readOnly: true
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: tracker-firmware
+            persistentVolumeClaim:
+              claimName: tracker-firmware
+
+  - it: pulls the app and the firmware image with the pull secrets
+    set:
+      carLedger.imagePullSecrets: [{name: regcred}]
+      carLedger.tracker.firmware.volume:
+        image:
+          reference: registry.example.com/tracker-firmware:v1.0.0
+    asserts:
+      - equal:
+          path: spec.template.spec.imagePullSecrets
+          value: [{name: regcred}]
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: tracker-firmware
+            image:
+              reference: registry.example.com/tracker-firmware:v1.0.0
+
+  - it: needs no pull secrets for public images
+    asserts:
+      - notExists:
+          path: spec.template.spec.imagePullSecrets
+
+  - it: hides flashing without a firmware volume
+    asserts:
+      - notContains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: CARLEDGER_TRACKER_FIRMWARE_DIR
+          any: true
+      - notContains:
+          path: spec.template.spec.volumes
+          content:
+            name: tracker-firmware
+          any: true
+
   - it: sends webhooks with a URL, signed with the secret
     set:
       carLedger.webhook.url: https://hooks.example.com/car-ledger
