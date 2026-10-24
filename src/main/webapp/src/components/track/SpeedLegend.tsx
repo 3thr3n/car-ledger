@@ -1,6 +1,7 @@
 import { Box, Stack, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useFormat } from '@/utils/format';
+import ScaleLegend from './ScaleLegend';
 import {
   LEGEND_TICKS,
   legendGradient,
@@ -21,46 +22,19 @@ export default function SpeedLegend() {
       sx={{ flexGrow: 1, alignItems: { sm: 'center' } }}
       data-testid="speed-legend"
     >
-      <Box sx={{ flexGrow: 1, maxWidth: 360 }}>
-        <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-          {t('track.speed', { unit })}
-        </Typography>
-        <Box
-          role="img"
-          aria-label={t('track.legendLabel', {
-            from: 0,
-            to: Math.round(units.distance.fromKm(MAX_SPEED)),
-            unit,
-          })}
-          sx={{
-            height: 8,
-            borderRadius: 4,
-            background: legendGradient,
-            mt: 0.5,
-          }}
-        />
-        <Box sx={{ position: 'relative', height: 18 }}>
-          {LEGEND_TICKS.map((kmh) => (
-            <Typography
-              key={kmh}
-              variant="caption"
-              sx={{
-                position: 'absolute',
-                left: `${(kmh / MAX_SPEED) * 100}%`,
-                transform:
-                  kmh === 0
-                    ? 'none'
-                    : kmh === MAX_SPEED
-                      ? 'translateX(-100%)'
-                      : 'translateX(-50%)',
-                color: 'text.secondary',
-              }}
-            >
-              {Math.round(units.distance.fromKm(kmh))}
-            </Typography>
-          ))}
-        </Box>
-      </Box>
+      <ScaleLegend
+        title={t('track.speed', { unit })}
+        label={t('track.legendLabel', {
+          from: 0,
+          to: Math.round(units.distance.fromKm(MAX_SPEED)),
+          unit,
+        })}
+        gradient={legendGradient}
+        ticks={LEGEND_TICKS.map((kmh) => ({
+          at: kmh / MAX_SPEED,
+          label: Math.round(units.distance.fromKm(kmh)),
+        }))}
+      />
       <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
         <Box
           sx={{
