@@ -5,7 +5,8 @@ import java.time.OffsetDateTime;
 import jakarta.persistence.*;
 
 /**
- * A file attached to a bill, e.g. the receipt. Only the metadata, the content
+ * A file attached to a bill (e.g. the receipt), to a modification (a document
+ * of its approval) or to the car (its picture). Only the metadata, the content
  * is in the {@link de.codeflowwizardry.carledger.attachment.AttachmentStorage}
  * named by {@link #getStorage()}.
  */
@@ -24,6 +25,15 @@ public class AttachmentEntity
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "a_bill_id")
 	private BillEntity bill;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "a_modification_id")
+	private ModificationEntity modification;
+
+	/** set for the documents of a modification only */
+	@Enumerated(EnumType.STRING)
+	@Column(name = "a_kind", length = 20)
+	private DocumentKind kind;
 
 	@Column(name = "a_file_name", nullable = false)
 	private String fileName;
@@ -66,6 +76,26 @@ public class AttachmentEntity
 	public void setBill(BillEntity bill)
 	{
 		this.bill = bill;
+	}
+
+	public ModificationEntity getModification()
+	{
+		return modification;
+	}
+
+	public void setModification(ModificationEntity modification)
+	{
+		this.modification = modification;
+	}
+
+	public DocumentKind getKind()
+	{
+		return kind;
+	}
+
+	public void setKind(DocumentKind kind)
+	{
+		this.kind = kind;
 	}
 
 	public String getFileName()

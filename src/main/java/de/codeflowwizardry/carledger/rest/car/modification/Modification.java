@@ -16,6 +16,8 @@ import de.codeflowwizardry.carledger.data.ApprovalType;
  * @param inspectionOpen
  *            installed with an approval that needs an Abnahme, but without its
  *            date
+ * @param documents
+ *            amount of its documents
  */
 public record Modification(
 		@Schema(required = true) long id,
@@ -35,6 +37,7 @@ public record Modification(
 		String notes,
 		Long billId,
 		@Schema(required = true) boolean installed,
-		@Schema(required = true) boolean inspectionOpen)
+		@Schema(required = true) boolean inspectionOpen,
+		@Schema(required = true) long documents)
 {
 }

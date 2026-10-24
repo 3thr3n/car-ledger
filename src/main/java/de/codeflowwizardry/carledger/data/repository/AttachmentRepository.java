@@ -1,6 +1,7 @@
 package de.codeflowwizardry.carledger.data.repository;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -32,6 +33,24 @@ public class AttachmentRepository implements PanacheRepository<AttachmentEntity>
 	}
 
 	/**
+	 * @return documents of the modification, if the user may see its car, by
+	 *         their kind, then the oldest first
+	 */
+	public List<AttachmentEntity> listForModification(long carId, long modificationId, String userId)
+	{
+		List<AttachmentEntity> documents = list(
+				"modification.id = :modificationId and car.id = :carId and " + CarAccess.condition("car", Action.READ),
+				Sort.by("createdAt").and("id"),
+				Map.of("modificationId", modificationId, "carId", carId, CarAccess.USER, userId));
+		return documents.stream().sorted(Comparator.comparing(AttachmentEntity::getKind)).toList();
+	}
+
+	public long countForModification(long modificationId)
+	{
+		return count("modification.id", modificationId);
+	}
+
+	/**
 	 * @return the attachment, if the user may do the action with its car
 	 */
 	public Optional<AttachmentEntity> findForUser(long carId, long id, String userId, Action action)
@@ -46,14 +65,28 @@ public class AttachmentRepository implements PanacheRepository<AttachmentEntity>
 	 */
 	public Map<Long, Long> countPerBill(Collection<Long> billIds)
 	{
-		if (billIds.isEmpty())
+		return countPer("bill", billIds);
+	}
+
+	/**
+	 * @return amount of documents per modification, modifications without any are
+	 *         missing
+	 */
+	public Map<Long, Long> countPerModification(Collection<Long> modificationIds)
+	{
+		return countPer("modification", modificationIds);
+	}
+
+	private Map<Long, Long> countPer(String owner, Collection<Long> ids)
+	{
+		if (ids.isEmpty())
 		{
 			return Map.of();
 		}
 		return getEntityManager()
-				.createQuery("select a.bill.id, count(a) from Attachment a where a.bill.id in :ids group by a.bill.id",
-						Object[].class)
-				.setParameter("ids", billIds)
+				.createQuery("select a." + owner + ".id, count(a) from Attachment a where a." + owner
+						+ ".id in :ids group by a." + owner + ".id", Object[].class)
+				.setParameter("ids", ids)
 				.getResultStream()
 				.collect(Collectors.toMap(row -> (Long) row[0], row -> (Long) row[1]));
 	}

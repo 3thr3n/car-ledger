@@ -9,6 +9,7 @@ import de.codeflowwizardry.carledger.data.BillCategory;
 import de.codeflowwizardry.carledger.data.BillInterval;
 import de.codeflowwizardry.carledger.data.BillType;
 import de.codeflowwizardry.carledger.data.ChargingLocation;
+import de.codeflowwizardry.carledger.data.DocumentKind;
 import de.codeflowwizardry.carledger.data.EnergyType;
 import de.codeflowwizardry.carledger.data.TripReview;
 import de.codeflowwizardry.carledger.data.TripType;
@@ -88,8 +89,10 @@ public record BackupFile(String format, int version, OffsetDateTime createdAt, S
 	/**
 	 * @param path
 	 *            entry of the ZIP with the content
+	 * @param kind
+	 *            of a document of a modification, missing for other files
 	 */
-	public record File(String fileName, String contentType, String path)
+	public record File(String fileName, String contentType, String path, DocumentKind kind)
 	{
 	}
 
@@ -152,11 +155,13 @@ public record BackupFile(String format, int version, OffsetDateTime createdAt, S
 	 * @param bill
 	 *            index in {@link Car#bills()} of the bill of the part or the
 	 *            installation
+	 * @param documents
+	 *            missing in backups before them
 	 */
 	public record Modification(String part, String manufacturer, ApprovalType approvalType, String approvalNumber,
 			String conditions, LocalDate inspectionDate, String testingBody, boolean registered,
 			LocalDate installedDate, Integer installedOdometer, LocalDate removedDate, Integer removedOdometer,
-			String notes, Integer bill)
+			String notes, Integer bill, List<File> documents)
 	{
 	}
 }
