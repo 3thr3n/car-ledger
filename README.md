@@ -45,7 +45,8 @@ authentik or any other provider).
 
 - **Installable app:** added to the home screen of the phone it starts like an app; a long press on its icon opens a
   new refuel (or charge) of the last opened car.
-- **Offline:** refuels, charges and trips entered without a connection are sent when it is back.
+- **Offline:** refuels, charges and trips entered without a connection are sent when it is back; the documents of the
+  modifications of a car can be kept on the device, e.g. for a roadside check.
 - **Trip log (Fahrtenbuch):** start and finish trips with the odometer, enter forgotten ones, delete with a reason
   (they stay in the log), export as PDF or CSV.
 - **GPS tracking:** a tracker in the car (e.g. an ESP32) sends its points, the app shows the tracks on a map colored

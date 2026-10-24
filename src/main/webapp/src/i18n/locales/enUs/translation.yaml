@@ -1041,6 +1041,16 @@ modification:
     removedDate: "Enter when it was removed."
     removedBeforeInstalled: "Before it was installed."
     removedBelowInstalled: "Below the odometer when it was installed."
+  offline:
+    label: "Documents available offline"
+    text: "Keeps the documents of the installed parts on this device, e.g. for a roadside check without a connection."
+    saving: "Saving the documents…"
+    saved_one: "{{count}} document saved {{time}}. Without a connection it shows that state, it may be out of date."
+    saved_other: "{{count}} documents saved {{time}}. Without a connection they show that state, they may be out of date."
+    skipped_one: "Not kept, beyond {{size}} on this device: {{names}}"
+    skipped_other: "{{count}} not kept, beyond {{size}} on this device: {{names}}"
+    failed: "The documents could not be saved on this device"
+    notKept: "This document isn't available offline"
   documents:
     title: "Documents"
     add: "Add document"

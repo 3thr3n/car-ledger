@@ -26,6 +26,7 @@ import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import ModificationList from '@/components/modification/ModificationList';
 import ModificationDialog from '@/components/modification/ModificationDialog';
 import RemoveModificationDialog from '@/components/modification/RemoveModificationDialog';
+import OfflineDocumentsPanel from '@/components/modification/OfflineDocumentsPanel';
 
 type Shown =
   typeof ModificationState.INSTALLED | typeof ModificationState.REMOVED;
@@ -130,6 +131,7 @@ export default function ModificationsPage({ carId }: { carId: number }) {
             onDelete={setToDelete}
           />
         )}
+        <OfflineDocumentsPanel carId={carId} />
         <Alert severity="info" variant="outlined">
           {t('modification.originalsHint')}
         </Alert>
