@@ -200,7 +200,7 @@
       },
       "ApprovalType" : {
         "type" : "string",
-        "enum" : [ "ABE", "PARTS_REPORT", "SINGLE_APPROVAL", "EC_TYPE_APPROVAL", "NONE" ]
+        "enum" : [ "ABE", "PART_TYPE_APPROVAL", "PARTS_REPORT", "SINGLE_APPROVAL", "EC_TYPE_APPROVAL", "NONE" ]
       },
       "ApproveCarRequestInput" : {
         "type" : "object",

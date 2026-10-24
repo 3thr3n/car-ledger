@@ -146,7 +146,7 @@ class ModificationResourceTest
 	{
 		Map<String, Object> exhaust = rims();
 		exhaust.put("part", "Exhaust");
-		exhaust.put("approvalType", "EC_TYPE_APPROVAL");
+		exhaust.put("approvalType", "PART_TYPE_APPROVAL");
 		exhaust.put("installedDate", "2025-06-01");
 		add(exhaust);
 		add(rims());
