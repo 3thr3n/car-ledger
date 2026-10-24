@@ -37,6 +37,9 @@ authentik or any other provider).
 - **Units:** metric, US (miles, gallons, mpg) or UK (miles, liters, mpg) per account. They are stored in km and liters,
   the API always uses those.
 - **Statistics:** totals, averages and the consumption over time per car and for all cars.
+- **Modifications:** the parts of a tuned car with their ABE, Teiletypgenehmigung, Teilegutachten or Einzelabnahme, the
+  conditions, the Abnahme and the entry in the registration certificate, with the documents; removed parts stay as the
+  history of the car.
 
 **On the road**
 
@@ -54,7 +57,7 @@ authentik or any other provider).
 
 - **CSV import and export** of each entry type, and all expenses of a car in one CSV for spreadsheets.
 - **Backup:** every user downloads all of their data (settings, cars, entries, recurring costs, reminders, trips,
-  GPS trackers and the tracks kept forever, receipts and pictures) as one ZIP and restores it into an account without cars, e.g. on another installation.
+  modifications and their documents, GPS trackers and the tracks kept forever, receipts and pictures) as one ZIP and restores it into an account without cars, e.g. on another installation.
 - **Car requests:** users who reached their car limit request more cars, administrators decide on the administration
   page.
 - **Webhooks and service accounts:** events like a new car request are sent as signed HTTP requests, scripts use the API
