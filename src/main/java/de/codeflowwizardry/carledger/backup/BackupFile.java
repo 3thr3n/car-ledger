@@ -152,16 +152,18 @@ public record BackupFile(String format, int version, OffsetDateTime createdAt, S
 	}
 
 	/**
+	 * @param bills
+	 *            indexes in {@link Car#bills()}, e.g. of the part, the workshop and
+	 *            the Abnahme
 	 * @param bill
-	 *            index in {@link Car#bills()} of the bill of the part or the
-	 *            installation
+	 *            the one index of the prereleases of 0.8.0, before several bills
 	 * @param documents
 	 *            missing in backups before them
 	 */
 	public record Modification(String part, String manufacturer, ApprovalType approvalType, String approvalNumber,
 			String conditions, LocalDate inspectionDate, String testingBody, boolean registered,
 			LocalDate installedDate, Integer installedOdometer, LocalDate removedDate, Integer removedOdometer,
-			String notes, Integer bill, List<File> documents)
+			String notes, List<Integer> bills, Integer bill, List<File> documents)
 	{
 	}
 }

@@ -418,6 +418,14 @@ export type HiLoStats = {
     maintenanceCost?: HiLo;
 };
 
+export type LinkedBill = {
+    id: number;
+    type: BillType;
+    date: LocalDate;
+    total: number;
+    description?: string;
+};
+
 export type LocalDate = string;
 
 export type MaintenanceBill = {
@@ -486,7 +494,7 @@ export type Modification = {
     removedDate?: LocalDate;
     removedOdometer?: number;
     notes?: string;
-    billId?: number;
+    bills: Array<LinkedBill>;
     installed: boolean;
     inspectionOpen: boolean;
     documents: number;
@@ -506,7 +514,7 @@ export type ModificationInput = {
     removedDate?: LocalDate;
     removedOdometer?: number;
     notes?: string;
-    billId?: number;
+    billIds?: Array<number>;
 };
 
 export enum ModificationState {
@@ -2599,6 +2607,31 @@ export type AddModificationResponses = {
 };
 
 export type AddModificationResponse = AddModificationResponses[keyof AddModificationResponses];
+
+export type GetLinkableBillsData = {
+    body?: never;
+    path: {
+        carId: number;
+    };
+    query?: never;
+    url: '/api/modification/{carId}/bills';
+};
+
+export type GetLinkableBillsErrors = {
+    /**
+     * Car is not for your user.
+     */
+    404: unknown;
+};
+
+export type GetLinkableBillsResponses = {
+    /**
+     * Bills found.
+     */
+    200: Array<LinkedBill>;
+};
+
+export type GetLinkableBillsResponse = GetLinkableBillsResponses[keyof GetLinkableBillsResponses];
 
 export type DeleteModificationData = {
     body?: never;

@@ -1,6 +1,9 @@
 package de.codeflowwizardry.carledger.data;
 
 import java.time.LocalDate;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 import jakarta.persistence.*;
 
@@ -16,10 +19,10 @@ public class ModificationEntity
 	@JoinColumn(name = "md_car_id", nullable = false)
 	private CarEntity car;
 
-	/** of the part or the installation, set to null when it is deleted */
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "md_bill_id")
-	private BillEntity bill;
+	/** e.g. the part, the workshop and the Abnahme, a deleted one drops out */
+	@ManyToMany(fetch = FetchType.LAZY)
+	@JoinTable(name = "modification_bill", joinColumns = @JoinColumn(name = "mb_modification_id"), inverseJoinColumns = @JoinColumn(name = "mb_bill_id"))
+	private Set<BillEntity> bills = new HashSet<>();
 
 	@Column(name = "md_part", nullable = false, length = 100)
 	private String part;
@@ -85,14 +88,15 @@ public class ModificationEntity
 		return car;
 	}
 
-	public BillEntity getBill()
+	public Set<BillEntity> getBills()
 	{
-		return bill;
+		return bills;
 	}
 
-	public void setBill(BillEntity bill)
+	public void setBills(Collection<BillEntity> bills)
 	{
-		this.bill = bill;
+		this.bills.clear();
+		this.bills.addAll(bills);
 	}
 
 	public String getPart()

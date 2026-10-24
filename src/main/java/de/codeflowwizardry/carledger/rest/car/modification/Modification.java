@@ -1,6 +1,7 @@
 package de.codeflowwizardry.carledger.rest.car.modification;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
@@ -9,8 +10,8 @@ import de.codeflowwizardry.carledger.data.ApprovalType;
 /**
  * See {@link ModificationInput}
  *
- * @param billId
- *            missing without one or after it was deleted
+ * @param bills
+ *            the oldest first
  * @param installed
  *            still on the car, without a removed date
  * @param inspectionOpen
@@ -35,7 +36,7 @@ public record Modification(
 		LocalDate removedDate,
 		Integer removedOdometer,
 		String notes,
-		Long billId,
+		@Schema(required = true) List<LinkedBill> bills,
 		@Schema(required = true) boolean installed,
 		@Schema(required = true) boolean inspectionOpen,
 		@Schema(required = true) long documents)
