@@ -73,6 +73,14 @@ export type AdminStats = {
     openRequests?: number;
 };
 
+export enum ApprovalType {
+    ABE = 'ABE',
+    PARTS_REPORT = 'PARTS_REPORT',
+    SINGLE_APPROVAL = 'SINGLE_APPROVAL',
+    EC_TYPE_APPROVAL = 'EC_TYPE_APPROVAL',
+    NONE = 'NONE'
+}
+
 export type ApproveCarRequestInput = {
     maxCars?: number;
 };
@@ -106,6 +114,7 @@ export type BackupSummary = {
     files?: number;
     trackers?: number;
     trackPoints?: number;
+    modifications?: number;
 };
 
 export type Bill = {
@@ -451,6 +460,50 @@ export type MiscellaneousBillInput = {
     date?: LocalDate;
     description?: string;
 };
+
+export type Modification = {
+    id: number;
+    carId: number;
+    part: string;
+    manufacturer?: string;
+    approvalType: ApprovalType;
+    approvalNumber?: string;
+    conditions?: string;
+    inspectionDate?: LocalDate;
+    testingBody?: string;
+    registered: boolean;
+    installedDate?: LocalDate;
+    installedOdometer?: number;
+    removedDate?: LocalDate;
+    removedOdometer?: number;
+    notes?: string;
+    billId?: number;
+    installed: boolean;
+    inspectionOpen: boolean;
+};
+
+export type ModificationInput = {
+    part?: string;
+    manufacturer?: string;
+    approvalType?: ApprovalType;
+    approvalNumber?: string;
+    conditions?: string;
+    inspectionDate?: LocalDate;
+    testingBody?: string;
+    registered?: boolean;
+    installedDate?: LocalDate;
+    installedOdometer?: number;
+    removedDate?: LocalDate;
+    removedOdometer?: number;
+    notes?: string;
+    billId?: number;
+};
+
+export enum ModificationState {
+    INSTALLED = 'INSTALLED',
+    REMOVED = 'REMOVED',
+    ALL = 'ALL'
+}
 
 export type MonthStats = {
     month: string;
@@ -2423,6 +2476,112 @@ export type GetMapSettingsResponses = {
 };
 
 export type GetMapSettingsResponse = GetMapSettingsResponses[keyof GetMapSettingsResponses];
+
+export type GetModificationsData = {
+    body?: never;
+    path: {
+        carId: number;
+    };
+    query?: {
+        state?: ModificationState & unknown;
+    };
+    url: '/api/modification/{carId}';
+};
+
+export type GetModificationsResponses = {
+    /**
+     * OK
+     */
+    200: Array<Modification>;
+};
+
+export type GetModificationsResponse = GetModificationsResponses[keyof GetModificationsResponses];
+
+export type AddModificationData = {
+    body: ModificationInput;
+    path: {
+        carId: number;
+    };
+    query?: never;
+    url: '/api/modification/{carId}';
+};
+
+export type AddModificationErrors = {
+    /**
+     * Validation failed, please check the response
+     */
+    400: Array<unknown>;
+    /**
+     * Car is not for your user.
+     */
+    404: unknown;
+};
+
+export type AddModificationError = AddModificationErrors[keyof AddModificationErrors];
+
+export type AddModificationResponses = {
+    202: Modification;
+};
+
+export type AddModificationResponse = AddModificationResponses[keyof AddModificationResponses];
+
+export type DeleteModificationData = {
+    body?: never;
+    path: {
+        carId: number;
+        id: number;
+    };
+    query?: never;
+    url: '/api/modification/{carId}/{id}';
+};
+
+export type DeleteModificationErrors = {
+    /**
+     * Modification not found for the car of your user.
+     */
+    404: unknown;
+};
+
+export type DeleteModificationResponses = {
+    /**
+     * Deleted
+     */
+    204: void;
+};
+
+export type DeleteModificationResponse = DeleteModificationResponses[keyof DeleteModificationResponses];
+
+export type UpdateModificationData = {
+    body: ModificationInput;
+    path: {
+        carId: number;
+        id: number;
+    };
+    query?: never;
+    url: '/api/modification/{carId}/{id}';
+};
+
+export type UpdateModificationErrors = {
+    /**
+     * Validation failed, please check the response
+     */
+    400: Array<unknown>;
+    /**
+     * Modification not found for the car of your user.
+     */
+    404: unknown;
+};
+
+export type UpdateModificationError = UpdateModificationErrors[keyof UpdateModificationErrors];
+
+export type UpdateModificationResponses = {
+    /**
+     * OK
+     */
+    200: Modification;
+};
+
+export type UpdateModificationResponse = UpdateModificationResponses[keyof UpdateModificationResponses];
 
 export type GetRemindersData = {
     body?: never;
