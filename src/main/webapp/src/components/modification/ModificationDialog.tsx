@@ -35,12 +35,8 @@ import { errorMessage } from '@/utils/BackendError';
 import { toApiDate, useFormat } from '@/utils/format';
 import { odometerToApi, odometerToField } from '@/utils/units';
 import NumberField from '@/components/bill/NumberField';
-import {
-  billText,
-  hasApproval,
-  needsInspection,
-  TESTING_BODIES,
-} from './approval';
+import TestingBodyField from '@/components/ui/TestingBodyField';
+import { billText, hasApproval, needsInspection } from './approval';
 
 export interface ModificationDialogProps {
   open: boolean;
@@ -295,25 +291,10 @@ function ModificationForm({
                     field: { clearable: true },
                   }}
                 />
-                <Autocomplete
-                  freeSolo
-                  fullWidth
-                  options={TESTING_BODIES}
-                  inputValue={testingBody}
-                  onInputChange={(_, value) => setTestingBody(value)}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label={t('modification.fields.testingBody')}
-                      slotProps={{
-                        ...params.slotProps,
-                        htmlInput: {
-                          ...params.slotProps.htmlInput,
-                          maxLength: 100,
-                        },
-                      }}
-                    />
-                  )}
+                <TestingBodyField
+                  label={t('modification.fields.testingBody')}
+                  value={testingBody}
+                  onChange={setTestingBody}
                 />
               </Stack>
               <FormControlLabel

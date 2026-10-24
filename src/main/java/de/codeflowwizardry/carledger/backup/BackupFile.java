@@ -11,6 +11,8 @@ import de.codeflowwizardry.carledger.data.BillType;
 import de.codeflowwizardry.carledger.data.ChargingLocation;
 import de.codeflowwizardry.carledger.data.DocumentKind;
 import de.codeflowwizardry.carledger.data.EnergyType;
+import de.codeflowwizardry.carledger.data.InspectionResult;
+import de.codeflowwizardry.carledger.data.ReminderKind;
 import de.codeflowwizardry.carledger.data.TripReview;
 import de.codeflowwizardry.carledger.data.TripType;
 import de.codeflowwizardry.carledger.data.Accent;
@@ -68,12 +70,15 @@ public record BackupFile(String format, int version, OffsetDateTime createdAt, S
 	 *            car that keeps them forever and has some
 	 * @param modifications
 	 *            missing in backups before them
+	 * @param technicalInspections
+	 *            the HUs, missing in backups before them
 	 */
 	public record Car(String name, int year, int odometer, LocalDate odometerDate, String licensePlate, String vin,
 			LocalDate purchaseDate, BigDecimal purchasePrice, EnergyType energyType, BigDecimal tankSize,
 			BigDecimal batteryCapacity, File picture, List<Bill> bills, List<RecurringBill> recurringBills,
 			List<Reminder> reminders, List<Trip> trips, Boolean tripLog, Integer trackRetentionDays,
-			List<Tracker> trackers, File track, List<Modification> modifications)
+			List<Tracker> trackers, File track, List<Modification> modifications,
+			List<TechnicalInspection> technicalInspections)
 	{
 	}
 
@@ -134,8 +139,23 @@ public record BackupFile(String format, int version, OffsetDateTime createdAt, S
 	{
 	}
 
+	/**
+	 * @param kind
+	 *            of a reminder the app keeps, e.g. of the HU
+	 */
 	public record Reminder(String title, String note, LocalDate dueDate, Integer dueOdometer, Integer intervalMonths,
-			Integer intervalKm)
+			Integer intervalKm, ReminderKind kind)
+	{
+	}
+
+	/**
+	 * An HU
+	 *
+	 * @param files
+	 *            e.g. the report
+	 */
+	public record TechnicalInspection(LocalDate date, Integer odometer, String testingBody,
+			InspectionResult result, String defects, LocalDate nextDue, List<File> files)
 	{
 	}
 

@@ -12,10 +12,12 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -27,6 +29,7 @@ import org.apache.commons.lang3.StringUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import de.codeflowwizardry.carledger.ModificationService;
+import de.codeflowwizardry.carledger.TechnicalInspectionService;
 import de.codeflowwizardry.carledger.Utils;
 import de.codeflowwizardry.carledger.attachment.AttachmentService;
 import de.codeflowwizardry.carledger.data.*;
@@ -36,12 +39,14 @@ import de.codeflowwizardry.carledger.data.repository.BillRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import de.codeflowwizardry.carledger.data.repository.DeviceRepository;
 import de.codeflowwizardry.carledger.data.repository.ModificationRepository;
+import de.codeflowwizardry.carledger.data.repository.TechnicalInspectionRepository;
 import de.codeflowwizardry.carledger.data.repository.RecurringBillPaymentRepository;
 import de.codeflowwizardry.carledger.data.repository.RecurringBillRepository;
 import de.codeflowwizardry.carledger.data.repository.ReminderRepository;
 import de.codeflowwizardry.carledger.data.repository.TrackPointRepository;
 import de.codeflowwizardry.carledger.data.repository.TripRepository;
 import de.codeflowwizardry.carledger.exception.AlreadyPresentException;
+import de.codeflowwizardry.carledger.rest.car.inspection.TechnicalInspectionInput;
 import de.codeflowwizardry.carledger.rest.car.modification.ModificationInput;
 import de.codeflowwizardry.carledger.rest.car.track.TrackRetentionInput;
 import de.codeflowwizardry.carledger.rest.car.tracker.DeviceInput;
@@ -94,6 +99,7 @@ public class BackupService
 	private final DeviceRepository deviceRepository;
 	private final TrackPointRepository trackPointRepository;
 	private final ModificationRepository modificationRepository;
+	private final TechnicalInspectionRepository technicalInspectionRepository;
 	private final AttachmentService attachmentService;
 	private final ObjectMapper mapper;
 	private final EntityManager em;
@@ -104,6 +110,7 @@ public class BackupService
 			RecurringBillRepository recurringBillRepository, RecurringBillPaymentRepository paymentRepository,
 			ReminderRepository reminderRepository, TripRepository tripRepository, DeviceRepository deviceRepository,
 			TrackPointRepository trackPointRepository, ModificationRepository modificationRepository,
+			TechnicalInspectionRepository technicalInspectionRepository,
 			AttachmentService attachmentService, ObjectMapper mapper, EntityManager em)
 	{
 		this.accountRepository = accountRepository;
@@ -117,6 +124,7 @@ public class BackupService
 		this.deviceRepository = deviceRepository;
 		this.trackPointRepository = trackPointRepository;
 		this.modificationRepository = modificationRepository;
+		this.technicalInspectionRepository = technicalInspectionRepository;
 		this.attachmentService = attachmentService;
 		this.mapper = mapper;
 		this.em = em;
@@ -214,6 +222,9 @@ public class BackupService
 		Map<Long, List<AttachmentEntity>> attachments = carFiles.stream()
 				.filter(attachment -> attachment.getBill() != null)
 				.collect(Collectors.groupingBy(attachment -> attachment.getBill().getId()));
+		Map<Long, List<AttachmentEntity>> reports = carFiles.stream()
+				.filter(attachment -> attachment.getTechnicalInspection() != null)
+				.collect(Collectors.groupingBy(attachment -> attachment.getTechnicalInspection().getId()));
 		Map<Long, List<AttachmentEntity>> documents = carFiles.stream()
 				.filter(attachment -> attachment.getModification() != null)
 				.collect(Collectors.groupingBy(attachment -> attachment.getModification().getId()));
@@ -250,7 +261,7 @@ public class BackupService
 		List<BackupFile.Reminder> reminders = reminderRepository.list(car.getId(), user).stream()
 				.map(reminder -> new BackupFile.Reminder(reminder.getTitle(), reminder.getNote(),
 						reminder.getDueDate(), reminder.getDueOdometer(), reminder.getIntervalMonths(),
-						reminder.getIntervalKm()))
+						reminder.getIntervalKm(), reminder.getKind()))
 				.toList();
 
 		List<BackupFile.Trip> trips = tripRepository.list("car = ?1 order by startedAt, id", car).stream()
@@ -275,6 +286,20 @@ public class BackupService
 					modification.getRemovedDate(), modification.getRemovedOdometer(), modification.getNotes(),
 					modification.getBills().stream().map(bill -> billIndexes.get(bill.getId())).sorted().toList(), null,
 					modificationFiles));
+		}
+
+		List<BackupFile.TechnicalInspection> inspections = new ArrayList<>();
+		for (TechnicalInspectionEntity inspection : technicalInspectionRepository
+				.list("car = ?1 order by date, id", car))
+		{
+			List<BackupFile.File> inspectionFiles = new ArrayList<>();
+			for (AttachmentEntity report : reports.getOrDefault(inspection.getId(), List.of()))
+			{
+				inspectionFiles.add(files.add(report));
+			}
+			inspections.add(new BackupFile.TechnicalInspection(inspection.getDate(), inspection.getOdometer(),
+					inspection.getTestingBody(), inspection.getResult(), inspection.getDefects(),
+					inspection.getNextDue(), inspectionFiles));
 		}
 
 		List<DeviceEntity> devices = deviceRepository.list("car = ?1 order by id", car);
@@ -305,7 +330,8 @@ public class BackupService
 		return new BackupFile.Car(car.getName(), car.getManufactureYear(), car.getOdometer(), car.getOdometerDate(),
 				car.getLicensePlate(), car.getVin(), car.getPurchaseDate(), car.getPurchasePrice(),
 				car.getEnergyType(), car.getTankSize(), car.getBatteryCapacity(), picture, bills, recurringBills,
-				reminders, trips, car.isTripLog(), car.getTrackRetentionDays(), trackers, track, modifications);
+				reminders, trips, car.isTripLog(), car.getTrackRetentionDays(), trackers, track, modifications,
+				inspections);
 	}
 
 	private static BackupFile.Bill bill(BillEntity bill, List<BackupFile.File> files)
@@ -372,7 +398,8 @@ public class BackupService
 			restoreCar(account, car, entries, counter);
 		}
 		return new BackupSummary(cars.size(), counter.bills, counter.recurringBills, counter.reminders,
-				counter.trips, counter.files, counter.trackers, counter.trackPoints, counter.modifications);
+				counter.trips, counter.files, counter.trackers, counter.trackPoints, counter.modifications,
+				counter.technicalInspections);
 	}
 
 	private static final class Counter
@@ -385,6 +412,7 @@ public class BackupService
 		int trackers;
 		int trackPoints;
 		int modifications;
+		int technicalInspections;
 	}
 
 	private BackupFile parse(byte[] json)
@@ -481,9 +509,15 @@ public class BackupService
 			restoreRecurringBill(car, recurring);
 			counter.recurringBills++;
 		}
+		Set<ReminderKind> kinds = EnumSet.noneOf(ReminderKind.class);
 		for (BackupFile.Reminder reminder : list(backup.reminders()))
 		{
+			if (reminder.kind() != null && !kinds.add(reminder.kind()))
+			{
+				Utils.requireValid(List.of("A car of the backup has more than one reminder of the HU!"));
+			}
 			ReminderEntity entity = new ReminderEntity(car);
+			entity.setKind(reminder.kind());
 			entity.setTitle(reminder.title());
 			entity.setNote(reminder.note());
 			entity.setDueDate(reminder.dueDate());
@@ -497,6 +531,11 @@ public class BackupService
 		{
 			restoreModification(car, modification, bills, entries, counter);
 			counter.modifications++;
+		}
+		for (BackupFile.TechnicalInspection inspection : list(backup.technicalInspections()))
+		{
+			restoreTechnicalInspection(car, inspection, entries, counter);
+			counter.technicalInspections++;
 		}
 		boolean open = false;
 		for (BackupFile.Trip trip : list(backup.trips()))
@@ -726,6 +765,28 @@ public class BackupService
 		for (BackupFile.File file : list(backup.documents()))
 		{
 			attachmentService.restore(entity, file.kind(), file.fileName(), content(entries, file), documents++);
+			counter.files++;
+		}
+	}
+
+	/**
+	 * Without moving the reminder of the HU, it is restored as it was
+	 */
+	private void restoreTechnicalInspection(CarEntity car, BackupFile.TechnicalInspection backup,
+			BackupArchive entries, Counter counter)
+	{
+		TechnicalInspectionInput input = new TechnicalInspectionInput(backup.date(), backup.odometer(),
+				backup.testingBody(), backup.result(), backup.defects(), backup.nextDue());
+		Utils.requireValid(input.validate());
+
+		TechnicalInspectionEntity entity = new TechnicalInspectionEntity(car);
+		TechnicalInspectionService.apply(entity, input);
+		technicalInspectionRepository.persist(entity);
+
+		int files = 0;
+		for (BackupFile.File file : list(backup.files()))
+		{
+			attachmentService.restore(entity, file.fileName(), content(entries, file), files++);
 			counter.files++;
 		}
 	}

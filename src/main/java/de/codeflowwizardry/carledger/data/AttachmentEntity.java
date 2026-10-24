@@ -6,7 +6,8 @@ import jakarta.persistence.*;
 
 /**
  * A file attached to a bill (e.g. the receipt), to a modification (a document
- * of its approval) or to the car (its picture). Only the metadata, the content
+ * of its approval), to a technical inspection (its report) or to the car (its
+ * picture). Only the metadata, the content
  * is in the {@link de.codeflowwizardry.carledger.attachment.AttachmentStorage}
  * named by {@link #getStorage()}.
  */
@@ -29,6 +30,10 @@ public class AttachmentEntity
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "a_modification_id")
 	private ModificationEntity modification;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "a_technical_inspection_id")
+	private TechnicalInspectionEntity technicalInspection;
 
 	/** set for the documents of a modification only */
 	@Enumerated(EnumType.STRING)
@@ -86,6 +91,16 @@ public class AttachmentEntity
 	public void setModification(ModificationEntity modification)
 	{
 		this.modification = modification;
+	}
+
+	public TechnicalInspectionEntity getTechnicalInspection()
+	{
+		return technicalInspection;
+	}
+
+	public void setTechnicalInspection(TechnicalInspectionEntity technicalInspection)
+	{
+		this.technicalInspection = technicalInspection;
 	}
 
 	public DocumentKind getKind()

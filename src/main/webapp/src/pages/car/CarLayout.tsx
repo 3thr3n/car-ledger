@@ -32,7 +32,7 @@ import ErrorPage from '@/pages/ErrorPage';
 /**
  * The entry types of the car between the overview and the reminders, the trips
  * only with the trip log, the map only with a GPS tracker and a map set up,
- * the modifications last
+ * the modifications and the HUs last
  */
 const tabsFor = (energyType?: EnergyType, tripLog?: boolean, map?: boolean) => [
   { key: 'overview', to: '/car/$id' } as const,
@@ -44,6 +44,7 @@ const tabsFor = (energyType?: EnergyType, tripLog?: boolean, map?: boolean) => [
   ...(map ? [{ key: 'track', to: '/car/$id/track' } as const] : []),
   { key: 'reminders', to: '/car/$id/reminders' } as const,
   { key: 'modifications', to: '/car/$id/modifications' } as const,
+  { key: 'inspections', to: '/car/$id/inspections' } as const,
 ];
 
 /** the tabs of the car that are no entry type */
@@ -53,6 +54,7 @@ const pageTabs = [
   'track',
   'reminders',
   'modifications',
+  'inspections',
 ] as const;
 type PageTab = (typeof pageTabs)[number];
 const isPageTab = (key: string): key is PageTab =>
@@ -84,6 +86,7 @@ export default function CarLayout({ id }: { id: number }) {
       ? 'overview'
       : rest === '/reminders' ||
           rest === '/modifications' ||
+          rest === '/inspections' ||
           (rest === '/trips' && car?.tripLog) ||
           (rest === '/track' && showMap)
         ? (rest.slice(1) as PageTab)

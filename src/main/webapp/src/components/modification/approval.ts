@@ -25,9 +25,6 @@ export const registrationOpen = (modification: Modification) =>
   !modification.inspectionOpen &&
   !modification.registered;
 
-/** the common ones, any other can be typed */
-export const TESTING_BODIES = ['TÜV', 'DEKRA', 'GTÜ', 'KÜS'];
-
 /** the input that keeps everything as it is */
 export const toInput = (modification: Modification): ModificationInput => ({
   part: modification.part,
