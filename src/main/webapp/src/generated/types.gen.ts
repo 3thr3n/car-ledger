@@ -4,6 +4,14 @@ export type ClientOptions = {
     baseUrl: 'http://localhost:8080' | 'http://0.0.0.0:8080' | (string & {});
 };
 
+export enum Accent {
+    TEAL = 'TEAL',
+    BLUE = 'BLUE',
+    VIOLET = 'VIOLET',
+    ROSE = 'ROSE',
+    AMBER = 'AMBER'
+}
+
 export type Account = {
     maxCars?: number;
     name?: string;
@@ -12,6 +20,7 @@ export type Account = {
     currency?: string;
     language?: string;
     unitSystem: UnitSystem;
+    accent: Accent;
 };
 
 export type AdminAccount = {
@@ -603,6 +612,7 @@ export type SettingsInput = {
     currency?: string;
     language?: string;
     unitSystem?: UnitSystem;
+    accent?: Accent;
 };
 
 export enum SortOrder {

@@ -6,7 +6,7 @@ test.describe.serial('settings', () => {
     // back to the defaults, the other tests expect them
     const api = await aliceApi();
     await api.put('/api/user/me/settings', {
-      data: { vatCountry: 'DE', currency: 'EUR' },
+      data: { vatCountry: 'DE', currency: 'EUR', accent: 'TEAL' },
     });
     await api.dispose();
   });
@@ -56,6 +56,26 @@ test.describe.serial('settings', () => {
     await page.getByRole('option', { name: 'English' }).click();
     await page.getByRole('button', { name: 'Speichern' }).click();
     await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible();
+  });
+
+  test('colors the app with the chosen accent', async ({ page }) => {
+    await page.goto('/settings');
+    const save = page.getByRole('button', { name: 'Save' });
+    // teal
+    await expect(save).toHaveCSS('background-color', 'rgb(15, 118, 110)');
+
+    await page.getByRole('radio', { name: 'Violet' }).check();
+    await expect(page.getByRole('radio', { name: 'Violet' })).toBeChecked();
+    await expect(save).toHaveCSS('background-color', 'rgb(109, 40, 217)');
+
+    // with the account, not only in this browser
+    await page.evaluate(() => localStorage.clear());
+    await page.reload();
+    await expect(save).toHaveCSS('background-color', 'rgb(109, 40, 217)');
+    await expect(page.locator('meta[name="theme-color"]')).toHaveAttribute(
+      'content',
+      '#6d28d9',
+    );
   });
 
   test('shows why no notifications can be sent', async ({ page }) => {

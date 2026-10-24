@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+import de.codeflowwizardry.carledger.data.Accent;
 import de.codeflowwizardry.carledger.data.UnitSystem;
 
 /**
@@ -21,8 +22,11 @@ import de.codeflowwizardry.carledger.data.UnitSystem;
  * @param unitSystem
  *            units the values are shown and entered in, unchanged without one
  *            (e.g. a client of an older version)
+ * @param accent
+ *            accent color of the UI, unchanged without one
  */
-public record SettingsInput(String vatCountry, String currency, String language, UnitSystem unitSystem)
+public record SettingsInput(String vatCountry, String currency, String language, UnitSystem unitSystem,
+		Accent accent)
 {
 
 	public static final Set<String> LANGUAGES = Set.of("EN", "DE");

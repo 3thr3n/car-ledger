@@ -647,6 +647,15 @@ settings:
     EN: "English"
     DE: "Deutsch"
   saved: "Settings saved"
+  appearance:
+    title: "Appearance"
+    text: "The accent color of buttons, links and highlights, saved with your account. The colors of the categories stay."
+    accents:
+      TEAL: "Teal"
+      BLUE: "Blue"
+      VIOLET: "Violet"
+      ROSE: "Rose"
+      AMBER: "Amber"
   deleteAccount:
     title: "Delete account"
     text: "Removes your account with all cars, entries, recurring costs and reminders."

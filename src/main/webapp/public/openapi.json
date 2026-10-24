@@ -2,6 +2,10 @@
   "openapi" : "3.1.0",
   "components" : {
     "schemas" : {
+      "Accent" : {
+        "type" : "string",
+        "enum" : [ "TEAL", "BLUE", "VIOLET", "ROSE", "AMBER" ]
+      },
       "Account" : {
         "type" : "object",
         "properties" : {
@@ -26,9 +30,12 @@
           },
           "unitSystem" : {
             "$ref" : "#/components/schemas/UnitSystem"
+          },
+          "accent" : {
+            "$ref" : "#/components/schemas/Accent"
           }
         },
-        "required" : [ "unitSystem" ]
+        "required" : [ "unitSystem", "accent" ]
       },
       "AdminAccount" : {
         "type" : "object",
@@ -1601,6 +1608,9 @@
           },
           "unitSystem" : {
             "$ref" : "#/components/schemas/UnitSystem"
+          },
+          "accent" : {
+            "$ref" : "#/components/schemas/Accent"
           }
         }
       },

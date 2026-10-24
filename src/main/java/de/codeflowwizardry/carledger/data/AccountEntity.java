@@ -40,6 +40,13 @@ public class AccountEntity
 	@Column(name = "unit_system", nullable = false, length = 10)
 	private UnitSystem unitSystem = UnitSystem.METRIC;
 
+	/**
+	 * Accent color of the UI
+	 */
+	@Enumerated(EnumType.STRING)
+	@Column(name = "accent", nullable = false, length = 10)
+	private Accent accent = Accent.TEAL;
+
 	@Column(name = "created_at", nullable = false, updatable = false)
 	private OffsetDateTime createdAt = OffsetDateTime.now();
 
@@ -251,5 +258,15 @@ public class AccountEntity
 	public void setUnitSystem(UnitSystem unitSystem)
 	{
 		this.unitSystem = unitSystem;
+	}
+
+	public Accent getAccent()
+	{
+		return accent;
+	}
+
+	public void setAccent(Accent accent)
+	{
+		this.accent = accent;
 	}
 }
