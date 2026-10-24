@@ -1,6 +1,7 @@
 import { Box } from '@mui/material';
 import {
   AttributionControl,
+  ExpressionSpecification,
   GeoJSONSource,
   LngLatBounds,
   Map as MapLibreMap,
@@ -61,6 +62,45 @@ function showTrack(map: MapLibreMap, track: Track) {
   }
 }
 
+/** of the white outline under a line, wider on each side */
+const casingWidth = (
+  width: number | ExpressionSpecification,
+): ExpressionSpecification => ['+', width, 3];
+
+/**
+ * The line of the source with a white outline, and a wider invisible line, so
+ * it is easy to hit with a finger: the layers <source>-casing, <source>-line
+ * and <source>-hit
+ */
+function addLineLayers(
+  map: MapLibreMap,
+  source: string,
+  color: ExpressionSpecification,
+  width: number | ExpressionSpecification,
+) {
+  const layout = { 'line-cap': 'round', 'line-join': 'round' } as const;
+  map.addLayer({
+    id: `${source}-casing`,
+    type: 'line',
+    source,
+    layout,
+    paint: { 'line-color': '#ffffff', 'line-width': casingWidth(width) },
+  });
+  map.addLayer({
+    id: `${source}-line`,
+    type: 'line',
+    source,
+    layout,
+    paint: { 'line-color': color, 'line-width': width },
+  });
+  map.addLayer({
+    id: `${source}-hit`,
+    type: 'line',
+    source,
+    paint: { 'line-color': '#000000', 'line-width': 20, 'line-opacity': 0 },
+  });
+}
+
 /** draws the passes instead of the speeds, or the speeds again without */
 function showFrequency(map: MapLibreMap, frequency?: TrackFrequency) {
   (map.getSource('frequency') as GeoJSONSource).setData(
@@ -71,7 +111,7 @@ function showFrequency(map: MapLibreMap, frequency?: TrackFrequency) {
     const width = frequencyWidth(frequency.maxPasses);
     map.setPaintProperty('frequency-line', 'line-color', color);
     map.setPaintProperty('frequency-line', 'line-width', width);
-    map.setPaintProperty('frequency-casing', 'line-width', ['+', width, 3]);
+    map.setPaintProperty('frequency-casing', 'line-width', casingWidth(width));
   }
   for (const layer of SPEED_LAYERS) {
     map.setLayoutProperty(layer, 'visibility', frequency ? 'none' : 'visible');
@@ -131,27 +171,7 @@ export default function TrackMap({
       instance.addSource('track', { type: 'geojson', data: EMPTY });
       instance.addSource('ends', { type: 'geojson', data: EMPTY });
       instance.addSource('frequency', { type: 'geojson', data: EMPTY });
-      instance.addLayer({
-        id: 'track-casing',
-        type: 'line',
-        source: 'track',
-        layout: { 'line-cap': 'round', 'line-join': 'round' },
-        paint: { 'line-color': '#ffffff', 'line-width': 7 },
-      });
-      instance.addLayer({
-        id: 'track-line',
-        type: 'line',
-        source: 'track',
-        layout: { 'line-cap': 'round', 'line-join': 'round' },
-        paint: { 'line-color': speedColor, 'line-width': 4 },
-      });
-      // wider than the line, so it is easy to hit with a finger
-      instance.addLayer({
-        id: 'track-hit',
-        type: 'line',
-        source: 'track',
-        paint: { 'line-color': '#000000', 'line-width': 20, 'line-opacity': 0 },
-      });
+      addLineLayers(instance, 'track', speedColor, 4);
       instance.addLayer({
         id: 'track-ends',
         type: 'circle',
@@ -175,25 +195,12 @@ export default function TrackMap({
           ],
         },
       });
-      instance.addLayer({
-        id: 'frequency-casing',
-        type: 'line',
-        source: 'frequency',
-        layout: { 'line-cap': 'round', 'line-join': 'round' },
-        paint: { 'line-color': '#ffffff' },
-      });
-      instance.addLayer({
-        id: 'frequency-line',
-        type: 'line',
-        source: 'frequency',
-        layout: { 'line-cap': 'round', 'line-join': 'round' },
-      });
-      instance.addLayer({
-        id: 'frequency-hit',
-        type: 'line',
-        source: 'frequency',
-        paint: { 'line-color': '#000000', 'line-width': 20, 'line-opacity': 0 },
-      });
+      addLineLayers(
+        instance,
+        'frequency',
+        frequencyColor(0),
+        frequencyWidth(0),
+      );
       map.current = instance;
       showTrack(instance, trackRef.current);
       showFrequency(instance, frequencyRef.current);
