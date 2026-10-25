@@ -40,6 +40,7 @@ import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import de.codeflowwizardry.carledger.data.repository.DeviceRepository;
 import de.codeflowwizardry.carledger.data.repository.ModificationRepository;
 import de.codeflowwizardry.carledger.data.repository.TechnicalInspectionRepository;
+import de.codeflowwizardry.carledger.data.repository.PlaceRepository;
 import de.codeflowwizardry.carledger.data.repository.RecurringBillPaymentRepository;
 import de.codeflowwizardry.carledger.data.repository.RecurringBillRepository;
 import de.codeflowwizardry.carledger.data.repository.ReminderRepository;
@@ -48,6 +49,7 @@ import de.codeflowwizardry.carledger.data.repository.TripRepository;
 import de.codeflowwizardry.carledger.exception.AlreadyPresentException;
 import de.codeflowwizardry.carledger.rest.car.inspection.TechnicalInspectionInput;
 import de.codeflowwizardry.carledger.rest.car.modification.ModificationInput;
+import de.codeflowwizardry.carledger.rest.car.track.PlaceInput;
 import de.codeflowwizardry.carledger.rest.car.track.TrackRetentionInput;
 import de.codeflowwizardry.carledger.rest.car.tracker.DeviceInput;
 import de.codeflowwizardry.carledger.rest.car.trip.TripDeleteInput;
@@ -100,6 +102,7 @@ public class BackupService
 	private final TrackPointRepository trackPointRepository;
 	private final ModificationRepository modificationRepository;
 	private final TechnicalInspectionRepository technicalInspectionRepository;
+	private final PlaceRepository placeRepository;
 	private final AttachmentService attachmentService;
 	private final ObjectMapper mapper;
 	private final EntityManager em;
@@ -110,7 +113,7 @@ public class BackupService
 			RecurringBillRepository recurringBillRepository, RecurringBillPaymentRepository paymentRepository,
 			ReminderRepository reminderRepository, TripRepository tripRepository, DeviceRepository deviceRepository,
 			TrackPointRepository trackPointRepository, ModificationRepository modificationRepository,
-			TechnicalInspectionRepository technicalInspectionRepository,
+			TechnicalInspectionRepository technicalInspectionRepository, PlaceRepository placeRepository,
 			AttachmentService attachmentService, ObjectMapper mapper, EntityManager em)
 	{
 		this.accountRepository = accountRepository;
@@ -125,6 +128,7 @@ public class BackupService
 		this.trackPointRepository = trackPointRepository;
 		this.modificationRepository = modificationRepository;
 		this.technicalInspectionRepository = technicalInspectionRepository;
+		this.placeRepository = placeRepository;
 		this.attachmentService = attachmentService;
 		this.mapper = mapper;
 		this.em = em;
@@ -340,7 +344,9 @@ public class BackupService
 				car.getLicensePlate(), car.getVin(), car.getPurchaseDate(), car.getPurchasePrice(),
 				car.getEnergyType(), car.getTankSize(), car.getBatteryCapacity(), picture, bills, recurringBills,
 				reminders, trips, car.isTripLog(), car.getTrackRetentionDays(), trackers, track, modifications,
-				inspections);
+				inspections, placeRepository.list(car).stream()
+						.map(place -> new BackupFile.Place(place.getName(), place.getLat(), place.getLon()))
+						.toList());
 	}
 
 	private static BackupFile.Bill bill(BillEntity bill, List<BackupFile.File> files)
@@ -408,7 +414,7 @@ public class BackupService
 		}
 		return new BackupSummary(cars.size(), counter.bills, counter.recurringBills, counter.reminders,
 				counter.trips, counter.files, counter.trackers, counter.trackPoints, counter.modifications,
-				counter.technicalInspections);
+				counter.technicalInspections, counter.places);
 	}
 
 	private static final class Counter
@@ -422,6 +428,7 @@ public class BackupService
 		int trackPoints;
 		int modifications;
 		int technicalInspections;
+		int places;
 	}
 
 	private BackupFile parse(byte[] json)
@@ -545,6 +552,13 @@ public class BackupService
 		{
 			restoreTechnicalInspection(car, inspection, entries, counter);
 			counter.technicalInspections++;
+		}
+		for (BackupFile.Place place : list(backup.places()))
+		{
+			PlaceInput placeInput = new PlaceInput(place.lat(), place.lon(), place.name());
+			Utils.requireValid(placeInput.validate(true));
+			placeRepository.persist(new PlaceEntity(car, place.lat(), place.lon(), place.name().strip()));
+			counter.places++;
 		}
 		boolean open = false;
 		for (BackupFile.Trip trip : list(backup.trips()))

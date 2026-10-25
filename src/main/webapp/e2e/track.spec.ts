@@ -96,6 +96,40 @@ test.describe.serial('GPS track', () => {
     await expect(page.getByTestId('speed-legend')).toBeVisible();
   });
 
+  test('shows the places and names them', async () => {
+    const api = await aliceApi();
+    const named = await api.put(`/api/track/${carId}/places`, {
+      data: { lat: 50, lon: 10, name: 'Home' },
+    });
+    expect(named.status()).toBe(204);
+    await api.dispose();
+
+    await page.getByRole('switch', { name: 'Places' }).check();
+    // named, but not stopped at today
+    const home = page.getByRole('button', {
+      name: 'Home, Not visited in this period',
+    });
+    await expect(home).toBeVisible();
+
+    await home.click();
+    const dialog = page.getByRole('dialog', { name: 'Rename Home' });
+    await dialog.getByRole('textbox', { name: 'Name' }).fill('Garage');
+    await dialog.getByRole('button', { name: 'Save' }).click();
+    await expect(page.getByText('Place named')).toBeVisible();
+    const garage = page.getByRole('button', { name: /^Garage, / });
+    await expect(garage).toBeVisible();
+
+    await garage.click();
+    await page
+      .getByRole('dialog', { name: 'Rename Garage' })
+      .getByRole('button', { name: 'Remove the name' })
+      .click();
+    await expect(page.getByText('Name removed')).toBeVisible();
+    await expect(garage).toHaveCount(0);
+
+    await page.getByRole('switch', { name: 'Places' }).uncheck();
+  });
+
   test('shows no track on the day before', async () => {
     await page.getByRole('button', { name: 'Earlier' }).click();
 
