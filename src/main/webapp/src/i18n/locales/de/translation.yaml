@@ -789,8 +789,8 @@ reminder:
     due: "Gib ein Datum oder einen Kilometerstand an."
     intervalMonths: "Braucht ein Fälligkeitsdatum."
     intervalKm: "Braucht einen fälligen Kilometerstand."
+  huHint: "Die HU hat eine eigene Erinnerung: Sie folgt dem nächsten Termin auf dem <tab>Tab HU</tab>."
   presets:
-    inspection: "Hauptuntersuchung"
     service: "Inspektion"
     tires: "Reifenwechsel"
     vignette: "Vignette"

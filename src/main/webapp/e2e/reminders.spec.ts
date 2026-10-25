@@ -55,6 +55,11 @@ test.describe.serial('reminders', () => {
 
     await page.getByRole('button', { name: 'Add reminder' }).click();
     const dialog = page.getByRole('dialog');
+    // the HU has a reminder of its own, kept by the tab HU
+    await expect(
+      dialog.getByRole('button', { name: 'Inspection' }),
+    ).toHaveCount(0);
+    await expect(dialog.getByRole('link', { name: 'tab HU' })).toBeVisible();
     await dialog.getByRole('button', { name: 'Service' }).click();
     await expect(dialog.getByRole('textbox', { name: /^Title/ })).toHaveValue(
       'Service',

@@ -32,6 +32,11 @@ public class TechnicalInspectionService
 {
 	/** the title of the reminder, the same in all languages */
 	static final String REMINDER_TITLE = "HU";
+	/**
+	 * lower case titles of a reminder of the HU the owner added before, e.g. from
+	 * the former preset in German and English
+	 */
+	static final List<String> OWN_TITLES = List.of("hu", "hauptuntersuchung", "inspection");
 
 	private final TechnicalInspectionRepository inspectionRepository;
 	private final CarRepository carRepository;
@@ -121,7 +126,9 @@ public class TechnicalInspectionService
 
 	/**
 	 * Moves the reminder of the HU to the next due month of the latest inspection,
-	 * it is due at the end of the month. One deleted by the owner comes back.
+	 * it is due at the end of the month. Without one, the oldest reminder the owner
+	 * added for the HU is taken over, so there aren't two; otherwise it is created.
+	 * One deleted by the owner comes back.
 	 */
 	public void followReminder(CarEntity car)
 	{
@@ -135,6 +142,18 @@ public class TechnicalInspectionService
 		Optional<ReminderEntity> reminder = reminderRepository
 				.find("car = ?1 and kind = ?2", car, ReminderKind.TECHNICAL_INSPECTION)
 				.firstResultOptional();
+		if (reminder.isEmpty())
+		{
+			reminder = reminderRepository
+					.find("car = ?1 and kind is null and lower(title) in ?2 order by id", car, OWN_TITLES)
+					.firstResultOptional();
+			// the HU moves it from now on, not its interval
+			reminder.ifPresent(own -> {
+				own.setKind(ReminderKind.TECHNICAL_INSPECTION);
+				own.setIntervalMonths(null);
+				own.setIntervalKm(null);
+			});
+		}
 		if (reminder.isPresent())
 		{
 			reminder.get().setDueDate(due);
