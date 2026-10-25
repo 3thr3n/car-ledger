@@ -379,3 +379,86 @@ tests:
               secretKeyRef:
                 name: webhook
                 key: webhook-secret
+
+  - it: stores the attachments in PostgreSQL by default
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: CARLEDGER_ATTACHMENTS_STORAGE
+            value: DB
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: CARLEDGER_ATTACHMENTS_MOVE
+            value: "false"
+      - notContains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: CARLEDGER_ATTACHMENTS_S3_BUCKET
+          any: true
+
+  - it: stores the attachments in S3 with the access key of the secret
+    set:
+      carLedger.attachments.storage: S3
+      carLedger.attachments.moveExisting: true
+      carLedger.attachments.s3.bucket: car-ledger
+      carLedger.attachments.s3.endpoint: https://s3.example.com
+      carLedger.attachments.s3.existingSecret: s3
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: CARLEDGER_ATTACHMENTS_STORAGE
+            value: S3
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: CARLEDGER_ATTACHMENTS_MOVE
+            value: "true"
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: CARLEDGER_ATTACHMENTS_S3_BUCKET
+            value: car-ledger
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: QUARKUS_S3_ENDPOINT_OVERRIDE
+            value: https://s3.example.com
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: QUARKUS_S3_PATH_STYLE_ACCESS
+            value: "true"
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: QUARKUS_S3_AWS_CREDENTIALS_STATIC_PROVIDER_SECRET_ACCESS_KEY
+            valueFrom:
+              secretKeyRef:
+                name: s3
+                key: secretAccessKey
+
+  - it: uses the default credentials of AWS without a secret
+    set:
+      carLedger.attachments.storage: S3
+      carLedger.attachments.s3.bucket: car-ledger
+    asserts:
+      - notContains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: QUARKUS_S3_AWS_CREDENTIALS_TYPE
+          any: true
+      - notContains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: QUARKUS_S3_ENDPOINT_OVERRIDE
+          any: true
+
+  - it: needs a bucket for the storage S3
+    set:
+      carLedger.attachments.storage: S3
+    asserts:
+      - failedTemplate:
+          errorPattern: carLedger.attachments.s3.bucket is needed with the storage S3

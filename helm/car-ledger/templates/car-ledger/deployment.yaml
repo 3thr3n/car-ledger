@@ -84,6 +84,43 @@ spec:
               value: {{ .Values.carLedger.attachments.maxPerBill | quote }}
             - name: QUARKUS_HTTP_LIMITS_MAX_BODY_SIZE
               value: {{ .Values.carLedger.attachments.maxRequestSize | quote }}
+            {{- with .Values.carLedger.attachments }}
+            - name: CARLEDGER_ATTACHMENTS_STORAGE
+              value: {{ .storage | quote }}
+            - name: CARLEDGER_ATTACHMENTS_MOVE
+              value: {{ .moveExisting | quote }}
+            {{- if and (eq (upper .storage) "S3") (not .s3.bucket) }}
+            {{- fail "carLedger.attachments.s3.bucket is needed with the storage S3" }}
+            {{- end }}
+            {{- with .s3 }}
+            {{- if .bucket }}
+            - name: CARLEDGER_ATTACHMENTS_S3_BUCKET
+              value: {{ .bucket | quote }}
+            - name: QUARKUS_S3_AWS_REGION
+              value: {{ .region | quote }}
+            - name: QUARKUS_S3_PATH_STYLE_ACCESS
+              value: {{ .pathStyle | quote }}
+            {{- if .endpoint }}
+            - name: QUARKUS_S3_ENDPOINT_OVERRIDE
+              value: {{ .endpoint | quote }}
+            {{- end }}
+            {{- if .existingSecret }}
+            - name: QUARKUS_S3_AWS_CREDENTIALS_TYPE
+              value: static
+            - name: QUARKUS_S3_AWS_CREDENTIALS_STATIC_PROVIDER_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .existingSecret }}
+                  key: {{ .accessKeyIdKey }}
+            - name: QUARKUS_S3_AWS_CREDENTIALS_STATIC_PROVIDER_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .existingSecret }}
+                  key: {{ .secretAccessKeyKey }}
+            {{- end }}
+            {{- end }}
+            {{- end }}
+            {{- end }}
             - name: CARLEDGER_BACKUP_TRANSACTION_TIMEOUT
               value: {{ .Values.carLedger.backup.transactionTimeout | quote }}
             {{- with .Values.carLedger.push }}

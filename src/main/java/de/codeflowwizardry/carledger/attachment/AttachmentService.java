@@ -38,14 +38,14 @@ public class AttachmentService
 	private final CarRepository carRepository;
 	private final ModificationRepository modificationRepository;
 	private final TechnicalInspectionRepository technicalInspectionRepository;
-	private final AttachmentStorage storage;
+	private final AttachmentStorages storages;
 	private final long maxSize;
 	private final int maxPerBill;
 
 	@Inject
 	public AttachmentService(AttachmentRepository attachmentRepository, BillRepository billRepository,
 			CarRepository carRepository, ModificationRepository modificationRepository,
-			TechnicalInspectionRepository technicalInspectionRepository, AttachmentStorage storage,
+			TechnicalInspectionRepository technicalInspectionRepository, AttachmentStorages storages,
 			@ConfigProperty(name = "carledger.attachments.max-size", defaultValue = "10M") MemorySize maxSize,
 			@ConfigProperty(name = "carledger.attachments.max-per-bill", defaultValue = "10") int maxPerBill)
 	{
@@ -54,7 +54,7 @@ public class AttachmentService
 		this.carRepository = carRepository;
 		this.modificationRepository = modificationRepository;
 		this.technicalInspectionRepository = technicalInspectionRepository;
-		this.storage = storage;
+		this.storages = storages;
 		this.maxSize = maxSize.asLongValue();
 		this.maxPerBill = maxPerBill;
 	}
@@ -305,6 +305,7 @@ public class AttachmentService
 		attachment.setFileName(cleanFileName(fileName));
 		attachment.setContentType(type.contentType());
 		attachment.setSize(content.length);
+		AttachmentStorage storage = storages.configured();
 		attachment.setStorage(storage.name());
 		attachmentRepository.persistAndFlush(attachment);
 
@@ -361,9 +362,12 @@ public class AttachmentService
 		return maxPerBill;
 	}
 
+	/**
+	 * The content of a storage outside the database is queued for deletion by
+	 * the database (see {@link AttachmentCleanup})
+	 */
 	private void remove(AttachmentEntity attachment)
 	{
-		storageOf(attachment).delete(attachment);
 		attachmentRepository.delete(attachment);
 	}
 
@@ -455,11 +459,7 @@ public class AttachmentService
 
 	private AttachmentStorage storageOf(AttachmentEntity attachment)
 	{
-		if (!storage.name().equals(attachment.getStorage()))
-		{
-			throw new IllegalStateException("Storage " + attachment.getStorage() + " is not configured");
-		}
-		return storage;
+		return storages.get(attachment.getStorage());
 	}
 
 	public record Content(AttachmentEntity attachment, byte[] data)

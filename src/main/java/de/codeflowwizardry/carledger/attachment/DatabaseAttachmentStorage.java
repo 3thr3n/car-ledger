@@ -48,8 +48,18 @@ public class DatabaseAttachmentStorage implements AttachmentStorage
 	}
 
 	@Override
-	public void delete(AttachmentEntity attachment)
+	public void discard(AttachmentEntity attachment)
 	{
-		// removed by the foreign key with the attachment
+		AttachmentContentEntity content = entityManager.find(AttachmentContentEntity.class, attachment.getId());
+		if (content != null)
+		{
+			entityManager.remove(content);
+		}
+	}
+
+	@Override
+	public void delete(String key)
+	{
+		// removed by the foreign key with the attachment, nothing is queued
 	}
 }

@@ -64,6 +64,12 @@ export type AdminCarRequestPage = {
     data?: Array<AdminCarRequest>;
 };
 
+export type AdminFileStorage = {
+    storage: string;
+    files: number;
+    bytes: number;
+};
+
 export type AdminStats = {
     accounts?: number;
     activeAccounts?: number;
@@ -71,6 +77,8 @@ export type AdminStats = {
     bills?: number;
     recurringBills?: number;
     openRequests?: number;
+    fileStorage: string;
+    files: Array<AdminFileStorage>;
 };
 
 export enum ApprovalType {

@@ -169,6 +169,23 @@
           }
         }
       },
+      "AdminFileStorage" : {
+        "type" : "object",
+        "required" : [ "storage", "files", "bytes" ],
+        "properties" : {
+          "storage" : {
+            "type" : "string"
+          },
+          "files" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "bytes" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      },
       "AdminStats" : {
         "type" : "object",
         "properties" : {
@@ -195,8 +212,18 @@
           "openRequests" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "fileStorage" : {
+            "type" : "string"
+          },
+          "files" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/AdminFileStorage"
+            }
           }
-        }
+        },
+        "required" : [ "fileStorage", "files" ]
       },
       "ApprovalType" : {
         "type" : "string",
