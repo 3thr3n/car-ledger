@@ -236,7 +236,7 @@ export default function TrackPage({ carId }: { carId: number }) {
           <Stack
             direction={{ xs: 'column', md: 'row' }}
             spacing={{ xs: 1, md: 3 }}
-            sx={{ alignItems: { md: 'center' } }}
+            sx={{ flexGrow: 1, alignItems: { md: 'center' } }}
           >
             {mode === 'speed' ? (
               <SpeedLegend />
