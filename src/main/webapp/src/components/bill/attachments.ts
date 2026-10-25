@@ -9,6 +9,10 @@ export const ACCEPT = 'image/*,application/pdf';
 export const contentUrl = (carId: number, id: number) =>
   `${baseUrl}/api/attachment/${carId}/${id}/content`;
 
+/** a small JPEG of a photo for the tiles, the file itself if it has none */
+export const previewUrl = (carId: number, id: number) =>
+  `${baseUrl}/api/attachment/${carId}/${id}/preview`;
+
 /**
  * Shrinks photos and attaches the file to the bill
  *

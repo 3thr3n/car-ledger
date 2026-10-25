@@ -19,7 +19,12 @@ import { errorMessage } from '@/utils/BackendError';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import useObjectUrl from '@/hooks/useObjectUrl';
 import AttachmentTile, { TILE } from './AttachmentTile';
-import { ACCEPT, contentUrl, uploadAttachment } from './attachments';
+import {
+  ACCEPT,
+  contentUrl,
+  uploadAttachment,
+  previewUrl,
+} from './attachments';
 
 export interface BillAttachmentsProps {
   carId: number;
@@ -96,6 +101,7 @@ export default function BillAttachments({
             name={attachment.fileName ?? ''}
             pdf={attachment.contentType === 'application/pdf'}
             url={contentUrl(carId, attachment.id!)}
+            previewUrl={previewUrl(carId, attachment.id!)}
             onRemove={() => setToDelete(attachment.id)}
           />
         ))}

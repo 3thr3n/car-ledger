@@ -14,6 +14,7 @@ import de.codeflowwizardry.carledger.data.BillEntity;
 import de.codeflowwizardry.carledger.data.CarEntity;
 import de.codeflowwizardry.carledger.data.DocumentKind;
 import de.codeflowwizardry.carledger.data.ModificationEntity;
+import de.codeflowwizardry.carledger.data.Preview;
 import de.codeflowwizardry.carledger.data.TechnicalInspectionEntity;
 import de.codeflowwizardry.carledger.data.repository.AttachmentRepository;
 import de.codeflowwizardry.carledger.data.repository.BillRepository;
@@ -32,6 +33,7 @@ import jakarta.ws.rs.NotFoundException;
 public class AttachmentService
 {
 	static final int MAX_FILE_NAME = 200;
+	private static final String PREVIEW_TYPE = "image/jpeg";
 
 	private final AttachmentRepository attachmentRepository;
 	private final BillRepository billRepository;
@@ -310,7 +312,27 @@ public class AttachmentService
 		attachmentRepository.persistAndFlush(attachment);
 
 		storage.store(attachment, content);
+		createPreview(attachment, storage, content);
 		return attachment;
+	}
+
+	/**
+	 * Stores the preview of a photo next to it, PDFs and images that cannot be
+	 * decoded get none
+	 */
+	private static void createPreview(AttachmentEntity attachment, AttachmentStorage storage, byte[] content)
+	{
+		Optional<byte[]> preview = attachment.getContentType().startsWith("image/")
+				? PreviewImage.of(content)
+				: Optional.empty();
+		if (preview.isPresent())
+		{
+			storage.storePreview(attachment, preview.get());
+			attachment.setPreview(Preview.JPEG);
+		} else
+		{
+			attachment.setPreview(Preview.NONE);
+		}
 	}
 
 	/**
@@ -380,6 +402,43 @@ public class AttachmentService
 	{
 		AttachmentEntity attachment = find(carId, id, userId, Action.READ);
 		return new Content(attachment, storageOf(attachment).load(attachment));
+	}
+
+	/**
+	 * The preview for the lists, generated for the files of older versions on
+	 * the first request
+	 *
+	 * @return the file itself, if it has no preview (PDFs, images that cannot
+	 *         be decoded)
+	 * @throws NotFoundException
+	 *             if the attachment does not belong to the car of the user
+	 */
+	@Transactional
+	public Content loadPreview(long carId, long id, String userId)
+	{
+		AttachmentEntity attachment = find(carId, id, userId, Action.READ);
+		AttachmentStorage storage = storageOf(attachment);
+		if (attachment.getPreview() == Preview.JPEG)
+		{
+			try
+			{
+				return new Content(attachment, storage.loadPreview(attachment), PREVIEW_TYPE);
+			}
+			catch (NotFoundException e)
+			{
+				// lost, e.g. objects of the bucket restored without it: generated again
+			}
+		}
+		byte[] content = storage.load(attachment);
+		if (attachment.getPreview() != Preview.NONE)
+		{
+			createPreview(attachment, storage, content);
+			if (attachment.getPreview() == Preview.JPEG)
+			{
+				return new Content(attachment, storage.loadPreview(attachment), PREVIEW_TYPE);
+			}
+		}
+		return new Content(attachment, content);
 	}
 
 	/**
@@ -462,7 +521,15 @@ public class AttachmentService
 		return storages.get(attachment.getStorage());
 	}
 
-	public record Content(AttachmentEntity attachment, byte[] data)
+	/**
+	 * @param contentType
+	 *            of the data, the one of the attachment or of its preview
+	 */
+	public record Content(AttachmentEntity attachment, byte[] data, String contentType)
 	{
+		public Content(AttachmentEntity attachment, byte[] data)
+		{
+			this(attachment, data, attachment.getContentType());
+		}
 	}
 }

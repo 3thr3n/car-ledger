@@ -6,6 +6,7 @@ package de.codeflowwizardry.carledger.rest.records;
 public abstract class AbstractBill
 {
 	private long attachments;
+	private Long photo;
 
 	public abstract Long getId();
 
@@ -20,5 +21,19 @@ public abstract class AbstractBill
 	public void setAttachments(long attachments)
 	{
 		this.attachments = attachments;
+	}
+
+	/**
+	 * @return the first attached photo, shown small in the lists, only set
+	 *         there; <code>null</code> without photos (e.g. only PDFs)
+	 */
+	public Long getPhoto()
+	{
+		return photo;
+	}
+
+	public void setPhoto(Long photo)
+	{
+		this.photo = photo;
 	}
 }

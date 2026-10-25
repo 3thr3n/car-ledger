@@ -62,6 +62,10 @@ test.describe.serial('attachments', () => {
     await expect(page).toHaveURL(/\/bill\/miscellaneous$/);
     const row = page.getByRole('row', { name: /Car wash/ });
     await expect(row.getByLabel('2 files attached')).toBeVisible();
+    // the photo small instead of the paperclip
+    await expect(
+      row.getByLabel('2 files attached').locator('img'),
+    ).toHaveJSProperty('naturalWidth', 1);
   });
 
   test('shows the files from the list without the form', async () => {
@@ -91,6 +95,9 @@ test.describe.serial('attachments', () => {
     const image = page.getByRole('link', { name: 'Open receipt.png' });
     await expect(image).toBeVisible();
     await expect(image.locator('img')).toHaveJSProperty('naturalWidth', 1);
+    // the tile shows the preview, the link opens the file
+    await expect(image.locator('img')).toHaveAttribute('src', /\/preview$/);
+    await expect(image).toHaveAttribute('href', /\/content$/);
     const href = await page
       .getByRole('link', { name: 'Open invoice.pdf' })
       .getAttribute('href');
@@ -143,8 +150,21 @@ test.describe.serial('attachments', () => {
 
     const photo = page.getByRole('link', { name: 'Open photo.jpg' });
     await expect(photo).toBeVisible();
-    await expect(photo.locator('img')).toHaveJSProperty('naturalWidth', 2000);
-    await expect(photo.locator('img')).toHaveJSProperty('naturalHeight', 1500);
+    // the tile shows the preview of the server
+    await expect(photo.locator('img')).toHaveJSProperty('naturalWidth', 256);
+    await expect(photo.locator('img')).toHaveJSProperty('naturalHeight', 192);
+
+    // the file itself
+    const size = await page.evaluate(
+      async (url) => {
+        const image = new Image();
+        image.src = url;
+        await image.decode();
+        return [image.naturalWidth, image.naturalHeight];
+      },
+      (await photo.getAttribute('href'))!,
+    );
+    expect(size).toEqual([2000, 1500]);
   });
 
   test('removes the files with the entry', async () => {

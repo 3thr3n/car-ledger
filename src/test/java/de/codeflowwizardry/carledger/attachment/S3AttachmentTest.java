@@ -26,6 +26,7 @@ import de.codeflowwizardry.carledger.data.AccountEntity;
 import de.codeflowwizardry.carledger.data.AttachmentContentEntity;
 import de.codeflowwizardry.carledger.data.AttachmentEntity;
 import de.codeflowwizardry.carledger.data.CarEntity;
+import de.codeflowwizardry.carledger.data.Preview;
 import de.codeflowwizardry.carledger.data.factory.MiscellaneousBillFactory;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.AttachmentRepository;
@@ -154,6 +155,56 @@ class S3AttachmentTest
 		// in batches
 		assertEquals(2, cleanup.removeQueued(1));
 		assertEquals(List.of(), objects());
+	}
+
+	@Test
+	void shouldKeepThePreviewNextToTheFile()
+	{
+		long id = upload(TestImages.png(800, 600));
+		String key = QuarkusTransaction.requiringNew().call(() -> attachmentRepository.findById(id).getStorageKey());
+		assertEquals(List.of(key, key + ".preview"), objects());
+
+		byte[] preview = given().get("/api/attachment/{carId}/{id}/preview", carId, id).then().statusCode(200)
+				.contentType("image/jpeg").extract().asByteArray();
+		assertEquals(256, TestImages.read(preview).getWidth());
+
+		s3.putObject(request -> request.bucket(S3Profile.BUCKET).key("attachments/orphan.preview"),
+				RequestBody.fromBytes(PDF));
+		assertEquals(1, cleanup.removeOrphans(Instant.now().plus(AttachmentCleanup.ORPHAN_AGE).plusSeconds(60)),
+				"only the preview without a file");
+		assertEquals(List.of(key, key + ".preview"), objects());
+
+		given().delete("/api/attachment/{carId}/{id}", carId, id).then().statusCode(204);
+		assertEquals(1, cleanup.removeQueued(100));
+		assertEquals(List.of(), objects());
+	}
+
+	@Test
+	void shouldGenerateThePreviewAgainAfterTheMove()
+	{
+		long id = QuarkusTransaction.requiringNew().call(() -> {
+			AttachmentEntity attachment = new AttachmentEntity();
+			attachment.setCar(entityManager.find(CarEntity.class, carId));
+			attachment.setFileName("old.png");
+			attachment.setContentType("image/png");
+			attachment.setSize(1);
+			attachment.setStorage(DatabaseAttachmentStorage.NAME);
+			attachment.setPreview(Preview.JPEG);
+			attachmentRepository.persistAndFlush(attachment);
+			AttachmentContentEntity content = new AttachmentContentEntity(attachment.getId(),
+					TestImages.png(600, 600));
+			content.setPreview(PDF);
+			entityManager.persist(content);
+			return attachment.getId();
+		});
+
+		assertEquals(1, mover.move().moved());
+		assertEquals(1, objects().size(), "no preview yet");
+
+		byte[] preview = given().get("/api/attachment/{carId}/{id}/preview", carId, id).then().statusCode(200)
+				.contentType("image/jpeg").extract().asByteArray();
+		assertEquals(256, TestImages.read(preview).getWidth());
+		assertEquals(2, objects().size());
 	}
 
 	@Test

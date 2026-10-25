@@ -21,15 +21,28 @@ public interface AttachmentStorage
 	byte[] load(AttachmentEntity attachment);
 
 	/**
-	 * Removes the content of an attachment that moves to another storage, in its
-	 * transaction. Storages outside the database are cleaned up by
+	 * Stores the preview next to the stored content of the attachment, replaces
+	 * an existing one
+	 */
+	void storePreview(AttachmentEntity attachment, byte[] preview);
+
+	/**
+	 * @throws jakarta.ws.rs.NotFoundException
+	 *             if no preview is stored
+	 */
+	byte[] loadPreview(AttachmentEntity attachment);
+
+	/**
+	 * Removes the content and the preview of an attachment that moves to another
+	 * storage, in its transaction. Storages outside the database are cleaned up by
 	 * {@link #delete(String)} after the commit instead.
 	 */
 	void discard(AttachmentEntity attachment);
 
 	/**
-	 * Removes the content of a deleted or moved attachment, queued with its key
-	 * in <code>attachment_removal</code>. Storages in the database are cleaned up
+	 * Removes the content and the preview of a deleted or moved attachment,
+	 * queued with its key in <code>attachment_removal</code>. Storages in the
+	 * database are cleaned up
 	 * with the attachment by the database itself and have no keys.
 	 */
 	void delete(String key);

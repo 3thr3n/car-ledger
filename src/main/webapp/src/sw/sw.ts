@@ -60,17 +60,21 @@ registerRoute(
 // same as DOCUMENTS_CACHE of offline/documents.ts, the worker has its own build
 const DOCUMENTS_CACHE = 'modification-documents';
 
+const DOCUMENT = /^\/api\/attachment\/\d+\/\d+\/(content|preview)$/;
+
 // a kept document opens from the network first, without a connection from the
-// cache, e.g. in an underground car park
+// cache, e.g. in an underground car park; its preview in the tiles is the kept
+// file itself
 registerRoute(
-  ({ url }) => /^\/api\/attachment\/\d+\/\d+\/content$/.test(url.pathname),
+  ({ url }) => DOCUMENT.test(url.pathname),
   async ({ request }) => {
     try {
       return await fetch(request);
     } catch (error) {
-      const kept = await caches.match(request.url, {
-        cacheName: DOCUMENTS_CACHE,
-      });
+      const kept = await caches.match(
+        request.url.replace(/\/preview$/, '/content'),
+        { cacheName: DOCUMENTS_CACHE },
+      );
       if (kept) return kept;
       throw error;
     }

@@ -130,6 +130,7 @@ export type BackupSummary = {
 
 export type Bill = {
     attachments?: number;
+    photo?: number;
     id?: number;
     date?: LocalDate;
     year?: number;
@@ -280,6 +281,7 @@ export type CarRequestInput = {
 
 export type ChargingBill = {
     attachments?: number;
+    photo?: number;
     id?: number;
     date?: LocalDate;
     year?: number;
@@ -388,6 +390,7 @@ export type FrequencyLine = {
 
 export type FuelBill = {
     attachments?: number;
+    photo?: number;
     id?: number;
     date?: LocalDate;
     year?: number;
@@ -447,6 +450,7 @@ export type LocalDate = string;
 
 export type MaintenanceBill = {
     attachments?: number;
+    photo?: number;
     id?: number;
     date?: LocalDate;
     year?: number;
@@ -480,6 +484,7 @@ export type MaxCarsInput = {
 
 export type MiscellaneousBill = {
     attachments?: number;
+    photo?: number;
     id?: number;
     date?: LocalDate;
     year?: number;
@@ -1302,6 +1307,30 @@ export type GetAttachmentContentErrors = {
 export type GetAttachmentContentResponses = {
     /**
      * File found.
+     */
+    200: unknown;
+};
+
+export type GetAttachmentPreviewData = {
+    body?: never;
+    path: {
+        carId: number;
+        id: number;
+    };
+    query?: never;
+    url: '/api/attachment/{carId}/{id}/preview';
+};
+
+export type GetAttachmentPreviewErrors = {
+    /**
+     * Attachment not found.
+     */
+    404: unknown;
+};
+
+export type GetAttachmentPreviewResponses = {
+    /**
+     * Preview found.
      */
     200: unknown;
 };

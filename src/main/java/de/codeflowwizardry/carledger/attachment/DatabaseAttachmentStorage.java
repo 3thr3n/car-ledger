@@ -39,12 +39,34 @@ public class DatabaseAttachmentStorage implements AttachmentStorage
 	@Override
 	public byte[] load(AttachmentEntity attachment)
 	{
+		return content(attachment).getData();
+	}
+
+	@Override
+	public void storePreview(AttachmentEntity attachment, byte[] preview)
+	{
+		content(attachment).setPreview(preview);
+	}
+
+	@Override
+	public byte[] loadPreview(AttachmentEntity attachment)
+	{
+		byte[] preview = content(attachment).getPreview();
+		if (preview == null)
+		{
+			throw new NotFoundException("Preview of the attachment not found");
+		}
+		return preview;
+	}
+
+	private AttachmentContentEntity content(AttachmentEntity attachment)
+	{
 		AttachmentContentEntity content = entityManager.find(AttachmentContentEntity.class, attachment.getId());
 		if (content == null)
 		{
 			throw new NotFoundException("Content of the attachment not found");
 		}
-		return content.getData();
+		return content;
 	}
 
 	@Override

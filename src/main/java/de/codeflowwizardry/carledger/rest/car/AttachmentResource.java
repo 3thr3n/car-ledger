@@ -171,6 +171,19 @@ public class AttachmentResource extends AbstractResource
 		return inline(attachmentService.load(carId, id, context.getName()), "private, max-age=86400");
 	}
 
+	@GET
+	@Path("{id}/preview")
+	@Produces({
+			"image/jpeg", "image/png", "image/webp", "application/pdf"
+	})
+	@Operation(operationId = "getAttachmentPreview", description = "A small JPEG of a photo for the lists, the file itself if it has none (PDFs, images the server cannot decode)")
+	@APIResponse(responseCode = "200", description = "Preview found.")
+	@APIResponse(responseCode = "404", description = "Attachment not found.")
+	public Response getAttachmentPreview(@PathParam("carId") long carId, @PathParam("id") long id)
+	{
+		return inline(attachmentService.loadPreview(carId, id, context.getName()), "private, max-age=86400");
+	}
+
 	/**
 	 * The file as response the browser shows inline, but never runs as a page of
 	 * this origin
@@ -180,7 +193,7 @@ public class AttachmentResource extends AbstractResource
 		AttachmentEntity attachment = content.attachment();
 		String name = URLEncoder.encode(attachment.getFileName(), StandardCharsets.UTF_8).replace("+", "%20");
 
-		return Response.ok(content.data(), attachment.getContentType())
+		return Response.ok(content.data(), content.contentType())
 				.header("Content-Disposition", "inline; filename*=UTF-8''" + name)
 				.header("Content-Length", content.data().length)
 				.header("Cache-Control", cacheControl)

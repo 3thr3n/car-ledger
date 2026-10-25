@@ -16,6 +16,9 @@ public class AttachmentContentEntity
 	@Column(name = "ac_data", nullable = false)
 	private byte[] data;
 
+	@Column(name = "ac_preview")
+	private byte[] preview;
+
 	public AttachmentContentEntity()
 	{
 	}
@@ -34,5 +37,15 @@ public class AttachmentContentEntity
 	public byte[] getData()
 	{
 		return data;
+	}
+
+	public byte[] getPreview()
+	{
+		return preview;
+	}
+
+	public void setPreview(byte[] preview)
+	{
+		this.preview = preview;
 	}
 }

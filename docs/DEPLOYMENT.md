@@ -303,8 +303,8 @@ until it can.
   the moved and failed files, *Administration* shows the files per storage. Back to PostgreSQL works the same way
   (`storage: DB`, the bucket still set until all files are moved).
 - **Deleting**: the database queues the objects of deleted files (also of deleted entries, cars and accounts) and the
-  app deletes them within a minute. Every night it deletes objects below `attachments/` older than a day that no file
-  knows, e.g. of an upload that failed.
+  app deletes them within a minute, with their previews. Every night it deletes objects below `attachments/` older
+  than a day that no file knows, e.g. of an upload that failed.
 - **Backups**: the backup of the users contains the files of both storages. A dump of PostgreSQL contains only the
   files stored there: back up the bucket as well (e.g. with versioning or a replication of the storage).
 
@@ -405,6 +405,7 @@ Use the image of a release (a git tag of `main`) or a dev build of `develop`. On
 | 1.24.0    | Several bills per modification, the existing links move into a table (0.8.0)                                         |
 | 1.25.0    | Table for the HUs, their reports as attachments, the reminders the app keeps (0.8.0)                                 |
 | 1.26.0    | Queue of the files to delete outside the database, filled by a trigger (0.9.0)                                       |
+| 1.27.0    | Previews of the photos next to the files, generated for the existing ones on their first request (0.9.0)             |
 
 An older image refuses to start on the migrated database, as Flyway finds migrations it does not know. To go back,
 restore the backup. Without the backup, the older image runs on the migrated database (the new columns have defaults)
@@ -465,6 +466,10 @@ kubectl set env deployment/car-ledger QUARKUS_FLYWAY_IGNORE_FUTURE_MIGRATIONS=tr
   users flash the firmware and the settings of a tracker from Chrome or Edge over USB; the firmware is not part of
   CarLedger. `carLedger.imagePullSecrets` pulls the images of the pod from a private registry, see
   [GPS_TRACKER.md](GPS_TRACKER.md#flashing).
+- **Previews** (0.9.0): the lists and the tiles of the files show a small JPEG of each photo (256 px), stored next to
+  the file in the same storage (in S3 as `<key>.preview`). New photos get it on the upload, the existing ones on their
+  first request, so the first visit of a list with many old photos takes a moment. PDFs keep their icon. Not part of
+  the backup of the users, a restore generates them again (migration 1.27.0).
 - **Attachments in S3** (0.9.0, optional): `carLedger.attachments.storage=S3` stores new files in a bucket, the
   existing ones stay in PostgreSQL unless `carLedger.attachments.moveExisting` moves them, see
   [Attachments in S3](#attachments-in-s3). Nothing changes without it (migration 1.26.0).
