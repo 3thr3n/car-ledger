@@ -46,7 +46,7 @@ test('downloads a backup and restores it into the empty account', async ({
     buffer: zip,
   });
   await expect(
-    page.getByText('Backup restored: 1 car(s), 1 entries, 0 files'),
+    page.getByText('Backup restored: 1 car and 1 entry'),
   ).toBeVisible();
 
   await page.goto('/car');
