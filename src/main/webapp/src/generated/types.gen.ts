@@ -628,6 +628,8 @@ export type RecurringBill = {
     amount?: number;
     total?: number;
     finished?: boolean;
+    attachments?: number;
+    photo?: number;
 };
 
 export type RecurringBillEndInput = {
@@ -1196,6 +1198,70 @@ export type AddModificationDocumentResponses = {
 };
 
 export type AddModificationDocumentResponse = AddModificationDocumentResponses[keyof AddModificationDocumentResponses];
+
+export type GetRecurringBillFilesData = {
+    body?: never;
+    path: {
+        carId: number;
+        recurringBillId: number;
+    };
+    query?: never;
+    url: '/api/attachment/{carId}/recurring/{recurringBillId}';
+};
+
+export type GetRecurringBillFilesErrors = {
+    /**
+     * Recurring bill not found.
+     */
+    404: unknown;
+};
+
+export type GetRecurringBillFilesResponses = {
+    /**
+     * Files found.
+     */
+    200: Array<Attachment>;
+};
+
+export type GetRecurringBillFilesResponse = GetRecurringBillFilesResponses[keyof GetRecurringBillFilesResponses];
+
+export type AddRecurringBillFileData = {
+    body: {
+        file?: Blob | File;
+    };
+    path: {
+        carId: number;
+        recurringBillId: number;
+    };
+    query?: never;
+    url: '/api/attachment/{carId}/recurring/{recurringBillId}';
+};
+
+export type AddRecurringBillFileErrors = {
+    /**
+     * File empty, too large, of another type or too many files
+     */
+    400: Array<unknown>;
+    /**
+     * Recurring bill not found.
+     */
+    404: unknown;
+    /**
+     * Request larger than allowed by the server.
+     */
+    413: unknown;
+};
+
+export type AddRecurringBillFileError = AddRecurringBillFileErrors[keyof AddRecurringBillFileErrors];
+
+export type AddRecurringBillFileResponses = {
+    /**
+     * File attached.
+     */
+    201: Attachment;
+};
+
+export type AddRecurringBillFileResponse = AddRecurringBillFileResponses[keyof AddRecurringBillFileResponses];
 
 export type GetTechnicalInspectionFilesData = {
     body?: never;

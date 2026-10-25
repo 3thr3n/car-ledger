@@ -15,6 +15,7 @@ import de.codeflowwizardry.carledger.data.CarEntity;
 import de.codeflowwizardry.carledger.data.DocumentKind;
 import de.codeflowwizardry.carledger.data.ModificationEntity;
 import de.codeflowwizardry.carledger.data.Preview;
+import de.codeflowwizardry.carledger.data.RecurringBillEntity;
 import de.codeflowwizardry.carledger.data.TechnicalInspectionEntity;
 import de.codeflowwizardry.carledger.data.repository.AttachmentRepository;
 import de.codeflowwizardry.carledger.data.repository.BillRepository;
@@ -22,6 +23,7 @@ import de.codeflowwizardry.carledger.data.repository.CarAccess;
 import de.codeflowwizardry.carledger.data.repository.CarAccess.Action;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import de.codeflowwizardry.carledger.data.repository.ModificationRepository;
+import de.codeflowwizardry.carledger.data.repository.RecurringBillRepository;
 import de.codeflowwizardry.carledger.data.repository.TechnicalInspectionRepository;
 import io.quarkus.runtime.configuration.MemorySize;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -40,6 +42,7 @@ public class AttachmentService
 	private final CarRepository carRepository;
 	private final ModificationRepository modificationRepository;
 	private final TechnicalInspectionRepository technicalInspectionRepository;
+	private final RecurringBillRepository recurringBillRepository;
 	private final AttachmentStorages storages;
 	private final long maxSize;
 	private final int maxPerBill;
@@ -47,7 +50,8 @@ public class AttachmentService
 	@Inject
 	public AttachmentService(AttachmentRepository attachmentRepository, BillRepository billRepository,
 			CarRepository carRepository, ModificationRepository modificationRepository,
-			TechnicalInspectionRepository technicalInspectionRepository, AttachmentStorages storages,
+			TechnicalInspectionRepository technicalInspectionRepository,
+			RecurringBillRepository recurringBillRepository, AttachmentStorages storages,
 			@ConfigProperty(name = "carledger.attachments.max-size", defaultValue = "10M") MemorySize maxSize,
 			@ConfigProperty(name = "carledger.attachments.max-per-bill", defaultValue = "10") int maxPerBill)
 	{
@@ -56,6 +60,7 @@ public class AttachmentService
 		this.carRepository = carRepository;
 		this.modificationRepository = modificationRepository;
 		this.technicalInspectionRepository = technicalInspectionRepository;
+		this.recurringBillRepository = recurringBillRepository;
 		this.storages = storages;
 		this.maxSize = maxSize.asLongValue();
 		this.maxPerBill = maxPerBill;
@@ -94,6 +99,72 @@ public class AttachmentService
 		FileType type = requireValid(content, false, errors);
 
 		return save(of(bill), fileName, type, content);
+	}
+
+	/**
+	 * @throws NotFoundException
+	 *             if the recurring cost does not belong to the car of the user
+	 */
+	@Transactional
+	public List<AttachmentEntity> listForRecurringBill(long carId, long recurringBillId, String userId)
+	{
+		findRecurringBill(carId, recurringBillId, userId, Action.READ);
+		return attachmentRepository.listForRecurringBill(carId, recurringBillId, userId);
+	}
+
+	/**
+	 * Checks size, type and the amount per recurring cost (the same as per
+	 * bill), then saves the file, e.g. the contract
+	 *
+	 * @throws NotFoundException
+	 *             if the recurring cost does not belong to the car of the user
+	 * @throws jakarta.ws.rs.BadRequestException
+	 *             with the reasons, if the file cannot be attached
+	 */
+	@Transactional
+	public AttachmentEntity addToRecurringBill(long carId, long recurringBillId, String userId, String fileName,
+			byte[] content)
+	{
+		RecurringBillEntity recurringBill = findRecurringBill(carId, recurringBillId, userId, Action.WRITE);
+		return addToRecurringBill(recurringBill, fileName, content,
+				attachmentRepository.countForRecurringBill(recurringBillId));
+	}
+
+	/**
+	 * Saves a file of a recurring cost of a restored backup, checked like an
+	 * upload
+	 *
+	 * @param files
+	 *            the recurring cost has already
+	 */
+	public AttachmentEntity restore(RecurringBillEntity recurringBill, String fileName, byte[] content, long files)
+	{
+		return addToRecurringBill(recurringBill, fileName, content, files);
+	}
+
+	private AttachmentEntity addToRecurringBill(RecurringBillEntity recurringBill, String fileName, byte[] content,
+			long files)
+	{
+		List<String> errors = new ArrayList<>();
+		if (files >= maxPerBill)
+		{
+			errors.add("A recurring cost can have at most " + maxPerBill + " files!");
+		}
+		FileType type = requireValid(content, false, errors);
+
+		AttachmentEntity attachment = of(recurringBill.getCar());
+		attachment.setRecurringBill(recurringBill);
+		return save(attachment, fileName, type, content);
+	}
+
+	private RecurringBillEntity findRecurringBill(long carId, long recurringBillId, String userId, Action action)
+	{
+		RecurringBillEntity recurringBill = recurringBillRepository.getById(carId, userId, recurringBillId, action);
+		if (recurringBill == null)
+		{
+			throw new NotFoundException("Recurring bill not found");
+		}
+		return recurringBill;
 	}
 
 	/**

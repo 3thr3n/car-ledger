@@ -164,12 +164,12 @@ with the role `user`, the roles are missing in the tokens of the client.
   by VMs with the default QEMU CPU model). Set `infinispan.images.server=quay.io/infinispan/server:16.2` if your nodes
   support it.
 - **External PostgreSQL**: `carledgerpostgres.enabled=false` and `carLedger.postgres.*` (or `carLedger.postgres.jdbc`).
-- **Attachments**: receipts, the documents of the modifications and the reports of the HUs are stored in PostgreSQL
-  or in an S3 compatible storage (see [Attachments in S3](#attachments-in-s3)), up to `carLedger.attachments.maxSize`
-  (10 MB) per file and `carLedger.attachments.maxPerBill` (10) per entry, modification or HU. Uploads need requests up
-  to `carLedger.attachments.maxRequestSize` (12 MB): the nginx ingress gets the annotation
-  `nginx.ingress.kubernetes.io/proxy-body-size` automatically, other proxies (e.g. a Gateway or a reverse proxy in
-  front of the cluster) need the same limit, otherwise uploads fail with 413.
+- **Attachments**: receipts, the files of the recurring costs, the documents of the modifications and the reports of the
+  HUs are stored in PostgreSQL or in an S3 compatible storage (see [Attachments in S3](#attachments-in-s3)), up to
+  `carLedger.attachments.maxSize` (10 MB) per file and `carLedger.attachments.maxPerBill` (10) per entry, recurring
+  cost, modification or HU. Uploads need requests up to `carLedger.attachments.maxRequestSize` (12 MB): the nginx
+  ingress gets the annotation `nginx.ingress.kubernetes.io/proxy-body-size` automatically, other proxies (e.g. a
+  Gateway or a reverse proxy in front of the cluster) need the same limit, otherwise uploads fail with 413.
 - **Backups**: users download all of their data as ZIP in the settings and restore it into an account without cars.
   The restore is an upload as well and limited by `carLedger.attachments.maxRequestSize`: a backup with many receipts
   or with GPS tracks kept forever can be larger, raise the limit (and the one of the proxies) for the restore; the app
@@ -406,6 +406,7 @@ Use the image of a release (a git tag of `main`) or a dev build of `develop`. On
 | 1.25.0    | Table for the HUs, their reports as attachments, the reminders the app keeps (0.8.0)                                 |
 | 1.26.0    | Queue of the files to delete outside the database, filled by a trigger (0.9.0)                                       |
 | 1.27.0    | Previews of the photos next to the files, generated for the existing ones on their first request (0.9.0)             |
+| 1.28.0    | Files of the recurring costs, e.g. the contract (0.9.0)                                                              |
 
 An older image refuses to start on the migrated database, as Flyway finds migrations it does not know. To go back,
 restore the backup. Without the backup, the older image runs on the migrated database (the new columns have defaults)
@@ -466,6 +467,8 @@ kubectl set env deployment/car-ledger QUARKUS_FLYWAY_IGNORE_FUTURE_MIGRATIONS=tr
   users flash the firmware and the settings of a tracker from Chrome or Edge over USB; the firmware is not part of
   CarLedger. `carLedger.imagePullSecrets` pulls the images of the pod from a private registry, see
   [GPS_TRACKER.md](GPS_TRACKER.md#flashing).
+- **Files of the recurring costs** (0.9.0): a recurring cost keeps files like the contract of a leasing, with the
+  limits of the files of an entry and part of the backup (migration 1.28.0). Nothing to set up.
 - **Previews** (0.9.0): the lists and the tiles of the files show a small JPEG of each photo (256 px), stored next to
   the file in the same storage (in S3 as `<key>.preview`). New photos get it on the upload, the existing ones on their
   first request, so the first visit of a list with many old photos takes a moment. PDFs keep their icon. Not part of

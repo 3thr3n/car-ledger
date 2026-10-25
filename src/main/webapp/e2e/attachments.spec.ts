@@ -180,4 +180,38 @@ test.describe.serial('attachments', () => {
     );
     expect(attachments.status()).toBe(404);
   });
+
+  test('attaches the contract to a recurring cost', async () => {
+    const created = await api.put(`/api/bill/${carId}/recurring`, {
+      data: {
+        name: 'Leasing',
+        category: 'FINANCE',
+        billInterval: 'MONTHLY',
+        startDate: '2025-01-01',
+        amount: 299,
+      },
+    });
+    const { id } = (await created.json()) as { id: number };
+
+    await page.goto(`/car/${carId}/bill/${id}/edit?type=RECURRING`);
+    await input().setInputFiles({
+      name: 'contract.pdf',
+      mimeType: 'application/pdf',
+      buffer: PDF,
+    });
+    await expect(
+      page.getByRole('link', { name: 'Open contract.pdf' }),
+    ).toBeVisible();
+
+    await page.goto(`/car/${carId}/bill/recurring`);
+    await page
+      .getByRole('row', { name: /Leasing/ })
+      .getByRole('button', { name: '1 file attached' })
+      .click();
+    await expect(
+      page
+        .getByRole('dialog', { name: 'Receipts and files' })
+        .getByRole('link', { name: 'Open contract.pdf' }),
+    ).toBeVisible();
+  });
 });

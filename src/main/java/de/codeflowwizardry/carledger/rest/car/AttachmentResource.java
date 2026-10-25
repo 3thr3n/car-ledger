@@ -159,6 +159,44 @@ public class AttachmentResource extends AbstractResource
 	}
 
 	@GET
+	@Path("recurring/{recurringBillId}")
+	@Produces(MediaType.APPLICATION_JSON)
+	@Operation(operationId = "getRecurringBillFiles", description = "Files of the recurring cost, e.g. the contract, oldest first")
+	@APIResponse(responseCode = "200", description = "Files found.")
+	@APIResponse(responseCode = "404", description = "Recurring bill not found.")
+	public List<Attachment> getRecurringBillFiles(@PathParam("carId") long carId,
+			@PathParam("recurringBillId") long recurringBillId)
+	{
+		return attachmentService.listForRecurringBill(carId, recurringBillId, context.getName()).stream()
+				.map(Attachment::convert)
+				.toList();
+	}
+
+	@POST
+	@Path("recurring/{recurringBillId}")
+	@Consumes(MediaType.MULTIPART_FORM_DATA)
+	@Produces(MediaType.APPLICATION_JSON)
+	@Operation(operationId = "addRecurringBillFile", description = "Attaches a JPEG, PNG, WebP or PDF file to the recurring cost, e.g. the contract")
+	@APIResponse(responseCode = "201", description = "File attached.", content = @Content(schema = @Schema(implementation = Attachment.class)))
+	@APIResponse(responseCode = "400", description = "File empty, too large, of another type or too many files", content = @Content(schema = @Schema(implementation = List.class)))
+	@APIResponse(responseCode = "404", description = "Recurring bill not found.")
+	@APIResponse(responseCode = "413", description = "Request larger than allowed by the server.")
+	public Response addRecurringBillFile(@PathParam("carId") long carId,
+			@PathParam("recurringBillId") long recurringBillId, @RestForm("file") FileUpload file)
+	{
+		if (file == null)
+		{
+			throw new BadRequestException(Response.status(400).entity(List.of("No file uploaded!")).build());
+		}
+
+		AttachmentEntity attachment = attachmentService.addToRecurringBill(carId, recurringBillId,
+				context.getName(), file.fileName(), read(file));
+		return Response.created(URI.create("attachment/" + carId + "/" + attachment.getId()))
+				.entity(Attachment.convert(attachment))
+				.build();
+	}
+
+	@GET
 	@Path("{id}/content")
 	@Produces({
 			"image/jpeg", "image/png", "image/webp", "application/pdf"
