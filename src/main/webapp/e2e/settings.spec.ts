@@ -1,6 +1,16 @@
 import { expect, test } from '@playwright/test';
 import { aliceApi } from './helpers';
 
+/** as the server has it */
+async function accentOfTheAccount() {
+  const api = await aliceApi();
+  const { accent } = (await (await api.get('/api/user/me')).json()) as {
+    accent: string;
+  };
+  await api.dispose();
+  return accent;
+}
+
 test.describe.serial('settings', () => {
   test.afterAll(async () => {
     // back to the defaults, the other tests expect them
@@ -67,6 +77,7 @@ test.describe.serial('settings', () => {
     await page.getByRole('radio', { name: 'Violet' }).check();
     await expect(page.getByRole('radio', { name: 'Violet' })).toBeChecked();
     await expect(save).toHaveCSS('background-color', 'rgb(109, 40, 217)');
+    await expect.poll(accentOfTheAccount).toBe('VIOLET');
 
     // with the account, not only in this browser
     await page.evaluate(() => localStorage.clear());
@@ -76,6 +87,26 @@ test.describe.serial('settings', () => {
       'content',
       '#6d28d9',
     );
+  });
+
+  test('changes the accent without a connection', async ({ page, context }) => {
+    await page.goto('/settings');
+    const save = page.getByRole('button', { name: 'Save' });
+    await expect(save).toHaveCSS('background-color', 'rgb(109, 40, 217)');
+    await context.setOffline(true);
+
+    // shown at once, and changed again
+    await page.getByRole('radio', { name: 'Amber' }).check();
+    await expect(save).toHaveCSS('background-color', 'rgb(180, 83, 9)');
+    await page.getByRole('radio', { name: 'Rose' }).check();
+    await expect(page.getByRole('radio', { name: 'Rose' })).toBeChecked();
+    await expect(save).toHaveCSS('background-color', 'rgb(190, 18, 60)');
+    expect(await accentOfTheAccount()).toBe('VIOLET');
+
+    // the last choice is saved once the connection is back
+    await context.setOffline(false);
+    await expect.poll(accentOfTheAccount).toBe('ROSE');
+    await expect(save).toHaveCSS('background-color', 'rgb(190, 18, 60)');
   });
 
   test('shows why no notifications can be sent', async ({ page }) => {
