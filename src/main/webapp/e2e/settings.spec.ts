@@ -89,6 +89,17 @@ test.describe.serial('settings', () => {
     );
   });
 
+  test('colors the bar before the app starts', async ({ page }) => {
+    await page.goto('/settings');
+    const themeColor = page.locator('meta[name="theme-color"]');
+    await expect(themeColor).toHaveAttribute('content', '#6d28d9');
+
+    // some browsers take the color only while the page loads
+    await page.route('**/src/main.tsx', (route) => route.abort());
+    await page.reload();
+    await expect(themeColor).toHaveAttribute('content', '#6d28d9');
+  });
+
   test('changes the accent without a connection', async ({ page, context }) => {
     await page.goto('/settings');
     const save = page.getByRole('button', { name: 'Save' });
