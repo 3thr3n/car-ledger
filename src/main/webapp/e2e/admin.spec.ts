@@ -32,6 +32,7 @@ test.describe.serial('administration', () => {
     await page.getByRole('link', { name: 'Administration' }).click();
 
     await expect(page.getByText('Active (30 days)')).toBeVisible();
+    await expect(page.getByText('New files: Database')).toBeVisible();
     const own = page.getByRole('row', { name: /alice/ });
     await expect(own).toContainText('You');
     await expect(own.getByRole('button', { name: 'Delete' })).toBeDisabled();

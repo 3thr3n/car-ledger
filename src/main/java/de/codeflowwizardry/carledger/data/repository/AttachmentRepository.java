@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import de.codeflowwizardry.carledger.data.AttachmentEntity;
 import de.codeflowwizardry.carledger.data.repository.CarAccess.Action;
+import de.codeflowwizardry.carledger.rest.admin.AdminFileStorage;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -101,6 +102,20 @@ public class AttachmentRepository implements PanacheRepository<AttachmentEntity>
 	public Map<Long, Long> countPerTechnicalInspection(Collection<Long> inspectionIds)
 	{
 		return countPer("technicalInspection", inspectionIds);
+	}
+
+	/**
+	 * @return the amount and the size of the files per storage, storages without
+	 *         any are missing
+	 */
+	public List<AdminFileStorage> usagePerStorage()
+	{
+		return getEntityManager()
+				.createQuery("select a.storage, count(a), coalesce(sum(a.size), 0) from Attachment a"
+						+ " group by a.storage order by a.storage", Object[].class)
+				.getResultStream()
+				.map(row -> new AdminFileStorage((String) row[0], (Long) row[1], ((Number) row[2]).longValue()))
+				.toList();
 	}
 
 	private Map<Long, Long> countPer(String owner, Collection<Long> ids)

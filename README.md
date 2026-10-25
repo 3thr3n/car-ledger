@@ -195,6 +195,7 @@ described in [values.yaml](helm/car-ledger/values.yaml), the options in [docs/DE
 | `carLedger.map.styleUrl`                      |                                 | MapLibre style for the map of the GPS tracks, hidden without it        |
 | `carLedger.webhook.url`                       |                                 | Receiver of the webhooks ([WEBHOOKS.md](docs/WEBHOOKS.md))             |
 | `carLedger.attachments.maxSize`               | `10M`                           | Largest receipt; proxies in front need `maxRequestSize` (`12M`) as well |
+| `carLedger.attachments.storage`               | `DB`                            | `S3` with `carLedger.attachments.s3.*` keeps the files in a bucket ([docs](docs/DEPLOYMENT.md#attachments-in-s3)) |
 | `carLedger.trust.certificates`                | `[]`                            | CAs the app trusts for its own HTTPS requests ([self-signed](docs/DEPLOYMENT.md#self-signed-certificates)) |
 | `carLedger.replicas`                          | `1`                             | Replicas of the app, sessions are shared by Infinispan                 |
 | `carLedger.resources`                         | 100m / 256Mi, limit 350m / 768Mi | Resources of the app                                                  |

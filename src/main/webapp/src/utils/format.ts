@@ -186,6 +186,29 @@ export function useFormat(): Formatter {
   }, [locale, currency, unitSystem]);
 }
 
+const FILE_SIZE_UNITS = [
+  'byte',
+  'kilobyte',
+  'megabyte',
+  'gigabyte',
+  'terabyte',
+];
+
+/** Size of files, e.g. "300 kB" or "1.2 GB" (steps of 1024) */
+export function fileSize(locale: string, bytes: number) {
+  let value = bytes;
+  let unit = 0;
+  while (value >= 1024 && unit < FILE_SIZE_UNITS.length - 1) {
+    value /= 1024;
+    unit++;
+  }
+  return new Intl.NumberFormat(locale, {
+    style: 'unit',
+    unit: FILE_SIZE_UNITS[unit],
+    maximumFractionDigits: unit < 2 ? 0 : 1,
+  }).format(value);
+}
+
 export function toApiDate(value: dayjs.Dayjs | null | undefined) {
   return value ? value.format('YYYY-MM-DD') : undefined;
 }

@@ -740,6 +740,11 @@ admin:
     bills: "Einträge"
     recurringBills: "Laufende Kosten"
     openRequests: "Offene Anfragen"
+    files: "Dateien"
+    newFiles: "Neue Dateien: {{storage}}"
+    storage:
+      DB: "Datenbank"
+      S3: "S3"
   requests:
     title: "Fahrzeug-Anfragen"
     subtitle: "Nutzer, die ihr Fahrzeuglimit erreicht haben und mehr anfragen"

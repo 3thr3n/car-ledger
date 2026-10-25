@@ -91,7 +91,9 @@ class AdminResourceTest
 				.body("accounts", is(2))
 				.body("cars", is(1))
 				.body("bills", is(1))
-				.body("recurringBills", is(0));
+				.body("recurringBills", is(0))
+				.body("fileStorage", is("DB"))
+				.body("files.size()", is(0));
 	}
 
 	@Test

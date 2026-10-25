@@ -164,12 +164,12 @@ with the role `user`, the roles are missing in the tokens of the client.
   by VMs with the default QEMU CPU model). Set `infinispan.images.server=quay.io/infinispan/server:16.2` if your nodes
   support it.
 - **External PostgreSQL**: `carledgerpostgres.enabled=false` and `carLedger.postgres.*` (or `carLedger.postgres.jdbc`).
-- **Attachments**: receipts, the documents of the modifications and the reports of the HUs are stored in PostgreSQL,
-  up to `carLedger.attachments.maxSize` (10 MB) per file and `carLedger.attachments.maxPerBill` (10) per entry,
-  modification or HU. Uploads need requests up to `carLedger.attachments.maxRequestSize`
-  (12 MB): the nginx ingress gets the annotation `nginx.ingress.kubernetes.io/proxy-body-size` automatically, other
-  proxies (e.g. a Gateway or a reverse proxy in front of the cluster) need the same limit, otherwise uploads fail with
-  413.
+- **Attachments**: receipts, the documents of the modifications and the reports of the HUs are stored in PostgreSQL
+  or in an S3 compatible storage (see [Attachments in S3](#attachments-in-s3)), up to `carLedger.attachments.maxSize`
+  (10 MB) per file and `carLedger.attachments.maxPerBill` (10) per entry, modification or HU. Uploads need requests up
+  to `carLedger.attachments.maxRequestSize` (12 MB): the nginx ingress gets the annotation
+  `nginx.ingress.kubernetes.io/proxy-body-size` automatically, other proxies (e.g. a Gateway or a reverse proxy in
+  front of the cluster) need the same limit, otherwise uploads fail with 413.
 - **Backups**: users download all of their data as ZIP in the settings and restore it into an account without cars.
   The restore is an upload as well and limited by `carLedger.attachments.maxRequestSize`: a backup with many receipts
   or with GPS tracks kept forever can be larger, raise the limit (and the one of the proxies) for the restore; the app
@@ -276,6 +276,38 @@ tokens with the `client_credentials` grant of the provider *CarLedger*, the user
 `admin` and an app password, see the
 [authentik documentation](https://docs.goauthentik.io/add-secure-apps/providers/oauth2/client_credentials/).
 
+### Attachments in S3
+
+By default the files are stored in PostgreSQL, so the database and its dumps grow with them. A larger installation
+keeps them in a bucket of an S3 compatible storage (AWS, MinIO, Garage, Ceph, ...) instead:
+
+```yaml
+carLedger:
+  attachments:
+    storage: S3
+    s3:
+      bucket: car-ledger                # must exist, the files go below attachments/
+      endpoint: https://s3.example.com  # empty for AWS
+      region: us-east-1
+      pathStyle: true                   # bucket in the path, needed by most storages besides AWS
+      existingSecret: car-ledger-s3     # keys accessKeyId and secretAccessKey
+```
+
+Without `existingSecret` the default credentials of AWS are used (e.g. IRSA on EKS). The app needs to read, write,
+delete and list the objects below `attachments/`. A bucket that cannot be reached is logged at the start, uploads fail
+until it can.
+
+- **Switching**: the storage is saved with every file, the files of the other storage stay readable. With
+  `carLedger.attachments.moveExisting=true` the app moves them into the configured storage in the background, a file
+  per transaction: after a restart it continues with the files left, several replicas share the work. The log names
+  the moved and failed files, *Administration* shows the files per storage. Back to PostgreSQL works the same way
+  (`storage: DB`, the bucket still set until all files are moved).
+- **Deleting**: the database queues the objects of deleted files (also of deleted entries, cars and accounts) and the
+  app deletes them within a minute. Every night it deletes objects below `attachments/` older than a day that no file
+  knows, e.g. of an upload that failed.
+- **Backups**: the backup of the users contains the files of both storages. A dump of PostgreSQL contains only the
+  files stored there: back up the bucket as well (e.g. with versioning or a replication of the storage).
+
 ### Self-signed certificates
 
 The app makes HTTPS requests of its own: to the identity provider (the login), the SMTP server, webhooks and the push
@@ -372,6 +404,7 @@ Use the image of a release (a git tag of `main`) or a dev build of `develop`. On
 | 1.23.0    | Documents of the modifications as attachments with their kind (0.8.0)                                                |
 | 1.24.0    | Several bills per modification, the existing links move into a table (0.8.0)                                         |
 | 1.25.0    | Table for the HUs, their reports as attachments, the reminders the app keeps (0.8.0)                                 |
+| 1.26.0    | Queue of the files to delete outside the database, filled by a trigger (0.9.0)                                       |
 
 An older image refuses to start on the migrated database, as Flyway finds migrations it does not know. To go back,
 restore the backup. Without the backup, the older image runs on the migrated database (the new columns have defaults)
@@ -432,6 +465,9 @@ kubectl set env deployment/car-ledger QUARKUS_FLYWAY_IGNORE_FUTURE_MIGRATIONS=tr
   users flash the firmware and the settings of a tracker from Chrome or Edge over USB; the firmware is not part of
   CarLedger. `carLedger.imagePullSecrets` pulls the images of the pod from a private registry, see
   [GPS_TRACKER.md](GPS_TRACKER.md#flashing).
+- **Attachments in S3** (0.9.0, optional): `carLedger.attachments.storage=S3` stores new files in a bucket, the
+  existing ones stay in PostgreSQL unless `carLedger.attachments.moveExisting` moves them, see
+  [Attachments in S3](#attachments-in-s3). Nothing changes without it (migration 1.26.0).
 - **Accent colors** (0.8.0): each user picks one of five accent colors in the settings, stored with the account
   (migration 1.21.0, teal for the existing ones) and part of the backup. Nothing to set up.
 - **Modifications** (0.8.0): the tab *Modifications* of a car keeps the parts with their approval, the Abnahme and

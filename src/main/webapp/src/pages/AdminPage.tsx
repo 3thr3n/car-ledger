@@ -25,6 +25,7 @@ import ReceiptLongRounded from '@mui/icons-material/ReceiptLongRounded';
 import EventRepeatRounded from '@mui/icons-material/EventRepeatRounded';
 import LockRounded from '@mui/icons-material/LockRounded';
 import MarkEmailUnreadRounded from '@mui/icons-material/MarkEmailUnreadRounded';
+import AttachFileRounded from '@mui/icons-material/AttachFileRounded';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { deDE } from '@mui/x-data-grid/locales';
 import { keepPreviousData, useMutation, useQuery } from '@tanstack/react-query';
@@ -40,6 +41,7 @@ import {
 } from '@/generated/@tanstack/react-query.gen';
 import queryClient, { localClient } from '@/utils/QueryClient';
 import { errorMessage } from '@/utils/BackendError';
+import { fileSize } from '@/utils/format';
 import useMe from '@/hooks/useMe';
 import { PageModel } from '@/hooks/useBillList';
 import Page from '@/components/layout/Page';
@@ -92,7 +94,7 @@ export default function AdminPage() {
 }
 
 function AdminStats() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { data, isLoading } = useQuery(
     getAdminStatsOptions({ client: localClient }),
   );
@@ -116,6 +118,26 @@ function AdminStats() {
       icon: <MarkEmailUnreadRounded />,
       value: data?.openRequests,
     },
+    {
+      key: 'files',
+      icon: <AttachFileRounded />,
+      value: data?.files.reduce((sum, storage) => sum + storage.files, 0),
+      // per storage, e.g. "Database: 120 (300 MB) · S3: 5 (2 MB)"
+      hint:
+        data &&
+        [
+          ...data.files.map(
+            (storage) =>
+              `${t(`admin.stats.storage.${storage.storage}`, storage.storage)}: ${storage.files} (${fileSize(i18n.language, storage.bytes)})`,
+          ),
+          t('admin.stats.newFiles', {
+            storage: t(
+              `admin.stats.storage.${data.fileStorage}`,
+              data.fileStorage,
+            ),
+          }),
+        ].join(' · '),
+    },
   ];
 
   return (
@@ -127,6 +149,7 @@ function AdminStats() {
             icon={tile.icon}
             label={t(`admin.stats.${tile.key}`)}
             value={tile.value ?? 0}
+            hint={tile.hint}
           />
         </Grid>
       ))}
