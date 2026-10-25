@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.AfterEach;
@@ -163,6 +164,32 @@ class TechnicalInspectionResourceTest
 		add(hu("2026-05-11", "NO_DEFECTS", "2028-05-01"));
 
 		reminders().body("title", contains("HU")).body("[0].dueDate", is("2028-05-31"));
+	}
+
+	@Test
+	void shouldTakeOverTheReminderOfThePreset()
+	{
+		for (Map<String, Object> reminder : List.of(
+				Map.<String, Object>of("title", "Service", "dueDate", "2026-02-01", "intervalMonths", 12),
+				Map.<String, Object>of("title", "Hauptuntersuchung", "dueDate", "2026-03-01", "intervalMonths", 24)))
+		{
+			given().contentType(ContentType.JSON).body(reminder).when().put("/api/reminder/{carId}", carId).then()
+					.statusCode(202);
+		}
+
+		add(hu("2024-05-10", "NO_DEFECTS", "2026-05-01"));
+
+		// no second one, the HU moves it instead of its interval
+		reminders()
+				.body("title", containsInAnyOrder("Service", "Hauptuntersuchung"))
+				.body("find { it.title == 'Hauptuntersuchung' }.dueDate", is("2026-05-31"))
+				.body("find { it.title == 'Hauptuntersuchung' }.intervalMonths", nullValue())
+				.body("find { it.title == 'Service' }.intervalMonths", is(12));
+
+		add(hu("2026-05-11", "NO_DEFECTS", "2028-05-01"));
+		reminders()
+				.body("size()", is(2))
+				.body("find { it.title == 'Hauptuntersuchung' }.dueDate", is("2028-05-31"));
 	}
 
 	@Test

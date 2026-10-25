@@ -789,8 +789,8 @@ reminder:
     due: "Enter a date or a mileage."
     intervalMonths: "Needs a due date."
     intervalKm: "Needs a due mileage."
+  huHint: "The HU has a reminder of its own: it follows the next due month on the <tab>tab HU</tab>."
   presets:
-    inspection: "Inspection"
     service: "Service"
     tires: "Tire change"
     vignette: "Vignette"
