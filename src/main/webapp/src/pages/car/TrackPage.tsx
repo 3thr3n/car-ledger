@@ -1,8 +1,10 @@
 import {
   Alert,
   Button,
+  FormControlLabel,
   IconButton,
   Stack,
+  Switch,
   ToggleButton,
   ToggleButtonGroup,
   Tooltip,
@@ -20,6 +22,7 @@ import { toast } from 'react-toastify';
 import {
   deleteTracksMutation,
   getMapSettingsOptions,
+  getPlacesOptions,
   getTrackFrequencyOptions,
   getTrackOptions,
 } from '@/generated/@tanstack/react-query.gen';
@@ -33,6 +36,8 @@ import DateRangeFields from '@/components/dashboard/DateRangeFields';
 import LazyTrackMap from '@/components/track/LazyTrackMap';
 import SpeedLegend from '@/components/track/SpeedLegend';
 import FrequencyLegend from '@/components/track/FrequencyLegend';
+import PlaceDialog from '@/components/track/PlaceDialog';
+import { Place } from '@/generated';
 
 /** the server returns at most this many days */
 export const MAX_DAYS = 31;
@@ -67,6 +72,8 @@ export default function TrackPage({ carId }: { carId: number }) {
   };
   const [deleting, setDeleting] = useState(false);
   const [mode, setMode] = useState<Mode>('speed');
+  const [showPlaces, setShowPlaces] = useState(false);
+  const [toName, setToName] = useState<Place>();
 
   const { data: track, isPlaceholderData } = useQuery({
     ...getTrackOptions({
@@ -86,6 +93,16 @@ export default function TrackPage({ carId }: { carId: number }) {
       query: period,
     }),
     enabled: mode === 'frequency' && valid && !!settings?.styleUrl,
+    placeholderData: keepPreviousData,
+  });
+
+  const { data: places } = useQuery({
+    ...getPlacesOptions({
+      client: localClient,
+      path: { carId },
+      query: period,
+    }),
+    enabled: showPlaces && valid && !!settings?.styleUrl,
     placeholderData: keepPreviousData,
   });
 
@@ -204,6 +221,8 @@ export default function TrackPage({ carId }: { carId: number }) {
                 ? (frequency ?? { lines: [], maxPasses: 0 })
                 : undefined
             }
+            places={showPlaces ? places : undefined}
+            onPlaceClick={setToName}
           />
         )}
         <Stack
@@ -214,11 +233,30 @@ export default function TrackPage({ carId }: { carId: number }) {
             justifyContent: 'space-between',
           }}
         >
-          {mode === 'speed' ? (
-            <SpeedLegend />
-          ) : (
-            <FrequencyLegend maxPasses={frequency?.maxPasses ?? 0} />
-          )}
+          <Stack
+            direction={{ xs: 'column', md: 'row' }}
+            spacing={{ xs: 1, md: 3 }}
+            sx={{ alignItems: { md: 'center' } }}
+          >
+            {mode === 'speed' ? (
+              <SpeedLegend />
+            ) : (
+              <FrequencyLegend maxPasses={frequency?.maxPasses ?? 0} />
+            )}
+            <Tooltip title={t('track.places.showHint')}>
+              <FormControlLabel
+                control={
+                  <Switch
+                    size="small"
+                    checked={showPlaces}
+                    onChange={(_, checked) => setShowPlaces(checked)}
+                  />
+                }
+                label={t('track.places.show')}
+                sx={{ mr: 0, whiteSpace: 'nowrap' }}
+              />
+            </Tooltip>
+          </Stack>
           {/* not while the track of another period is loading */}
           {track && valid && track.points > 0 && !isPlaceholderData && (
             <Button
@@ -234,6 +272,11 @@ export default function TrackPage({ carId }: { carId: number }) {
           )}
         </Stack>
       </Stack>
+      <PlaceDialog
+        carId={carId}
+        place={toName}
+        onClose={() => setToName(undefined)}
+      />
       <ConfirmDialog
         open={deleting}
         title={t('track.deletePeriodTitle', { period: shown })}

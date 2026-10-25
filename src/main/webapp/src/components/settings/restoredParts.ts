@@ -9,6 +9,7 @@ const PARTS = [
   'trips',
   'modifications',
   'technicalInspections',
+  'places',
   'trackers',
   'files',
 ] as const;

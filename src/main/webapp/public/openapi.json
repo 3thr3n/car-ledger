@@ -351,6 +351,10 @@
           "technicalInspections" : {
             "type" : "integer",
             "format" : "int32"
+          },
+          "places" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         }
       },
@@ -1596,6 +1600,50 @@
           "offset" : {
             "type" : "integer",
             "format" : "int64"
+          }
+        }
+      },
+      "Place" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "lat" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "lon" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "visits" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "lastVisit" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          }
+        },
+        "required" : [ "lat", "lon", "visits" ]
+      },
+      "PlaceInput" : {
+        "type" : "object",
+        "properties" : {
+          "lat" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "lon" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "name" : {
+            "type" : "string"
           }
         }
       },
@@ -6525,6 +6573,183 @@
           }
         },
         "summary" : "Get Track Frequency",
+        "tags" : [ "Track Resource" ]
+      }
+    },
+    "/api/track/{carId}/places" : {
+      "put" : {
+        "description" : "Names the place at the position, or renames a named one near it. The name stays when the track points are deleted.",
+        "operationId" : "namePlace",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PlaceInput"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "204" : {
+            "description" : "Named."
+          },
+          "400" : {
+            "description" : "Name or position missing or invalid",
+            "content" : { }
+          },
+          "404" : {
+            "description" : "Car is not for your user."
+          }
+        },
+        "summary" : "Name Place",
+        "tags" : [ "Track Resource" ]
+      },
+      "get" : {
+        "description" : "The places the car stopped at at least 3 times in a time range of at most 31 days, from the stops of its GPS track, and the places its owner named; the most visited first.",
+        "operationId" : "getPlaces",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "description" : "Start of the range, inclusive",
+          "required" : true,
+          "name" : "from",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          }
+        }, {
+          "description" : "End of the range, exclusive",
+          "required" : true,
+          "name" : "to",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Places found.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/Place"
+                  }
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Range missing, empty or too long",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Car is not for your user."
+          }
+        },
+        "summary" : "Get Places",
+        "tags" : [ "Track Resource" ]
+      }
+    },
+    "/api/track/{carId}/places/{id}" : {
+      "put" : {
+        "description" : "Renames a named place, its position stays.",
+        "operationId" : "renamePlace",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PlaceInput"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "204" : {
+            "description" : "Renamed."
+          },
+          "400" : {
+            "description" : "Name missing or too long",
+            "content" : { }
+          },
+          "404" : {
+            "description" : "Place not found."
+          }
+        },
+        "summary" : "Rename Place",
+        "tags" : [ "Track Resource" ]
+      },
+      "delete" : {
+        "description" : "Removes the name of a place; it shows again only with enough visits.",
+        "operationId" : "deletePlaceName",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "Removed."
+          },
+          "404" : {
+            "description" : "Place not found."
+          }
+        },
+        "summary" : "Delete Place Name",
         "tags" : [ "Track Resource" ]
       }
     },

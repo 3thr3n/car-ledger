@@ -409,6 +409,7 @@ Use the image of a release (a git tag of `main`) or a dev build of `develop`. On
 | 1.26.0    | Queue of the files to delete outside the database, filled by a trigger (0.9.0)                                       |
 | 1.27.0    | Previews of the photos next to the files, generated for the existing ones on their first request (0.9.0)             |
 | 1.28.0    | Files of the recurring costs, e.g. the contract (0.9.0)                                                              |
+| 1.29.0    | Names of the places of the GPS tracks (0.9.0)                                                                        |
 
 An older image refuses to start on the migrated database, as Flyway finds migrations it does not know. To go back,
 restore the backup. Without the backup, the older image runs on the migrated database (the new columns have defaults)
@@ -469,6 +470,8 @@ kubectl set env deployment/car-ledger QUARKUS_FLYWAY_IGNORE_FUTURE_MIGRATIONS=tr
   users flash the firmware and the settings of a tracker from Chrome or Edge over USB; the firmware is not part of
   CarLedger. `carLedger.imagePullSecrets` pulls the images of the pod from a private registry, see
   [GPS_TRACKER.md](GPS_TRACKER.md#flashing).
+- **Places** (0.9.0): the map shows the places a car stops at often and lets the owner name them, see
+  [GPS_TRACKER.md](GPS_TRACKER.md#places). The names are part of the backup (migration 1.29.0). Nothing to set up.
 - **Files of the recurring costs** (0.9.0): a recurring cost keeps files like the contract of a leasing, with the
   limits of the files of an entry and part of the backup (migration 1.28.0). Nothing to set up.
 - **Previews** (0.9.0): the lists and the tiles of the files show a small JPEG of each photo (256 px), stored next to

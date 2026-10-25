@@ -246,6 +246,26 @@ Examples (check the terms of use of the provider):
 The public tile servers of OpenStreetMap (`tile.openstreetmap.org`) aren't meant for apps like this and provide no
 MapLibre style.
 
+## Places
+
+The switch *Places* below the map shows the places the car stopped at at least 3 times in the period, e.g. a fuel
+station or the office, as markers with the number of visits; a click names the place, renames it or removes its
+name. A visit is the end of a drive, found like the [suggested trips](#suggested-trips) (a stop longer than
+`carledger.tracker.stop`), but a drive of 200 m and 1 minute is enough: the fuel station around the corner counts.
+Stops within 75 m of each other (more than the drift of the GPS) are one place, its marker sits in the middle of the
+stops. The threshold of 3 visits and the radius are fixed.
+
+The name is stored with the position, the place itself is found again in the stops: a named place keeps its name when
+the car stops there again later, and shows without visits (e.g. after its track points were deleted). Naming a place
+within 75 m of a named one renames that one. The named places are part of the backup and deleted with the car.
+
+| Request                                                | Answer                                                                        |
+|--------------------------------------------------------|-------------------------------------------------------------------------------|
+| `GET /api/track/{carId}/places?from=…&to=…`            | the places with `visits` and `lastVisit`, the named ones with `id` and `name` |
+| `PUT /api/track/{carId}/places` `{"lat","lon","name"}` | 204, names the place at the position or renames a named one near it           |
+| `PUT /api/track/{carId}/places/{id}` `{"name"}`        | 204, renames it                                                               |
+| `DELETE /api/track/{carId}/places/{id}`                | 204, removes the name                                                         |
+
 ## Not in the OpenAPI spec
 
 `/api/device/**` isn't part of `openapi.json` and the generated client of the frontend: the package

@@ -6,6 +6,7 @@ import {
   LngLatBounds,
   Map as MapLibreMap,
   MapLayerMouseEvent,
+  Marker,
   NavigationControl,
   Popup,
   setWorkerUrl,
@@ -14,9 +15,9 @@ import type { FeatureCollection } from 'geojson';
 import 'maplibre-gl/dist/maplibre-gl.css';
 // the worker as a file of this origin: the CSP allows no workers from blob:
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Track, TrackFrequency } from '@/generated';
+import { Place, Track, TrackFrequency } from '@/generated';
 import { useFormat } from '@/utils/format';
 import { speedColor, trackEnds, trackPieces } from './speedScale';
 import {
@@ -32,6 +33,9 @@ export interface TrackMapProps {
   track: Track;
   /** shown instead of the speeds of the track */
   frequency?: TrackFrequency;
+  /** the places the car stops at often, as markers */
+  places?: Place[];
+  onPlaceClick?: (place: Place) => void;
   height?: number;
 }
 
@@ -122,6 +126,35 @@ function showFrequency(map: MapLibreMap, frequency?: TrackFrequency) {
 }
 
 /**
+ * A marker of a place: a circle with its visits, the name below it. A button,
+ * so it is reached by the keyboard and named for screen readers.
+ */
+function placeElement(place: Place, label: string, onClick: () => void) {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'place-marker';
+  button.title = label;
+  button.setAttribute('aria-label', label);
+  button.dataset.named = place.name ? 'true' : 'false';
+  const circle = document.createElement('span');
+  circle.className = 'place-marker-circle';
+  circle.textContent = `${place.visits}`;
+  button.append(circle);
+  if (place.name) {
+    const name = document.createElement('span');
+    name.className = 'place-marker-name';
+    name.textContent = place.name;
+    button.append(name);
+  }
+  button.addEventListener('click', (event) => {
+    // not a click on the map, which closes the popup
+    event.stopPropagation();
+    onClick();
+  });
+  return button;
+}
+
+/**
  * The segments of a track on the map, each piece colored by its speed, with
  * the start and the end of every segment. Hovering or tapping the track shows
  * the time and the speed there. With the frequency, the track is colored by
@@ -131,6 +164,8 @@ export default function TrackMap({
   styleUrl,
   track,
   frequency,
+  places,
+  onPlaceClick,
   height = 480,
 }: TrackMapProps) {
   const { t } = useTranslation();
@@ -147,6 +182,11 @@ export default function TrackMap({
   formatRef.current = format;
   const tRef = useRef(t);
   tRef.current = t;
+  const onPlaceClickRef = useRef(onPlaceClick);
+  onPlaceClickRef.current = onPlaceClick;
+  const markers = useRef<Marker[]>([]);
+  /** set when the map is ready, so the markers of the places follow */
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     const instance = new MapLibreMap({
@@ -204,6 +244,7 @@ export default function TrackMap({
       map.current = instance;
       showTrack(instance, trackRef.current);
       showFrequency(instance, frequencyRef.current);
+      setReady(true);
     });
 
     const show = (event: MapLayerMouseEvent) => {
@@ -270,8 +311,40 @@ export default function TrackMap({
       popup.remove();
       instance.remove();
       map.current = null;
+      setReady(false);
     };
   }, [styleUrl]);
+
+  useEffect(() => {
+    const instance = map.current;
+    if (!ready || !instance) return;
+    markers.current = (places ?? []).map((place) => {
+      const visits =
+        place.visits === 0
+          ? t('track.places.visits', { count: 0 })
+          : t('track.places.visits', {
+              count: place.visits,
+              date: format.dateTime(place.lastVisit),
+            });
+      const label = t('track.places.label', {
+        name: place.name ?? t('track.places.unnamed'),
+        visits,
+      });
+      return new Marker({
+        element: placeElement(place, label, () =>
+          onPlaceClickRef.current?.(place),
+        ),
+        anchor: 'top',
+        offset: [0, -14],
+      })
+        .setLngLat([place.lon, place.lat])
+        .addTo(instance);
+    });
+    return () => {
+      markers.current.forEach((marker) => marker.remove());
+      markers.current = [];
+    };
+  }, [ready, places, t, format]);
 
   useEffect(() => {
     if (map.current) showTrack(map.current, track);
@@ -289,6 +362,47 @@ export default function TrackMap({
         height,
         borderRadius: 3,
         overflow: 'hidden',
+        '& .place-marker': (theme) => ({
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: 0.25,
+          p: 0,
+          border: 0,
+          background: 'none',
+          cursor: 'pointer',
+          font: 'inherit',
+          '&:focus-visible .place-marker-circle': {
+            outline: `2px solid ${theme.vars.palette.text.primary}`,
+            outlineOffset: 2,
+          },
+        }),
+        '& .place-marker-circle': (theme) => ({
+          ...theme.typography.caption,
+          display: 'grid',
+          placeItems: 'center',
+          minWidth: 28,
+          height: 28,
+          px: 0.5,
+          borderRadius: 14,
+          border: '2px solid #ffffff',
+          boxShadow: 2,
+          fontWeight: 700,
+          color: '#ffffff',
+          bgcolor: 'text.secondary',
+        }),
+        '& .place-marker[data-named="true"] .place-marker-circle': {
+          bgcolor: 'primary.main',
+        },
+        '& .place-marker-name': (theme) => ({
+          ...theme.typography.caption,
+          px: 0.75,
+          borderRadius: 1,
+          bgcolor: 'background.paper',
+          color: 'text.primary',
+          boxShadow: 1,
+          whiteSpace: 'nowrap',
+        }),
         // the popup in the colors of the app
         '& .maplibregl-popup-content': (theme) => ({
           ...theme.typography.body2,

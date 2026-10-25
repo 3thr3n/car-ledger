@@ -24,8 +24,12 @@ final class DriveDetector
 	/**
 	 * @param meters
 	 *            GPS distance from the start to the end
+	 * @param departure
+	 *            the point it left from
+	 * @param arrival
+	 *            the point it arrived at, where the car stopped
 	 */
-	record Drive(OffsetDateTime start, OffsetDateTime end, double meters)
+	record Drive(OffsetDateTime start, OffsetDateTime end, double meters, TrackPoint departure, TrackPoint arrival)
 	{
 	}
 
@@ -121,7 +125,7 @@ final class DriveDetector
 	{
 		if (start != null && startedFromStop)
 		{
-			Drive drive = new Drive(start.ts(), anchor.ts(), meters);
+			Drive drive = new Drive(start.ts(), anchor.ts(), meters, start, anchor);
 			if (drive.meters() >= minMeters
 					&& Duration.between(drive.start(), drive.end()).compareTo(minDuration) >= 0)
 			{

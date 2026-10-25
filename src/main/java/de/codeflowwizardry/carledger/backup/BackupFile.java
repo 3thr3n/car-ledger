@@ -72,13 +72,22 @@ public record BackupFile(String format, int version, OffsetDateTime createdAt, S
 	 *            missing in backups before them
 	 * @param technicalInspections
 	 *            the HUs, missing in backups before them
+	 * @param places
+	 *            the named places, missing in backups before them
 	 */
 	public record Car(String name, int year, int odometer, LocalDate odometerDate, String licensePlate, String vin,
 			LocalDate purchaseDate, BigDecimal purchasePrice, EnergyType energyType, BigDecimal tankSize,
 			BigDecimal batteryCapacity, File picture, List<Bill> bills, List<RecurringBill> recurringBills,
 			List<Reminder> reminders, List<Trip> trips, Boolean tripLog, Integer trackRetentionDays,
 			List<Tracker> trackers, File track, List<Modification> modifications,
-			List<TechnicalInspection> technicalInspections)
+			List<TechnicalInspection> technicalInspections, List<Place> places)
+	{
+	}
+
+	/**
+	 * A place the owner named, e.g. a fuel station
+	 */
+	public record Place(String name, double lat, double lon)
 	{
 	}
 

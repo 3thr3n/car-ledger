@@ -131,6 +131,7 @@ export type BackupSummary = {
     trackPoints?: number;
     modifications?: number;
     technicalInspections?: number;
+    places?: number;
 };
 
 export type Bill = {
@@ -596,6 +597,21 @@ export type OffsetDateTime = string;
 export type Part = {
     path: string;
     offset: number;
+};
+
+export type Place = {
+    id?: number;
+    name?: string;
+    lat: number;
+    lon: number;
+    visits: number;
+    lastVisit?: OffsetDateTime;
+};
+
+export type PlaceInput = {
+    lat?: number;
+    lon?: number;
+    name?: string;
 };
 
 export type PushSettings = {
@@ -3349,6 +3365,131 @@ export type GetTrackFrequencyResponses = {
 };
 
 export type GetTrackFrequencyResponse = GetTrackFrequencyResponses[keyof GetTrackFrequencyResponses];
+
+export type GetPlacesData = {
+    body?: never;
+    path: {
+        carId: number;
+    };
+    query: {
+        /**
+         * Start of the range, inclusive
+         */
+        from: OffsetDateTime;
+        /**
+         * End of the range, exclusive
+         */
+        to: OffsetDateTime;
+    };
+    url: '/api/track/{carId}/places';
+};
+
+export type GetPlacesErrors = {
+    /**
+     * Range missing, empty or too long
+     */
+    400: Array<unknown>;
+    /**
+     * Car is not for your user.
+     */
+    404: unknown;
+};
+
+export type GetPlacesError = GetPlacesErrors[keyof GetPlacesErrors];
+
+export type GetPlacesResponses = {
+    /**
+     * Places found.
+     */
+    200: Array<Place>;
+};
+
+export type GetPlacesResponse = GetPlacesResponses[keyof GetPlacesResponses];
+
+export type NamePlaceData = {
+    body: PlaceInput;
+    path: {
+        carId: number;
+    };
+    query?: never;
+    url: '/api/track/{carId}/places';
+};
+
+export type NamePlaceErrors = {
+    /**
+     * Name or position missing or invalid
+     */
+    400: unknown;
+    /**
+     * Car is not for your user.
+     */
+    404: unknown;
+};
+
+export type NamePlaceResponses = {
+    /**
+     * Named.
+     */
+    204: void;
+};
+
+export type NamePlaceResponse = NamePlaceResponses[keyof NamePlaceResponses];
+
+export type DeletePlaceNameData = {
+    body?: never;
+    path: {
+        carId: number;
+        id: number;
+    };
+    query?: never;
+    url: '/api/track/{carId}/places/{id}';
+};
+
+export type DeletePlaceNameErrors = {
+    /**
+     * Place not found.
+     */
+    404: unknown;
+};
+
+export type DeletePlaceNameResponses = {
+    /**
+     * Removed.
+     */
+    204: void;
+};
+
+export type DeletePlaceNameResponse = DeletePlaceNameResponses[keyof DeletePlaceNameResponses];
+
+export type RenamePlaceData = {
+    body: PlaceInput;
+    path: {
+        carId: number;
+        id: number;
+    };
+    query?: never;
+    url: '/api/track/{carId}/places/{id}';
+};
+
+export type RenamePlaceErrors = {
+    /**
+     * Name missing or too long
+     */
+    400: unknown;
+    /**
+     * Place not found.
+     */
+    404: unknown;
+};
+
+export type RenamePlaceResponses = {
+    /**
+     * Renamed.
+     */
+    204: void;
+};
+
+export type RenamePlaceResponse = RenamePlaceResponses[keyof RenamePlaceResponses];
 
 export type SetTrackRetentionData = {
     body: TrackRetentionInput;
