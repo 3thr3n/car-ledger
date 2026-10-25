@@ -12,6 +12,8 @@ import { BackendError, errorMessage } from '@/utils/BackendError';
 const KEY = 'accent';
 /** chosen but not saved yet, e.g. without a connection */
 const PENDING = 'accentPending';
+/** the color of the bar, set by public/theme-color.js before the app starts */
+const THEME_COLOR_KEY = 'themeColor';
 
 function stored(key: string): Accent | undefined {
   try {
@@ -23,10 +25,10 @@ function stored(key: string): Accent | undefined {
   return undefined;
 }
 
-function store(key: string, accent?: Accent) {
+function store(key: string, value?: string) {
   try {
-    if (accent) {
-      localStorage.setItem(key, accent);
+    if (value) {
+      localStorage.setItem(key, value);
     } else {
       localStorage.removeItem(key);
     }
@@ -114,12 +116,14 @@ export default function useAccent(): Accent {
   useEffect(() => store(KEY, accent), [accent]);
 
   // the bar of the browser on phones, and of the installed app: the service
-  // worker puts it into the manifest
+  // worker puts it into the manifest, public/theme-color.js into the page on
+  // the next start
   useEffect(() => {
     const color = ACCENTS[accent].light.main;
     document
       .querySelector('meta[name="theme-color"]')
       ?.setAttribute('content', color);
+    store(THEME_COLOR_KEY, color);
     keepThemeColor(color);
   }, [accent]);
 
