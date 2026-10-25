@@ -46,8 +46,15 @@ export async function restoreQueries(client: QueryClient, store: OfflineStore) {
   }
 }
 
-/** keeps the queries whenever one of them was loaded */
+/**
+ * Keeps the queries whenever one of them was loaded. They stay in memory for
+ * the whole visit: each write has what is in memory, one removed after a few
+ * unused minutes would be gone from the device with the next write.
+ */
 export function keepQueries(client: QueryClient, store: OfflineStore) {
+  for (const id of KEPT) {
+    client.setQueryDefaults([{ _id: id }], { gcTime: Infinity });
+  }
   let timer: ReturnType<typeof setTimeout> | undefined;
   return client.getQueryCache().subscribe((event) => {
     if (

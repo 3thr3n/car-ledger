@@ -42,6 +42,9 @@ export default function OfflineDocumentsPanel({ carId }: { carId: number }) {
 
   const toggle = (checked: boolean) => {
     if (checked) {
+      // asks the browser to keep the files, it may delete them when space
+      // runs out or after weeks without a visit. A browser may decline.
+      void navigator.storage?.persist?.().catch(() => false);
       save.mutate(undefined, {
         onError: () => toast.error(t('modification.offline.failed')),
       });
