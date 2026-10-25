@@ -62,6 +62,13 @@ test.describe.serial('HU', () => {
     await expect(
       page.getByTestId('reminder').filter({ hasText: 'HU' }),
     ).toBeVisible();
+
+    // and on the overview of the car
+    await page.getByRole('tab', { name: 'Overview' }).click();
+    const summary = page.getByTestId('papers-summary');
+    await expect(summary).toContainText(`Next HU ${nextMonth()}`);
+    await expect(summary).toContainText('No defects');
+    await expect(summary).toContainText('0 installed modifications');
   });
 
   test('keeps the defects and the report', async () => {

@@ -100,6 +100,14 @@ test.describe.serial('modifications', () => {
     );
     await expect(modification('Coilovers')).toContainText('Abnahme open');
     await expect(modification('Coilovers')).toContainText('80,000 km');
+
+    // what is open shows on the overview of the car
+    await page.getByRole('tab', { name: 'Overview' }).click();
+    const summary = page.getByTestId('papers-summary');
+    await expect(summary).toContainText('1 installed modification');
+    await expect(summary).toContainText('1 Abnahme open');
+    await expect(summary).toContainText('No next HU');
+    await page.getByRole('tab', { name: 'Modifications' }).click();
   });
 
   test('enters the Abnahme and the registration', async () => {

@@ -47,7 +47,7 @@ common:
 landing:
   eyebrow: "Car cost tracking"
   title: "Know what your car really costs."
-  subtitle: "Log refuels, workshop visits, insurance and everything else. CarLedger turns your receipts into cost per kilometer, consumption and trends."
+  subtitle: "Log refuels, charges, workshop visits, insurance and everything else, and keep the papers of your car at hand. CarLedger turns your receipts into cost per kilometer, consumption and trends."
   cta: "Log in to start"
   ctaDashboard: "Open dashboard"
   features:
@@ -69,6 +69,33 @@ landing:
     stats:
       title: "Statistics"
       text: "Cost per km, consumption and highs and lows — per car or across all your cars."
+    charging:
+      title: "Charging"
+      text: "Electric and plug-in hybrid cars: kWh, price and the consumption in kWh/100 km next to the refuels."
+    modifications:
+      title: "Modifications"
+      text: "Rims, coilovers, exhaust: with their ABE, Teilegutachten or Einzelabnahme, the conditions and the documents."
+    inspections:
+      title: "HU"
+      text: "The Hauptuntersuchung with its result, the defects and the report; the next due month becomes the reminder."
+    papers:
+      title: "Papers as PDF"
+      text: "The modifications and the HUs with all their documents in one PDF, for a check or when selling the car."
+    reminders:
+      title: "Reminders"
+      text: "Service, tires, vignette: due by date or mileage, by e-mail and push message."
+    trips:
+      title: "Trip log"
+      text: "Start and finish trips with the odometer, deleted ones stay with their reason, export as PDF or CSV."
+    gps:
+      title: "GPS tracking"
+      text: "A tracker in the car sends its route: the map by speed or by how often you drove it, forgotten trips suggested."
+    offline:
+      title: "App and offline"
+      text: "On the home screen like an app; refuels and trips work without a connection, the papers stay on the phone."
+    backup:
+      title: "Backup"
+      text: "All your data with the receipts and documents as one file, restored on any installation."
 
 dashboard:
   title: "Dashboard"
@@ -204,14 +231,23 @@ car:
     emptyText: "Add your first receipt or import a CSV export."
     running: "Running recurring costs"
     reminders: "Reminders"
-    modifications: "Modifications"
-    inspections: "HU"
     remindersEmpty: "No reminders yet"
     runningEmpty: "No running recurring costs"
     addRecurring: "Add recurring cost"
     nextDue: "Next due {{date}}"
     avgChargingConsumption: "Avg. consumption (electric)"
     charges: "Charges"
+    papers:
+      title: "HU and modifications"
+      empty: "No HU and no modifications yet"
+      noNextDue: "No next HU"
+      latest: "Latest HU on {{date}}"
+      installed_one: "{{count}} installed modification"
+      installed_other: "{{count}} installed modifications"
+      inspectionOpen_one: "{{count}} Abnahme open"
+      inspectionOpen_other: "{{count}} Abnahmen open"
+      unregistered_one: "{{count}} not in the registration yet"
+      unregistered_other: "{{count}} not in the registration yet"
   picture:
     choose: "Choose picture"
     change: "Change picture"
