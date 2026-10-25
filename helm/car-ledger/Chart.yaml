@@ -6,7 +6,7 @@ type: application
 # Version of the next release: the tag of the release has to match. Builds of develop are published
 # as the prerelease <version>-dev.<run number> with the image of that build as appVersion. Raise it
 # on develop after a release (the minor version for incompatible changes of the values).
-version: 0.8.0
+version: 0.9.0
 # image tag used when carLedger.image.tag is empty, "main" is the latest build of main: the released state
 appVersion: "main"
 
