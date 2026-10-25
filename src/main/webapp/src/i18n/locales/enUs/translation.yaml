@@ -1046,7 +1046,7 @@ modification:
     removedBelowInstalled: "Below the odometer when it was installed."
   offline:
     label: "Documents available offline"
-    text: "Keeps the documents of the installed parts on this device, e.g. for a roadside check without a connection."
+    text: "Keeps the documents of the installed parts and the report of the latest HU on this device, e.g. for a roadside check without a connection."
     saving: "Saving the documents…"
     saved_one: "{{count}} document saved {{time}}. Without a connection it shows that state, it may be out of date."
     saved_other: "{{count}} documents saved {{time}}. Without a connection they show that state, they may be out of date."

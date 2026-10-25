@@ -2,8 +2,8 @@ import { Attachment, DocumentKind } from '@/generated';
 import { OfflineStore } from './store';
 
 /**
- * The documents of the modifications kept on the device, e.g. for a roadside
- * check without a connection. The files are in the Cache Storage, where the
+ * The documents of the modifications and the reports of the HU kept on the
+ * device, e.g. for a roadside check without a connection. The files are in the Cache Storage, where the
  * service worker finds them as well; the store has what was kept per car.
  */
 export const DOCUMENTS_CACHE = 'modification-documents';
@@ -25,7 +25,21 @@ type Kept = Record<number, OfflineDocuments>;
 /** the Cache Storage only exists in a secure context */
 export const canKeepDocuments = () => typeof caches !== 'undefined';
 
-const order = Object.values(DocumentKind);
+/**
+ * @return the papers of the modifications first, then the reports of the HU,
+ *         then the photos and the rest: what doesn't fit stays out
+ */
+export function inPriority(documents: Attachment[], reports: Attachment[]) {
+  const of = (kind: DocumentKind) =>
+    documents.filter((document) => document.kind === kind);
+  return [
+    ...of(DocumentKind.APPROVAL),
+    ...of(DocumentKind.INSPECTION),
+    ...reports,
+    ...of(DocumentKind.PHOTO),
+    ...of(DocumentKind.OTHER),
+  ];
+}
 
 export async function keptDocuments(store: OfflineStore, carId: number) {
   return (await store.get<Kept>('cache', KEY))?.[carId];
@@ -46,8 +60,8 @@ async function setKept(
 }
 
 /**
- * Keeps the documents in the order of their kind until the limit, loads the
- * missing ones and drops the ones no longer wanted. A document never changes,
+ * Keeps the documents in their order until the limit (see {@link inPriority}),
+ * loads the missing ones and drops the ones no longer wanted. A document never changes,
  * a kept one isn't loaded again.
  *
  * @param url address of the content of a document
@@ -61,13 +75,10 @@ export async function keepDocuments(
   url: (document: Attachment) => string,
   load: (url: string) => Promise<Response>,
 ): Promise<OfflineDocuments> {
-  const sorted = [...documents].sort(
-    (a, b) => order.indexOf(a.kind!) - order.indexOf(b.kind!),
-  );
   const urls: string[] = [];
   const skipped: string[] = [];
   let bytes = 0;
-  for (const document of sorted) {
+  for (const document of documents) {
     const size = document.size ?? 0;
     if (bytes + size > MAX_OFFLINE_BYTES) {
       skipped.push(document.fileName ?? '');

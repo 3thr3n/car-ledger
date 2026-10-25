@@ -9,8 +9,8 @@ const PNG = Buffer.from(
 );
 
 /**
- * The documents of the installed parts at a roadside check without a
- * connection. The dev server has no service worker, the app opens the kept
+ * The documents of the installed parts and the report of the HU at a roadside
+ * check without a connection. The dev server has no service worker, the app opens the kept
  * copy itself.
  */
 test.describe.serial('modification documents offline', () => {
@@ -41,6 +41,24 @@ test.describe.serial('modification documents offline', () => {
       );
       expect(added.status()).toBe(201);
     }
+    const hu = (await (
+      await api.put(`/api/technical-inspection/${carId}`, {
+        data: {
+          date: '2024-05-06',
+          result: 'NO_DEFECTS',
+          nextDue: '2026-05-01',
+        },
+      })
+    ).json()) as { id: number };
+    const report = await api.post(
+      `/api/attachment/${carId}/technical-inspection/${hu.id}`,
+      {
+        multipart: {
+          file: { name: 'hu.png', mimeType: 'image/png', buffer: PNG },
+        },
+      },
+    );
+    expect(report.status()).toBe(201);
     await api.dispose();
     page = await browser.newPage();
   });
@@ -66,15 +84,15 @@ test.describe.serial('modification documents offline', () => {
         (await (await caches.open('modification-documents')).keys()).length,
     );
 
-  test('keeps the documents of the installed parts', async () => {
+  test('keeps the documents of the installed parts and the HU', async () => {
     await page.goto(`/car/${carId}/modifications`);
     await expect(panel()).toContainText(/Keeps the documents/);
 
     await toggle(true);
 
-    await expect(panel()).toContainText('2 documents saved');
+    await expect(panel()).toContainText('3 documents saved');
     await expect(panel()).toContainText('may be out of date');
-    expect(await keptFiles()).toBe(2);
+    expect(await keptFiles()).toBe(3);
   });
 
   test('opens a kept document without a connection', async () => {
@@ -96,6 +114,27 @@ test.describe.serial('modification documents offline', () => {
     await page.context().setOffline(false);
   });
 
+  test('shows the HU and opens its report without a connection', async () => {
+    // the dev server serves the code of a tab only online, the build has it
+    await page.getByRole('tab', { name: 'HU' }).click();
+    await expect(page.getByTestId('inspection')).toBeVisible();
+    await page.getByRole('tab', { name: 'Modifications' }).click();
+    await page.context().setOffline(true);
+    await page.getByRole('tab', { name: 'HU' }).click();
+    const inspection = page.getByTestId('inspection');
+    await expect(inspection).toContainText('No defects');
+    await expect(panel()).toContainText('3 documents saved');
+
+    await inspection.getByRole('button', { name: /Details/ }).click();
+    const opened = page.waitForEvent('popup');
+    await inspection.getByRole('link', { name: 'Open hu.png' }).click();
+    const tab = await opened;
+    await expect(tab).toHaveURL(/^blob:/);
+    await tab.close();
+    await page.context().setOffline(false);
+    await page.getByRole('tab', { name: 'Modifications' }).click();
+  });
+
   test('drops the documents of a removed part', async () => {
     await page
       .getByTestId('modification')
@@ -106,8 +145,9 @@ test.describe.serial('modification documents offline', () => {
       .getByRole('button', { name: 'Remove', exact: true })
       .click();
 
-    await expect(panel()).toContainText('0 documents saved');
-    expect(await keptFiles()).toBe(0);
+    // the report of the HU stays
+    await expect(panel()).toContainText('1 document saved');
+    expect(await keptFiles()).toBe(1);
   });
 
   test('keeps nothing when it is turned off', async () => {

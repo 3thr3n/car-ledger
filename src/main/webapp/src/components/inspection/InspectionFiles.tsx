@@ -21,6 +21,7 @@ import { prepareUpload } from '@/utils/image';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import AttachmentTile from '@/components/bill/AttachmentTile';
 import { ACCEPT, contentUrl } from '@/components/bill/attachments';
+import { useOpenKept } from '@/components/offline/useOfflineDocuments';
 
 /** the report of an HU and other files of it */
 export default function InspectionFiles({
@@ -33,6 +34,8 @@ export default function InspectionFiles({
   const { t } = useTranslation();
   const input = useRef<HTMLInputElement>(null);
   const [toDelete, setToDelete] = useState<number>();
+  // without a connection the kept copy, if there is one
+  const open = useOpenKept();
 
   const { data: files = [] } = useQuery(
     getTechnicalInspectionFilesOptions({
@@ -110,6 +113,7 @@ export default function InspectionFiles({
               pdf={file.contentType === 'application/pdf'}
               url={contentUrl(carId, file.id!)}
               onRemove={() => setToDelete(file.id)}
+              onOpen={open(contentUrl(carId, file.id!))}
             />
           ))}
         </Stack>

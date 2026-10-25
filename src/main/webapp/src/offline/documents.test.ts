@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { Attachment, DocumentKind } from '@/generated';
 import {
   dropDocuments,
+  inPriority,
   keepDocuments,
   keptDocuments,
   MAX_OFFLINE_BYTES,
@@ -41,11 +42,14 @@ describe('documents kept for offline', () => {
       store,
       cache,
       1,
-      [
-        document(1, DocumentKind.PHOTO, MAX_OFFLINE_BYTES / 2),
-        document(2, DocumentKind.APPROVAL, MAX_OFFLINE_BYTES / 2),
-        document(3, DocumentKind.INSPECTION, 1000),
-      ],
+      inPriority(
+        [
+          document(1, DocumentKind.PHOTO, MAX_OFFLINE_BYTES / 2),
+          document(2, DocumentKind.APPROVAL, MAX_OFFLINE_BYTES / 2),
+          document(3, DocumentKind.INSPECTION, 1000),
+        ],
+        [],
+      ),
       url,
       load,
     );
@@ -54,6 +58,22 @@ describe('documents kept for offline', () => {
     expect(kept.skipped).toEqual(['1.pdf']);
     expect([...files.keys()]).toEqual(['/content/2', '/content/3']);
     expect(await keptDocuments(store, 1)).toEqual(kept);
+  });
+
+  it('puts the report of the HU after the papers, before the photos', () => {
+    const report: Attachment = { id: 9, size: 1000, fileName: 'hu.pdf' };
+
+    const ordered = inPriority(
+      [
+        document(1, DocumentKind.OTHER),
+        document(2, DocumentKind.PHOTO),
+        document(3, DocumentKind.INSPECTION),
+        document(4, DocumentKind.APPROVAL),
+      ],
+      [report],
+    );
+
+    expect(ordered.map((each) => each.id)).toEqual([4, 3, 9, 2, 1]);
   });
 
   it('loads only new documents and drops the old ones', async () => {
