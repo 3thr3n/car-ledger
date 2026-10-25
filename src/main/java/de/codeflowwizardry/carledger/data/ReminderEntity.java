@@ -40,6 +40,11 @@ public class ReminderEntity
 	@Column(name = "rm_notified_for", length = 40)
 	private String notifiedFor;
 
+	/** kept by the app, see {@link ReminderKind} */
+	@Enumerated(EnumType.STRING)
+	@Column(name = "rm_kind", length = 30)
+	private ReminderKind kind;
+
 	protected ReminderEntity()
 	{
 	}
@@ -117,6 +122,16 @@ public class ReminderEntity
 	public void setIntervalKm(Integer intervalKm)
 	{
 		this.intervalKm = intervalKm;
+	}
+
+	public ReminderKind getKind()
+	{
+		return kind;
+	}
+
+	public void setKind(ReminderKind kind)
+	{
+		this.kind = kind;
 	}
 
 	public String getNotifiedFor()

@@ -5,15 +5,27 @@ import {
   Query,
   QueryClient,
 } from '@tanstack/react-query';
+import { forgetDocuments } from './documents';
 import { OfflineStore } from './store';
 
 /**
  * The queries a form needs without a connection: the account (units, VAT,
  * currency), the cars (energy type, tank size, odometer) and their open trip
- * with the minimum odometer of the next start. Not the lists of the bills and
- * trips.
+ * with the minimum odometer of the next start, and the modifications with
+ * their documents and the HUs with their reports to show them at a roadside
+ * check. Not the lists of the bills
+ * and trips.
  */
-const KEPT = new Set(['getMyself', 'getMyCars', 'getMyCar', 'getCurrentTrip']);
+const KEPT = new Set([
+  'getMyself',
+  'getMyCars',
+  'getMyCar',
+  'getCurrentTrip',
+  'getModifications',
+  'getModificationDocuments',
+  'getTechnicalInspections',
+  'getTechnicalInspectionFiles',
+]);
 const KEY = 'queries';
 /** writes at most once per this many ms */
 const DELAY = 500;
@@ -34,8 +46,15 @@ export async function restoreQueries(client: QueryClient, store: OfflineStore) {
   }
 }
 
-/** keeps the queries whenever one of them was loaded */
+/**
+ * Keeps the queries whenever one of them was loaded. They stay in memory for
+ * the whole visit: each write has what is in memory, one removed after a few
+ * unused minutes would be gone from the device with the next write.
+ */
 export function keepQueries(client: QueryClient, store: OfflineStore) {
+  for (const id of KEPT) {
+    client.setQueryDefaults([{ _id: id }], { gcTime: Infinity });
+  }
   let timer: ReturnType<typeof setTimeout> | undefined;
   return client.getQueryCache().subscribe((event) => {
     if (
@@ -54,7 +73,11 @@ export function keepQueries(client: QueryClient, store: OfflineStore) {
   });
 }
 
-/** on the logout: the next user of the device doesn't see them */
-export function forgetQueries(store: OfflineStore) {
-  return store.delete('cache', KEY).catch(() => undefined);
+/**
+ * On the logout: the next user of the device doesn't see them, nor the kept
+ * documents
+ */
+export async function forgetQueries(store: OfflineStore) {
+  await store.delete('cache', KEY).catch(() => undefined);
+  await forgetDocuments(store).catch(() => undefined);
 }

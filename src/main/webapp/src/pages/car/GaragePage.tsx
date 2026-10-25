@@ -38,7 +38,8 @@ export default function GaragePage() {
     error,
   } = useQuery(getMyCarsOptions({ client: localClient }));
 
-  if (isError) {
+  // the data of the last visit stays when the connection fails
+  if (isError && !cars) {
     return <ErrorPage error={error} />;
   }
 

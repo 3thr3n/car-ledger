@@ -51,4 +51,29 @@ describe('queries kept for offline', () => {
     await restoreQueries(next, store);
     expect(next.getQueryData(key('getMyself'))).toBe(undefined);
   });
+
+  it('keeps a list that was not opened in this visit', async () => {
+    // the last visit opened the modifications
+    const before = new QueryClient();
+    keepQueries(before, store);
+    before.setQueryData(key('getModifications', { carId: 1 }), [{ id: 1 }]);
+    await vi.runAllTimersAsync();
+
+    // this one doesn't, the cars are loaded again after a while; in the
+    // browser an unused query is removed after 5 minutes, in node never
+    const now = new QueryClient({
+      defaultOptions: { queries: { gcTime: 5 * 60_000 } },
+    });
+    keepQueries(now, store);
+    await restoreQueries(now, store);
+    await vi.advanceTimersByTimeAsync(10 * 60_000);
+    now.setQueryData(key('getMyCars'), [{ id: 1 }]);
+    await vi.advanceTimersByTimeAsync(1000);
+
+    const next = new QueryClient();
+    await restoreQueries(next, store);
+    expect(next.getQueryData(key('getModifications', { carId: 1 }))).toEqual([
+      { id: 1 },
+    ]);
+  });
 });

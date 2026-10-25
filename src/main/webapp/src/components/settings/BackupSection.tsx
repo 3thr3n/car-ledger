@@ -11,6 +11,7 @@ import {
 } from '@/generated/@tanstack/react-query.gen';
 import queryClient, { baseUrl, localClient } from '@/utils/QueryClient';
 import { BackendError, errorMessage } from '@/utils/BackendError';
+import { restoredParts } from './restoredParts';
 
 /** where the browser downloads the backup */
 export const backupUrl = `${baseUrl}/api/user/me/backup`;
@@ -20,7 +21,7 @@ export const backupUrl = `${baseUrl}/api/user/me/backup`;
  * without cars
  */
 export default function BackupSection() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const input = useRef<HTMLInputElement>(null);
   const { data: cars } = useQuery(getMyCarsOptions({ client: localClient }));
   const canRestore = cars !== undefined && cars.length === 0;
@@ -28,12 +29,17 @@ export default function BackupSection() {
   const restore = useMutation({
     ...restoreBackupMutation({ client: localClient }),
     onSuccess: (summary) => {
+      const parts = restoredParts(summary).map(({ part, count }) =>
+        t(`backup.parts.${part}`, { count }),
+      );
       toast.success(
-        t('backup.restored', {
-          cars: summary.cars,
-          bills: summary.bills,
-          files: summary.files,
-        }),
+        parts.length
+          ? t('backup.restored', {
+              parts: new Intl.ListFormat(i18n.language, {
+                type: 'conjunction',
+              }).format(parts),
+            })
+          : t('backup.restoredEmpty'),
       );
       // the settings, the cars and everything below them
       return queryClient.invalidateQueries();

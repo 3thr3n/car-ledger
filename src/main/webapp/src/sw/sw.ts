@@ -3,6 +3,7 @@ import { clientsClaim } from 'workbox-core';
 import {
   cleanupOutdatedCaches,
   createHandlerBoundToURL,
+  matchPrecache,
   precacheAndRoute,
   PrecacheEntry,
 } from 'workbox-precaching';
@@ -15,8 +16,36 @@ declare const self: ServiceWorkerGlobalScope & {
 /**
  * Service worker of the installed app: the files of the build (the list is
  * injected by vite-plugin-pwa) come from the cache, so the app starts without
- * waiting for the network. The data of the API is never cached.
+ * waiting for the network. The data of the API isn't cached here, only the
+ * documents of the modifications the app keeps (see offline/documents.ts) are
+ * served from their cache without a connection.
  */
+// the color of the bar of the installed app follows the accent of the app,
+// which it keeps in this cache (see src/hooks/useAccent.ts); the browser reads
+// the manifest again from time to time. Before the precache, which has the
+// manifest of the build.
+const SETTINGS_CACHE = 'car-ledger-settings';
+const THEME_COLOR = '/theme-color';
+
+registerRoute(
+  ({ url }) => url.pathname === '/manifest.json',
+  async ({ request }) => {
+    const response =
+      (await matchPrecache('manifest.json')) ?? (await fetch(request));
+    const kept = await caches.match(THEME_COLOR, { cacheName: SETTINGS_CACHE });
+    if (!response.ok || !kept) return response;
+    const manifest = await response.json();
+    manifest.theme_color = await kept.text();
+    // the length and the encoding of the original don't fit any more
+    return new Response(JSON.stringify(manifest), {
+      headers: {
+        'Content-Type':
+          response.headers.get('Content-Type') ?? 'application/manifest+json',
+      },
+    });
+  },
+);
+
 precacheAndRoute(self.__WB_MANIFEST);
 cleanupOutdatedCaches();
 
@@ -26,6 +55,26 @@ registerRoute(
   new NavigationRoute(createHandlerBoundToURL('index.html'), {
     denylist: [/^\/api\//, /^\/q\//],
   }),
+);
+
+// same as DOCUMENTS_CACHE of offline/documents.ts, the worker has its own build
+const DOCUMENTS_CACHE = 'modification-documents';
+
+// a kept document opens from the network first, without a connection from the
+// cache, e.g. in an underground car park
+registerRoute(
+  ({ url }) => /^\/api\/attachment\/\d+\/\d+\/content$/.test(url.pathname),
+  async ({ request }) => {
+    try {
+      return await fetch(request);
+    } catch (error) {
+      const kept = await caches.match(request.url, {
+        cacheName: DOCUMENTS_CACHE,
+      });
+      if (kept) return kept;
+      throw error;
+    }
+  },
 );
 
 // a new version waits until the user reloads (see registerServiceWorker)

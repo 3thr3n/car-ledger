@@ -3,8 +3,8 @@
 import { type DefaultError, type InfiniteData, infiniteQueryOptions, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen';
-import { addBillAttachment, addNewChargingBill, addNewFuelBill, addNewMaintenanceBill, addNewMiscellaneousBill, addNewRecurringBill, addPastTrip, addReminder, addTracker, approveCarRequest, callback, completeReminder, createCar, deleteAdminAccount, deleteAttachment, deleteBill, deleteCarPicture, deleteMyCar, deleteMyself, deleteRecurringBill, deleteReminder, deleteTracks, deleteTrip, dismissTripSuggestion, downloadBackup, endRecurringBill, exportAllExpensesCsv, exportCsv, exportTripsCsv, exportTripsPdf, finishTrip, getAdminAccounts, getAdminCarRequests, getAdminStats, getAllBills, getAllBillYears, getAllChargingBills, getAllChargingBillYears, getAllFuelBills, getAllFuelBillYears, getAllMaintenanceBills, getAllMaintenanceBillYears, getAllMiscellaneousBills, getAllMiscellaneousBillYears, getAllRecurringBills, getAttachmentContent, getBillAttachments, getCarPicture, getChargingBill, getCsvFields, getCurrentTrip, getDashboardStats, getFirmwareFile, getFirmwareManifest, getFirmwareSettings, getFuelBill, getMaintenanceBill, getMapSettings, getMiscellaneousBill, getMonthlyStats, getMyCar, getMyCarOverview, getMyCars, getMyLatestCarRequest, getMyNotifications, getMyPush, getMyself, getRecurringBill, getReminders, getTrack, getTrackers, getTrip, getTrips, getTripSuggestions, getTripTrack, getTripYears, getVersion, importCsv, login, loginError, logout, logoutCallback, markCarRequestSeen, type Options, rejectCarRequest, renewTrackerToken, requestMoreCars, restoreBackup, revokeTracker, setCarPicture, setTrackRetention, startTrip, subscribeMyPush, testMyPush, unsubscribeMyPush, updateAdminAccount, updateChargingBill, updateFuelBill, updateMaintenanceBill, updateMiscellaneousBill, updateMyCar, updateMyNotifications, updateMySettings, updateRecurringBill, updateReminder } from '../sdk.gen';
-import type { AddBillAttachmentData, AddBillAttachmentError, AddBillAttachmentResponse, AddNewChargingBillData, AddNewChargingBillError, AddNewFuelBillData, AddNewFuelBillError, AddNewMaintenanceBillData, AddNewMaintenanceBillError, AddNewMiscellaneousBillData, AddNewMiscellaneousBillError, AddNewRecurringBillData, AddNewRecurringBillError, AddNewRecurringBillResponse, AddPastTripData, AddPastTripError, AddPastTripResponse, AddReminderData, AddReminderError, AddReminderResponse, AddTrackerData, AddTrackerError, AddTrackerResponse, ApproveCarRequestData, ApproveCarRequestError, ApproveCarRequestResponse, CallbackData, CompleteReminderData, CompleteReminderError, CompleteReminderResponse, CreateCarData, DeleteAdminAccountData, DeleteAdminAccountResponse, DeleteAttachmentData, DeleteAttachmentResponse, DeleteBillData, DeleteBillResponse, DeleteCarPictureData, DeleteCarPictureResponse, DeleteMyCarData, DeleteMyCarResponse, DeleteMyselfData, DeleteMyselfResponse, DeleteRecurringBillData, DeleteReminderData, DeleteReminderResponse, DeleteTracksData, DeleteTracksError, DeleteTracksResponse, DeleteTripData, DeleteTripError, DeleteTripResponse, DismissTripSuggestionData, DismissTripSuggestionResponse, DownloadBackupData, DownloadBackupResponse, EndRecurringBillData, EndRecurringBillError, EndRecurringBillResponse, ExportAllExpensesCsvData, ExportAllExpensesCsvResponse, ExportCsvData, ExportCsvResponse, ExportTripsCsvData, ExportTripsCsvResponse, ExportTripsPdfData, ExportTripsPdfResponse, FinishTripData, FinishTripError, FinishTripResponse, GetAdminAccountsData, GetAdminAccountsResponse, GetAdminCarRequestsData, GetAdminCarRequestsResponse, GetAdminStatsData, GetAdminStatsResponse, GetAllBillsData, GetAllBillsResponse, GetAllBillYearsData, GetAllBillYearsResponse, GetAllChargingBillsData, GetAllChargingBillsResponse, GetAllChargingBillYearsData, GetAllChargingBillYearsResponse, GetAllFuelBillsData, GetAllFuelBillsResponse, GetAllFuelBillYearsData, GetAllFuelBillYearsResponse, GetAllMaintenanceBillsData, GetAllMaintenanceBillsResponse, GetAllMaintenanceBillYearsData, GetAllMaintenanceBillYearsResponse, GetAllMiscellaneousBillsData, GetAllMiscellaneousBillsResponse, GetAllMiscellaneousBillYearsData, GetAllMiscellaneousBillYearsResponse, GetAllRecurringBillsData, GetAllRecurringBillsResponse, GetAttachmentContentData, GetBillAttachmentsData, GetBillAttachmentsResponse, GetCarPictureData, GetChargingBillData, GetChargingBillResponse, GetCsvFieldsData, GetCsvFieldsResponse, GetCurrentTripData, GetCurrentTripResponse, GetDashboardStatsData, GetDashboardStatsResponse, GetFirmwareFileData, GetFirmwareFileResponse, GetFirmwareManifestData, GetFirmwareManifestResponse, GetFirmwareSettingsData, GetFirmwareSettingsResponse, GetFuelBillData, GetFuelBillResponse, GetMaintenanceBillData, GetMaintenanceBillResponse, GetMapSettingsData, GetMapSettingsResponse, GetMiscellaneousBillData, GetMiscellaneousBillResponse, GetMonthlyStatsData, GetMonthlyStatsResponse, GetMyCarData, GetMyCarOverviewData, GetMyCarOverviewResponse, GetMyCarResponse, GetMyCarsData, GetMyCarsResponse, GetMyLatestCarRequestData, GetMyLatestCarRequestResponse, GetMyNotificationsData, GetMyNotificationsResponse, GetMyPushData, GetMyPushResponse, GetMyselfData, GetMyselfResponse, GetRecurringBillData, GetRecurringBillResponse, GetRemindersData, GetRemindersResponse, GetTrackData, GetTrackError, GetTrackersData, GetTrackersResponse, GetTrackResponse, GetTripData, GetTripResponse, GetTripsData, GetTripsResponse, GetTripSuggestionsData, GetTripSuggestionsResponse, GetTripTrackData, GetTripTrackResponse, GetTripYearsData, GetTripYearsResponse, GetVersionData, GetVersionResponse, ImportCsvData, LoginData, LoginErrorData, LogoutCallbackData, LogoutData, MarkCarRequestSeenData, MarkCarRequestSeenResponse, RejectCarRequestData, RejectCarRequestError, RejectCarRequestResponse, RenewTrackerTokenData, RenewTrackerTokenResponse, RequestMoreCarsData, RequestMoreCarsError, RequestMoreCarsResponse, RestoreBackupData, RestoreBackupError, RestoreBackupResponse, RevokeTrackerData, RevokeTrackerResponse, SetCarPictureData, SetCarPictureError, SetCarPictureResponse, SetTrackRetentionData, SetTrackRetentionResponse, StartTripData, StartTripError, StartTripResponse, SubscribeMyPushData, SubscribeMyPushResponse, TestMyPushData, UnsubscribeMyPushData, UnsubscribeMyPushResponse, UpdateAdminAccountData, UpdateAdminAccountError, UpdateAdminAccountResponse, UpdateChargingBillData, UpdateChargingBillError, UpdateChargingBillResponse, UpdateFuelBillData, UpdateFuelBillError, UpdateFuelBillResponse, UpdateMaintenanceBillData, UpdateMaintenanceBillError, UpdateMaintenanceBillResponse, UpdateMiscellaneousBillData, UpdateMiscellaneousBillError, UpdateMiscellaneousBillResponse, UpdateMyCarData, UpdateMyNotificationsData, UpdateMyNotificationsResponse, UpdateMySettingsData, UpdateMySettingsError, UpdateMySettingsResponse, UpdateRecurringBillData, UpdateRecurringBillError, UpdateRecurringBillResponse, UpdateReminderData, UpdateReminderError, UpdateReminderResponse } from '../types.gen';
+import { addBillAttachment, addModification, addModificationDocument, addNewChargingBill, addNewFuelBill, addNewMaintenanceBill, addNewMiscellaneousBill, addNewRecurringBill, addPastTrip, addReminder, addTechnicalInspection, addTechnicalInspectionFile, addTracker, approveCarRequest, callback, completeReminder, createCar, deleteAdminAccount, deleteAttachment, deleteBill, deleteCarPicture, deleteModification, deleteMyCar, deleteMyself, deleteRecurringBill, deleteReminder, deleteTechnicalInspection, deleteTracks, deleteTrip, dismissTripSuggestion, downloadBackup, endRecurringBill, exportAllExpensesCsv, exportCarPapersPdf, exportCsv, exportTripsCsv, exportTripsPdf, finishTrip, getAdminAccounts, getAdminCarRequests, getAdminStats, getAllBills, getAllBillYears, getAllChargingBills, getAllChargingBillYears, getAllFuelBills, getAllFuelBillYears, getAllMaintenanceBills, getAllMaintenanceBillYears, getAllMiscellaneousBills, getAllMiscellaneousBillYears, getAllRecurringBills, getAttachmentContent, getBillAttachments, getCarPicture, getChargingBill, getCsvFields, getCurrentTrip, getDashboardStats, getFirmwareFile, getFirmwareManifest, getFirmwareSettings, getFuelBill, getLinkableBills, getMaintenanceBill, getMapSettings, getMiscellaneousBill, getModificationDocuments, getModifications, getMonthlyStats, getMyCar, getMyCarOverview, getMyCars, getMyLatestCarRequest, getMyNotifications, getMyPush, getMyself, getRecurringBill, getReminders, getTechnicalInspectionFiles, getTechnicalInspections, getTrack, getTrackers, getTrackFrequency, getTrip, getTrips, getTripSuggestions, getTripTrack, getTripYears, getVersion, importCsv, login, loginError, logout, logoutCallback, markCarRequestSeen, type Options, rejectCarRequest, renewTrackerToken, requestMoreCars, restoreBackup, revokeTracker, setCarPicture, setTrackRetention, startTrip, subscribeMyPush, testMyPush, unsubscribeMyPush, updateAdminAccount, updateChargingBill, updateFuelBill, updateMaintenanceBill, updateMiscellaneousBill, updateModification, updateMyCar, updateMyNotifications, updateMySettings, updateRecurringBill, updateReminder, updateTechnicalInspection } from '../sdk.gen';
+import type { AddBillAttachmentData, AddBillAttachmentError, AddBillAttachmentResponse, AddModificationData, AddModificationDocumentData, AddModificationDocumentError, AddModificationDocumentResponse, AddModificationError, AddModificationResponse, AddNewChargingBillData, AddNewChargingBillError, AddNewFuelBillData, AddNewFuelBillError, AddNewMaintenanceBillData, AddNewMaintenanceBillError, AddNewMiscellaneousBillData, AddNewMiscellaneousBillError, AddNewRecurringBillData, AddNewRecurringBillError, AddNewRecurringBillResponse, AddPastTripData, AddPastTripError, AddPastTripResponse, AddReminderData, AddReminderError, AddReminderResponse, AddTechnicalInspectionData, AddTechnicalInspectionError, AddTechnicalInspectionFileData, AddTechnicalInspectionFileError, AddTechnicalInspectionFileResponse, AddTechnicalInspectionResponse, AddTrackerData, AddTrackerError, AddTrackerResponse, ApproveCarRequestData, ApproveCarRequestError, ApproveCarRequestResponse, CallbackData, CompleteReminderData, CompleteReminderError, CompleteReminderResponse, CreateCarData, DeleteAdminAccountData, DeleteAdminAccountResponse, DeleteAttachmentData, DeleteAttachmentResponse, DeleteBillData, DeleteBillResponse, DeleteCarPictureData, DeleteCarPictureResponse, DeleteModificationData, DeleteModificationResponse, DeleteMyCarData, DeleteMyCarResponse, DeleteMyselfData, DeleteMyselfResponse, DeleteRecurringBillData, DeleteReminderData, DeleteReminderResponse, DeleteTechnicalInspectionData, DeleteTechnicalInspectionResponse, DeleteTracksData, DeleteTracksError, DeleteTracksResponse, DeleteTripData, DeleteTripError, DeleteTripResponse, DismissTripSuggestionData, DismissTripSuggestionResponse, DownloadBackupData, DownloadBackupResponse, EndRecurringBillData, EndRecurringBillError, EndRecurringBillResponse, ExportAllExpensesCsvData, ExportAllExpensesCsvResponse, ExportCarPapersPdfData, ExportCarPapersPdfResponse, ExportCsvData, ExportCsvResponse, ExportTripsCsvData, ExportTripsCsvResponse, ExportTripsPdfData, ExportTripsPdfResponse, FinishTripData, FinishTripError, FinishTripResponse, GetAdminAccountsData, GetAdminAccountsResponse, GetAdminCarRequestsData, GetAdminCarRequestsResponse, GetAdminStatsData, GetAdminStatsResponse, GetAllBillsData, GetAllBillsResponse, GetAllBillYearsData, GetAllBillYearsResponse, GetAllChargingBillsData, GetAllChargingBillsResponse, GetAllChargingBillYearsData, GetAllChargingBillYearsResponse, GetAllFuelBillsData, GetAllFuelBillsResponse, GetAllFuelBillYearsData, GetAllFuelBillYearsResponse, GetAllMaintenanceBillsData, GetAllMaintenanceBillsResponse, GetAllMaintenanceBillYearsData, GetAllMaintenanceBillYearsResponse, GetAllMiscellaneousBillsData, GetAllMiscellaneousBillsResponse, GetAllMiscellaneousBillYearsData, GetAllMiscellaneousBillYearsResponse, GetAllRecurringBillsData, GetAllRecurringBillsResponse, GetAttachmentContentData, GetBillAttachmentsData, GetBillAttachmentsResponse, GetCarPictureData, GetChargingBillData, GetChargingBillResponse, GetCsvFieldsData, GetCsvFieldsResponse, GetCurrentTripData, GetCurrentTripResponse, GetDashboardStatsData, GetDashboardStatsResponse, GetFirmwareFileData, GetFirmwareFileResponse, GetFirmwareManifestData, GetFirmwareManifestResponse, GetFirmwareSettingsData, GetFirmwareSettingsResponse, GetFuelBillData, GetFuelBillResponse, GetLinkableBillsData, GetLinkableBillsResponse, GetMaintenanceBillData, GetMaintenanceBillResponse, GetMapSettingsData, GetMapSettingsResponse, GetMiscellaneousBillData, GetMiscellaneousBillResponse, GetModificationDocumentsData, GetModificationDocumentsResponse, GetModificationsData, GetModificationsResponse, GetMonthlyStatsData, GetMonthlyStatsResponse, GetMyCarData, GetMyCarOverviewData, GetMyCarOverviewResponse, GetMyCarResponse, GetMyCarsData, GetMyCarsResponse, GetMyLatestCarRequestData, GetMyLatestCarRequestResponse, GetMyNotificationsData, GetMyNotificationsResponse, GetMyPushData, GetMyPushResponse, GetMyselfData, GetMyselfResponse, GetRecurringBillData, GetRecurringBillResponse, GetRemindersData, GetRemindersResponse, GetTechnicalInspectionFilesData, GetTechnicalInspectionFilesResponse, GetTechnicalInspectionsData, GetTechnicalInspectionsResponse, GetTrackData, GetTrackError, GetTrackersData, GetTrackersResponse, GetTrackFrequencyData, GetTrackFrequencyError, GetTrackFrequencyResponse, GetTrackResponse, GetTripData, GetTripResponse, GetTripsData, GetTripsResponse, GetTripSuggestionsData, GetTripSuggestionsResponse, GetTripTrackData, GetTripTrackResponse, GetTripYearsData, GetTripYearsResponse, GetVersionData, GetVersionResponse, ImportCsvData, LoginData, LoginErrorData, LogoutCallbackData, LogoutData, MarkCarRequestSeenData, MarkCarRequestSeenResponse, RejectCarRequestData, RejectCarRequestError, RejectCarRequestResponse, RenewTrackerTokenData, RenewTrackerTokenResponse, RequestMoreCarsData, RequestMoreCarsError, RequestMoreCarsResponse, RestoreBackupData, RestoreBackupError, RestoreBackupResponse, RevokeTrackerData, RevokeTrackerResponse, SetCarPictureData, SetCarPictureError, SetCarPictureResponse, SetTrackRetentionData, SetTrackRetentionResponse, StartTripData, StartTripError, StartTripResponse, SubscribeMyPushData, SubscribeMyPushResponse, TestMyPushData, UnsubscribeMyPushData, UnsubscribeMyPushResponse, UpdateAdminAccountData, UpdateAdminAccountError, UpdateAdminAccountResponse, UpdateChargingBillData, UpdateChargingBillError, UpdateChargingBillResponse, UpdateFuelBillData, UpdateFuelBillError, UpdateFuelBillResponse, UpdateMaintenanceBillData, UpdateMaintenanceBillError, UpdateMaintenanceBillResponse, UpdateMiscellaneousBillData, UpdateMiscellaneousBillError, UpdateMiscellaneousBillResponse, UpdateModificationData, UpdateModificationError, UpdateModificationResponse, UpdateMyCarData, UpdateMyNotificationsData, UpdateMyNotificationsResponse, UpdateMySettingsData, UpdateMySettingsError, UpdateMySettingsResponse, UpdateRecurringBillData, UpdateRecurringBillError, UpdateRecurringBillResponse, UpdateReminderData, UpdateReminderError, UpdateReminderResponse, UpdateTechnicalInspectionData, UpdateTechnicalInspectionError, UpdateTechnicalInspectionResponse } from '../types.gen';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -297,6 +297,84 @@ export const addBillAttachmentMutation = (options?: Partial<Options<AddBillAttac
     const mutationOptions: UseMutationOptions<AddBillAttachmentResponse, AddBillAttachmentError, Options<AddBillAttachmentData>> = {
         mutationFn: async (fnOptions) => {
             const { data } = await addBillAttachment({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const getModificationDocumentsQueryKey = (options: Options<GetModificationDocumentsData>) => createQueryKey('getModificationDocuments', options);
+
+/**
+ * Get Modification Documents
+ *
+ * Documents of the modification by their kind, then oldest first
+ */
+export const getModificationDocumentsOptions = (options: Options<GetModificationDocumentsData>) => queryOptions<GetModificationDocumentsResponse, DefaultError, GetModificationDocumentsResponse, ReturnType<typeof getModificationDocumentsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getModificationDocuments({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getModificationDocumentsQueryKey(options)
+});
+
+/**
+ * Add Modification Document
+ *
+ * Attaches a JPEG, PNG, WebP or PDF file of the kind to the modification
+ */
+export const addModificationDocumentMutation = (options?: Partial<Options<AddModificationDocumentData>>): UseMutationOptions<AddModificationDocumentResponse, AddModificationDocumentError, Options<AddModificationDocumentData>> => {
+    const mutationOptions: UseMutationOptions<AddModificationDocumentResponse, AddModificationDocumentError, Options<AddModificationDocumentData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await addModificationDocument({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const getTechnicalInspectionFilesQueryKey = (options: Options<GetTechnicalInspectionFilesData>) => createQueryKey('getTechnicalInspectionFiles', options);
+
+/**
+ * Get Technical Inspection Files
+ *
+ * Files of the HU, e.g. the report, oldest first
+ */
+export const getTechnicalInspectionFilesOptions = (options: Options<GetTechnicalInspectionFilesData>) => queryOptions<GetTechnicalInspectionFilesResponse, DefaultError, GetTechnicalInspectionFilesResponse, ReturnType<typeof getTechnicalInspectionFilesQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getTechnicalInspectionFiles({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getTechnicalInspectionFilesQueryKey(options)
+});
+
+/**
+ * Add Technical Inspection File
+ *
+ * Attaches a JPEG, PNG, WebP or PDF file to the HU, e.g. the report
+ */
+export const addTechnicalInspectionFileMutation = (options?: Partial<Options<AddTechnicalInspectionFileData>>): UseMutationOptions<AddTechnicalInspectionFileResponse, AddTechnicalInspectionFileError, Options<AddTechnicalInspectionFileData>> => {
+    const mutationOptions: UseMutationOptions<AddTechnicalInspectionFileResponse, AddTechnicalInspectionFileError, Options<AddTechnicalInspectionFileData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await addTechnicalInspectionFile({
                 ...options,
                 ...fnOptions,
                 throwOnError: true
@@ -1398,6 +1476,26 @@ export const exportAllExpensesCsvOptions = (options: Options<ExportAllExpensesCs
     queryKey: exportAllExpensesCsvQueryKey(options)
 });
 
+export const exportCarPapersPdfQueryKey = (options: Options<ExportCarPapersPdfData>) => createQueryKey('exportCarPapersPdf', options);
+
+/**
+ * Export Car Papers Pdf
+ *
+ * Exports the modifications and the HUs of the car as PDF: the car, the modifications with their approval and the HUs, then their documents and reports, a PDF page by page and a photo per page. The installed parts and the latest HU, with history also the removed parts and all HUs. In the units of the account and the language (de, en; the one of the account without).
+ */
+export const exportCarPapersPdfOptions = (options: Options<ExportCarPapersPdfData>) => queryOptions<ExportCarPapersPdfResponse, DefaultError, ExportCarPapersPdfResponse, ReturnType<typeof exportCarPapersPdfQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await exportCarPapersPdf({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: exportCarPapersPdfQueryKey(options)
+});
+
 export const exportTripsCsvQueryKey = (options: Options<ExportTripsCsvData>) => createQueryKey('exportTripsCsv', options);
 
 /**
@@ -1498,6 +1596,101 @@ export const getMapSettingsOptions = (options?: Options<GetMapSettingsData>) => 
     },
     queryKey: getMapSettingsQueryKey(options)
 });
+
+export const getModificationsQueryKey = (options: Options<GetModificationsData>) => createQueryKey('getModifications', options);
+
+/**
+ * Get Modifications
+ *
+ * Modifications of a car, the installed ones first, then the latest installed.
+ */
+export const getModificationsOptions = (options: Options<GetModificationsData>) => queryOptions<GetModificationsResponse, DefaultError, GetModificationsResponse, ReturnType<typeof getModificationsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getModifications({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getModificationsQueryKey(options)
+});
+
+/**
+ * Add Modification
+ */
+export const addModificationMutation = (options?: Partial<Options<AddModificationData>>): UseMutationOptions<AddModificationResponse, AddModificationError, Options<AddModificationData>> => {
+    const mutationOptions: UseMutationOptions<AddModificationResponse, AddModificationError, Options<AddModificationData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await addModification({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const getLinkableBillsQueryKey = (options: Options<GetLinkableBillsData>) => createQueryKey('getLinkableBills', options);
+
+/**
+ * Get Linkable Bills
+ *
+ * The maintenance and other entries of the car a modification can have, the latest first.
+ */
+export const getLinkableBillsOptions = (options: Options<GetLinkableBillsData>) => queryOptions<GetLinkableBillsResponse, DefaultError, GetLinkableBillsResponse, ReturnType<typeof getLinkableBillsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getLinkableBills({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getLinkableBillsQueryKey(options)
+});
+
+/**
+ * Delete Modification
+ *
+ * Deletes a modification including its history, remove it with a removed date to keep that.
+ */
+export const deleteModificationMutation = (options?: Partial<Options<DeleteModificationData>>): UseMutationOptions<DeleteModificationResponse, DefaultError, Options<DeleteModificationData>> => {
+    const mutationOptions: UseMutationOptions<DeleteModificationResponse, DefaultError, Options<DeleteModificationData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await deleteModification({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Update Modification
+ *
+ * Changes a modification, a removed date moves it into the history.
+ */
+export const updateModificationMutation = (options?: Partial<Options<UpdateModificationData>>): UseMutationOptions<UpdateModificationResponse, UpdateModificationError, Options<UpdateModificationData>> => {
+    const mutationOptions: UseMutationOptions<UpdateModificationResponse, UpdateModificationError, Options<UpdateModificationData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await updateModification({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 export const getRemindersQueryKey = (options: Options<GetRemindersData>) => createQueryKey('getReminders', options);
 
@@ -1629,6 +1822,81 @@ export const getMonthlyStatsOptions = (options: Options<GetMonthlyStatsData>) =>
     queryKey: getMonthlyStatsQueryKey(options)
 });
 
+export const getTechnicalInspectionsQueryKey = (options: Options<GetTechnicalInspectionsData>) => createQueryKey('getTechnicalInspections', options);
+
+/**
+ * Get Technical Inspections
+ *
+ * The HUs of a car, the latest first.
+ */
+export const getTechnicalInspectionsOptions = (options: Options<GetTechnicalInspectionsData>) => queryOptions<GetTechnicalInspectionsResponse, DefaultError, GetTechnicalInspectionsResponse, ReturnType<typeof getTechnicalInspectionsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getTechnicalInspections({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getTechnicalInspectionsQueryKey(options)
+});
+
+/**
+ * Add Technical Inspection
+ *
+ * Adds an HU. The next due month of the latest one moves the reminder of the HU of the car.
+ */
+export const addTechnicalInspectionMutation = (options?: Partial<Options<AddTechnicalInspectionData>>): UseMutationOptions<AddTechnicalInspectionResponse, AddTechnicalInspectionError, Options<AddTechnicalInspectionData>> => {
+    const mutationOptions: UseMutationOptions<AddTechnicalInspectionResponse, AddTechnicalInspectionError, Options<AddTechnicalInspectionData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await addTechnicalInspection({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Delete Technical Inspection
+ *
+ * Deletes an HU with its files, the reminder stays.
+ */
+export const deleteTechnicalInspectionMutation = (options?: Partial<Options<DeleteTechnicalInspectionData>>): UseMutationOptions<DeleteTechnicalInspectionResponse, DefaultError, Options<DeleteTechnicalInspectionData>> => {
+    const mutationOptions: UseMutationOptions<DeleteTechnicalInspectionResponse, DefaultError, Options<DeleteTechnicalInspectionData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await deleteTechnicalInspection({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Update Technical Inspection
+ */
+export const updateTechnicalInspectionMutation = (options?: Partial<Options<UpdateTechnicalInspectionData>>): UseMutationOptions<UpdateTechnicalInspectionResponse, UpdateTechnicalInspectionError, Options<UpdateTechnicalInspectionData>> => {
+    const mutationOptions: UseMutationOptions<UpdateTechnicalInspectionResponse, UpdateTechnicalInspectionError, Options<UpdateTechnicalInspectionData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await updateTechnicalInspection({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
 /**
  * Delete Tracks
  *
@@ -1666,6 +1934,26 @@ export const getTrackOptions = (options: Options<GetTrackData>) => queryOptions<
         return data;
     },
     queryKey: getTrackQueryKey(options)
+});
+
+export const getTrackFrequencyQueryKey = (options: Options<GetTrackFrequencyData>) => createQueryKey('getTrackFrequency', options);
+
+/**
+ * Get Track Frequency
+ *
+ * How often the car passed the roads of its GPS track in a time range of at most 31 days, both directions: the track cut into lines where the amount changes, simplified for the map.
+ */
+export const getTrackFrequencyOptions = (options: Options<GetTrackFrequencyData>) => queryOptions<GetTrackFrequencyResponse, GetTrackFrequencyError, GetTrackFrequencyResponse, ReturnType<typeof getTrackFrequencyQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getTrackFrequency({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getTrackFrequencyQueryKey(options)
 });
 
 /**

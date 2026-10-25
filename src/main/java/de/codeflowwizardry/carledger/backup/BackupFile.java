@@ -9,9 +9,14 @@ import de.codeflowwizardry.carledger.data.BillCategory;
 import de.codeflowwizardry.carledger.data.BillInterval;
 import de.codeflowwizardry.carledger.data.BillType;
 import de.codeflowwizardry.carledger.data.ChargingLocation;
+import de.codeflowwizardry.carledger.data.DocumentKind;
 import de.codeflowwizardry.carledger.data.EnergyType;
+import de.codeflowwizardry.carledger.data.InspectionResult;
+import de.codeflowwizardry.carledger.data.ReminderKind;
 import de.codeflowwizardry.carledger.data.TripReview;
 import de.codeflowwizardry.carledger.data.TripType;
+import de.codeflowwizardry.carledger.data.Accent;
+import de.codeflowwizardry.carledger.data.ApprovalType;
 import de.codeflowwizardry.carledger.data.UnitSystem;
 
 /**
@@ -39,7 +44,12 @@ public record BackupFile(String format, int version, OffsetDateTime createdAt, S
 	 */
 	public static final String TRACK_HEADER = "tracker,ts,lat,lon,speed,alt,hdop";
 
-	public record Settings(String vatCountry, String currency, String language, UnitSystem unitSystem)
+	/**
+	 * @param accent
+	 *            missing in backups before the presets
+	 */
+	public record Settings(String vatCountry, String currency, String language, UnitSystem unitSystem,
+			Accent accent)
 	{
 	}
 
@@ -58,12 +68,17 @@ public record BackupFile(String format, int version, OffsetDateTime createdAt, S
 	 * @param track
 	 *            CSV with the track points ({@link #TRACK_HEADER}), only for a
 	 *            car that keeps them forever and has some
+	 * @param modifications
+	 *            missing in backups before them
+	 * @param technicalInspections
+	 *            the HUs, missing in backups before them
 	 */
 	public record Car(String name, int year, int odometer, LocalDate odometerDate, String licensePlate, String vin,
 			LocalDate purchaseDate, BigDecimal purchasePrice, EnergyType energyType, BigDecimal tankSize,
 			BigDecimal batteryCapacity, File picture, List<Bill> bills, List<RecurringBill> recurringBills,
 			List<Reminder> reminders, List<Trip> trips, Boolean tripLog, Integer trackRetentionDays,
-			List<Tracker> trackers, File track)
+			List<Tracker> trackers, File track, List<Modification> modifications,
+			List<TechnicalInspection> technicalInspections)
 	{
 	}
 
@@ -79,8 +94,10 @@ public record BackupFile(String format, int version, OffsetDateTime createdAt, S
 	/**
 	 * @param path
 	 *            entry of the ZIP with the content
+	 * @param kind
+	 *            of a document of a modification, missing for other files
 	 */
-	public record File(String fileName, String contentType, String path)
+	public record File(String fileName, String contentType, String path, DocumentKind kind)
 	{
 	}
 
@@ -122,8 +139,23 @@ public record BackupFile(String format, int version, OffsetDateTime createdAt, S
 	{
 	}
 
+	/**
+	 * @param kind
+	 *            of a reminder the app keeps, e.g. of the HU
+	 */
 	public record Reminder(String title, String note, LocalDate dueDate, Integer dueOdometer, Integer intervalMonths,
-			Integer intervalKm)
+			Integer intervalKm, ReminderKind kind)
+	{
+	}
+
+	/**
+	 * An HU
+	 *
+	 * @param files
+	 *            e.g. the report
+	 */
+	public record TechnicalInspection(LocalDate date, Integer odometer, String testingBody,
+			InspectionResult result, String defects, LocalDate nextDue, List<File> files)
 	{
 	}
 
@@ -136,6 +168,22 @@ public record BackupFile(String format, int version, OffsetDateTime createdAt, S
 			OffsetDateTime endedAt, String destination, String purpose, String businessPartner,
 			TripReview reviewReason, OffsetDateTime createdAt, OffsetDateTime finishedAt, OffsetDateTime deletedAt,
 			String deletedBy, String deleteReason)
+	{
+	}
+
+	/**
+	 * @param bills
+	 *            indexes in {@link Car#bills()}, e.g. of the part, the workshop and
+	 *            the Abnahme
+	 * @param bill
+	 *            the one index of the prereleases of 0.8.0, before several bills
+	 * @param documents
+	 *            missing in backups before them
+	 */
+	public record Modification(String part, String manufacturer, ApprovalType approvalType, String approvalNumber,
+			String conditions, LocalDate inspectionDate, String testingBody, boolean registered,
+			LocalDate installedDate, Integer installedOdometer, LocalDate removedDate, Integer removedOdometer,
+			String notes, List<Integer> bills, Integer bill, List<File> documents)
 	{
 	}
 }

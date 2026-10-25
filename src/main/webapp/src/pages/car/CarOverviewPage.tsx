@@ -35,6 +35,7 @@ import useDeleteBill from '@/components/bill/useDeleteBill';
 import MonthlyChart from '@/components/dashboard/LazyMonthlyChart';
 import ReminderList from '@/components/reminder/ReminderList';
 import CarDetails from '@/components/car/CarDetails';
+import PapersSummary from '@/components/car/PapersSummary';
 
 /** the chart of the overview shows the current and the 11 months before */
 const lastTwelveMonths = () => ({
@@ -268,6 +269,7 @@ export default function CarOverviewPage({ id }: { id: number }) {
                 />
               )}
             </Section>
+            <PapersSummary carId={id} />
             <Section
               title={t('car.overview.running')}
               action={

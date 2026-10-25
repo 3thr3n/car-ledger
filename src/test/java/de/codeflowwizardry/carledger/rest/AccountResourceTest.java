@@ -249,6 +249,38 @@ class AccountResourceTest
 	@TestSecurity(user = "peter", roles = {
 			"user"
 	})
+	void shouldSaveTheAccentAndKeepItWithoutOne()
+	{
+		given().when().get("/api/user/me").then().statusCode(200).body("accent", Matchers.is("TEAL"));
+
+		given()
+				.contentType(ContentType.JSON)
+				.body("""
+						{ "vatCountry": "DE", "currency": "EUR", "accent": "AMBER" }
+						""")
+				.when()
+				.put("/api/user/me/settings")
+				.then()
+				.statusCode(200)
+				.body("accent", Matchers.is("AMBER"));
+
+		// e.g. the language switch of the sidebar saves without one
+		given()
+				.contentType(ContentType.JSON)
+				.body("""
+						{ "vatCountry": "DE", "currency": "EUR", "language": "EN" }
+						""")
+				.when()
+				.put("/api/user/me/settings")
+				.then()
+				.statusCode(200)
+				.body("accent", Matchers.is("AMBER"));
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = {
+			"user"
+	})
 	void shouldRejectInvalidSettings()
 	{
 		given().when().get("/api/user/me").then().statusCode(200);

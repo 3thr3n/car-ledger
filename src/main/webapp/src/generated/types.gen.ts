@@ -4,6 +4,14 @@ export type ClientOptions = {
     baseUrl: 'http://localhost:8080' | 'http://0.0.0.0:8080' | (string & {});
 };
 
+export enum Accent {
+    TEAL = 'TEAL',
+    BLUE = 'BLUE',
+    VIOLET = 'VIOLET',
+    ROSE = 'ROSE',
+    AMBER = 'AMBER'
+}
+
 export type Account = {
     maxCars?: number;
     name?: string;
@@ -12,6 +20,7 @@ export type Account = {
     currency?: string;
     language?: string;
     unitSystem: UnitSystem;
+    accent: Accent;
 };
 
 export type AdminAccount = {
@@ -64,6 +73,15 @@ export type AdminStats = {
     openRequests?: number;
 };
 
+export enum ApprovalType {
+    ABE = 'ABE',
+    PART_TYPE_APPROVAL = 'PART_TYPE_APPROVAL',
+    PARTS_REPORT = 'PARTS_REPORT',
+    SINGLE_APPROVAL = 'SINGLE_APPROVAL',
+    EC_TYPE_APPROVAL = 'EC_TYPE_APPROVAL',
+    NONE = 'NONE'
+}
+
 export type ApproveCarRequestInput = {
     maxCars?: number;
 };
@@ -74,6 +92,7 @@ export type Attachment = {
     contentType?: string;
     size?: number;
     createdAt?: OffsetDateTime;
+    kind?: DocumentKind;
 };
 
 export type AverageStats = {
@@ -97,6 +116,8 @@ export type BackupSummary = {
     files?: number;
     trackers?: number;
     trackPoints?: number;
+    modifications?: number;
+    technicalInspections?: number;
 };
 
 export type Bill = {
@@ -323,6 +344,13 @@ export type DeviceInput = {
     name?: string;
 };
 
+export enum DocumentKind {
+    APPROVAL = 'APPROVAL',
+    INSPECTION = 'INSPECTION',
+    PHOTO = 'PHOTO',
+    OTHER = 'OTHER'
+}
+
 export enum EnergyType {
     PETROL = 'PETROL',
     DIESEL = 'DIESEL',
@@ -342,6 +370,12 @@ export type FirmwareManifest = {
 
 export type FirmwareSettings = {
     version?: string;
+};
+
+export type FrequencyLine = {
+    passes: number;
+    last: OffsetDateTime;
+    coordinates: Array<Array<number>>;
 };
 
 export type FuelBill = {
@@ -383,6 +417,22 @@ export type HiLoStats = {
     fuelCost?: HiLo;
     chargingCost?: HiLo;
     maintenanceCost?: HiLo;
+};
+
+export enum InspectionResult {
+    NO_DEFECTS = 'NO_DEFECTS',
+    MINOR_DEFECTS = 'MINOR_DEFECTS',
+    MAJOR_DEFECTS = 'MAJOR_DEFECTS',
+    DANGEROUS_DEFECTS = 'DANGEROUS_DEFECTS',
+    UNSAFE = 'UNSAFE'
+}
+
+export type LinkedBill = {
+    id: number;
+    type: BillType;
+    date: LocalDate;
+    total: number;
+    description?: string;
 };
 
 export type LocalDate = string;
@@ -436,6 +486,51 @@ export type MiscellaneousBillInput = {
     date?: LocalDate;
     description?: string;
 };
+
+export type Modification = {
+    id: number;
+    carId: number;
+    part: string;
+    manufacturer?: string;
+    approvalType: ApprovalType;
+    approvalNumber?: string;
+    conditions?: string;
+    inspectionDate?: LocalDate;
+    testingBody?: string;
+    registered: boolean;
+    installedDate?: LocalDate;
+    installedOdometer?: number;
+    removedDate?: LocalDate;
+    removedOdometer?: number;
+    notes?: string;
+    bills: Array<LinkedBill>;
+    installed: boolean;
+    inspectionOpen: boolean;
+    documents: number;
+};
+
+export type ModificationInput = {
+    part?: string;
+    manufacturer?: string;
+    approvalType?: ApprovalType;
+    approvalNumber?: string;
+    conditions?: string;
+    inspectionDate?: LocalDate;
+    testingBody?: string;
+    registered?: boolean;
+    installedDate?: LocalDate;
+    installedOdometer?: number;
+    removedDate?: LocalDate;
+    removedOdometer?: number;
+    notes?: string;
+    billIds?: Array<number>;
+};
+
+export enum ModificationState {
+    INSTALLED = 'INSTALLED',
+    REMOVED = 'REMOVED',
+    ALL = 'ALL'
+}
 
 export type MonthStats = {
     month: string;
@@ -597,12 +692,35 @@ export type SettingsInput = {
     currency?: string;
     language?: string;
     unitSystem?: UnitSystem;
+    accent?: Accent;
 };
 
 export enum SortOrder {
     ASC = 'ASC',
     DESC = 'DESC'
 }
+
+export type TechnicalInspection = {
+    id: number;
+    carId: number;
+    date: LocalDate;
+    odometer?: number;
+    testingBody?: string;
+    result: InspectionResult;
+    defects?: string;
+    nextDue?: LocalDate;
+    passed: boolean;
+    documents: number;
+};
+
+export type TechnicalInspectionInput = {
+    date?: LocalDate;
+    odometer?: number;
+    testingBody?: string;
+    result?: InspectionResult;
+    defects?: string;
+    nextDue?: LocalDate;
+};
 
 export type TotalStats = {
     unit?: number;
@@ -623,6 +741,11 @@ export type Track = {
     segments: Array<Array<TrackPoint>>;
     distance: number;
     points: number;
+};
+
+export type TrackFrequency = {
+    lines: Array<FrequencyLine>;
+    maxPasses: number;
 };
 
 export type TrackPoint = {
@@ -995,6 +1118,135 @@ export type AddBillAttachmentResponses = {
 };
 
 export type AddBillAttachmentResponse = AddBillAttachmentResponses[keyof AddBillAttachmentResponses];
+
+export type GetModificationDocumentsData = {
+    body?: never;
+    path: {
+        carId: number;
+        modificationId: number;
+    };
+    query?: never;
+    url: '/api/attachment/{carId}/modification/{modificationId}';
+};
+
+export type GetModificationDocumentsErrors = {
+    /**
+     * Modification not found.
+     */
+    404: unknown;
+};
+
+export type GetModificationDocumentsResponses = {
+    /**
+     * Documents found.
+     */
+    200: Array<Attachment>;
+};
+
+export type GetModificationDocumentsResponse = GetModificationDocumentsResponses[keyof GetModificationDocumentsResponses];
+
+export type AddModificationDocumentData = {
+    body: {
+        file?: Blob | File;
+        kind?: DocumentKind;
+    };
+    path: {
+        carId: number;
+        modificationId: number;
+    };
+    query?: never;
+    url: '/api/attachment/{carId}/modification/{modificationId}';
+};
+
+export type AddModificationDocumentErrors = {
+    /**
+     * Kind missing, file empty, too large, of another type or too many documents
+     */
+    400: Array<unknown>;
+    /**
+     * Modification not found.
+     */
+    404: unknown;
+    /**
+     * Request larger than allowed by the server.
+     */
+    413: unknown;
+};
+
+export type AddModificationDocumentError = AddModificationDocumentErrors[keyof AddModificationDocumentErrors];
+
+export type AddModificationDocumentResponses = {
+    /**
+     * Document attached.
+     */
+    201: Attachment;
+};
+
+export type AddModificationDocumentResponse = AddModificationDocumentResponses[keyof AddModificationDocumentResponses];
+
+export type GetTechnicalInspectionFilesData = {
+    body?: never;
+    path: {
+        carId: number;
+        inspectionId: number;
+    };
+    query?: never;
+    url: '/api/attachment/{carId}/technical-inspection/{inspectionId}';
+};
+
+export type GetTechnicalInspectionFilesErrors = {
+    /**
+     * Technical inspection not found.
+     */
+    404: unknown;
+};
+
+export type GetTechnicalInspectionFilesResponses = {
+    /**
+     * Files found.
+     */
+    200: Array<Attachment>;
+};
+
+export type GetTechnicalInspectionFilesResponse = GetTechnicalInspectionFilesResponses[keyof GetTechnicalInspectionFilesResponses];
+
+export type AddTechnicalInspectionFileData = {
+    body: {
+        file?: Blob | File;
+    };
+    path: {
+        carId: number;
+        inspectionId: number;
+    };
+    query?: never;
+    url: '/api/attachment/{carId}/technical-inspection/{inspectionId}';
+};
+
+export type AddTechnicalInspectionFileErrors = {
+    /**
+     * File empty, too large, of another type or too many files
+     */
+    400: Array<unknown>;
+    /**
+     * Technical inspection not found.
+     */
+    404: unknown;
+    /**
+     * Request larger than allowed by the server.
+     */
+    413: unknown;
+};
+
+export type AddTechnicalInspectionFileError = AddTechnicalInspectionFileErrors[keyof AddTechnicalInspectionFileErrors];
+
+export type AddTechnicalInspectionFileResponses = {
+    /**
+     * File attached.
+     */
+    201: Attachment;
+};
+
+export type AddTechnicalInspectionFileResponse = AddTechnicalInspectionFileResponses[keyof AddTechnicalInspectionFileResponses];
 
 export type DeleteAttachmentData = {
     body?: never;
@@ -2257,6 +2509,38 @@ export type ExportAllExpensesCsvResponses = {
 
 export type ExportAllExpensesCsvResponse = ExportAllExpensesCsvResponses[keyof ExportAllExpensesCsvResponses];
 
+export type ExportCarPapersPdfData = {
+    body?: never;
+    path: {
+        carId: number;
+    };
+    query?: {
+        history?: boolean;
+        language?: string;
+    };
+    url: '/api/export/{carId}/papers/pdf';
+};
+
+export type ExportCarPapersPdfErrors = {
+    /**
+     * An unknown language.
+     */
+    400: unknown;
+    /**
+     * Car not found.
+     */
+    404: unknown;
+};
+
+export type ExportCarPapersPdfResponses = {
+    /**
+     * The papers as PDF.
+     */
+    200: Blob | File;
+};
+
+export type ExportCarPapersPdfResponse = ExportCarPapersPdfResponses[keyof ExportCarPapersPdfResponses];
+
 export type ExportTripsCsvData = {
     body?: never;
     path: {
@@ -2402,6 +2686,137 @@ export type GetMapSettingsResponses = {
 };
 
 export type GetMapSettingsResponse = GetMapSettingsResponses[keyof GetMapSettingsResponses];
+
+export type GetModificationsData = {
+    body?: never;
+    path: {
+        carId: number;
+    };
+    query?: {
+        state?: ModificationState & unknown;
+    };
+    url: '/api/modification/{carId}';
+};
+
+export type GetModificationsResponses = {
+    /**
+     * OK
+     */
+    200: Array<Modification>;
+};
+
+export type GetModificationsResponse = GetModificationsResponses[keyof GetModificationsResponses];
+
+export type AddModificationData = {
+    body: ModificationInput;
+    path: {
+        carId: number;
+    };
+    query?: never;
+    url: '/api/modification/{carId}';
+};
+
+export type AddModificationErrors = {
+    /**
+     * Validation failed, please check the response
+     */
+    400: Array<unknown>;
+    /**
+     * Car is not for your user.
+     */
+    404: unknown;
+};
+
+export type AddModificationError = AddModificationErrors[keyof AddModificationErrors];
+
+export type AddModificationResponses = {
+    202: Modification;
+};
+
+export type AddModificationResponse = AddModificationResponses[keyof AddModificationResponses];
+
+export type GetLinkableBillsData = {
+    body?: never;
+    path: {
+        carId: number;
+    };
+    query?: never;
+    url: '/api/modification/{carId}/bills';
+};
+
+export type GetLinkableBillsErrors = {
+    /**
+     * Car is not for your user.
+     */
+    404: unknown;
+};
+
+export type GetLinkableBillsResponses = {
+    /**
+     * Bills found.
+     */
+    200: Array<LinkedBill>;
+};
+
+export type GetLinkableBillsResponse = GetLinkableBillsResponses[keyof GetLinkableBillsResponses];
+
+export type DeleteModificationData = {
+    body?: never;
+    path: {
+        carId: number;
+        id: number;
+    };
+    query?: never;
+    url: '/api/modification/{carId}/{id}';
+};
+
+export type DeleteModificationErrors = {
+    /**
+     * Modification not found for the car of your user.
+     */
+    404: unknown;
+};
+
+export type DeleteModificationResponses = {
+    /**
+     * Deleted
+     */
+    204: void;
+};
+
+export type DeleteModificationResponse = DeleteModificationResponses[keyof DeleteModificationResponses];
+
+export type UpdateModificationData = {
+    body: ModificationInput;
+    path: {
+        carId: number;
+        id: number;
+    };
+    query?: never;
+    url: '/api/modification/{carId}/{id}';
+};
+
+export type UpdateModificationErrors = {
+    /**
+     * Validation failed, please check the response
+     */
+    400: Array<unknown>;
+    /**
+     * Modification not found for the car of your user.
+     */
+    404: unknown;
+};
+
+export type UpdateModificationError = UpdateModificationErrors[keyof UpdateModificationErrors];
+
+export type UpdateModificationResponses = {
+    /**
+     * OK
+     */
+    200: Modification;
+};
+
+export type UpdateModificationResponse = UpdateModificationResponses[keyof UpdateModificationResponses];
 
 export type GetRemindersData = {
     body?: never;
@@ -2587,6 +3002,110 @@ export type GetMonthlyStatsResponses = {
 
 export type GetMonthlyStatsResponse = GetMonthlyStatsResponses[keyof GetMonthlyStatsResponses];
 
+export type GetTechnicalInspectionsData = {
+    body?: never;
+    path: {
+        carId: number;
+    };
+    query?: never;
+    url: '/api/technical-inspection/{carId}';
+};
+
+export type GetTechnicalInspectionsResponses = {
+    /**
+     * OK
+     */
+    200: Array<TechnicalInspection>;
+};
+
+export type GetTechnicalInspectionsResponse = GetTechnicalInspectionsResponses[keyof GetTechnicalInspectionsResponses];
+
+export type AddTechnicalInspectionData = {
+    body: TechnicalInspectionInput;
+    path: {
+        carId: number;
+    };
+    query?: never;
+    url: '/api/technical-inspection/{carId}';
+};
+
+export type AddTechnicalInspectionErrors = {
+    /**
+     * Validation failed, please check the response
+     */
+    400: Array<unknown>;
+    /**
+     * Car is not for your user.
+     */
+    404: unknown;
+};
+
+export type AddTechnicalInspectionError = AddTechnicalInspectionErrors[keyof AddTechnicalInspectionErrors];
+
+export type AddTechnicalInspectionResponses = {
+    202: TechnicalInspection;
+};
+
+export type AddTechnicalInspectionResponse = AddTechnicalInspectionResponses[keyof AddTechnicalInspectionResponses];
+
+export type DeleteTechnicalInspectionData = {
+    body?: never;
+    path: {
+        carId: number;
+        id: number;
+    };
+    query?: never;
+    url: '/api/technical-inspection/{carId}/{id}';
+};
+
+export type DeleteTechnicalInspectionErrors = {
+    /**
+     * Technical inspection not found for the car of your user.
+     */
+    404: unknown;
+};
+
+export type DeleteTechnicalInspectionResponses = {
+    /**
+     * Deleted
+     */
+    204: void;
+};
+
+export type DeleteTechnicalInspectionResponse = DeleteTechnicalInspectionResponses[keyof DeleteTechnicalInspectionResponses];
+
+export type UpdateTechnicalInspectionData = {
+    body: TechnicalInspectionInput;
+    path: {
+        carId: number;
+        id: number;
+    };
+    query?: never;
+    url: '/api/technical-inspection/{carId}/{id}';
+};
+
+export type UpdateTechnicalInspectionErrors = {
+    /**
+     * Validation failed, please check the response
+     */
+    400: Array<unknown>;
+    /**
+     * Technical inspection not found for the car of your user.
+     */
+    404: unknown;
+};
+
+export type UpdateTechnicalInspectionError = UpdateTechnicalInspectionErrors[keyof UpdateTechnicalInspectionErrors];
+
+export type UpdateTechnicalInspectionResponses = {
+    /**
+     * OK
+     */
+    200: TechnicalInspection;
+};
+
+export type UpdateTechnicalInspectionResponse = UpdateTechnicalInspectionResponses[keyof UpdateTechnicalInspectionResponses];
+
 export type DeleteTracksData = {
     body?: never;
     path: {
@@ -2666,6 +3185,46 @@ export type GetTrackResponses = {
 };
 
 export type GetTrackResponse = GetTrackResponses[keyof GetTrackResponses];
+
+export type GetTrackFrequencyData = {
+    body?: never;
+    path: {
+        carId: number;
+    };
+    query: {
+        /**
+         * Start of the range, inclusive
+         */
+        from: OffsetDateTime;
+        /**
+         * End of the range, exclusive
+         */
+        to: OffsetDateTime;
+    };
+    url: '/api/track/{carId}/frequency';
+};
+
+export type GetTrackFrequencyErrors = {
+    /**
+     * Range missing, empty or too long
+     */
+    400: Array<unknown>;
+    /**
+     * Car is not for your user.
+     */
+    404: unknown;
+};
+
+export type GetTrackFrequencyError = GetTrackFrequencyErrors[keyof GetTrackFrequencyErrors];
+
+export type GetTrackFrequencyResponses = {
+    /**
+     * OK
+     */
+    200: TrackFrequency;
+};
+
+export type GetTrackFrequencyResponse = GetTrackFrequencyResponses[keyof GetTrackFrequencyResponses];
 
 export type SetTrackRetentionData = {
     body: TrackRetentionInput;

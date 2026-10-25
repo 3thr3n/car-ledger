@@ -47,7 +47,7 @@ common:
 landing:
   eyebrow: "Fahrzeugkosten im Blick"
   title: "Wisse, was dein Auto wirklich kostet."
-  subtitle: "Erfasse Tankfüllungen, Werkstattbesuche, Versicherung und alles andere. CarLedger macht aus deinen Belegen Kosten pro Kilometer, Verbrauch und Trends."
+  subtitle: "Erfasse Tankungen, Ladungen, Werkstattbesuche, Versicherung und alles andere und hab die Papiere deines Autos immer dabei. CarLedger macht aus deinen Belegen Kosten pro Kilometer, Verbrauch und Trends."
   cta: "Anmelden und loslegen"
   ctaDashboard: "Zum Dashboard"
   features:
@@ -69,6 +69,33 @@ landing:
     stats:
       title: "Statistiken"
       text: "Kosten pro km, Verbrauch sowie Höchst- und Tiefstwerte — pro Fahrzeug oder für alle zusammen."
+    charging:
+      title: "Laden"
+      text: "Elektro- und Plug-in-Hybride: kWh, Preis und der Verbrauch in kWh/100 km neben den Tankungen."
+    modifications:
+      title: "Umbauten"
+      text: "Felgen, Gewindefahrwerk, Auspuff: mit ABE, Teilegutachten oder Einzelabnahme, den Auflagen und den Dokumenten."
+    inspections:
+      title: "HU"
+      text: "Die Hauptuntersuchung mit Ergebnis, Mängeln und Prüfbericht; der nächste Termin wird zur Erinnerung."
+    papers:
+      title: "Papiere als PDF"
+      text: "Die Umbauten und die HUs mit allen Dokumenten in einem PDF, für eine Kontrolle oder den Verkauf."
+    reminders:
+      title: "Erinnerungen"
+      text: "Inspektion, Reifen, Vignette: fällig nach Datum oder Kilometerstand, per E-Mail und Push-Nachricht."
+    trips:
+      title: "Fahrtenbuch"
+      text: "Fahrten mit Kilometerstand beginnen und beenden, gelöschte bleiben mit Grund, Export als PDF oder CSV."
+    gps:
+      title: "GPS-Tracking"
+      text: "Ein Tracker im Auto sendet die Strecke: die Karte nach Tempo oder Häufigkeit, vergessene Fahrten vorgeschlagen."
+    offline:
+      title: "App und offline"
+      text: "Auf dem Startbildschirm wie eine App; Tankungen und Fahrten gehen ohne Verbindung, die Papiere bleiben auf dem Handy."
+    backup:
+      title: "Sicherung"
+      text: "Alle deine Daten mit Belegen und Dokumenten in einer Datei, auf jeder Installation wiederherstellbar."
 
 dashboard:
   title: "Dashboard"
@@ -188,6 +215,8 @@ car:
     trips: "Fahrten"
     track: "Karte"
     reminders: "Erinnerungen"
+    modifications: "Umbauten"
+    inspections: "HU"
   overview:
     totalCost: "Gesamtkosten"
     avgConsumption: "Ø Verbrauch"
@@ -208,6 +237,17 @@ car:
     nextDue: "Nächste Fälligkeit {{date}}"
     avgChargingConsumption: "Ø Verbrauch (elektrisch)"
     charges: "Ladungen"
+    papers:
+      title: "HU und Umbauten"
+      empty: "Noch keine HU und keine Umbauten"
+      noNextDue: "Keine nächste HU"
+      latest: "Letzte HU am {{date}}"
+      installed_one: "{{count}} verbauter Umbau"
+      installed_other: "{{count}} verbaute Umbauten"
+      inspectionOpen_one: "{{count}} Abnahme offen"
+      inspectionOpen_other: "{{count}} Abnahmen offen"
+      unregistered_one: "{{count}} noch nicht eingetragen"
+      unregistered_other: "{{count}} noch nicht eingetragen"
   picture:
     choose: "Bild auswählen"
     change: "Bild ändern"
@@ -360,6 +400,15 @@ track:
   speed: "Geschwindigkeit ({{unit}})"
   legendLabel: "Geschwindigkeit von {{from}} {{unit}} (hell) bis {{to}} {{unit}} (dunkel)"
   noSpeed: "Keine Geschwindigkeit"
+  frequency: "Wie oft gefahren"
+  frequencyLabel: "Gefahren von 1× (hell, schmal) bis {{to}}× (dunkel, breit)"
+  frequencyHint: "Beide Richtungen zählen; eine Straße zählt erneut, wenn das Auto länger als 5 Minuten nicht dort war."
+  passes_one: "Einmal gefahren · zuletzt {{date}}"
+  passes_other: "{{count}}× gefahren · zuletzt {{date}}"
+  mode:
+    label: "Strecke einfärben nach"
+    speed: "Geschwindigkeit"
+    frequency: "Häufigkeit"
   notSetUp: "Die Karte ist nicht eingerichtet"
   notSetUpText: "Der Betreiber von CarLedger richtet einen Kartenserver ein, siehe docs/GPS_TRACKER.md."
   deletePeriod: "Diese Strecke löschen"
@@ -614,7 +663,27 @@ backup:
   restore: "Sicherung wiederherstellen"
   restoreHelp: "Stellt eine heruntergeladene Sicherung in deinem Konto wieder her, das noch keine Fahrzeuge hat."
   restoreOnlyEmpty: "Eine Sicherung kann nur in einem Konto ohne Fahrzeuge wiederhergestellt werden."
-  restored: "Sicherung wiederhergestellt: {{cars}} Fahrzeug(e), {{bills}} Einträge, {{files}} Dateien"
+  restored: "Sicherung wiederhergestellt: {{parts}}"
+  restoredEmpty: "Sicherung wiederhergestellt, sie hatte keine Fahrzeuge"
+  parts:
+    cars_one: "{{count}} Fahrzeug"
+    cars_other: "{{count}} Fahrzeuge"
+    bills_one: "{{count}} Eintrag"
+    bills_other: "{{count}} Einträge"
+    recurringBills_one: "{{count}} wiederkehrende Kosten"
+    recurringBills_other: "{{count}} wiederkehrende Kosten"
+    reminders_one: "{{count}} Erinnerung"
+    reminders_other: "{{count}} Erinnerungen"
+    trips_one: "{{count}} Fahrt"
+    trips_other: "{{count}} Fahrten"
+    modifications_one: "{{count}} Umbau"
+    modifications_other: "{{count}} Umbauten"
+    technicalInspections_one: "{{count}} HU"
+    technicalInspections_other: "{{count}} HUs"
+    trackers_one: "{{count}} GPS-Tracker"
+    trackers_other: "{{count}} GPS-Tracker"
+    files_one: "{{count}} Datei"
+    files_other: "{{count}} Dateien"
   failed: "Die Sicherung konnte nicht wiederhergestellt werden"
   tooLarge: "Das Backup ist größer, als der Server annimmt. Sein Betreiber kann die Grenze erhöhen (carLedger.attachments.maxRequestSize, siehe docs/DEPLOYMENT.md)."
 
@@ -638,6 +707,15 @@ settings:
     EN: "English"
     DE: "Deutsch"
   saved: "Einstellungen gespeichert"
+  appearance:
+    title: "Darstellung"
+    text: "Die Akzentfarbe von Schaltflächen, Links und Hervorhebungen, gespeichert mit deinem Konto. Die Farben der Kategorien bleiben."
+    accents:
+      TEAL: "Petrol"
+      BLUE: "Blau"
+      VIOLET: "Violett"
+      ROSE: "Rosé"
+      AMBER: "Bernstein"
   deleteAccount:
     title: "Konto löschen"
     text: "Entfernt dein Konto mit allen Autos, Einträgen, laufenden Kosten und Erinnerungen."
@@ -767,8 +845,8 @@ reminder:
     due: "Gib ein Datum oder einen Kilometerstand an."
     intervalMonths: "Braucht ein Fälligkeitsdatum."
     intervalKm: "Braucht einen fälligen Kilometerstand."
+  huHint: "Die HU hat eine eigene Erinnerung: Sie folgt dem nächsten Termin auf dem <tab>Tab HU</tab>."
   presets:
-    inspection: "Hauptuntersuchung"
     service: "Inspektion"
     tires: "Reifenwechsel"
     vignette: "Vignette"
@@ -800,6 +878,7 @@ reminder:
     confirm: "Als erledigt markieren"
     success: "Als erledigt markiert"
 offline:
+  banner: "Offline: Du siehst, was auf diesem Gerät gespeichert ist. Tankungen, Ladungen und Fahrten werden später gesendet, Listen und Statistiken laden wieder, sobald du online bist."
   queued: "Keine Verbindung: auf diesem Gerät gespeichert, wird gesendet, sobald du wieder online bist"
   noFiles: "Die Dateien werden ohne Verbindung nicht gespeichert, hänge sie an, sobald der Eintrag gesendet ist"
   sent_one: "{{count}} offline erfasster Eintrag wurde gesendet"
@@ -937,3 +1016,161 @@ trip:
     from: "Von"
     to: "Bis"
     text: "Das PDF ist das Fahrtenbuch zum Ausdrucken oder Einreichen, mit den gelöschten Fahrten samt Grund und den Summen je Art. Die CSV ist für Tabellen. Ob ein Finanzamt es als elektronisches Fahrtenbuch anerkennt, kann CarLedger nicht garantieren."
+
+modification:
+  title: "Umbauten"
+  subtitle: "Teile mit ihrer ABE, ihrem Teilegutachten oder ihrer Einzelabnahme, um die Auflagen jederzeit nachzusehen."
+  add:
+    button: "Umbau hinzufügen"
+    title: "Umbau hinzufügen"
+  edit:
+    title: "Umbau bearbeiten"
+  added: "Umbau hinzugefügt"
+  updated: "Umbau gespeichert"
+  deleted: "Umbau gelöscht"
+  delete:
+    title: "{{part}} löschen?"
+    textInstalled: "Er ist samt Dokumenten weg. Um ihn in der Historie des Autos zu behalten, stattdessen das Teil ausbauen."
+    text: "Er ist samt Dokumenten aus der Historie des Autos weg."
+  remove:
+    button: "Teil ausbauen"
+    title: "{{part}} ausbauen?"
+    text: "Das Teil bleibt mit seinen Dokumenten in der Historie des Autos."
+    date: "Ausgebaut am"
+    confirm: "Ausbauen"
+    success: "Teil in die Historie verschoben"
+  shown:
+    label: "Angezeigte Umbauten"
+    INSTALLED: "Verbaut"
+    REMOVED: "Ausgebaut"
+  empty:
+    title: "Noch keine Umbauten"
+    text: "Trage die Teile mit ihrer Genehmigung, den Auflagen und den Dokumenten ein, z. B. Felgen, Gewindefahrwerk oder Auspuff."
+    removedTitle: "Keine ausgebauten Teile"
+    removedText: "Ein ausgebautes Teil erscheint hier mit dem Zeitpunkt des Ausbaus."
+  originalsHint: "CarLedger ersetzt nicht die Papiere: Die Originale von ABE, Gutachten und Abnahme müssen weiterhin im Auto sein."
+  details: "Details"
+  installedAt: "Verbaut {{when}}"
+  removedAt: "Ausgebaut {{when}}"
+  registered: "In der Zulassungsbescheinigung eingetragen"
+  notRegistered: "Nicht in der Zulassungsbescheinigung eingetragen"
+  open:
+    inspection: "Abnahme offen"
+    registration: "Noch nicht eingetragen"
+  sections:
+    approval: "Genehmigung"
+    inspection: "Abnahme"
+    installed: "Verbaut"
+    removed: "Ausgebaut"
+  fields:
+    part: "Teil"
+    partExample: "z. B. Felgen 8x18 ET45"
+    manufacturer: "Hersteller"
+    approvalType: "Genehmigung"
+    approvalNumber: "Genehmigungsnummer"
+    conditions: "Auflagen"
+    inspectionDate: "Datum der Abnahme"
+    testingBody: "Prüforganisation"
+    registered: "In der Zulassungsbescheinigung Teil I eingetragen"
+    date: "Datum"
+    odometer: "Kilometerstand"
+    notes: "Notizen"
+    bills: "Belege"
+  billsHint: "Das Teil, die Werkstatt, die Abnahme: Wartungen und sonstige Einträge des Autos."
+  billsEmpty: "Keine Wartungen oder sonstigen Einträge bei diesem Auto"
+  billsTotal: "Gesamt {{total}}"
+  approvalNumberHint: "z. B. die KBA-Nummer oder die Nummer des Gutachtens"
+  conditionsHint: "Die Auflagen, z. B. welche Reifen oder welche Modelle"
+  inspectionHint: "Eine Prüforganisation prüft das Auto mit dem Teil und bestätigt es."
+  approvalTypes:
+    ABE: "ABE"
+    PART_TYPE_APPROVAL: "Teiletypgenehmigung"
+    PARTS_REPORT: "Teilegutachten"
+    SINGLE_APPROVAL: "Einzelabnahme"
+    EC_TYPE_APPROVAL: "EG-Typgenehmigung / E-Prüfzeichen"
+    NONE: "Keine Genehmigung nötig"
+  approvalHints:
+    ABE: "Allgemeine Betriebserlaubnis des Teils, keine Abnahme."
+    PART_TYPE_APPROVAL: "Typgenehmigung des Teils, keine Abnahme."
+    PARTS_REPORT: "Braucht eine Änderungsabnahme (§19.3 StVZO)."
+    SINGLE_APPROVAL: "Eine Prüforganisation genehmigt dieses Auto mit dem Teil (§21 StVZO)."
+    EC_TYPE_APPROVAL: "EU-weit genehmigt, z. B. mit einem E-Prüfzeichen auf dem Teil."
+    NONE: "z. B. Teile, die den originalen entsprechen."
+  errors:
+    removedDate: "Gib an, wann es ausgebaut wurde."
+    removedBeforeInstalled: "Vor dem Einbau."
+    removedBelowInstalled: "Unter dem Kilometerstand beim Einbau."
+  offline:
+    label: "Dokumente offline verfügbar"
+    text: "Speichert die Dokumente der verbauten Teile und den Prüfbericht der letzten HU auf diesem Gerät, z. B. für eine Verkehrskontrolle ohne Verbindung."
+    saving: "Dokumente werden gespeichert…"
+    saved_one: "{{count}} Dokument gespeichert {{time}}. Ohne Verbindung zeigt es diesen Stand, es kann veraltet sein."
+    saved_other: "{{count}} Dokumente gespeichert {{time}}. Ohne Verbindung zeigen sie diesen Stand, sie können veraltet sein."
+    skipped_one: "Nicht gespeichert, über {{size}} auf diesem Gerät: {{names}}"
+    skipped_other: "{{count}} nicht gespeichert, über {{size}} auf diesem Gerät: {{names}}"
+    failed: "Die Dokumente konnten nicht auf diesem Gerät gespeichert werden"
+    notKept: "Dieses Dokument ist nicht offline verfügbar"
+  documents:
+    title: "Dokumente"
+    add: "Dokument hinzufügen"
+    empty: "Noch keine Dokumente: das Gutachten oder die ABE, der Abnahmebericht oder Fotos."
+    deleteText: "Die Datei wird endgültig gelöscht, der Umbau bleibt."
+    kinds:
+      APPROVAL: "Gutachten / ABE"
+      INSPECTION: "Abnahmebericht"
+      PHOTO: "Foto"
+      OTHER: "Sonstiges"
+
+inspection:
+  title: "HU"
+  subtitle: "Die Hauptuntersuchung mit AU: das Ergebnis, die Mängel und der Prüfbericht. Der nächste Termin verschiebt die Erinnerung an die HU."
+  add:
+    button: "HU hinzufügen"
+    title: "HU hinzufügen"
+  edit:
+    title: "HU bearbeiten"
+  added: "HU hinzugefügt"
+  updated: "HU gespeichert"
+  deleted: "HU gelöscht"
+  delete:
+    title: "Diese HU löschen?"
+    text: "Sie ist samt Prüfbericht weg. Die Erinnerung an die HU bleibt."
+  empty:
+    title: "Noch keine HU"
+    text: "Trage die letzte mit ihrem Prüfbericht ein: Der nächste Termin wird zur Erinnerung an die HU."
+  details: "Details"
+  nextDue: "Nächste HU {{month}}"
+  nextDueHint: "Die Erinnerung an die HU wird auf diesen Monat verschoben."
+  fields:
+    date: "Datum"
+    odometer: "Kilometerstand"
+    testingBody: "Prüforganisation"
+    result: "Ergebnis"
+    defects: "Mängel"
+    nextDue: "Nächste HU"
+  results:
+    NO_DEFECTS: "Ohne Mängel"
+    MINOR_DEFECTS: "Geringe Mängel"
+    MAJOR_DEFECTS: "Erhebliche Mängel"
+    DANGEROUS_DEFECTS: "Gefährliche Mängel"
+    UNSAFE: "Verkehrsunsicher"
+  resultHints:
+    MINOR_DEFECTS: "Bestanden, die Mängel sind sofort zu beheben."
+    MAJOR_DEFECTS: "Nicht bestanden: Trage die Nachprüfung innerhalb eines Monats als eigene HU ein."
+    DANGEROUS_DEFECTS: "Nicht bestanden, das Auto darf nur noch zur Werkstatt gefahren werden."
+    UNSAFE: "Nicht bestanden, das Auto darf nicht mehr gefahren werden."
+  errors:
+    nextDue: "Nach dem Monat der HU."
+  files:
+    title: "Prüfbericht und Dateien"
+    add: "Datei hinzufügen"
+    empty: "Noch kein Prüfbericht."
+    deleteText: "Die Datei wird endgültig gelöscht, die HU bleibt."
+
+papers:
+  button: "PDF exportieren"
+  title: "Umbauten und HU als PDF"
+  content:
+    current: "Für eine Kontrolle: die verbauten Teile und die letzte HU"
+    history: "Für den Verkauf: mit den ausgebauten Teilen und allen HUs"
+  text: "Die ersten Seiten listen die Umbauten mit ihren Genehmigungen und die HUs, danach folgen ihre Dokumente und Prüfberichte. Eine Kopie zur Information, die Originale müssen weiterhin im Auto sein."

@@ -37,12 +37,21 @@ authentik or any other provider).
 - **Units:** metric, US (miles, gallons, mpg) or UK (miles, liters, mpg) per account. They are stored in km and liters,
   the API always uses those.
 - **Statistics:** totals, averages and the consumption over time per car and for all cars.
+- **Accent colors:** one of five presets per account, in light and dark mode.
+- **Modifications:** the parts of a tuned car with their ABE, Teiletypgenehmigung, Teilegutachten or Einzelabnahme, the
+  conditions, the Abnahme and the entry in the registration certificate, with the documents; removed parts stay as the
+  history of the car.
+- **HU:** the Hauptuntersuchung with its result, the defects and the report; the next due month moves the reminder of
+  the HU.
+- **Papers as PDF:** the modifications with their approvals and the HUs on the first pages, their documents and
+  reports appended; for a check the installed parts and the latest HU, for selling the whole history.
 
 **On the road**
 
 - **Installable app:** added to the home screen of the phone it starts like an app; a long press on its icon opens a
   new refuel (or charge) of the last opened car.
-- **Offline:** refuels, charges and trips entered without a connection are sent when it is back.
+- **Offline:** refuels, charges and trips entered without a connection are sent when it is back; the documents of the
+  modifications of a car can be kept on the device, e.g. for a roadside check.
 - **Trip log (Fahrtenbuch):** start and finish trips with the odometer, enter forgotten ones, delete with a reason
   (they stay in the log), export as PDF or CSV.
 - **GPS tracking:** a tracker in the car (e.g. an ESP32) sends its points, the app shows the tracks on a map colored
@@ -54,7 +63,7 @@ authentik or any other provider).
 
 - **CSV import and export** of each entry type, and all expenses of a car in one CSV for spreadsheets.
 - **Backup:** every user downloads all of their data (settings, cars, entries, recurring costs, reminders, trips,
-  GPS trackers and the tracks kept forever, receipts and pictures) as one ZIP and restores it into an account without cars, e.g. on another installation.
+  modifications and their documents, the HUs, GPS trackers and the tracks kept forever, receipts and pictures) as one ZIP and restores it into an account without cars, e.g. on another installation.
 - **Car requests:** users who reached their car limit request more cars, administrators decide on the administration
   page.
 - **Webhooks and service accounts:** events like a new car request are sent as signed HTTP requests, scripts use the API
@@ -195,13 +204,13 @@ described in [values.yaml](helm/car-ledger/values.yaml), the options in [docs/DE
 
 ### Versions
 
-A [release](https://github.com/3thr3n/car-ledger/releases) (e.g. `0.7.0`) publishes the image
-`ghcr.io/3thr3n/car-ledger:0.7.0` and the charts `car-ledger` and `stack` in the same version, which run that image.
+A [release](https://github.com/3thr3n/car-ledger/releases) (e.g. `0.8.0`) publishes the image
+`ghcr.io/3thr3n/car-ledger:0.8.0` and the charts `car-ledger` and `stack` in the same version, which run that image.
 `keycloak` and `authentik` have their own versions, the release notes name them. Without `--version`, Helm installs the
 latest release.
 
-Every build of `develop` is published as a prerelease, `<next release>-dev.<run number>` (e.g. `0.8.0-dev.123`): `--devel`
-installs the latest one, a version range takes them only with a prerelease suffix (`>=0.8.0-0`). Leave
+Every build of `develop` is published as a prerelease, `<next release>-dev.<run number>` (e.g. `0.9.0-dev.123`): `--devel`
+installs the latest one, a version range takes them only with a prerelease suffix (`>=0.9.0-0`). Leave
 `carLedger.image.tag` empty, the chart runs the image of its own build.
 
 Up to 0.3.x the app chart was `oci://ghcr.io/3thr3n/car-ledger/helm`, since 0.4.0 it is `car-ledger`.

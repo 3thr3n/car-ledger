@@ -1,4 +1,9 @@
-import { QueryCache, QueryClient, QueryKey } from '@tanstack/react-query';
+import {
+  onlineManager,
+  QueryCache,
+  QueryClient,
+  QueryKey,
+} from '@tanstack/react-query';
 import { BackendError } from './BackendError';
 import { Client, createClient } from '@/generated/client';
 import { toast } from 'react-toastify';
@@ -88,6 +93,11 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+// TanStack Query starts online and only follows the events: an app started
+// without a connection would send every query and show its error instead of
+// the data kept on the device
+onlineManager.setOnline(navigator.onLine);
 
 interface GeneratedKey {
   _id?: string;

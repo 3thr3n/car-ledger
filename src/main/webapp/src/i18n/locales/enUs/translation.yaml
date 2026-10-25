@@ -47,7 +47,7 @@ common:
 landing:
   eyebrow: "Car cost tracking"
   title: "Know what your car really costs."
-  subtitle: "Log refuels, workshop visits, insurance and everything else. CarLedger turns your receipts into cost per kilometer, consumption and trends."
+  subtitle: "Log refuels, charges, workshop visits, insurance and everything else, and keep the papers of your car at hand. CarLedger turns your receipts into cost per kilometer, consumption and trends."
   cta: "Log in to start"
   ctaDashboard: "Open dashboard"
   features:
@@ -69,6 +69,33 @@ landing:
     stats:
       title: "Statistics"
       text: "Cost per km, consumption and highs and lows — per car or across all your cars."
+    charging:
+      title: "Charging"
+      text: "Electric and plug-in hybrid cars: kWh, price and the consumption in kWh/100 km next to the refuels."
+    modifications:
+      title: "Modifications"
+      text: "Rims, coilovers, exhaust: with their ABE, Teilegutachten or Einzelabnahme, the conditions and the documents."
+    inspections:
+      title: "HU"
+      text: "The Hauptuntersuchung with its result, the defects and the report; the next due month becomes the reminder."
+    papers:
+      title: "Papers as PDF"
+      text: "The modifications and the HUs with all their documents in one PDF, for a check or when selling the car."
+    reminders:
+      title: "Reminders"
+      text: "Service, tires, vignette: due by date or mileage, by e-mail and push message."
+    trips:
+      title: "Trip log"
+      text: "Start and finish trips with the odometer, deleted ones stay with their reason, export as PDF or CSV."
+    gps:
+      title: "GPS tracking"
+      text: "A tracker in the car sends its route: the map by speed or by how often you drove it, forgotten trips suggested."
+    offline:
+      title: "App and offline"
+      text: "On the home screen like an app; refuels and trips work without a connection, the papers stay on the phone."
+    backup:
+      title: "Backup"
+      text: "All your data with the receipts and documents as one file, restored on any installation."
 
 dashboard:
   title: "Dashboard"
@@ -188,6 +215,8 @@ car:
     trips: "Trips"
     track: "Map"
     reminders: "Reminders"
+    modifications: "Modifications"
+    inspections: "HU"
   overview:
     totalCost: "Total cost"
     avgConsumption: "Avg. consumption"
@@ -208,6 +237,17 @@ car:
     nextDue: "Next due {{date}}"
     avgChargingConsumption: "Avg. consumption (electric)"
     charges: "Charges"
+    papers:
+      title: "HU and modifications"
+      empty: "No HU and no modifications yet"
+      noNextDue: "No next HU"
+      latest: "Latest HU on {{date}}"
+      installed_one: "{{count}} installed modification"
+      installed_other: "{{count}} installed modifications"
+      inspectionOpen_one: "{{count}} Abnahme open"
+      inspectionOpen_other: "{{count}} Abnahmen open"
+      unregistered_one: "{{count}} not in the registration yet"
+      unregistered_other: "{{count}} not in the registration yet"
   picture:
     choose: "Choose picture"
     change: "Change picture"
@@ -360,6 +400,15 @@ track:
   speed: "Speed ({{unit}})"
   legendLabel: "Speed from {{from}} {{unit}} (light) to {{to}} {{unit}} (dark)"
   noSpeed: "No speed"
+  frequency: "Times driven"
+  frequencyLabel: "Driven from 1× (light, thin) to {{to}}× (dark, wide)"
+  frequencyHint: "Both directions count; a road counts again after the car was away from it for more than 5 minutes."
+  passes_one: "Driven once · last {{date}}"
+  passes_other: "Driven {{count}}× · last {{date}}"
+  mode:
+    label: "Color the track by"
+    speed: "Speed"
+    frequency: "Frequency"
   notSetUp: "The map is not set up"
   notSetUpText: "The operator of CarLedger sets up a map server, see docs/GPS_TRACKER.md."
   deletePeriod: "Delete this track"
@@ -614,7 +663,27 @@ backup:
   restore: "Restore backup"
   restoreHelp: "Restores a downloaded backup into your account, which has no cars yet."
   restoreOnlyEmpty: "A backup can only be restored into an account without cars."
-  restored: "Backup restored: {{cars}} car(s), {{bills}} entries, {{files}} files"
+  restored: "Backup restored: {{parts}}"
+  restoredEmpty: "Backup restored, it had no cars"
+  parts:
+    cars_one: "{{count}} car"
+    cars_other: "{{count}} cars"
+    bills_one: "{{count}} entry"
+    bills_other: "{{count}} entries"
+    recurringBills_one: "{{count}} recurring cost"
+    recurringBills_other: "{{count}} recurring costs"
+    reminders_one: "{{count}} reminder"
+    reminders_other: "{{count}} reminders"
+    trips_one: "{{count}} trip"
+    trips_other: "{{count}} trips"
+    modifications_one: "{{count}} modification"
+    modifications_other: "{{count}} modifications"
+    technicalInspections_one: "{{count}} HU"
+    technicalInspections_other: "{{count}} HUs"
+    trackers_one: "{{count}} GPS tracker"
+    trackers_other: "{{count}} GPS trackers"
+    files_one: "{{count}} file"
+    files_other: "{{count}} files"
   failed: "The backup could not be restored"
   tooLarge: "The backup is larger than the server accepts. Its operator can raise the limit (carLedger.attachments.maxRequestSize, see docs/DEPLOYMENT.md)."
 
@@ -638,6 +707,15 @@ settings:
     EN: "English"
     DE: "Deutsch"
   saved: "Settings saved"
+  appearance:
+    title: "Appearance"
+    text: "The accent color of buttons, links and highlights, saved with your account. The colors of the categories stay."
+    accents:
+      TEAL: "Teal"
+      BLUE: "Blue"
+      VIOLET: "Violet"
+      ROSE: "Rose"
+      AMBER: "Amber"
   deleteAccount:
     title: "Delete account"
     text: "Removes your account with all cars, entries, recurring costs and reminders."
@@ -767,8 +845,8 @@ reminder:
     due: "Enter a date or a mileage."
     intervalMonths: "Needs a due date."
     intervalKm: "Needs a due mileage."
+  huHint: "The HU has a reminder of its own: it follows the next due month on the <tab>tab HU</tab>."
   presets:
-    inspection: "Inspection"
     service: "Service"
     tires: "Tire change"
     vignette: "Vignette"
@@ -800,6 +878,7 @@ reminder:
     confirm: "Mark as done"
     success: "Marked as done"
 offline:
+  banner: "Offline: you see what was saved on this device. Refuels, charges and trips are sent later, lists and statistics load again when you are online."
   queued: "No connection: saved on this device, it is sent when you are online again"
   noFiles: "The files are not kept without a connection, attach them once the entry is sent"
   sent_one: "{{count}} entry made offline was sent"
@@ -937,3 +1016,161 @@ trip:
     from: "From"
     to: "To"
     text: "The PDF is the trip log to print or to hand in, with the deleted trips and their reason and the sums per type. The CSV is for spreadsheets. Whether a tax office accepts it as an electronic trip log CarLedger can't guarantee."
+
+modification:
+  title: "Modifications"
+  subtitle: "Parts with their ABE, Teilegutachten or Einzelabnahme, to check the conditions at any time."
+  add:
+    button: "Add modification"
+    title: "Add modification"
+  edit:
+    title: "Edit modification"
+  added: "Modification added"
+  updated: "Modification saved"
+  deleted: "Modification deleted"
+  delete:
+    title: "Delete {{part}}?"
+    textInstalled: "It is gone with its documents. To keep it in the history of the car, remove the part instead."
+    text: "It is gone from the history of the car with its documents."
+  remove:
+    button: "Remove part"
+    title: "Remove {{part}}?"
+    text: "The part stays in the history of the car with its documents."
+    date: "Removed on"
+    confirm: "Remove"
+    success: "Part moved to the history"
+  shown:
+    label: "Shown modifications"
+    INSTALLED: "Installed"
+    REMOVED: "Removed"
+  empty:
+    title: "No modifications yet"
+    text: "Add the parts with their approval, the conditions and the documents, e.g. rims, coilovers or an exhaust."
+    removedTitle: "No removed parts"
+    removedText: "A removed part shows up here with when it was removed."
+  originalsHint: "CarLedger doesn't replace the papers: the originals of the ABE, the Gutachten and the Abnahme still have to be in the car."
+  details: "Details"
+  installedAt: "Installed {{when}}"
+  removedAt: "Removed {{when}}"
+  registered: "Entered in the registration certificate"
+  notRegistered: "Not entered in the registration certificate"
+  open:
+    inspection: "Abnahme open"
+    registration: "Not in the registration yet"
+  sections:
+    approval: "Approval"
+    inspection: "Abnahme"
+    installed: "Installed"
+    removed: "Removed"
+  fields:
+    part: "Part"
+    partExample: "e.g. Rims 8x18 ET45"
+    manufacturer: "Manufacturer"
+    approvalType: "Approval"
+    approvalNumber: "Approval number"
+    conditions: "Conditions"
+    inspectionDate: "Date of the Abnahme"
+    testingBody: "Testing body"
+    registered: "Entered in the registration certificate (Zulassungsbescheinigung Teil I)"
+    date: "Date"
+    odometer: "Odometer"
+    notes: "Notes"
+    bills: "Bills"
+  billsHint: "The part, the workshop, the Abnahme: maintenance and other entries of the car."
+  billsEmpty: "No maintenance or other entries of this car"
+  billsTotal: "Total {{total}}"
+  approvalNumberHint: "e.g. the KBA number or the number of the Gutachten"
+  conditionsHint: "The Auflagen, e.g. which tires or which models"
+  inspectionHint: "A testing body checks the car with the part and confirms it."
+  approvalTypes:
+    ABE: "ABE"
+    PART_TYPE_APPROVAL: "Teiletypgenehmigung"
+    PARTS_REPORT: "Teilegutachten"
+    SINGLE_APPROVAL: "Einzelabnahme"
+    EC_TYPE_APPROVAL: "EC type approval / E-mark"
+    NONE: "No approval needed"
+  approvalHints:
+    ABE: "General operating permit of the part, no Abnahme."
+    PART_TYPE_APPROVAL: "Type approval of the part, no Abnahme."
+    PARTS_REPORT: "Needs an Abnahme of the modification (§19.3 StVZO)."
+    SINGLE_APPROVAL: "A testing body approves this car with the part (§21 StVZO)."
+    EC_TYPE_APPROVAL: "Approved across the EU, e.g. with an E-mark on the part."
+    NONE: "e.g. parts that are identical to the original ones."
+  errors:
+    removedDate: "Enter when it was removed."
+    removedBeforeInstalled: "Before it was installed."
+    removedBelowInstalled: "Below the odometer when it was installed."
+  offline:
+    label: "Documents available offline"
+    text: "Keeps the documents of the installed parts and the report of the latest HU on this device, e.g. for a roadside check without a connection."
+    saving: "Saving the documents…"
+    saved_one: "{{count}} document saved {{time}}. Without a connection it shows that state, it may be out of date."
+    saved_other: "{{count}} documents saved {{time}}. Without a connection they show that state, they may be out of date."
+    skipped_one: "Not kept, beyond {{size}} on this device: {{names}}"
+    skipped_other: "{{count}} not kept, beyond {{size}} on this device: {{names}}"
+    failed: "The documents could not be saved on this device"
+    notKept: "This document isn't available offline"
+  documents:
+    title: "Documents"
+    add: "Add document"
+    empty: "No documents yet: the Gutachten or ABE, the Abnahme certificate or photos."
+    deleteText: "The file is deleted permanently, the modification stays."
+    kinds:
+      APPROVAL: "Gutachten / ABE"
+      INSPECTION: "Abnahme certificate"
+      PHOTO: "Photo"
+      OTHER: "Other"
+
+inspection:
+  title: "HU"
+  subtitle: "The Hauptuntersuchung with the AU: the result, the defects and the report. The next due month moves the reminder of the HU."
+  add:
+    button: "Add HU"
+    title: "Add HU"
+  edit:
+    title: "Edit HU"
+  added: "HU added"
+  updated: "HU saved"
+  deleted: "HU deleted"
+  delete:
+    title: "Delete this HU?"
+    text: "It is gone with its report. The reminder of the HU stays."
+  empty:
+    title: "No HU yet"
+    text: "Add the last one with its report: the next due month becomes the reminder of the HU."
+  details: "Details"
+  nextDue: "Next HU {{month}}"
+  nextDueHint: "The reminder of the HU moves to this month."
+  fields:
+    date: "Date"
+    odometer: "Odometer"
+    testingBody: "Testing body"
+    result: "Result"
+    defects: "Defects"
+    nextDue: "Next HU"
+  results:
+    NO_DEFECTS: "No defects"
+    MINOR_DEFECTS: "Minor defects"
+    MAJOR_DEFECTS: "Major defects"
+    DANGEROUS_DEFECTS: "Dangerous defects"
+    UNSAFE: "Unsafe"
+  resultHints:
+    MINOR_DEFECTS: "Passed, the defects have to be repaired at once."
+    MAJOR_DEFECTS: "Not passed: add the Nachprüfung within a month as an HU of its own."
+    DANGEROUS_DEFECTS: "Not passed, the car may only be driven to the workshop."
+    UNSAFE: "Not passed, the car must not be driven."
+  errors:
+    nextDue: "After the month of the HU."
+  files:
+    title: "Report and files"
+    add: "Add file"
+    empty: "No report yet."
+    deleteText: "The file is deleted permanently, the HU stays."
+
+papers:
+  button: "Export PDF"
+  title: "Modifications and HU as PDF"
+  content:
+    current: "For a check: the installed parts and the latest HU"
+    history: "For selling: with the removed parts and all HUs"
+  text: "The cover pages list the modifications with their approvals and the HUs, then their documents and reports follow. A copy for information, the originals still have to be in the car."

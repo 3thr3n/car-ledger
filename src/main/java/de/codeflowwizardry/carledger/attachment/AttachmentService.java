@@ -12,11 +12,16 @@ import de.codeflowwizardry.carledger.Utils;
 import de.codeflowwizardry.carledger.data.AttachmentEntity;
 import de.codeflowwizardry.carledger.data.BillEntity;
 import de.codeflowwizardry.carledger.data.CarEntity;
+import de.codeflowwizardry.carledger.data.DocumentKind;
+import de.codeflowwizardry.carledger.data.ModificationEntity;
+import de.codeflowwizardry.carledger.data.TechnicalInspectionEntity;
 import de.codeflowwizardry.carledger.data.repository.AttachmentRepository;
 import de.codeflowwizardry.carledger.data.repository.BillRepository;
 import de.codeflowwizardry.carledger.data.repository.CarAccess;
 import de.codeflowwizardry.carledger.data.repository.CarAccess.Action;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
+import de.codeflowwizardry.carledger.data.repository.ModificationRepository;
+import de.codeflowwizardry.carledger.data.repository.TechnicalInspectionRepository;
 import io.quarkus.runtime.configuration.MemorySize;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -31,19 +36,24 @@ public class AttachmentService
 	private final AttachmentRepository attachmentRepository;
 	private final BillRepository billRepository;
 	private final CarRepository carRepository;
+	private final ModificationRepository modificationRepository;
+	private final TechnicalInspectionRepository technicalInspectionRepository;
 	private final AttachmentStorage storage;
 	private final long maxSize;
 	private final int maxPerBill;
 
 	@Inject
 	public AttachmentService(AttachmentRepository attachmentRepository, BillRepository billRepository,
-			CarRepository carRepository, AttachmentStorage storage,
+			CarRepository carRepository, ModificationRepository modificationRepository,
+			TechnicalInspectionRepository technicalInspectionRepository, AttachmentStorage storage,
 			@ConfigProperty(name = "carledger.attachments.max-size", defaultValue = "10M") MemorySize maxSize,
 			@ConfigProperty(name = "carledger.attachments.max-per-bill", defaultValue = "10") int maxPerBill)
 	{
 		this.attachmentRepository = attachmentRepository;
 		this.billRepository = billRepository;
 		this.carRepository = carRepository;
+		this.modificationRepository = modificationRepository;
+		this.technicalInspectionRepository = technicalInspectionRepository;
 		this.storage = storage;
 		this.maxSize = maxSize.asLongValue();
 		this.maxPerBill = maxPerBill;
@@ -81,7 +91,109 @@ public class AttachmentService
 		}
 		FileType type = requireValid(content, false, errors);
 
-		return save(bill.getCar(), bill, fileName, type, content);
+		return save(of(bill), fileName, type, content);
+	}
+
+	/**
+	 * @throws NotFoundException
+	 *             if the modification does not belong to the car of the user
+	 */
+	@Transactional
+	public List<AttachmentEntity> listForModification(long carId, long modificationId, String userId)
+	{
+		findModification(carId, modificationId, userId, Action.READ);
+		return attachmentRepository.listForModification(carId, modificationId, userId);
+	}
+
+	/**
+	 * Checks kind, size, type and the amount per modification (the same as per
+	 * bill), then saves the document and its content
+	 *
+	 * @throws NotFoundException
+	 *             if the modification does not belong to the car of the user
+	 * @throws jakarta.ws.rs.BadRequestException
+	 *             with the reasons, if the file cannot be attached
+	 */
+	@Transactional
+	public AttachmentEntity addToModification(long carId, long modificationId, String userId, String fileName,
+			DocumentKind kind, byte[] content)
+	{
+		ModificationEntity modification = findModification(carId, modificationId, userId, Action.WRITE);
+		return addDocument(modification, kind, fileName, content,
+				attachmentRepository.countForModification(modificationId));
+	}
+
+	/**
+	 * @throws NotFoundException
+	 *             if the inspection does not belong to the car of the user
+	 */
+	@Transactional
+	public List<AttachmentEntity> listForTechnicalInspection(long carId, long inspectionId, String userId)
+	{
+		findTechnicalInspection(carId, inspectionId, userId, Action.READ);
+		return attachmentRepository.listForTechnicalInspection(carId, inspectionId, userId);
+	}
+
+	/**
+	 * Checks size, type and the amount per inspection (the same as per bill), then
+	 * saves the file, e.g. the report
+	 *
+	 * @throws NotFoundException
+	 *             if the inspection does not belong to the car of the user
+	 * @throws jakarta.ws.rs.BadRequestException
+	 *             with the reasons, if the file cannot be attached
+	 */
+	@Transactional
+	public AttachmentEntity addToTechnicalInspection(long carId, long inspectionId, String userId,
+			String fileName, byte[] content)
+	{
+		TechnicalInspectionEntity inspection = findTechnicalInspection(carId, inspectionId, userId,
+				Action.WRITE);
+		return addReport(inspection, fileName, content,
+				attachmentRepository.countForTechnicalInspection(inspectionId));
+	}
+
+	/**
+	 * @param files
+	 *            the inspection has already
+	 */
+	private AttachmentEntity addReport(TechnicalInspectionEntity inspection, String fileName, byte[] content,
+			long files)
+	{
+		List<String> errors = new ArrayList<>();
+		if (files >= maxPerBill)
+		{
+			errors.add("An inspection can have at most " + maxPerBill + " files!");
+		}
+		FileType type = requireValid(content, false, errors);
+
+		AttachmentEntity report = of(inspection.getCar());
+		report.setTechnicalInspection(inspection);
+		return save(report, fileName, type, content);
+	}
+
+	/**
+	 * @param documents
+	 *            the modification has already
+	 */
+	private AttachmentEntity addDocument(ModificationEntity modification, DocumentKind kind, String fileName,
+			byte[] content, long documents)
+	{
+		List<String> errors = new ArrayList<>();
+		if (kind == null)
+		{
+			errors.add("The kind of the document must be set!");
+		}
+		if (documents >= maxPerBill)
+		{
+			errors.add("A modification can have at most " + maxPerBill + " documents!");
+		}
+		FileType type = requireValid(content, false, errors);
+
+		AttachmentEntity document = of(modification.getCar());
+		document.setModification(modification);
+		document.setKind(kind);
+		return save(document, fileName, type, content);
 	}
 
 	/**
@@ -99,7 +211,7 @@ public class AttachmentService
 		FileType type = requireValid(content, true, new ArrayList<>());
 
 		Long previous = car.getPictureId();
-		AttachmentEntity picture = save(car, null, fileName, type, content);
+		AttachmentEntity picture = save(of(car), fileName, type, content);
 		car.setPictureId(picture.getId());
 		if (previous != null)
 		{
@@ -168,14 +280,28 @@ public class AttachmentService
 	}
 
 	/**
-	 * @param bill
-	 *            <code>null</code> for a file of the car, like its picture
+	 * @return a file of the car, like its picture, until its owner is set
 	 */
-	private AttachmentEntity save(CarEntity car, BillEntity bill, String fileName, FileType type, byte[] content)
+	private static AttachmentEntity of(CarEntity car)
 	{
 		AttachmentEntity attachment = new AttachmentEntity();
 		attachment.setCar(car);
+		return attachment;
+	}
+
+	private static AttachmentEntity of(BillEntity bill)
+	{
+		AttachmentEntity attachment = of(bill.getCar());
 		attachment.setBill(bill);
+		return attachment;
+	}
+
+	/**
+	 * @param attachment
+	 *            with the car and its owner, see {@link #of(CarEntity)}
+	 */
+	private AttachmentEntity save(AttachmentEntity attachment, String fileName, FileType type, byte[] content)
+	{
 		attachment.setFileName(cleanFileName(fileName));
 		attachment.setContentType(type.contentType());
 		attachment.setSize(content.length);
@@ -196,7 +322,22 @@ public class AttachmentService
 	public AttachmentEntity restore(CarEntity car, BillEntity bill, String fileName, byte[] content)
 	{
 		FileType type = requireValid(content, bill == null, new ArrayList<>());
-		return save(car, bill, fileName, type, content);
+		return save(bill == null ? of(car) : of(bill), fileName, type, content);
+	}
+
+	/**
+	 * Saves a document of a modification of a restored backup, checked like an
+	 * upload
+	 *
+	 * @param documents
+	 *            the modification has already
+	 * @throws jakarta.ws.rs.BadRequestException
+	 *             with the reasons, if the file cannot be used
+	 */
+	public AttachmentEntity restore(ModificationEntity modification, DocumentKind kind, String fileName,
+			byte[] content, int documents)
+	{
+		return addDocument(modification, kind, fileName, content, documents);
 	}
 
 	/**
@@ -275,6 +416,31 @@ public class AttachmentService
 				Map.of("billId", billId, "carId", carId, CarAccess.USER, userId))
 				.firstResultOptional()
 				.orElseThrow(() -> new NotFoundException("Bill not found"));
+	}
+
+	/**
+	 * Saves a file of an inspection of a restored backup, checked like an upload
+	 *
+	 * @param files
+	 *            the inspection has already
+	 */
+	public AttachmentEntity restore(TechnicalInspectionEntity inspection, String fileName, byte[] content,
+			int files)
+	{
+		return addReport(inspection, fileName, content, files);
+	}
+
+	private TechnicalInspectionEntity findTechnicalInspection(long carId, long inspectionId, String userId,
+			Action action)
+	{
+		return technicalInspectionRepository.find(carId, inspectionId, userId, action)
+				.orElseThrow(() -> new NotFoundException("Technical inspection not found"));
+	}
+
+	private ModificationEntity findModification(long carId, long modificationId, String userId, Action action)
+	{
+		return modificationRepository.find(carId, modificationId, userId, action)
+				.orElseThrow(() -> new NotFoundException("Modification not found"));
 	}
 
 	private CarEntity findCar(long carId, String userId, Action action)

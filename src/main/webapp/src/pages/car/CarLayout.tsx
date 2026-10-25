@@ -31,7 +31,8 @@ import ErrorPage from '@/pages/ErrorPage';
 
 /**
  * The entry types of the car between the overview and the reminders, the trips
- * only with the trip log, the map only with a GPS tracker and a map set up
+ * only with the trip log, the map only with a GPS tracker and a map set up,
+ * the modifications and the HUs last
  */
 const tabsFor = (energyType?: EnergyType, tripLog?: boolean, map?: boolean) => [
   { key: 'overview', to: '/car/$id' } as const,
@@ -42,10 +43,19 @@ const tabsFor = (energyType?: EnergyType, tripLog?: boolean, map?: boolean) => [
   ...(tripLog ? [{ key: 'trips', to: '/car/$id/trips' } as const] : []),
   ...(map ? [{ key: 'track', to: '/car/$id/track' } as const] : []),
   { key: 'reminders', to: '/car/$id/reminders' } as const,
+  { key: 'modifications', to: '/car/$id/modifications' } as const,
+  { key: 'inspections', to: '/car/$id/inspections' } as const,
 ];
 
 /** the tabs of the car that are no entry type */
-const pageTabs = ['overview', 'trips', 'track', 'reminders'] as const;
+const pageTabs = [
+  'overview',
+  'trips',
+  'track',
+  'reminders',
+  'modifications',
+  'inspections',
+] as const;
 type PageTab = (typeof pageTabs)[number];
 const isPageTab = (key: string): key is PageTab =>
   (pageTabs as readonly string[]).includes(key);
@@ -62,7 +72,8 @@ export default function CarLayout({ id }: { id: number }) {
   } = useQuery(getMyCarOptions({ client: localClient, path: { id } }));
   const showMap = !!useTrackMap(id);
 
-  if (isError) {
+  // the data of the last visit stays when the connection fails
+  if (isError && !car) {
     if (error instanceof BackendError && error.status === 404) {
       return <NotFoundPage />;
     }
@@ -75,6 +86,8 @@ export default function CarLayout({ id }: { id: number }) {
     rest === ''
       ? 'overview'
       : rest === '/reminders' ||
+          rest === '/modifications' ||
+          rest === '/inspections' ||
           (rest === '/trips' && car?.tripLog) ||
           (rest === '/track' && showMap)
         ? (rest.slice(1) as PageTab)

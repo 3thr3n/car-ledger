@@ -1,4 +1,4 @@
-import theme from '@/theme';
+import { accentTheme } from '@/theme';
 import queryClient from '@/utils/QueryClient';
 
 import { CssBaseline, ThemeProvider, useColorScheme } from '@mui/material';
@@ -19,6 +19,7 @@ import NotFoundPage from '@/pages/NotFoundPage';
 import AppShell from '@/components/layout/AppShell';
 import { useTranslation } from 'react-i18next';
 import { ReactNode } from 'react';
+import useAccent from '@/hooks/useAccent';
 
 export const Route = createRootRoute({
   beforeLoad: (ctx) => {
@@ -53,18 +54,26 @@ export const Route = createRootRoute({
 });
 
 function Providers({ children }: { children: ReactNode }) {
+  // the accent comes with the account
+  return (
+    <QueryClientProvider client={queryClient}>
+      <Themed>{children}</Themed>
+    </QueryClientProvider>
+  );
+}
+
+function Themed({ children }: { children: ReactNode }) {
   const { i18n } = useTranslation();
+  const accent = useAccent();
 
   return (
-    <ThemeProvider theme={theme} defaultMode="system">
+    <ThemeProvider theme={accentTheme(accent)} defaultMode="system">
       <LocalizationProvider
         dateAdapter={AdapterDayjs}
         adapterLocale={i18n.language === 'DE' ? 'de' : 'en'}
       >
         <CssBaseline />
-        <QueryClientProvider client={queryClient}>
-          <AppShell>{children}</AppShell>
-        </QueryClientProvider>
+        <AppShell>{children}</AppShell>
         <Toasts />
       </LocalizationProvider>
     </ThemeProvider>

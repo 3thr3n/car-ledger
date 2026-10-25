@@ -1,6 +1,7 @@
 import { Box } from '@mui/material';
 import {
   AttributionControl,
+  ExpressionSpecification,
   GeoJSONSource,
   LngLatBounds,
   Map as MapLibreMap,
@@ -15,17 +16,31 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url';
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Track } from '@/generated';
+import { Track, TrackFrequency } from '@/generated';
 import { useFormat } from '@/utils/format';
 import { speedColor, trackEnds, trackPieces } from './speedScale';
+import {
+  frequencyColor,
+  frequencyLines,
+  frequencyWidth,
+} from './frequencyScale';
 
 setWorkerUrl(workerUrl);
 
 export interface TrackMapProps {
   styleUrl: string;
   track: Track;
+  /** shown instead of the speeds of the track */
+  frequency?: TrackFrequency;
   height?: number;
 }
+
+const SPEED_LAYERS = ['track-casing', 'track-line', 'track-hit', 'track-ends'];
+const FREQUENCY_LAYERS = [
+  'frequency-casing',
+  'frequency-line',
+  'frequency-hit',
+];
 
 const EMPTY: FeatureCollection = {
   type: 'FeatureCollection',
@@ -47,14 +62,75 @@ function showTrack(map: MapLibreMap, track: Track) {
   }
 }
 
+/** of the white outline under a line, wider on each side */
+const casingWidth = (
+  width: number | ExpressionSpecification,
+): ExpressionSpecification => ['+', width, 3];
+
+/**
+ * The line of the source with a white outline, and a wider invisible line, so
+ * it is easy to hit with a finger: the layers <source>-casing, <source>-line
+ * and <source>-hit
+ */
+function addLineLayers(
+  map: MapLibreMap,
+  source: string,
+  color: ExpressionSpecification,
+  width: number | ExpressionSpecification,
+) {
+  const layout = { 'line-cap': 'round', 'line-join': 'round' } as const;
+  map.addLayer({
+    id: `${source}-casing`,
+    type: 'line',
+    source,
+    layout,
+    paint: { 'line-color': '#ffffff', 'line-width': casingWidth(width) },
+  });
+  map.addLayer({
+    id: `${source}-line`,
+    type: 'line',
+    source,
+    layout,
+    paint: { 'line-color': color, 'line-width': width },
+  });
+  map.addLayer({
+    id: `${source}-hit`,
+    type: 'line',
+    source,
+    paint: { 'line-color': '#000000', 'line-width': 20, 'line-opacity': 0 },
+  });
+}
+
+/** draws the passes instead of the speeds, or the speeds again without */
+function showFrequency(map: MapLibreMap, frequency?: TrackFrequency) {
+  (map.getSource('frequency') as GeoJSONSource).setData(
+    frequency ? frequencyLines(frequency) : EMPTY,
+  );
+  if (frequency) {
+    const color = frequencyColor(frequency.maxPasses);
+    const width = frequencyWidth(frequency.maxPasses);
+    map.setPaintProperty('frequency-line', 'line-color', color);
+    map.setPaintProperty('frequency-line', 'line-width', width);
+    map.setPaintProperty('frequency-casing', 'line-width', casingWidth(width));
+  }
+  for (const layer of SPEED_LAYERS) {
+    map.setLayoutProperty(layer, 'visibility', frequency ? 'none' : 'visible');
+  }
+  for (const layer of FREQUENCY_LAYERS) {
+    map.setLayoutProperty(layer, 'visibility', frequency ? 'visible' : 'none');
+  }
+}
+
 /**
  * The segments of a track on the map, each piece colored by its speed, with
  * the start and the end of every segment. Hovering or tapping the track shows
- * the time and the speed there.
+ * the time and the speed there. With the frequency, the track is colored by
+ * how often the car passed it instead, and shows that.
  */
 export default function TrackMap({
   styleUrl,
   track,
+  frequency,
   height = 480,
 }: TrackMapProps) {
   const { t } = useTranslation();
@@ -64,6 +140,8 @@ export default function TrackMap({
   const map = useRef<MapLibreMap>(null);
   const trackRef = useRef(track);
   trackRef.current = track;
+  const frequencyRef = useRef(frequency);
+  frequencyRef.current = frequency;
   // the handlers of the map are registered once, they read the current format
   const formatRef = useRef(format);
   formatRef.current = format;
@@ -92,27 +170,8 @@ export default function TrackMap({
     instance.on('load', () => {
       instance.addSource('track', { type: 'geojson', data: EMPTY });
       instance.addSource('ends', { type: 'geojson', data: EMPTY });
-      instance.addLayer({
-        id: 'track-casing',
-        type: 'line',
-        source: 'track',
-        layout: { 'line-cap': 'round', 'line-join': 'round' },
-        paint: { 'line-color': '#ffffff', 'line-width': 7 },
-      });
-      instance.addLayer({
-        id: 'track-line',
-        type: 'line',
-        source: 'track',
-        layout: { 'line-cap': 'round', 'line-join': 'round' },
-        paint: { 'line-color': speedColor, 'line-width': 4 },
-      });
-      // wider than the line, so it is easy to hit with a finger
-      instance.addLayer({
-        id: 'track-hit',
-        type: 'line',
-        source: 'track',
-        paint: { 'line-color': '#000000', 'line-width': 20, 'line-opacity': 0 },
-      });
+      instance.addSource('frequency', { type: 'geojson', data: EMPTY });
+      addLineLayers(instance, 'track', speedColor, 4);
       instance.addLayer({
         id: 'track-ends',
         type: 'circle',
@@ -136,8 +195,15 @@ export default function TrackMap({
           ],
         },
       });
+      addLineLayers(
+        instance,
+        'frequency',
+        frequencyColor(0),
+        frequencyWidth(0),
+      );
       map.current = instance;
       showTrack(instance, trackRef.current);
+      showFrequency(instance, frequencyRef.current);
     });
 
     const show = (event: MapLayerMouseEvent) => {
@@ -157,21 +223,45 @@ export default function TrackMap({
         .setText(`${formatRef.current.dateTime(ts)} · ${speedText}`)
         .addTo(instance);
     };
-    for (const layer of ['track-hit', 'track-ends']) {
+    const showPasses = (event: MapLayerMouseEvent) => {
+      // the most frequent is drawn on top
+      const feature = event.features?.reduce((top, other) =>
+        other.properties.passes > top.properties.passes ? other : top,
+      );
+      if (!feature) return;
+      const { passes, last } = feature.properties as {
+        passes: number;
+        last: string;
+      };
+      popup
+        .setLngLat(event.lngLat)
+        .setText(
+          tRef.current('track.passes', {
+            count: passes,
+            date: formatRef.current.dateTime(last),
+          }),
+        )
+        .addTo(instance);
+    };
+    for (const [layer, handler] of [
+      ['track-hit', show],
+      ['track-ends', show],
+      ['frequency-hit', showPasses],
+    ] as const) {
       instance.on('mousemove', layer, (event) => {
         instance.getCanvas().style.cursor = 'pointer';
-        show(event);
+        handler(event);
       });
       instance.on('mouseleave', layer, () => {
         instance.getCanvas().style.cursor = '';
         popup.remove();
       });
       // touch: tap the track, tap elsewhere to close
-      instance.on('click', layer, show);
+      instance.on('click', layer, handler);
     }
     instance.on('click', (event) => {
       const hit = instance.queryRenderedFeatures(event.point, {
-        layers: ['track-hit', 'track-ends'],
+        layers: ['track-hit', 'track-ends', 'frequency-hit'],
       });
       if (!hit.length) popup.remove();
     });
@@ -186,6 +276,10 @@ export default function TrackMap({
   useEffect(() => {
     if (map.current) showTrack(map.current, track);
   }, [track]);
+
+  useEffect(() => {
+    if (map.current) showFrequency(map.current, frequency);
+  }, [frequency]);
 
   return (
     <Box

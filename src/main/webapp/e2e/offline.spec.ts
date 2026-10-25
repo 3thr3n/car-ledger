@@ -102,4 +102,33 @@ test.describe.serial('offline', () => {
     await expect(page.getByRole('row', { name: money(61) })).toBeVisible();
     expect(await refuels()).toBe(2);
   });
+
+  test('starts without a connection with the car of the last visit', async ({
+    page,
+  }) => {
+    // online once, the car is kept on the device
+    await page.goto(`/car/${carId}`);
+    await expect(
+      page.getByRole('heading', { name: 'E2E Offline' }),
+    ).toBeVisible();
+    await page.waitForTimeout(1000);
+
+    // the app starts while the device says it is offline
+    await page.addInitScript(() =>
+      Object.defineProperty(navigator, 'onLine', { get: () => false }),
+    );
+    const sent: string[] = [];
+    page.on('request', (request) => {
+      if (request.url().includes('/api/')) sent.push(request.url());
+    });
+    await page.reload();
+
+    await expect(
+      page.getByRole('heading', { name: 'E2E Offline' }),
+    ).toBeVisible();
+    await expect(page.getByTestId('offline-banner')).toBeVisible();
+    await expect(page.getByText('Something went wrong')).toBeHidden();
+    // the queries wait for the connection
+    expect(sent).toEqual([]);
+  });
 });

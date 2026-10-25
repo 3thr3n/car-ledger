@@ -14,7 +14,7 @@ import { DatePicker } from '@mui/x-date-pickers';
 import { useMutation } from '@tanstack/react-query';
 import dayjs, { Dayjs } from 'dayjs';
 import { SubmitEvent, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
 import { Reminder, ReminderInput } from '@/generated';
 import {
@@ -26,10 +26,13 @@ import { errorMessage } from '@/utils/BackendError';
 import { toApiDate, useFormat } from '@/utils/format';
 import { odometerToApi, odometerToField, Units } from '@/utils/units';
 import NumberField from '@/components/bill/NumberField';
+import { RouterLink } from '@/components/ui/links';
 
-/** common reminders, they fill title and repetition */
+/**
+ * common reminders, they fill title and repetition; the one of the HU follows
+ * the tab HU
+ */
 const presets = [
-  { key: 'inspection', intervalMonths: 24 },
   { key: 'service', intervalMonths: 12, intervalKm: 15000 },
   { key: 'tires', intervalMonths: 6 },
   { key: 'vignette', intervalMonths: 12 },
@@ -177,23 +180,42 @@ function ReminderForm({
       <DialogContent>
         <Stack spacing={2.5} sx={{ pt: 1 }}>
           {!reminder && (
-            <Stack
-              direction="row"
-              spacing={1}
-              useFlexGap
-              sx={{
-                flexWrap: 'wrap',
-              }}
-            >
-              {presets.map((preset) => (
-                <Chip
-                  key={preset.key}
-                  label={t(`reminder.presets.${preset.key}`)}
-                  variant="outlined"
-                  onClick={() => applyPreset(preset)}
+            <Box>
+              <Stack
+                direction="row"
+                spacing={1}
+                useFlexGap
+                sx={{
+                  flexWrap: 'wrap',
+                }}
+              >
+                {presets.map((preset) => (
+                  <Chip
+                    key={preset.key}
+                    label={t(`reminder.presets.${preset.key}`)}
+                    variant="outlined"
+                    onClick={() => applyPreset(preset)}
+                  />
+                ))}
+              </Stack>
+              <Typography
+                variant="caption"
+                sx={{ display: 'block', mt: 1, color: 'text.secondary' }}
+              >
+                <Trans
+                  i18nKey="reminder.huHint"
+                  components={{
+                    tab: (
+                      <RouterLink
+                        to="/car/$id/inspections"
+                        params={{ id: `${carId}` }}
+                        onClick={onClose}
+                      />
+                    ),
+                  }}
                 />
-              ))}
-            </Stack>
+              </Typography>
+            </Box>
           )}
           <TextField
             label={t('reminder.fields.title')}

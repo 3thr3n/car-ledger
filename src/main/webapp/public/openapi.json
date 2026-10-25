@@ -2,6 +2,10 @@
   "openapi" : "3.1.0",
   "components" : {
     "schemas" : {
+      "Accent" : {
+        "type" : "string",
+        "enum" : [ "TEAL", "BLUE", "VIOLET", "ROSE", "AMBER" ]
+      },
       "Account" : {
         "type" : "object",
         "properties" : {
@@ -26,9 +30,12 @@
           },
           "unitSystem" : {
             "$ref" : "#/components/schemas/UnitSystem"
+          },
+          "accent" : {
+            "$ref" : "#/components/schemas/Accent"
           }
         },
-        "required" : [ "unitSystem" ]
+        "required" : [ "unitSystem", "accent" ]
       },
       "AdminAccount" : {
         "type" : "object",
@@ -191,6 +198,10 @@
           }
         }
       },
+      "ApprovalType" : {
+        "type" : "string",
+        "enum" : [ "ABE", "PART_TYPE_APPROVAL", "PARTS_REPORT", "SINGLE_APPROVAL", "EC_TYPE_APPROVAL", "NONE" ]
+      },
       "ApproveCarRequestInput" : {
         "type" : "object",
         "properties" : {
@@ -219,6 +230,9 @@
           },
           "createdAt" : {
             "$ref" : "#/components/schemas/OffsetDateTime"
+          },
+          "kind" : {
+            "$ref" : "#/components/schemas/DocumentKind"
           }
         }
       },
@@ -286,6 +300,14 @@
             "format" : "int32"
           },
           "trackPoints" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "modifications" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "technicalInspections" : {
             "type" : "integer",
             "format" : "int32"
           }
@@ -909,6 +931,10 @@
           }
         }
       },
+      "DocumentKind" : {
+        "type" : "string",
+        "enum" : [ "APPROVAL", "INSPECTION", "PHOTO", "OTHER" ]
+      },
       "EnergyType" : {
         "type" : "string",
         "enum" : [ "PETROL", "DIESEL", "LPG", "CNG", "ELECTRIC", "PLUG_IN_HYBRID" ]
@@ -942,6 +968,30 @@
         "properties" : {
           "version" : {
             "type" : "string"
+          }
+        }
+      },
+      "FrequencyLine" : {
+        "type" : "object",
+        "required" : [ "passes", "last", "coordinates" ],
+        "properties" : {
+          "passes" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "last" : {
+            "type" : "string",
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          },
+          "coordinates" : {
+            "type" : "array",
+            "items" : {
+              "type" : "array",
+              "items" : {
+                "type" : "number",
+                "format" : "double"
+              }
+            }
           }
         }
       },
@@ -1054,6 +1104,33 @@
           },
           "maintenanceCost" : {
             "$ref" : "#/components/schemas/HiLo"
+          }
+        }
+      },
+      "InspectionResult" : {
+        "type" : "string",
+        "enum" : [ "NO_DEFECTS", "MINOR_DEFECTS", "MAJOR_DEFECTS", "DANGEROUS_DEFECTS", "UNSAFE" ]
+      },
+      "LinkedBill" : {
+        "type" : "object",
+        "required" : [ "id", "type", "date", "total" ],
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "type" : {
+            "$ref" : "#/components/schemas/BillType"
+          },
+          "date" : {
+            "type" : "string",
+            "$ref" : "#/components/schemas/LocalDate"
+          },
+          "total" : {
+            "type" : "number"
+          },
+          "description" : {
+            "type" : "string"
           }
         }
       },
@@ -1200,6 +1277,134 @@
             "type" : "string"
           }
         }
+      },
+      "Modification" : {
+        "type" : "object",
+        "required" : [ "id", "carId", "part", "approvalType", "registered", "bills", "installed", "inspectionOpen", "documents" ],
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "carId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "part" : {
+            "type" : "string"
+          },
+          "manufacturer" : {
+            "type" : "string"
+          },
+          "approvalType" : {
+            "$ref" : "#/components/schemas/ApprovalType"
+          },
+          "approvalNumber" : {
+            "type" : "string"
+          },
+          "conditions" : {
+            "type" : "string"
+          },
+          "inspectionDate" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          },
+          "testingBody" : {
+            "type" : "string"
+          },
+          "registered" : {
+            "type" : "boolean"
+          },
+          "installedDate" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          },
+          "installedOdometer" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "removedDate" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          },
+          "removedOdometer" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "notes" : {
+            "type" : "string"
+          },
+          "bills" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/LinkedBill"
+            }
+          },
+          "installed" : {
+            "type" : "boolean"
+          },
+          "inspectionOpen" : {
+            "type" : "boolean"
+          },
+          "documents" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      },
+      "ModificationInput" : {
+        "type" : "object",
+        "properties" : {
+          "part" : {
+            "type" : "string"
+          },
+          "manufacturer" : {
+            "type" : "string"
+          },
+          "approvalType" : {
+            "$ref" : "#/components/schemas/ApprovalType"
+          },
+          "approvalNumber" : {
+            "type" : "string"
+          },
+          "conditions" : {
+            "type" : "string"
+          },
+          "inspectionDate" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          },
+          "testingBody" : {
+            "type" : "string"
+          },
+          "registered" : {
+            "type" : "boolean"
+          },
+          "installedDate" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          },
+          "installedOdometer" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "removedDate" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          },
+          "removedOdometer" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "notes" : {
+            "type" : "string"
+          },
+          "billIds" : {
+            "type" : "array",
+            "items" : {
+              "type" : "integer",
+              "format" : "int64"
+            }
+          }
+        }
+      },
+      "ModificationState" : {
+        "type" : "string",
+        "enum" : [ "INSTALLED", "REMOVED", "ALL" ]
       },
       "MonthStats" : {
         "type" : "object",
@@ -1577,12 +1782,80 @@
           },
           "unitSystem" : {
             "$ref" : "#/components/schemas/UnitSystem"
+          },
+          "accent" : {
+            "$ref" : "#/components/schemas/Accent"
           }
         }
       },
       "SortOrder" : {
         "type" : "string",
         "enum" : [ "ASC", "DESC" ]
+      },
+      "TechnicalInspection" : {
+        "type" : "object",
+        "required" : [ "id", "carId", "date", "result", "passed", "documents" ],
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "carId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "date" : {
+            "type" : "string",
+            "$ref" : "#/components/schemas/LocalDate"
+          },
+          "odometer" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "testingBody" : {
+            "type" : "string"
+          },
+          "result" : {
+            "$ref" : "#/components/schemas/InspectionResult"
+          },
+          "defects" : {
+            "type" : "string"
+          },
+          "nextDue" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          },
+          "passed" : {
+            "type" : "boolean"
+          },
+          "documents" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      },
+      "TechnicalInspectionInput" : {
+        "type" : "object",
+        "properties" : {
+          "date" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          },
+          "odometer" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "testingBody" : {
+            "type" : "string"
+          },
+          "result" : {
+            "$ref" : "#/components/schemas/InspectionResult"
+          },
+          "defects" : {
+            "type" : "string"
+          },
+          "nextDue" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          }
+        }
       },
       "TotalStats" : {
         "type" : "object",
@@ -1647,6 +1920,22 @@
             "format" : "double"
           },
           "points" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "TrackFrequency" : {
+        "type" : "object",
+        "required" : [ "lines", "maxPasses" ],
+        "properties" : {
+          "lines" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/FrequencyLine"
+            }
+          },
+          "maxPasses" : {
             "type" : "integer",
             "format" : "int32"
           }
@@ -2366,6 +2655,231 @@
           }
         },
         "summary" : "Add Bill Attachment",
+        "tags" : [ "Attachment Resource" ]
+      }
+    },
+    "/api/attachment/{carId}/modification/{modificationId}" : {
+      "get" : {
+        "description" : "Documents of the modification by their kind, then oldest first",
+        "operationId" : "getModificationDocuments",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "modificationId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Documents found.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/Attachment"
+                  }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Modification not found."
+          }
+        },
+        "summary" : "Get Modification Documents",
+        "tags" : [ "Attachment Resource" ]
+      },
+      "post" : {
+        "description" : "Attaches a JPEG, PNG, WebP or PDF file of the kind to the modification",
+        "operationId" : "addModificationDocument",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "modificationId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "multipart/form-data" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "file" : {
+                    "type" : "string",
+                    "format" : "binary"
+                  },
+                  "kind" : {
+                    "$ref" : "#/components/schemas/DocumentKind"
+                  }
+                }
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Document attached.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Attachment"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Kind missing, file empty, too large, of another type or too many documents",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Modification not found."
+          },
+          "413" : {
+            "description" : "Request larger than allowed by the server."
+          }
+        },
+        "summary" : "Add Modification Document",
+        "tags" : [ "Attachment Resource" ]
+      }
+    },
+    "/api/attachment/{carId}/technical-inspection/{inspectionId}" : {
+      "get" : {
+        "description" : "Files of the HU, e.g. the report, oldest first",
+        "operationId" : "getTechnicalInspectionFiles",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "inspectionId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Files found.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/Attachment"
+                  }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Technical inspection not found."
+          }
+        },
+        "summary" : "Get Technical Inspection Files",
+        "tags" : [ "Attachment Resource" ]
+      },
+      "post" : {
+        "description" : "Attaches a JPEG, PNG, WebP or PDF file to the HU, e.g. the report",
+        "operationId" : "addTechnicalInspectionFile",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "inspectionId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "multipart/form-data" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "file" : {
+                    "type" : "string",
+                    "format" : "binary"
+                  }
+                }
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "File attached.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Attachment"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "File empty, too large, of another type or too many files",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Technical inspection not found."
+          },
+          "413" : {
+            "description" : "Request larger than allowed by the server."
+          }
+        },
+        "summary" : "Add Technical Inspection File",
         "tags" : [ "Attachment Resource" ]
       }
     },
@@ -4574,6 +5088,54 @@
         "tags" : [ "Export Resource" ]
       }
     },
+    "/api/export/{carId}/papers/pdf" : {
+      "get" : {
+        "description" : "Exports the modifications and the HUs of the car as PDF: the car, the modifications with their approval and the HUs, then their documents and reports, a PDF page by page and a photo per page. The installed parts and the latest HU, with history also the removed parts and all HUs. In the units of the account and the language (de, en; the one of the account without).",
+        "operationId" : "exportCarPapersPdf",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "history",
+          "in" : "query",
+          "schema" : {
+            "type" : "boolean"
+          }
+        }, {
+          "name" : "language",
+          "in" : "query",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "The papers as PDF.",
+            "content" : {
+              "application/pdf" : {
+                "schema" : {
+                  "format" : "binary",
+                  "type" : "string"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "An unknown language."
+          },
+          "404" : {
+            "description" : "Car not found."
+          }
+        },
+        "summary" : "Export Car Papers Pdf",
+        "tags" : [ "Export Resource" ]
+      }
+    },
     "/api/export/{carId}/trips/csv" : {
       "get" : {
         "description" : "Exports the trip log of the car as CSV, for spreadsheets: the oldest trip first, also the deleted ones with their deletion, in km, the times ISO-8601 in the zone. A year or a period (from, to), nothing for all trips. Not meant to be imported.",
@@ -4831,6 +5393,224 @@
         },
         "summary" : "Get Map Settings",
         "tags" : [ "Map Resource" ]
+      }
+    },
+    "/api/modification/{carId}" : {
+      "get" : {
+        "description" : "Modifications of a car, the installed ones first, then the latest installed.",
+        "operationId" : "getModifications",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "state",
+          "in" : "query",
+          "schema" : {
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/ModificationState"
+            }, {
+              "default" : "ALL"
+            } ]
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/Modification"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary" : "Get Modifications",
+        "tags" : [ "Modification Resource" ]
+      },
+      "put" : {
+        "operationId" : "addModification",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ModificationInput"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "202" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Modification"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed, please check the response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Car is not for your user."
+          }
+        },
+        "summary" : "Add Modification",
+        "tags" : [ "Modification Resource" ]
+      }
+    },
+    "/api/modification/{carId}/bills" : {
+      "get" : {
+        "description" : "The maintenance and other entries of the car a modification can have, the latest first.",
+        "operationId" : "getLinkableBills",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Bills found.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/LinkedBill"
+                  }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Car is not for your user."
+          }
+        },
+        "summary" : "Get Linkable Bills",
+        "tags" : [ "Modification Resource" ]
+      }
+    },
+    "/api/modification/{carId}/{id}" : {
+      "post" : {
+        "description" : "Changes a modification, a removed date moves it into the history.",
+        "operationId" : "updateModification",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ModificationInput"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Modification"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed, please check the response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Modification not found for the car of your user."
+          }
+        },
+        "summary" : "Update Modification",
+        "tags" : [ "Modification Resource" ]
+      },
+      "delete" : {
+        "description" : "Deletes a modification including its history, remove it with a removed date to keep that.",
+        "operationId" : "deleteModification",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "Deleted"
+          },
+          "404" : {
+            "description" : "Modification not found for the car of your user."
+          }
+        },
+        "summary" : "Delete Modification",
+        "tags" : [ "Modification Resource" ]
       }
     },
     "/api/reminder/{carId}" : {
@@ -5163,6 +5943,179 @@
         "tags" : [ "Stats Resource" ]
       }
     },
+    "/api/technical-inspection/{carId}" : {
+      "get" : {
+        "description" : "The HUs of a car, the latest first.",
+        "operationId" : "getTechnicalInspections",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/TechnicalInspection"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary" : "Get Technical Inspections",
+        "tags" : [ "Technical Inspection Resource" ]
+      },
+      "put" : {
+        "description" : "Adds an HU. The next due month of the latest one moves the reminder of the HU of the car.",
+        "operationId" : "addTechnicalInspection",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/TechnicalInspectionInput"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "202" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TechnicalInspection"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed, please check the response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Car is not for your user."
+          }
+        },
+        "summary" : "Add Technical Inspection",
+        "tags" : [ "Technical Inspection Resource" ]
+      }
+    },
+    "/api/technical-inspection/{carId}/{id}" : {
+      "post" : {
+        "operationId" : "updateTechnicalInspection",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/TechnicalInspectionInput"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TechnicalInspection"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed, please check the response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Technical inspection not found for the car of your user."
+          }
+        },
+        "summary" : "Update Technical Inspection",
+        "tags" : [ "Technical Inspection Resource" ]
+      },
+      "delete" : {
+        "description" : "Deletes an HU with its files, the reminder stays.",
+        "operationId" : "deleteTechnicalInspection",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "Deleted"
+          },
+          "404" : {
+            "description" : "Technical inspection not found for the car of your user."
+          }
+        },
+        "summary" : "Delete Technical Inspection",
+        "tags" : [ "Technical Inspection Resource" ]
+      }
+    },
     "/api/track/{carId}" : {
       "get" : {
         "description" : "GPS track of a car in a time range of at most 31 days, simplified for the map and split into segments at gaps of more than 5 minutes.",
@@ -5274,6 +6227,65 @@
           }
         },
         "summary" : "Delete Tracks",
+        "tags" : [ "Track Resource" ]
+      }
+    },
+    "/api/track/{carId}/frequency" : {
+      "get" : {
+        "description" : "How often the car passed the roads of its GPS track in a time range of at most 31 days, both directions: the track cut into lines where the amount changes, simplified for the map.",
+        "operationId" : "getTrackFrequency",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "description" : "Start of the range, inclusive",
+          "required" : true,
+          "name" : "from",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          }
+        }, {
+          "description" : "End of the range, exclusive",
+          "required" : true,
+          "name" : "to",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TrackFrequency"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Range missing, empty or too long",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Car is not for your user."
+          }
+        },
+        "summary" : "Get Track Frequency",
         "tags" : [ "Track Resource" ]
       }
     },

@@ -219,7 +219,12 @@ for good, also when it is found a little differently later. Dismissed drives are
 ## Map
 
 The tab *Map* of a car shows its tracks of a day or a period of at most 31 days, colored by speed (orange: slow, dark
-blue: fast, 0 to 160 km/h). It appears for cars with a tracker once a map is set up:
+blue: fast, 0 to 160 km/h) or by how often the car drove each road in the period (*Frequency*: yellow and thin once,
+dark red and wide the most often). For the frequency the points lie on a grid of 15 m, a drive marks its cells and
+the ones around, so the drift of the GPS between two drives on the same road doesn't matter. Both directions count,
+and a cell counts again once the car was away from it for more than 5 minutes: standing or a jam doesn't add a pass,
+the way back after a stop does. Roads closer than about 30 m, e.g. the two carriageways of a motorway, may count
+together. It appears for cars with a tracker once a map is set up:
 
 | Property                  | Helm value               | Meaning                                                                       |
 |---------------------------|--------------------------|-------------------------------------------------------------------------------|

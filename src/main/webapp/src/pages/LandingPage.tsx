@@ -11,6 +11,14 @@ import {
 import ArrowForwardRounded from '@mui/icons-material/ArrowForwardRounded';
 import UploadFileRounded from '@mui/icons-material/UploadFileRounded';
 import InsightsRounded from '@mui/icons-material/InsightsRounded';
+import TuneRounded from '@mui/icons-material/TuneRounded';
+import FactCheckRounded from '@mui/icons-material/FactCheckRounded';
+import PictureAsPdfRounded from '@mui/icons-material/PictureAsPdfRounded';
+import NotificationsActiveRounded from '@mui/icons-material/NotificationsActiveRounded';
+import RouteRounded from '@mui/icons-material/RouteRounded';
+import GpsFixedRounded from '@mui/icons-material/GpsFixedRounded';
+import InstallMobileRounded from '@mui/icons-material/InstallMobileRounded';
+import BackupRounded from '@mui/icons-material/BackupRounded';
 import { ReactNode, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import useMe from '@/hooks/useMe';
@@ -30,8 +38,14 @@ interface Feature {
   color: BillPaletteKey | 'primary';
 }
 
+/** the costs first, then the papers of the car, the road and the data */
 const features: Feature[] = [
   { key: 'fuel', icon: billTypes[BillType.FUEL].icon, color: 'fuel' },
+  {
+    key: 'charging',
+    icon: billTypes[BillType.CHARGING].icon,
+    color: 'charging',
+  },
   {
     key: 'maintenance',
     icon: billTypes[BillType.MAINTENANCE].icon,
@@ -48,15 +62,43 @@ const features: Feature[] = [
     color: 'miscellaneous',
   },
   {
-    key: 'import',
-    icon: <UploadFileRounded fontSize="small" />,
-    color: 'primary',
-  },
-  {
     key: 'stats',
     icon: <InsightsRounded fontSize="small" />,
     color: 'primary',
   },
+  {
+    key: 'modifications',
+    icon: <TuneRounded fontSize="small" />,
+    color: 'primary',
+  },
+  {
+    key: 'inspections',
+    icon: <FactCheckRounded fontSize="small" />,
+    color: 'primary',
+  },
+  {
+    key: 'papers',
+    icon: <PictureAsPdfRounded fontSize="small" />,
+    color: 'primary',
+  },
+  {
+    key: 'reminders',
+    icon: <NotificationsActiveRounded fontSize="small" />,
+    color: 'primary',
+  },
+  { key: 'trips', icon: <RouteRounded fontSize="small" />, color: 'primary' },
+  { key: 'gps', icon: <GpsFixedRounded fontSize="small" />, color: 'primary' },
+  {
+    key: 'offline',
+    icon: <InstallMobileRounded fontSize="small" />,
+    color: 'primary',
+  },
+  {
+    key: 'import',
+    icon: <UploadFileRounded fontSize="small" />,
+    color: 'primary',
+  },
+  { key: 'backup', icon: <BackupRounded fontSize="small" />, color: 'primary' },
 ];
 
 export default function LandingPage() {
@@ -129,7 +171,7 @@ export default function LandingPage() {
 
         <Grid container spacing={2}>
           {features.map((feature) => (
-            <Grid key={feature.key} size={{ xs: 12, sm: 6 }}>
+            <Grid key={feature.key} size={{ xs: 12, sm: 6, md: 4 }}>
               <Card sx={{ p: 2.5, height: '100%' }}>
                 <Box
                   sx={(theme) => ({
