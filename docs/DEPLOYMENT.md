@@ -135,14 +135,14 @@ shorter ones), 32 or more are recommended, and all replicas need the same one.
 helm install car-ledger oci://ghcr.io/3thr3n/car-ledger/car-ledger --set ingress.host=example.com
 ```
 
-Without `--version` the latest release is installed. A release (e.g. `0.7.0`, see the
-[releases](https://github.com/3thr3n/car-ledger/releases)) publishes the image `ghcr.io/3thr3n/car-ledger:0.7.0` and the
-chart `oci://ghcr.io/3thr3n/car-ledger/car-ledger` in version `0.7.0`, which runs that image (up to 0.3.x the chart was
+Without `--version` the latest release is installed. A release (e.g. `0.8.0`, see the
+[releases](https://github.com/3thr3n/car-ledger/releases)) publishes the image `ghcr.io/3thr3n/car-ledger:0.8.0` and the
+chart `oci://ghcr.io/3thr3n/car-ledger/car-ledger` in version `0.8.0`, which runs that image (up to 0.3.x the chart was
 `oci://ghcr.io/3thr3n/car-ledger/helm`).
 
 Every build of `develop` publishes the image `ghcr.io/3thr3n/car-ledger:<run number>` and the chart as the prerelease
-`<next release>-dev.<run number>`, e.g. `0.8.0-dev.123`, which runs the image of the same build: `--version
-0.8.0-dev.123` installs build 123, `--devel` the latest build. Leave `carLedger.image.tag` empty, it would override
+`<next release>-dev.<run number>`, e.g. `0.9.0-dev.123`, which runs the image of the same build: `--version
+0.9.0-dev.123` installs build 123, `--devel` the latest build. Leave `carLedger.image.tag` empty, it would override
 the image of the chart.
 
 From the repository (`helm dependency update helm/car-ledger`, `helm install car-ledger helm/car-ledger ...`) the chart
@@ -164,8 +164,9 @@ with the role `user`, the roles are missing in the tokens of the client.
   by VMs with the default QEMU CPU model). Set `infinispan.images.server=quay.io/infinispan/server:16.2` if your nodes
   support it.
 - **External PostgreSQL**: `carledgerpostgres.enabled=false` and `carLedger.postgres.*` (or `carLedger.postgres.jdbc`).
-- **Attachments**: receipts are stored in PostgreSQL, up to `carLedger.attachments.maxSize` (10 MB) per file and
-  `carLedger.attachments.maxPerBill` (10) per entry. Uploads need requests up to `carLedger.attachments.maxRequestSize`
+- **Attachments**: receipts, the documents of the modifications and the reports of the HUs are stored in PostgreSQL,
+  up to `carLedger.attachments.maxSize` (10 MB) per file and `carLedger.attachments.maxPerBill` (10) per entry,
+  modification or HU. Uploads need requests up to `carLedger.attachments.maxRequestSize`
   (12 MB): the nginx ingress gets the annotation `nginx.ingress.kubernetes.io/proxy-body-size` automatically, other
   proxies (e.g. a Gateway or a reverse proxy in front of the cluster) need the same limit, otherwise uploads fail with
   413.
@@ -366,6 +367,11 @@ Use the image of a release (a git tag of `main`) or a dev build of `develop`. On
 | 1.18.0    | Tables for the GPS trackers of the cars and their track points (0.7.0)                                               |
 | 1.19.0    | How long the track points of a car are kept, forever for the existing cars (0.7.0)                                   |
 | 1.20.0    | Table for the drives dismissed as suggested trips (0.7.0)                                                            |
+| 1.21.0    | Accent color of the account, teal for the existing ones (0.8.0)                                                      |
+| 1.22.0    | Table for the modifications of the cars with their approvals (0.8.0)                                                 |
+| 1.23.0    | Documents of the modifications as attachments with their kind (0.8.0)                                                |
+| 1.24.0    | Several bills per modification, the existing links move into a table (0.8.0)                                         |
+| 1.25.0    | Table for the HUs, their reports as attachments, the reminders the app keeps (0.8.0)                                 |
 
 An older image refuses to start on the migrated database, as Flyway finds migrations it does not know. To go back,
 restore the backup. Without the backup, the older image runs on the migrated database (the new columns have defaults)
@@ -426,6 +432,19 @@ kubectl set env deployment/car-ledger QUARKUS_FLYWAY_IGNORE_FUTURE_MIGRATIONS=tr
   users flash the firmware and the settings of a tracker from Chrome or Edge over USB; the firmware is not part of
   CarLedger. `carLedger.imagePullSecrets` pulls the images of the pod from a private registry, see
   [GPS_TRACKER.md](GPS_TRACKER.md#flashing).
+- **Accent colors** (0.8.0): each user picks one of five accent colors in the settings, stored with the account
+  (migration 1.21.0, teal for the existing ones) and part of the backup. Nothing to set up.
+- **Modifications** (0.8.0): the tab *Modifications* of a car keeps the parts with their approval, the Abnahme and
+  the bills (migrations 1.22.0 to 1.24.0). Their documents are attachments with the limits above and part of the
+  backup: a backup with many Gutachten grows, see *Backups* in [Options](#options).
+- **HU** (0.8.0): the tab *HU* keeps the Hauptuntersuchungen with their result and report (migration 1.25.0). The next
+  due month of the latest one moves the reminder of the HU, which the app keeps itself; a reminder the user added for
+  the HU before is taken over, not doubled.
+- **Papers as PDF** (0.8.0): the modifications and the HUs of a car with their documents appended, built in the
+  memory of the app: a car with many large PDFs needs as much memory for a moment. Nothing to set up.
+- **Documents offline** (0.8.0): per car, a user keeps the documents of the installed parts and the report of the
+  latest HU on the device, up to 50 MB, in the Cache Storage of the browser. It needs HTTPS like the installed app;
+  the service worker serves them without a connection and puts the accent color into the manifest.
 - **Trip log** (0.6.0): trips with start and end odometer (Fahrtenbuch), turned on per car in *Edit car* (migration
   1.16.0 turns it on for cars with trips). Starting and finishing work offline as well; the app keeps the open trip
   and the minimum odometer on the device. A wrong trip is deleted with a reason by the owner of the car: it stays
