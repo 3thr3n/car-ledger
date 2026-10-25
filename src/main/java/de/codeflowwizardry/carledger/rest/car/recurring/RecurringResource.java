@@ -2,6 +2,7 @@ package de.codeflowwizardry.carledger.rest.car.recurring;
 
 import io.quarkus.security.identity.SecurityIdentity;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
@@ -13,6 +14,8 @@ import org.slf4j.LoggerFactory;
 import de.codeflowwizardry.carledger.data.RecurringBillEntity;
 import de.codeflowwizardry.carledger.data.factory.RecurringBillFactory;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
+import de.codeflowwizardry.carledger.data.repository.AttachmentRepository;
+import de.codeflowwizardry.carledger.data.repository.AttachmentRepository.BillFiles;
 import de.codeflowwizardry.carledger.data.repository.CarAccess.Action;
 import de.codeflowwizardry.carledger.data.repository.RecurringBillRepository;
 import de.codeflowwizardry.carledger.rest.AbstractResource;
@@ -31,14 +34,17 @@ public class RecurringResource extends AbstractResource
 
 	private final RecurringBillRepository recurringBillRepository;
 	private final RecurringBillFactory recurringBillFactory;
+	private final AttachmentRepository attachmentRepository;
 
 	@Inject
 	public RecurringResource(SecurityIdentity identity, AccountRepository accountRepository,
-			RecurringBillRepository recurringBillRepository, RecurringBillFactory recurringBillFactory)
+			RecurringBillRepository recurringBillRepository, RecurringBillFactory recurringBillFactory,
+			AttachmentRepository attachmentRepository)
 	{
 		super(identity, accountRepository);
 		this.recurringBillRepository = recurringBillRepository;
 		this.recurringBillFactory = recurringBillFactory;
+		this.attachmentRepository = attachmentRepository;
 	}
 
 	@GET
@@ -57,7 +63,16 @@ public class RecurringResource extends AbstractResource
 		PanacheQuery<RecurringBillEntity> all = recurringBillRepository.getAll(carId, context.getName(), queryPage,
 				running, sort == RecurringBillSort.NEXT_DUE);
 
-		return new BillPaged<>(all.count(), page, size, RecurringBill.convert(all.list()));
+		List<RecurringBillEntity> bills = all.list();
+		Map<Long, BillFiles> files = attachmentRepository
+				.filesPerRecurringBill(bills.stream().map(RecurringBillEntity::getId).toList());
+		List<RecurringBill> converted = bills.stream()
+				.map(bill -> {
+					BillFiles billFiles = files.getOrDefault(bill.getId(), new BillFiles(0, null));
+					return RecurringBill.convert(bill, billFiles.count(), billFiles.photo());
+				})
+				.toList();
+		return new BillPaged<>(all.count(), page, size, converted);
 	}
 
 	@PUT

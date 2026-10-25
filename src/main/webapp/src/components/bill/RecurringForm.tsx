@@ -18,6 +18,7 @@ import { localClient } from '@/utils/QueryClient';
 import { toApiDate, useFormat } from '@/utils/format';
 import NumberField from './NumberField';
 import FormActions from './FormActions';
+import BillAttachments from './BillAttachments';
 import useSaveBill from './useSaveBill';
 
 interface RecurringState {
@@ -242,6 +243,8 @@ export default function RecurringForm({
               {t('bill.recurringPastHint')}
             </Alert>
           )}
+
+      <BillAttachments {...save.attachments} />
 
       <FormActions
         pending={create.isPending || update.isPending}

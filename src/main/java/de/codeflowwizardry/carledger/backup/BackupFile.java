@@ -129,9 +129,13 @@ public record BackupFile(String format, int version, OffsetDateTime createdAt, S
 	{
 	}
 
+	/**
+	 * @param files
+	 *            e.g. the contract, missing in backups before them
+	 */
 	public record RecurringBill(String name, String description, BigDecimal amount, BillCategory category,
 			BillInterval interval, LocalDate startDate, LocalDate nextDueDate, LocalDate endDate, BigDecimal total,
-			List<Payment> payments)
+			List<Payment> payments, List<File> files)
 	{
 	}
 

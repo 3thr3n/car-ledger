@@ -2,7 +2,6 @@ package de.codeflowwizardry.carledger.rest.car.recurring;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
 
 import de.codeflowwizardry.carledger.data.BillCategory;
 import de.codeflowwizardry.carledger.data.BillInterval;
@@ -19,8 +18,24 @@ public record RecurringBill(
 		LocalDate endDate,
 		BigDecimal amount,
 		BigDecimal total,
-		boolean finished)
+		boolean finished,
+		long attachments,
+		Long photo)
 {
+	/**
+	 * @param attachments
+	 *            amount of attached files, only set in the list
+	 * @param photo
+	 *            the first attached photo, shown small in the list
+	 */
+	public static RecurringBill convert(RecurringBillEntity entity, long attachments, Long photo)
+	{
+		RecurringBill bill = convert(entity);
+		return new RecurringBill(bill.id, bill.name, bill.description, bill.nextDueDate, bill.category,
+				bill.billInterval, bill.startDate, bill.endDate, bill.amount, bill.total, bill.finished, attachments,
+				photo);
+	}
+
 	public static RecurringBill convert(RecurringBillEntity entity)
 	{
 		boolean finished = false;
@@ -41,11 +56,8 @@ public record RecurringBill(
 				entity.getEndDate(),
 				entity.getAmount(),
 				entity.getTotal(),
-				finished);
-	}
-
-	public static List<RecurringBill> convert(List<RecurringBillEntity> entities)
-	{
-		return entities.stream().map(RecurringBill::convert).toList();
+				finished,
+				0,
+				null);
 	}
 }

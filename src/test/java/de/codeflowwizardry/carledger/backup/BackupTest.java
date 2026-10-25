@@ -134,9 +134,10 @@ class BackupTest
 				"Garage"), carId, "peter").getBill().getId();
 		miscellaneousBillFactory.create(
 				new MiscellaneousBillInput(BigDecimal.TEN, 19, LocalDate.of(2025, 3, 1), "Car wash"), carId, "peter");
-		recurringBillFactory.create(carId, new RecurringBillInput("Insurance", "Full", BillInterval.MONTHLY,
-				BillCategory.INSURANCE, LocalDate.of(2025, 1, 1), LocalDate.of(2025, 3, 1), BigDecimal.valueOf(45)),
-				"peter");
+		long insurance = recurringBillFactory.create(carId, new RecurringBillInput("Insurance", "Full",
+				BillInterval.MONTHLY, BillCategory.INSURANCE, LocalDate.of(2025, 1, 1), LocalDate.of(2025, 3, 1),
+				BigDecimal.valueOf(45)), "peter").getId();
+		attachmentService.addToRecurringBill(carId, insurance, "peter", "policy.pdf", PDF);
 		reminderService.create(carId, new ReminderInput("Service", "Oil", LocalDate.of(2026, 5, 1), 60_000, 12,
 				15_000), "peter");
 		attachmentService.setCarPicture(carId, "peter", "golf.png", PNG);
@@ -273,6 +274,9 @@ class BackupTest
 		assertArrayEquals(PDF, entries.get(fuel.get("attachments").get(0).get("path").asText()));
 		assertArrayEquals(PNG, entries.get(car.get("picture").get("path").asText()));
 		assertEquals(2, car.get("recurringBills").get(0).get("payments").size());
+		JsonNode policy = car.get("recurringBills").get(0).get("files").get(0);
+		assertEquals("policy.pdf", policy.get("fileName").asText());
+		assertArrayEquals(PDF, entries.get(policy.get("path").asText()));
 		assertEquals(15_000, car.get("reminders").get(0).get("intervalKm").asInt());
 		JsonNode hu = car.get("technicalInspections").get(0);
 		assertEquals("MINOR_DEFECTS", hu.get("result").asText());
@@ -318,7 +322,7 @@ class BackupTest
 				.body("modifications", is(1))
 				.body("technicalInspections", is(1))
 				.body("reminders", is(2))
-				.body("files", is(5));
+				.body("files", is(6));
 
 		long restored = given().when().get("/api/car/my").then().statusCode(200)
 				.body("name", contains("Golf GTE"))
@@ -339,7 +343,8 @@ class BackupTest
 				.body("data[0].workshop", is("Garage"));
 		given().when().get("/api/bill/{carId}/recurring", restored).then()
 				.body("data[0].name", is("Insurance"))
-				.body("data[0].total", is(90.0F));
+				.body("data[0].total", is(90.0F))
+				.body("data[0].attachments", is(1));
 		given().when().get("/api/reminder/{carId}", restored).then()
 				.body("title", containsInAnyOrder("Service", "HU"));
 		given().when().get("/api/technical-inspection/{carId}", restored).then()

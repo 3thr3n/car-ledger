@@ -29,13 +29,14 @@ export default function useSaveBill(
   const again = useRef(false);
   const [pending, setPending] = useState<File[]>([]);
   const addToQueue = useQueueRequest();
+  const recurring = type === BillType.RECURRING;
 
   /** the bill is saved even if a file fails, the user can attach it later */
   const uploadPending = async (savedId?: number) => {
     if (savedId === undefined) return;
     for (const file of pending) {
       try {
-        await uploadAttachment(carId, savedId, file);
+        await uploadAttachment(carId, savedId, file, recurring);
       } catch (error) {
         toast.error(
           t('attachments.notAttached', {
@@ -51,6 +52,7 @@ export default function useSaveBill(
   const attachments: BillAttachmentsProps = {
     carId,
     billId,
+    recurring,
     pending,
     onPendingChange: setPending,
   };

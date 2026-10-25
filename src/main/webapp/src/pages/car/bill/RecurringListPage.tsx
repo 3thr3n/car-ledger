@@ -84,6 +84,7 @@ export default function RecurringListPage({ carId }: { carId: number }) {
       </Stack>
       <BillTable
         carId={carId}
+        recurring
         rows={data?.data ?? []}
         total={data?.total ?? 0}
         columns={columns}

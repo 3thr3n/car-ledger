@@ -13,14 +13,14 @@ import OpenInNewRounded from '@mui/icons-material/OpenInNewRounded';
 import PictureAsPdfRounded from '@mui/icons-material/PictureAsPdfRounded';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { getBillAttachmentsOptions } from '@/generated/@tanstack/react-query.gen';
-import { localClient } from '@/utils/QueryClient';
-import { contentUrl } from './attachments';
+import { attachmentsOptions, contentUrl } from './attachments';
 
 export interface AttachmentsDialogProps {
   carId: number;
   /** the bill whose files are shown, closed without one */
   billId?: number;
+  /** whether the bill is a recurring cost */
+  recurring?: boolean;
   onClose: () => void;
   /** opens the edit form of the bill, e.g. to add or remove files */
   onEdit?: () => void;
@@ -33,16 +33,14 @@ export interface AttachmentsDialogProps {
 export default function AttachmentsDialog({
   carId,
   billId,
+  recurring,
   onClose,
   onEdit,
 }: AttachmentsDialogProps) {
   const { t } = useTranslation();
 
   const { data: attachments, isLoading } = useQuery({
-    ...getBillAttachmentsOptions({
-      client: localClient,
-      path: { carId, billId: billId ?? 0 },
-    }),
+    ...attachmentsOptions(carId, billId ?? 0, recurring),
     enabled: billId !== undefined,
   });
 

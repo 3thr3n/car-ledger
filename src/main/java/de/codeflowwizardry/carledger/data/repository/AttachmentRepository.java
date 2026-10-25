@@ -34,6 +34,23 @@ public class AttachmentRepository implements PanacheRepository<AttachmentEntity>
 	}
 
 	/**
+	 * @return files of the recurring cost, if the user may see its car, oldest
+	 *         first
+	 */
+	public List<AttachmentEntity> listForRecurringBill(long carId, long recurringBillId, String userId)
+	{
+		return list("recurringBill.id = :recurringBillId and car.id = :carId and "
+				+ CarAccess.condition("car", Action.READ),
+				Sort.by("createdAt").and("id"),
+				Map.of("recurringBillId", recurringBillId, "carId", carId, CarAccess.USER, userId));
+	}
+
+	public long countForRecurringBill(long recurringBillId)
+	{
+		return count("recurringBill.id", recurringBillId);
+	}
+
+	/**
 	 * @return documents of the modification, if the user may see its car, by
 	 *         their kind, then the oldest first
 	 */
@@ -93,14 +110,30 @@ public class AttachmentRepository implements PanacheRepository<AttachmentEntity>
 	 */
 	public Map<Long, BillFiles> filesPerBill(Collection<Long> billIds)
 	{
-		if (billIds.isEmpty())
+		return filesPer("bill", billIds);
+	}
+
+	/**
+	 * @return the files per recurring cost, recurring costs without any are
+	 *         missing
+	 */
+	public Map<Long, BillFiles> filesPerRecurringBill(Collection<Long> recurringBillIds)
+	{
+		return filesPer("recurringBill", recurringBillIds);
+	}
+
+	private Map<Long, BillFiles> filesPer(String owner, Collection<Long> ids)
+	{
+		if (ids.isEmpty())
 		{
 			return Map.of();
 		}
 		return getEntityManager()
-				.createQuery("select a.bill.id, count(a), min(case when a.contentType like 'image/%' then a.id end)"
-						+ " from Attachment a where a.bill.id in :ids group by a.bill.id", Object[].class)
-				.setParameter("ids", billIds)
+				.createQuery(
+						"select a." + owner + ".id, count(a), min(case when a.contentType like 'image/%' then a.id end)"
+								+ " from Attachment a where a." + owner + ".id in :ids group by a." + owner + ".id",
+						Object[].class)
+				.setParameter("ids", ids)
 				.getResultStream()
 				.collect(Collectors.toMap(row -> (Long) row[0],
 						row -> new BillFiles((Long) row[1], (Long) row[2])));

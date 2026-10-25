@@ -39,6 +39,8 @@ export interface BillTableProps<
   },
 > {
   carId: number;
+  /** whether the rows are recurring costs, for their files */
+  recurring?: boolean;
   rows: R[];
   total: number;
   columns: GridColDef<R>[];
@@ -67,6 +69,7 @@ export default function BillTable<
   },
 >({
   carId,
+  recurring,
   rows,
   total,
   columns,
@@ -107,6 +110,7 @@ export default function BillTable<
       <AttachmentsDialog
         carId={carId}
         billId={shown?.id}
+        recurring={recurring}
         onClose={() => setShown(undefined)}
         onEdit={shown && onEdit && (() => onEdit(shown))}
       />
@@ -265,9 +269,9 @@ export default function BillTable<
     );
   }
 
-  // the date shows whether files are attached
+  // the date (the name of a recurring cost) shows whether files are attached
   const withHint = columns.map((column) =>
-    column.field === 'date'
+    column.field === (recurring ? 'name' : 'date')
       ? {
           ...column,
           renderCell: ({ formattedValue, row }) => (

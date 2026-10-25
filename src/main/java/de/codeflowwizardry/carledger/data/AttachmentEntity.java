@@ -5,9 +5,10 @@ import java.time.OffsetDateTime;
 import jakarta.persistence.*;
 
 /**
- * A file attached to a bill (e.g. the receipt), to a modification (a document
- * of its approval), to a technical inspection (its report) or to the car (its
- * picture). Only the metadata, the content
+ * A file attached to a bill (e.g. the receipt), to a recurring cost (e.g. the
+ * contract), to a modification (a document of its approval), to a technical
+ * inspection (its report) or to the car (its picture). Only the metadata, the
+ * content
  * is in the {@link de.codeflowwizardry.carledger.attachment.AttachmentStorage}
  * named by {@link #getStorage()}.
  */
@@ -34,6 +35,10 @@ public class AttachmentEntity
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "a_technical_inspection_id")
 	private TechnicalInspectionEntity technicalInspection;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "a_recurring_bill_id")
+	private RecurringBillEntity recurringBill;
 
 	/** set for the documents of a modification only */
 	@Enumerated(EnumType.STRING)
@@ -106,6 +111,16 @@ public class AttachmentEntity
 	public void setTechnicalInspection(TechnicalInspectionEntity technicalInspection)
 	{
 		this.technicalInspection = technicalInspection;
+	}
+
+	public RecurringBillEntity getRecurringBill()
+	{
+		return recurringBill;
+	}
+
+	public void setRecurringBill(RecurringBillEntity recurringBill)
+	{
+		this.recurringBill = recurringBill;
 	}
 
 	public DocumentKind getKind()
