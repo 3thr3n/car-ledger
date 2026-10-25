@@ -38,6 +38,8 @@ test.describe.serial('attachments', () => {
     await page.goto(`/car/${carId}/bill/add?type=MISCELLANEOUS`);
     await page.getByRole('textbox', { name: /^Description/ }).fill('Car wash');
     await page.getByRole('textbox', { name: /^Total/ }).fill('12');
+    // the limits of the server
+    await expect(page.getByText(/up to 10 MB each and 10 files/)).toBeVisible();
 
     await input().setInputFiles([
       { name: 'receipt.png', mimeType: 'image/png', buffer: PNG },
@@ -124,6 +126,15 @@ test.describe.serial('attachments', () => {
     await expect(
       page.getByText('Only JPEG, PNG, WebP and PDF files can be attached!'),
     ).toBeVisible();
+    await expect(page.getByRole('link', { name: /^Open / })).toHaveCount(1);
+
+    // Chromium cannot decode it, it is sent as it is and explained
+    await input().setInputFiles({
+      name: 'IMG_0001.HEIC',
+      mimeType: 'image/heic',
+      buffer: Buffer.from('\0\0\0\u0018ftypheic\0\0\0\0mif1heic', 'latin1'),
+    });
+    await expect(page.getByText(/HEIC photos cannot be read/)).toBeVisible();
     await expect(page.getByRole('link', { name: /^Open / })).toHaveCount(1);
   });
 

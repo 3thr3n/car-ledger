@@ -3,6 +3,7 @@ package de.codeflowwizardry.carledger.attachment;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * The allowed types of attachments, recognized by the first bytes of the
@@ -17,6 +18,9 @@ public enum FileType {
 			"%PDF-".getBytes(StandardCharsets.US_ASCII));
 
 	private static final byte[] WEBP_MARKER = "WEBP".getBytes(StandardCharsets.US_ASCII);
+	private static final byte[] FTYP = "ftyp".getBytes(StandardCharsets.US_ASCII);
+	private static final Set<String> HEIC_BRANDS = Set.of("heic", "heix", "heim", "heis", "hevc", "hevx", "mif1",
+			"msf1");
 
 	private final String contentType;
 	private final byte[] magic;
@@ -35,6 +39,20 @@ public enum FileType {
 	public boolean isImage()
 	{
 		return this != PDF;
+	}
+
+	/**
+	 * @return whether the content is a HEIC / HEIF photo (e.g. of an iPhone),
+	 *         which is not allowed: neither most browsers nor Java decode it
+	 */
+	public static boolean isHeic(byte[] content)
+	{
+		if (!startsWith(content, FTYP, 4) || content.length < 12)
+		{
+			return false;
+		}
+		String brand = new String(content, 8, 4, StandardCharsets.US_ASCII);
+		return HEIC_BRANDS.contains(brand);
 	}
 
 	public static Optional<FileType> detect(byte[] content)

@@ -439,7 +439,8 @@ track:
 attachments:
   title: "Belege und Dateien"
   add: "Hinzufügen"
-  help: "Fotos oder PDFs, bis 10 MB. Fotos werden vor dem Hochladen verkleinert."
+  help: "Fotos oder PDFs. Fotos werden vor dem Hochladen verkleinert."
+  helpLimits: "Fotos oder PDFs, je bis {{size}} und bis zu {{count}} Dateien. Fotos werden vor dem Hochladen verkleinert."
   open: "{{name}} öffnen"
   remove: "{{name}} entfernen"
   deleteTitle: "Diese Datei entfernen?"

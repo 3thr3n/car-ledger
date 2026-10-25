@@ -10,9 +10,13 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { ChangeEvent, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
-import { deleteAttachmentMutation } from '@/generated/@tanstack/react-query.gen';
+import {
+  deleteAttachmentMutation,
+  getAttachmentLimitsOptions,
+} from '@/generated/@tanstack/react-query.gen';
 import { invalidateCar, localClient } from '@/utils/QueryClient';
 import { errorMessage } from '@/utils/BackendError';
+import { fileSize } from '@/utils/format';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import useObjectUrl from '@/hooks/useObjectUrl';
 import AttachmentTile, { TILE } from './AttachmentTile';
@@ -46,8 +50,13 @@ export default function BillAttachments({
   pending,
   onPendingChange,
 }: BillAttachmentsProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const input = useRef<HTMLInputElement>(null);
+  // set up by the operator, they change only with a new start of the server
+  const { data: limits } = useQuery({
+    ...getAttachmentLimitsOptions({ client: localClient }),
+    staleTime: Infinity,
+  });
   const [toDelete, setToDelete] = useState<number>();
 
   const { data: attachments } = useQuery({
@@ -143,7 +152,12 @@ export default function BillAttachments({
         variant="caption"
         sx={{ display: 'block', mt: 1, color: 'text.secondary' }}
       >
-        {t('attachments.help')}
+        {limits
+          ? t('attachments.helpLimits', {
+              size: fileSize(i18n.language, limits.maxSize),
+              count: limits.maxFiles,
+            })
+          : t('attachments.help')}
       </Typography>
       <input
         ref={input}

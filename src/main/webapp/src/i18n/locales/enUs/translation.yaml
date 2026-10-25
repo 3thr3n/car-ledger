@@ -439,7 +439,8 @@ track:
 attachments:
   title: "Receipts and files"
   add: "Add"
-  help: "Photos or PDFs, up to 10 MB. Photos are scaled down before the upload."
+  help: "Photos or PDFs. Photos are scaled down before the upload."
+  helpLimits: "Photos or PDFs, up to {{size}} each and {{count}} files. Photos are scaled down before the upload."
   open: "Open {{name}}"
   remove: "Remove {{name}}"
   deleteTitle: "Remove this file?"
