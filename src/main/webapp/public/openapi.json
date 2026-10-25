@@ -347,6 +347,10 @@
             "type" : "integer",
             "format" : "int64"
           },
+          "photo" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "id" : {
             "type" : "integer",
             "format" : "int64"
@@ -757,6 +761,10 @@
             "type" : "integer",
             "format" : "int64"
           },
+          "photo" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "id" : {
             "type" : "integer",
             "format" : "int64"
@@ -1029,6 +1037,10 @@
             "type" : "integer",
             "format" : "int64"
           },
+          "photo" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "id" : {
             "type" : "integer",
             "format" : "int64"
@@ -1173,6 +1185,10 @@
             "type" : "integer",
             "format" : "int64"
           },
+          "photo" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "id" : {
             "type" : "integer",
             "format" : "int64"
@@ -1261,6 +1277,10 @@
         "type" : "object",
         "properties" : {
           "attachments" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "photo" : {
             "type" : "integer",
             "format" : "int64"
           },
@@ -2979,6 +2999,45 @@
           }
         },
         "summary" : "Get Attachment Content",
+        "tags" : [ "Attachment Resource" ]
+      }
+    },
+    "/api/attachment/{carId}/{id}/preview" : {
+      "get" : {
+        "description" : "A small JPEG of a photo for the lists, the file itself if it has none (PDFs, images the server cannot decode)",
+        "operationId" : "getAttachmentPreview",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Preview found.",
+            "content" : {
+              "image/jpeg" : { },
+              "image/png" : { },
+              "image/webp" : { },
+              "application/pdf" : { }
+            }
+          },
+          "404" : {
+            "description" : "Attachment not found."
+          }
+        },
+        "summary" : "Get Attachment Preview",
         "tags" : [ "Attachment Resource" ]
       }
     },

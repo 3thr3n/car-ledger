@@ -23,12 +23,14 @@ import software.amazon.awssdk.services.s3.model.S3Object;
  * Garage, ...), available when a bucket is set. The client is configured by
  * <code>quarkus.s3.*</code> (endpoint, region, credentials). The objects are
  * named by a random key below the prefix, so a bucket can be shared and a
- * restored database never meets the objects of an older one.
+ * restored database never meets the objects of an older one. The preview of a
+ * file is the object next to it, its key with <code>.preview</code>.
  */
 @ApplicationScoped
 public class S3AttachmentStorage implements AttachmentStorage
 {
 	public static final String NAME = "S3";
+	private static final String PREVIEW_SUFFIX = ".preview";
 
 	private final Instance<S3Client> client;
 	private final Optional<String> bucket;
@@ -71,15 +73,33 @@ public class S3AttachmentStorage implements AttachmentStorage
 	@Override
 	public byte[] load(AttachmentEntity attachment)
 	{
+		return get(attachment.getStorageKey(), "Content of the attachment not found");
+	}
+
+	private byte[] get(String key, String notFound)
+	{
 		try
 		{
-			return client.get().getObjectAsBytes(request -> request.bucket(bucket()).key(attachment.getStorageKey()))
-					.asByteArray();
+			return client.get().getObjectAsBytes(request -> request.bucket(bucket()).key(key)).asByteArray();
 		}
 		catch (NoSuchKeyException e)
 		{
-			throw new NotFoundException("Content of the attachment not found");
+			throw new NotFoundException(notFound);
 		}
+	}
+
+	@Override
+	public void storePreview(AttachmentEntity attachment, byte[] preview)
+	{
+		client.get().putObject(request -> request.bucket(bucket()).key(previewKey(attachment.getStorageKey()))
+				.contentType("image/jpeg")
+				.contentLength((long) preview.length), RequestBody.fromBytes(preview));
+	}
+
+	@Override
+	public byte[] loadPreview(AttachmentEntity attachment)
+	{
+		return get(previewKey(attachment.getStorageKey()), "Preview of the attachment not found");
 	}
 
 	@Override
@@ -89,12 +109,31 @@ public class S3AttachmentStorage implements AttachmentStorage
 	}
 
 	/**
-	 * Deleting an object that is gone already does no harm
+	 * Deletes the object and its preview, deleting an object that is gone
+	 * already (or a preview that was never stored) does no harm
 	 */
 	@Override
 	public void delete(String key)
 	{
 		client.get().deleteObject(request -> request.bucket(bucket()).key(key));
+		client.get().deleteObject(request -> request.bucket(bucket()).key(previewKey(key)));
+	}
+
+	/**
+	 * @return the key of the preview stored next to the object of the key
+	 */
+	static String previewKey(String key)
+	{
+		return key + PREVIEW_SUFFIX;
+	}
+
+	/**
+	 * @return the key of the object a preview belongs to, the key itself for
+	 *         other objects
+	 */
+	static String fileKey(String key)
+	{
+		return key.endsWith(PREVIEW_SUFFIX) ? key.substring(0, key.length() - PREVIEW_SUFFIX.length()) : key;
 	}
 
 	/**

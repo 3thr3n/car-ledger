@@ -22,7 +22,7 @@ import { errorMessage } from '@/utils/BackendError';
 import { prepareUpload } from '@/utils/image';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import AttachmentTile from '@/components/bill/AttachmentTile';
-import { ACCEPT, contentUrl } from '@/components/bill/attachments';
+import { ACCEPT, contentUrl, previewUrl } from '@/components/bill/attachments';
 import { useOpenKept } from '@/components/offline/useOfflineDocuments';
 
 export interface ModificationDocumentsProps {
@@ -156,6 +156,7 @@ export default function ModificationDocuments({
                       name={document.fileName ?? ''}
                       pdf={document.contentType === 'application/pdf'}
                       url={contentUrl(carId, document.id!)}
+                      previewUrl={previewUrl(carId, document.id!)}
                       onRemove={() => setToDelete(document.id)}
                       onOpen={open(contentUrl(carId, document.id!))}
                     />

@@ -20,7 +20,7 @@ import { errorMessage } from '@/utils/BackendError';
 import { prepareUpload } from '@/utils/image';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import AttachmentTile from '@/components/bill/AttachmentTile';
-import { ACCEPT, contentUrl } from '@/components/bill/attachments';
+import { ACCEPT, contentUrl, previewUrl } from '@/components/bill/attachments';
 import { useOpenKept } from '@/components/offline/useOfflineDocuments';
 
 /** the report of an HU and other files of it */
@@ -112,6 +112,7 @@ export default function InspectionFiles({
               name={file.fileName ?? ''}
               pdf={file.contentType === 'application/pdf'}
               url={contentUrl(carId, file.id!)}
+              previewUrl={previewUrl(carId, file.id!)}
               onRemove={() => setToDelete(file.id)}
               onOpen={open(contentUrl(carId, file.id!))}
             />

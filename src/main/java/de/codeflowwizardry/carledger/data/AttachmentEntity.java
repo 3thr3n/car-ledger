@@ -55,6 +55,11 @@ public class AttachmentEntity
 	@Column(name = "a_storage_key")
 	private String storageKey;
 
+	/** <code>null</code> until generated */
+	@Enumerated(EnumType.STRING)
+	@Column(name = "a_preview", length = 10)
+	private Preview preview;
+
 	@Column(name = "a_created_at", nullable = false)
 	private OffsetDateTime createdAt = OffsetDateTime.now();
 
@@ -161,6 +166,16 @@ public class AttachmentEntity
 	public void setStorageKey(String storageKey)
 	{
 		this.storageKey = storageKey;
+	}
+
+	public Preview getPreview()
+	{
+		return preview;
+	}
+
+	public void setPreview(Preview preview)
+	{
+		this.preview = preview;
 	}
 
 	public OffsetDateTime getCreatedAt()

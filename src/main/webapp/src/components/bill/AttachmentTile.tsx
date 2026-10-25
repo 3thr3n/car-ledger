@@ -11,6 +11,7 @@ export default function AttachmentTile({
   name,
   pdf,
   url,
+  previewUrl,
   onRemove,
   onOpen,
 }: {
@@ -18,6 +19,8 @@ export default function AttachmentTile({
   pdf: boolean;
   /** undefined while the preview of a picked file is prepared */
   url?: string;
+  /** smaller image shown in the tile, the file itself without one */
+  previewUrl?: string;
   onRemove: () => void;
   /** before the link opens the file, e.g. to open a kept copy offline */
   onOpen?: (event: MouseEvent<HTMLAnchorElement>) => void;
@@ -64,7 +67,7 @@ export default function AttachmentTile({
           ) : (
             <Box
               component="img"
-              src={url}
+              src={previewUrl ?? url}
               alt={name}
               loading="lazy"
               sx={{ width: '100%', height: '100%', objectFit: 'cover' }}

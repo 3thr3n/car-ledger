@@ -79,11 +79,31 @@ public class AttachmentRepository implements PanacheRepository<AttachmentEntity>
 	}
 
 	/**
-	 * @return amount of attachments per bill, bills without any are missing
+	 * @param count
+	 *            of the attachments
+	 * @param photo
+	 *            the oldest photo, <code>null</code> without any
 	 */
-	public Map<Long, Long> countPerBill(Collection<Long> billIds)
+	public record BillFiles(long count, Long photo)
 	{
-		return countPer("bill", billIds);
+	}
+
+	/**
+	 * @return the attachments per bill, bills without any are missing
+	 */
+	public Map<Long, BillFiles> filesPerBill(Collection<Long> billIds)
+	{
+		if (billIds.isEmpty())
+		{
+			return Map.of();
+		}
+		return getEntityManager()
+				.createQuery("select a.bill.id, count(a), min(case when a.contentType like 'image/%' then a.id end)"
+						+ " from Attachment a where a.bill.id in :ids group by a.bill.id", Object[].class)
+				.setParameter("ids", billIds)
+				.getResultStream()
+				.collect(Collectors.toMap(row -> (Long) row[0],
+						row -> new BillFiles((Long) row[1], (Long) row[2])));
 	}
 
 	/**

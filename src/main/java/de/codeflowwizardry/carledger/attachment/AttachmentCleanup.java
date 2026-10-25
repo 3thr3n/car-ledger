@@ -158,10 +158,12 @@ public class AttachmentCleanup
 				{
 					return;
 				}
-				Set<String> known = QuarkusTransaction.requiringNew().call(() -> known(keys));
+				// a preview belongs to the file next to it
+				List<String> files = keys.stream().map(S3AttachmentStorage::fileKey).distinct().toList();
+				Set<String> known = QuarkusTransaction.requiringNew().call(() -> known(files));
 				for (String key : keys)
 				{
-					if (!known.contains(key))
+					if (!known.contains(S3AttachmentStorage.fileKey(key)))
 					{
 						s3.delete(key);
 						removed[0]++;

@@ -14,6 +14,7 @@ import de.codeflowwizardry.carledger.data.BillType;
 import de.codeflowwizardry.carledger.data.repository.AbstractBillRepository;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.AttachmentRepository;
+import de.codeflowwizardry.carledger.data.repository.AttachmentRepository.BillFiles;
 import de.codeflowwizardry.carledger.data.repository.CarAccess.Action;
 import de.codeflowwizardry.carledger.rest.AbstractResource;
 import de.codeflowwizardry.carledger.rest.records.AbstractBill;
@@ -80,8 +81,12 @@ public class AbstractBillResource<T extends AbstractBillRepository<E>, E extends
 				Optional.ofNullable(year), sort, order == SortOrder.ASC);
 
 		List<D> bills = converter.apply(query.list());
-		Map<Long, Long> attachments = attachmentRepository.countPerBill(bills.stream().map(D::getId).toList());
-		bills.forEach(bill -> bill.setAttachments(attachments.getOrDefault(bill.getId(), 0L)));
+		Map<Long, BillFiles> files = attachmentRepository.filesPerBill(bills.stream().map(D::getId).toList());
+		bills.forEach(bill -> {
+			BillFiles billFiles = files.getOrDefault(bill.getId(), new BillFiles(0, null));
+			bill.setAttachments(billFiles.count());
+			bill.setPhoto(billFiles.photo());
+		});
 
 		return new BillPaged<>(query.count(), page, size, bills);
 	}

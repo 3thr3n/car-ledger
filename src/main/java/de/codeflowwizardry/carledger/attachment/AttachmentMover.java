@@ -147,6 +147,8 @@ public class AttachmentMover
 			attachment.setStorage(target.name());
 			attachment.setStorageKey(null);
 			target.store(attachment, content);
+			// generated again in the new storage on the next request
+			attachment.setPreview(null);
 			entityManager.flush();
 			return true;
 		}
