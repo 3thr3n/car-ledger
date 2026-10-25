@@ -9,43 +9,20 @@ import {
 } from '@mui/material';
 import CheckRounded from '@mui/icons-material/CheckRounded';
 import { useTranslation } from 'react-i18next';
-import { toast } from 'react-toastify';
 import { Accent, Account } from '@/generated';
-import { getMyselfQueryKey } from '@/generated/@tanstack/react-query.gen';
-import useSaveSettings from '@/hooks/useSaveSettings';
-import queryClient, { localClient } from '@/utils/QueryClient';
-import { errorMessage } from '@/utils/BackendError';
+import { chooseAccent, useChosenAccent } from '@/hooks/useAccent';
 import { ACCENTS } from '@/theme';
 
 /**
- * The accent color of the app, one of the presets. Saved with the account at
- * once, like the theme in the sidebar.
+ * The accent color of the app, one of the presets. Shown at once and saved
+ * with the account, without a connection once it is back.
  */
 export default function AppearanceSection({ account }: { account: Account }) {
   const { t } = useTranslation();
   const { mode, systemMode } = useColorScheme();
   const scheme = (mode === 'system' ? systemMode : mode) ?? 'light';
 
-  const key = getMyselfQueryKey({ client: localClient });
-  const settings = useSaveSettings({
-    onError: (error) => {
-      // back to the saved one
-      void queryClient.invalidateQueries({ queryKey: key });
-      toast.error(errorMessage(error, t('errors.backend')));
-    },
-  });
-
-  const choose = (accent: Accent) => {
-    // shown at once, not after the answer
-    queryClient.setQueryData(key, { ...account, accent });
-    settings.save({
-      vatCountry: account.vatCountry,
-      currency: account.currency,
-      language: account.language,
-      unitSystem: account.unitSystem,
-      accent,
-    });
-  };
+  const chosen = useChosenAccent(account);
 
   const swatch = (accent: Accent, checked: boolean) => {
     const { main, contrastText } = ACCENTS[accent][scheme];
@@ -82,15 +59,14 @@ export default function AppearanceSection({ account }: { account: Account }) {
       <RadioGroup
         row
         aria-labelledby="accent-label"
-        value={account.accent}
-        onChange={(_, value) => choose(value as Accent)}
+        value={chosen}
+        onChange={(_, value) => chooseAccent(value as Accent)}
         sx={{ gap: 1 }}
       >
         {Object.values(Accent).map((accent) => (
           <FormControlLabel
             key={accent}
             value={accent}
-            disabled={settings.isPending}
             label={t(`settings.appearance.accents.${accent}`)}
             control={
               <Radio
