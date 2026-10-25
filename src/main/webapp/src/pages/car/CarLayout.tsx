@@ -72,7 +72,8 @@ export default function CarLayout({ id }: { id: number }) {
   } = useQuery(getMyCarOptions({ client: localClient, path: { id } }));
   const showMap = !!useTrackMap(id);
 
-  if (isError) {
+  // the data of the last visit stays when the connection fails
+  if (isError && !car) {
     if (error instanceof BackendError && error.status === 404) {
       return <NotFoundPage />;
     }

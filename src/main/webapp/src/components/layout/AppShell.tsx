@@ -1,4 +1,5 @@
 import {
+  Alert,
   AppBar,
   Badge,
   Box,
@@ -11,10 +12,12 @@ import {
   useTheme,
 } from '@mui/material';
 import MenuRounded from '@mui/icons-material/MenuRounded';
+import CloudOffRounded from '@mui/icons-material/CloudOffRounded';
 import { ReactNode, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Sidebar from '@/components/layout/Sidebar';
 import useMe from '@/hooks/useMe';
+import useOnline from '@/hooks/useOnline';
 import useOpenCarRequests from '@/hooks/useOpenCarRequests';
 import productLogo from '@/assets/car-ledger.svg';
 import OfflineSync from '@/offline/OfflineSync';
@@ -33,6 +36,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
   const { isFetched } = useMe();
   // the sidebar is behind the menu on phones: a dot shows the open requests
   const openRequests = useOpenCarRequests();
+  const online = useOnline();
 
   return (
     <Box
@@ -122,6 +126,16 @@ export default function AppShell({ children }: { children: ReactNode }) {
           flexDirection: 'column',
         }}
       >
+        {!online && (
+          <Alert
+            severity="warning"
+            icon={<CloudOffRounded fontSize="inherit" />}
+            data-testid="offline-banner"
+            sx={{ borderRadius: 0 }}
+          >
+            {t('offline.banner')}
+          </Alert>
+        )}
         {!isFetched ? (
           <LinearProgress aria-label={t('app.loading')} />
         ) : (
