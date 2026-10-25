@@ -69,7 +69,8 @@ export default function DashboardPage({
     ?.filter((car) => search.car === undefined || car.id === search.car)
     .map((car) => car.energyType);
 
-  if (isError) {
+  // the data of the last visit stays when the connection fails
+  if (isError && !data) {
     return <ErrorPage error={error} />;
   }
 

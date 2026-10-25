@@ -822,6 +822,7 @@ reminder:
     confirm: "Mark as done"
     success: "Marked as done"
 offline:
+  banner: "Offline: you see what was saved on this device. Refuels, charges and trips are sent later, lists and statistics load again when you are online."
   queued: "No connection: saved on this device, it is sent when you are online again"
   noFiles: "The files are not kept without a connection, attach them once the entry is sent"
   sent_one: "{{count}} entry made offline was sent"

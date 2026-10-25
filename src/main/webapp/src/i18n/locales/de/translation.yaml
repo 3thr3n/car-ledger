@@ -822,6 +822,7 @@ reminder:
     confirm: "Als erledigt markieren"
     success: "Als erledigt markiert"
 offline:
+  banner: "Offline: Du siehst, was auf diesem Gerät gespeichert ist. Tankungen, Ladungen und Fahrten werden später gesendet, Listen und Statistiken laden wieder, sobald du online bist."
   queued: "Keine Verbindung: auf diesem Gerät gespeichert, wird gesendet, sobald du wieder online bist"
   noFiles: "Die Dateien werden ohne Verbindung nicht gespeichert, hänge sie an, sobald der Eintrag gesendet ist"
   sent_one: "{{count}} offline erfasster Eintrag wurde gesendet"
