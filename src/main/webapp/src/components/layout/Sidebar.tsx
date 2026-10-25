@@ -28,6 +28,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useLocation } from '@tanstack/react-router';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { isShared, ownCars } from '@/utils/carRole';
 import { getMyCarsOptions } from '@/generated/@tanstack/react-query.gen';
 import { baseUrl, localClient } from '@/utils/QueryClient';
 import useMe from '@/hooks/useMe';
@@ -78,7 +79,7 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
     enabled: loggedIn,
   });
 
-  const canAddCar = (cars?.length ?? 0) < maxCars;
+  const canAddCar = ownCars(cars).length < maxCars;
 
   const nextMode =
     mode === 'light' ? 'dark' : mode === 'dark' ? 'system' : 'light';
@@ -217,9 +218,11 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
                   </ListItemIcon>
                   <ListItemText
                     primary={car.name}
-                    secondary={t('garage.entries', {
-                      count: car.amountBills ?? 0,
-                    })}
+                    secondary={
+                      isShared(car)
+                        ? t('car.shared', { role: t(`car.roles.${car.role}`) })
+                        : t('garage.entries', { count: car.amountBills ?? 0 })
+                    }
                     slotProps={{
                       primary: { noWrap: true, sx: { fontWeight: 500 } },
                       secondary: { noWrap: true, variant: 'caption' },

@@ -645,9 +645,12 @@
           "trackRetentionDays" : {
             "type" : "integer",
             "format" : "int32"
+          },
+          "role" : {
+            "$ref" : "#/components/schemas/CarRole"
           }
         },
-        "required" : [ "currentOdometer", "energyType", "tripLog" ]
+        "required" : [ "currentOdometer", "energyType", "tripLog", "role" ]
       },
       "CarInput" : {
         "type" : "object",
@@ -771,6 +774,10 @@
             "type" : "string"
           }
         }
+      },
+      "CarRole" : {
+        "type" : "string",
+        "enum" : [ "OWNER", "EDITOR", "VIEWER", "DRIVER" ]
       },
       "ChargingBill" : {
         "type" : "object",
@@ -7341,7 +7348,7 @@
     },
     "/api/trip/{carId}/{id}/delete" : {
       "post" : {
-        "description" : "Deletes a trip with a reason, only the owner of the car. The trip stays listed as deleted and doesn't count for the odometer anymore. Sent again, it answers with the deleted trip.",
+        "description" : "Deletes a trip with a reason, the owner of the car or an editor. The trip stays listed as deleted and doesn't count for the odometer anymore. Sent again, it answers with the deleted trip.",
         "operationId" : "deleteTrip",
         "parameters" : [ {
           "name" : "carId",

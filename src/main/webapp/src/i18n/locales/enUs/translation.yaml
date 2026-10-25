@@ -200,6 +200,12 @@ garage:
   entries_other: "{{count}} entries"
 
 car:
+  shared: "Shared · {{role}}"
+  roles:
+    OWNER: "Owner"
+    EDITOR: "Editor"
+    VIEWER: "Viewer"
+    DRIVER: "Driver"
   odometerEstimated: "Last reading {{reading}} on {{date}}, plus {{driven}} from the refuels since"
   built: "Built {{year}}"
   energyTypes:

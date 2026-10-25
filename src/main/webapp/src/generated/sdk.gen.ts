@@ -996,7 +996,7 @@ export const startTrip = <ThrowOnError extends boolean = false>(options: Options
 /**
  * Delete Trip
  *
- * Deletes a trip with a reason, only the owner of the car. The trip stays listed as deleted and doesn't count for the odometer anymore. Sent again, it answers with the deleted trip.
+ * Deletes a trip with a reason, the owner of the car or an editor. The trip stays listed as deleted and doesn't count for the odometer anymore. Sent again, it answers with the deleted trip.
  */
 export const deleteTrip = <ThrowOnError extends boolean = false>(options: Options<DeleteTripData, ThrowOnError>): RequestResult<DeleteTripResponses, DeleteTripErrors, ThrowOnError> => (options.client ?? client).post<DeleteTripResponses, DeleteTripErrors, ThrowOnError>({
     url: '/api/trip/{carId}/{id}/delete',

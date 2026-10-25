@@ -41,25 +41,26 @@ public class OdometerService
 	 *
 	 * @param carId
 	 *            or {@link CarRepository#ALL_CARS}
-	 * @return car id -> odometer, for every car of the user
+	 * @return car id -> odometer, for every car the user may use (also as
+	 *         driver: only the odometer, not the entries)
 	 */
 	public Map<Long, Odometer> current(long carId, String username)
 	{
 		Map<Long, List<Reading>> readings = new HashMap<>();
 		for (Object[] row : query(
-				"select c.id, c.odometerDate, c.odometer from Car c where " + CarAccess.condition("c", Action.READ),
+				"select c.id, c.odometerDate, c.odometer from Car c where " + CarAccess.condition("c", Action.USE),
 				"c", carId, username))
 		{
 			add(readings, row);
 		}
 		for (Object[] row : query("select b.car.id, b.date, m.odometer from MaintenanceBillEntity m join m.bill b"
-				+ " where " + CarAccess.condition("b.car", Action.READ) + " and m.odometer is not null", "b.car", carId,
+				+ " where " + CarAccess.condition("b.car", Action.USE) + " and m.odometer is not null", "b.car", carId,
 				username))
 		{
 			add(readings, row);
 		}
 		for (Object[] row : query("select t.car.id, t.startedAt, t.startOdometer, t.endedAt, t.endOdometer from trip t"
-				+ " where t.deletedAt is null and " + CarAccess.condition("t.car", Action.READ), "t.car", carId,
+				+ " where t.deletedAt is null and " + CarAccess.condition("t.car", Action.USE), "t.car", carId,
 				username))
 		{
 			add(readings, (Long) row[0], TripService.day((OffsetDateTime) row[1]), (Integer) row[2]);
@@ -88,7 +89,7 @@ public class OdometerService
 	{
 		Map<Long, NavigableMap<LocalDate, BigDecimal>> driven = new HashMap<>();
 		for (Object[] row : query("select b.car.id, b.date, sum(f.distance) from " + entity + " f join f.bill b"
-				+ " where " + CarAccess.condition("b.car", Action.READ) + " and f.distance > 0", "b.car", carId,
+				+ " where " + CarAccess.condition("b.car", Action.USE) + " and f.distance > 0", "b.car", carId,
 				username,
 				" group by b.car.id, b.date"))
 		{

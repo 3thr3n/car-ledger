@@ -342,14 +342,15 @@ public class TripService
 	}
 
 	/**
-	 * Deletes a trip with a reason, only the owner of the car; the trip stays
-	 * listed. Sent again, it answers with the deleted trip.
+	 * Deletes a trip with a reason, the owner of the car or an editor, not a
+	 * driver; the trip stays listed with the reason. Sent again, it answers with
+	 * the deleted trip.
 	 */
 	@Transactional
 	public Trip delete(long carId, UUID id, TripDeleteInput input, String username)
 	{
 		Utils.requireValid(input.validate());
-		TripEntity trip = find(car(carId, username, Action.MANAGE).getId(), id, username, Action.MANAGE);
+		TripEntity trip = find(car(carId, username, Action.WRITE).getId(), id, username, Action.WRITE);
 		if (!trip.isDeleted())
 		{
 			trip.delete(OffsetDateTime.now(), username, input.reason().strip());

@@ -410,6 +410,7 @@ Use the image of a release (a git tag of `main`) or a dev build of `develop`. On
 | 1.27.0    | Previews of the photos next to the files, generated for the existing ones on their first request (0.9.0)             |
 | 1.28.0    | Files of the recurring costs, e.g. the contract (0.9.0)                                                              |
 | 1.29.0    | Names of the places of the GPS tracks (0.9.0)                                                                        |
+| 1.30.0    | Access of other accounts to a car with a role and an optional period, for sharing (0.9.0)                            |
 
 An older image refuses to start on the migrated database, as Flyway finds migrations it does not know. To go back,
 restore the backup. Without the backup, the older image runs on the migrated database (the new columns have defaults)
