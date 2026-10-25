@@ -47,7 +47,7 @@ common:
 landing:
   eyebrow: "Fahrzeugkosten im Blick"
   title: "Wisse, was dein Auto wirklich kostet."
-  subtitle: "Erfasse Tankfüllungen, Werkstattbesuche, Versicherung und alles andere. CarLedger macht aus deinen Belegen Kosten pro Kilometer, Verbrauch und Trends."
+  subtitle: "Erfasse Tankungen, Ladungen, Werkstattbesuche, Versicherung und alles andere und hab die Papiere deines Autos immer dabei. CarLedger macht aus deinen Belegen Kosten pro Kilometer, Verbrauch und Trends."
   cta: "Anmelden und loslegen"
   ctaDashboard: "Zum Dashboard"
   features:
@@ -69,6 +69,33 @@ landing:
     stats:
       title: "Statistiken"
       text: "Kosten pro km, Verbrauch sowie Höchst- und Tiefstwerte — pro Fahrzeug oder für alle zusammen."
+    charging:
+      title: "Laden"
+      text: "Elektro- und Plug-in-Hybride: kWh, Preis und der Verbrauch in kWh/100 km neben den Tankungen."
+    modifications:
+      title: "Umbauten"
+      text: "Felgen, Gewindefahrwerk, Auspuff: mit ABE, Teilegutachten oder Einzelabnahme, den Auflagen und den Dokumenten."
+    inspections:
+      title: "HU"
+      text: "Die Hauptuntersuchung mit Ergebnis, Mängeln und Prüfbericht; der nächste Termin wird zur Erinnerung."
+    papers:
+      title: "Papiere als PDF"
+      text: "Die Umbauten und die HUs mit allen Dokumenten in einem PDF, für eine Kontrolle oder den Verkauf."
+    reminders:
+      title: "Erinnerungen"
+      text: "Inspektion, Reifen, Vignette: fällig nach Datum oder Kilometerstand, per E-Mail und Push-Nachricht."
+    trips:
+      title: "Fahrtenbuch"
+      text: "Fahrten mit Kilometerstand beginnen und beenden, gelöschte bleiben mit Grund, Export als PDF oder CSV."
+    gps:
+      title: "GPS-Tracking"
+      text: "Ein Tracker im Auto sendet die Strecke: die Karte nach Tempo oder Häufigkeit, vergessene Fahrten vorgeschlagen."
+    offline:
+      title: "App und offline"
+      text: "Auf dem Startbildschirm wie eine App; Tankungen und Fahrten gehen ohne Verbindung, die Papiere bleiben auf dem Handy."
+    backup:
+      title: "Sicherung"
+      text: "Alle deine Daten mit Belegen und Dokumenten in einer Datei, auf jeder Installation wiederherstellbar."
 
 dashboard:
   title: "Dashboard"
@@ -204,14 +231,23 @@ car:
     emptyText: "Erfasse deinen ersten Beleg oder importiere einen CSV-Export."
     running: "Laufende Kosten"
     reminders: "Erinnerungen"
-    modifications: "Umbauten"
-    inspections: "HU"
     remindersEmpty: "Noch keine Erinnerungen"
     runningEmpty: "Keine laufenden Kosten"
     addRecurring: "Laufende Kosten anlegen"
     nextDue: "Nächste Fälligkeit {{date}}"
     avgChargingConsumption: "Ø Verbrauch (elektrisch)"
     charges: "Ladungen"
+    papers:
+      title: "HU und Umbauten"
+      empty: "Noch keine HU und keine Umbauten"
+      noNextDue: "Keine nächste HU"
+      latest: "Letzte HU am {{date}}"
+      installed_one: "{{count}} verbauter Umbau"
+      installed_other: "{{count}} verbaute Umbauten"
+      inspectionOpen_one: "{{count}} Abnahme offen"
+      inspectionOpen_other: "{{count}} Abnahmen offen"
+      unregistered_one: "{{count}} noch nicht eingetragen"
+      unregistered_other: "{{count}} noch nicht eingetragen"
   picture:
     choose: "Bild auswählen"
     change: "Bild ändern"
