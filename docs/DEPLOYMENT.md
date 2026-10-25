@@ -167,9 +167,11 @@ with the role `user`, the roles are missing in the tokens of the client.
 - **Attachments**: receipts, the files of the recurring costs, the documents of the modifications and the reports of the
   HUs are stored in PostgreSQL or in an S3 compatible storage (see [Attachments in S3](#attachments-in-s3)), up to
   `carLedger.attachments.maxSize` (10 MB) per file and `carLedger.attachments.maxPerBill` (10) per entry, recurring
-  cost, modification or HU. Uploads need requests up to `carLedger.attachments.maxRequestSize` (12 MB): the nginx
-  ingress gets the annotation `nginx.ingress.kubernetes.io/proxy-body-size` automatically, other proxies (e.g. a
-  Gateway or a reverse proxy in front of the cluster) need the same limit, otherwise uploads fail with 413.
+  cost, modification or HU; the forms show these limits. HEIC photos are rejected with a hint, browsers other than
+  Safari cannot decode them (an iPhone uploads JPEG by default). Uploads need requests up to
+  `carLedger.attachments.maxRequestSize` (12 MB): the nginx ingress gets the annotation
+  `nginx.ingress.kubernetes.io/proxy-body-size` automatically, other proxies (e.g. a Gateway or a reverse proxy in
+  front of the cluster) need the same limit, otherwise uploads fail with 413.
 - **Backups**: users download all of their data as ZIP in the settings and restore it into an account without cars.
   The restore is an upload as well and limited by `carLedger.attachments.maxRequestSize`: a backup with many receipts
   or with GPS tracks kept forever can be larger, raise the limit (and the one of the proxies) for the restore; the app

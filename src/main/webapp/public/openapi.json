@@ -263,6 +263,20 @@
           }
         }
       },
+      "AttachmentLimits" : {
+        "type" : "object",
+        "required" : [ "maxSize", "maxFiles" ],
+        "properties" : {
+          "maxSize" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "maxFiles" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
       "AverageStats" : {
         "type" : "object",
         "properties" : {
@@ -2600,6 +2614,26 @@
         },
         "summary" : "Get Stats",
         "tags" : [ "Admin Resource" ]
+      }
+    },
+    "/api/attachment/limits" : {
+      "get" : {
+        "description" : "The largest file and the files per entry",
+        "operationId" : "getAttachmentLimits",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AttachmentLimits"
+                }
+              }
+            }
+          }
+        },
+        "summary" : "Get Attachment Limits",
+        "tags" : [ "Attachment Limits Resource" ]
       }
     },
     "/api/attachment/{carId}/bill/{billId}" : {

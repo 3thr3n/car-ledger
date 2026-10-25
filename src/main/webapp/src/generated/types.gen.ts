@@ -103,6 +103,11 @@ export type Attachment = {
     kind?: DocumentKind;
 };
 
+export type AttachmentLimits = {
+    maxSize: number;
+    maxFiles: number;
+};
+
 export type AverageStats = {
     pricePerUnit?: number;
     chargingPricePerUnit?: number;
@@ -1069,6 +1074,22 @@ export type GetAdminStatsResponses = {
 };
 
 export type GetAdminStatsResponse = GetAdminStatsResponses[keyof GetAdminStatsResponses];
+
+export type GetAttachmentLimitsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/attachment/limits';
+};
+
+export type GetAttachmentLimitsResponses = {
+    /**
+     * OK
+     */
+    200: AttachmentLimits;
+};
+
+export type GetAttachmentLimitsResponse = GetAttachmentLimitsResponses[keyof GetAttachmentLimitsResponses];
 
 export type GetBillAttachmentsData = {
     body?: never;

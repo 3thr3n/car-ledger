@@ -342,6 +342,10 @@ public class AttachmentService
 		} else if (content.length > maxSize)
 		{
 			errors.add("The file is larger than " + maxSize / 1024 / 1024 + " MB!");
+		} else if (FileType.isHeic(content))
+		{
+			errors.add("HEIC photos cannot be read, please save the photo as JPEG"
+					+ " (on an iPhone: Settings, Camera, Formats, Most Compatible)!");
 		} else if (type.isEmpty())
 		{
 			errors.add(onlyImages

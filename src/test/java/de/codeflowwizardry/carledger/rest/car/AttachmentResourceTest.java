@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.awt.image.BufferedImage;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.Arrays;
 
@@ -133,6 +134,33 @@ class AttachmentResourceTest
 				.header("Content-Security-Policy", containsString("sandbox"))
 				.extract().asByteArray();
 		assertArrayEquals(JPEG, content);
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = "user")
+	void shouldTellTheLimits()
+	{
+		given().get("/api/attachment/limits").then()
+				.statusCode(200)
+				.body("maxSize", is(64 * 1024))
+				.body("maxFiles", is(3));
+	}
+
+	@Test
+	void shouldTellTheLimitsOnlyAfterTheLogin()
+	{
+		// to the login of the browser
+		given().redirects().follow(false).get("/api/attachment/limits").then().statusCode(302);
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = "user")
+	void shouldExplainAHeicPhoto()
+	{
+		upload("IMG_0001.HEIC", "\0\0\0\u0018ftypheic\0\0\0\0mif1heic".getBytes(StandardCharsets.ISO_8859_1),
+				"image/heic")
+				.statusCode(400)
+				.body("[0]", containsString("HEIC photos cannot be read"));
 	}
 
 	@Test
