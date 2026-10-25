@@ -241,6 +241,7 @@ export type Car = {
     tripLog: boolean;
     pictureId?: number;
     trackRetentionDays?: number;
+    role: CarRole;
 };
 
 export type CarInput = {
@@ -284,6 +285,13 @@ export type CarRequestInput = {
     cars?: number;
     reason?: string;
 };
+
+export enum CarRole {
+    OWNER = 'OWNER',
+    EDITOR = 'EDITOR',
+    VIEWER = 'VIEWER',
+    DRIVER = 'DRIVER'
+}
 
 export type ChargingBill = {
     attachments?: number;

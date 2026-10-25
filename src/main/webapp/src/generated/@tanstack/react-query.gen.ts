@@ -2439,7 +2439,7 @@ export const startTripMutation = (options?: Partial<Options<StartTripData>>): Us
 /**
  * Delete Trip
  *
- * Deletes a trip with a reason, only the owner of the car. The trip stays listed as deleted and doesn't count for the odometer anymore. Sent again, it answers with the deleted trip.
+ * Deletes a trip with a reason, the owner of the car or an editor. The trip stays listed as deleted and doesn't count for the odometer anymore. Sent again, it answers with the deleted trip.
  */
 export const deleteTripMutation = (options?: Partial<Options<DeleteTripData>>): UseMutationOptions<DeleteTripResponse, DeleteTripError, Options<DeleteTripData>> => {
     const mutationOptions: UseMutationOptions<DeleteTripResponse, DeleteTripError, Options<DeleteTripData>> = {

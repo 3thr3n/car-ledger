@@ -1,12 +1,42 @@
 package de.codeflowwizardry.carledger.data.repository;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
+import de.codeflowwizardry.carledger.data.CarRole;
+
 /**
  * The one place that decides what a user may do with a car, as a condition of
  * the queries. Every query over cars or their data uses it instead of checking
  * the owner itself.
  * <p>
- * For now only the owner may do anything with a car. Sharing a car adds roles
- * here, e.g. a driver who only adds trips and refuels.
+ * The owner of a car may do everything. Other accounts get a role in
+ * <code>car_access</code>, which counts only within its period:
+ * <table>
+ * <tr>
+ * <th>Action</th>
+ * <th>Roles</th>
+ * </tr>
+ * <tr>
+ * <td>{@link Action#USE}</td>
+ * <td>owner, editor, viewer, driver</td>
+ * </tr>
+ * <tr>
+ * <td>{@link Action#READ}</td>
+ * <td>owner, editor, viewer</td>
+ * </tr>
+ * <tr>
+ * <td>{@link Action#WRITE}</td>
+ * <td>owner, editor</td>
+ * </tr>
+ * <tr>
+ * <td>{@link Action#MANAGE}</td>
+ * <td>owner</td>
+ * </tr>
+ * </table>
+ * A driver sees only the own trips and refuels, which their queries check with
+ * the creator of the entry; the roles here never give a driver the entries of
+ * others.
  */
 public final class CarAccess
 {
@@ -21,11 +51,16 @@ public final class CarAccess
 	}
 
 	public enum Action {
+		/**
+		 * see the car itself in the lists, with its current odometer, e.g. a
+		 * driver; not its entries
+		 */
+		USE,
 		/** see the car and its entries */
 		READ,
 		/** add, change and delete entries of the car */
 		WRITE,
-		/** change and delete the car itself */
+		/** change and delete the car itself, manage its access */
 		MANAGE
 	}
 
@@ -37,9 +72,28 @@ public final class CarAccess
 	 */
 	public static String condition(String car, Action action)
 	{
+		String owner = car + ".user.userId = :" + USER;
 		return switch (action)
 		{
-			case READ, WRITE, MANAGE -> car + ".user.userId = :" + USER;
+			case MANAGE -> owner;
+			case WRITE -> "(" + owner + " or " + shared(car, CarRole.EDITOR) + ")";
+			case READ -> "(" + owner + " or " + shared(car, CarRole.EDITOR, CarRole.VIEWER) + ")";
+			case USE -> "(" + owner + " or " + shared(car, CarRole.EDITOR, CarRole.VIEWER, CarRole.DRIVER) + ")";
 		};
+	}
+
+	/**
+	 * @return condition that the user has one of the roles for the car now
+	 */
+	private static String shared(String car, CarRole... roles)
+	{
+		String names = Arrays.stream(roles)
+				.map(role -> CarRole.class.getName() + "." + role.name())
+				.collect(Collectors.joining(", "));
+		return "exists (select 1 from car_access access where access.car = " + car
+				+ " and access.account.userId = :" + USER
+				+ " and access.role in (" + names + ")"
+				+ " and (access.validFrom is null or access.validFrom <= current_timestamp)"
+				+ " and (access.validUntil is null or access.validUntil > current_timestamp))";
 	}
 }

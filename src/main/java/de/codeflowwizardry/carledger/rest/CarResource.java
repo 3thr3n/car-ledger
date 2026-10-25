@@ -15,10 +15,12 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import de.codeflowwizardry.carledger.OdometerService;
 import de.codeflowwizardry.carledger.data.AccountEntity;
 import de.codeflowwizardry.carledger.data.CarEntity;
+import de.codeflowwizardry.carledger.data.CarRole;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.BillRepository;
 import de.codeflowwizardry.carledger.data.repository.BillRepository.Energy;
 import de.codeflowwizardry.carledger.data.repository.CarAccess.Action;
+import de.codeflowwizardry.carledger.data.repository.CarAccessRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import de.codeflowwizardry.carledger.data.repository.RecurringBillPaymentRepository;
 import de.codeflowwizardry.carledger.exception.WrongUserException;
@@ -40,17 +42,19 @@ public class CarResource extends AbstractResource
 	private final BillRepository billRepository;
 	private final RecurringBillPaymentRepository recurringBillPaymentRepository;
 	private final OdometerService odometerService;
+	private final CarAccessRepository carAccessRepository;
 
 	@Inject
 	public CarResource(SecurityIdentity identity, AccountRepository accountRepository, CarRepository carRepository,
 			BillRepository billRepository, RecurringBillPaymentRepository recurringBillPaymentRepository,
-			OdometerService odometerService)
+			OdometerService odometerService, CarAccessRepository carAccessRepository)
 	{
 		super(identity, accountRepository);
 		this.carRepository = carRepository;
 		this.billRepository = billRepository;
 		this.recurringBillPaymentRepository = recurringBillPaymentRepository;
 		this.odometerService = odometerService;
+		this.carAccessRepository = carAccessRepository;
 	}
 
 	@GET
@@ -61,10 +65,12 @@ public class CarResource extends AbstractResource
 	{
 		Map<Long, Long> billsPerCar = billRepository.countBillsPerCar(context.getName());
 		Map<Long, Odometer> odometers = odometerService.current(CarRepository.ALL_CARS, context.getName());
+		Map<Long, CarRole> roles = carAccessRepository.rolesOf(context.getName());
 
 		return carRepository.listForUser(context.getName())
 				.stream()
-				.map(car -> Car.convert(car, billsPerCar.getOrDefault(car.getId(), 0L), odometers.get(car.getId())))
+				.map(car -> Car.convert(car, billsPerCar.getOrDefault(car.getId(), 0L), odometers.get(car.getId()),
+						role(car, roles)))
 				.toList();
 	}
 
@@ -190,7 +196,17 @@ public class CarResource extends AbstractResource
 	{
 		// the pending update is flushed before the odometer queries
 		return Car.convert(carEntity, billRepository.count("car.id", carEntity.getId()),
-				odometerService.current(carEntity.getId(), context.getName()).get(carEntity.getId()));
+				odometerService.current(carEntity.getId(), context.getName()).get(carEntity.getId()),
+				role(carEntity, carAccessRepository.rolesOf(context.getName())));
+	}
+
+	/**
+	 * @param shared
+	 *            the roles of the user per shared car
+	 */
+	private CarRole role(CarEntity car, Map<Long, CarRole> shared)
+	{
+		return car.getUser().getUserId().equals(context.getName()) ? CarRole.OWNER : shared.get(car.getId());
 	}
 
 	private static void setDetails(CarEntity carEntity, CarInput input)
