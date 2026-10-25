@@ -12,7 +12,8 @@ import { OfflineStore } from './store';
  * The queries a form needs without a connection: the account (units, VAT,
  * currency), the cars (energy type, tank size, odometer) and their open trip
  * with the minimum odometer of the next start, and the modifications with
- * their documents to show them at a roadside check. Not the lists of the bills
+ * their documents and the HUs with their reports to show them at a roadside
+ * check. Not the lists of the bills
  * and trips.
  */
 const KEPT = new Set([
@@ -22,6 +23,8 @@ const KEPT = new Set([
   'getCurrentTrip',
   'getModifications',
   'getModificationDocuments',
+  'getTechnicalInspections',
+  'getTechnicalInspectionFiles',
 ]);
 const KEY = 'queries';
 /** writes at most once per this many ms */

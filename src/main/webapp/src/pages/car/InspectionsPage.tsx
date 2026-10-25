@@ -17,6 +17,7 @@ import Section from '@/components/ui/Section';
 import EmptyState from '@/components/ui/EmptyState';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import CarPapersDialog from '@/components/papers/CarPapersDialog';
+import OfflineDocumentsPanel from '@/components/offline/OfflineDocumentsPanel';
 import InspectionList from '@/components/inspection/InspectionList';
 import InspectionDialog from '@/components/inspection/InspectionDialog';
 
@@ -109,6 +110,10 @@ export default function InspectionsPage({ carId }: { carId: number }) {
           onDelete={setToDelete}
         />
       )}
+
+      <Stack sx={{ mt: 2 }}>
+        <OfflineDocumentsPanel carId={carId} />
+      </Stack>
 
       <InspectionDialog
         open={formOpen}

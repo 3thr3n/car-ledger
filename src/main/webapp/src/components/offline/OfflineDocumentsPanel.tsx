@@ -12,26 +12,31 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
 import { useFormat } from '@/utils/format';
 import { MAX_OFFLINE_BYTES } from '@/offline/documents';
-import useOfflineDocuments, { installedOptions } from './useOfflineDocuments';
+import useOfflineDocuments, {
+  inspectionsOptions,
+  installedOptions,
+} from './useOfflineDocuments';
 
 /**
- * Keeps the documents of the installed parts on the device. While it is on,
- * they are saved again whenever the list of the parts was loaded, so new,
- * deleted and removed ones follow.
+ * Keeps the documents of the installed parts and the report of the latest HU
+ * on the device, on the tabs Modifications and HU. While it is on, they are
+ * saved again whenever one of the lists was loaded, so new, deleted and
+ * removed ones follow.
  */
 export default function OfflineDocumentsPanel({ carId }: { carId: number }) {
   const { t } = useTranslation();
   const format = useFormat();
   const { available, kept, save, drop } = useOfflineDocuments(carId);
-  const { dataUpdatedAt } = useQuery(installedOptions(carId));
+  const { dataUpdatedAt: parts } = useQuery(installedOptions(carId));
+  const { dataUpdatedAt: inspections } = useQuery(inspectionsOptions(carId));
   const on = !!kept;
   const { mutate: saveNow, isPending: saving } = save;
 
   useEffect(() => {
-    if (on && dataUpdatedAt && navigator.onLine && !saving) saveNow();
-    // only when the list changed, not when the saving ends
+    if (on && parts && inspections && navigator.onLine && !saving) saveNow();
+    // only when a list changed, not when the saving ends
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [on, dataUpdatedAt]);
+  }, [on, parts, inspections]);
 
   if (!available) return null;
 

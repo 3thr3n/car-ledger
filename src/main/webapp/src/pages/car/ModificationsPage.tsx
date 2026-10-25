@@ -28,7 +28,7 @@ import CarPapersDialog from '@/components/papers/CarPapersDialog';
 import ModificationList from '@/components/modification/ModificationList';
 import ModificationDialog from '@/components/modification/ModificationDialog';
 import RemoveModificationDialog from '@/components/modification/RemoveModificationDialog';
-import OfflineDocumentsPanel from '@/components/modification/OfflineDocumentsPanel';
+import OfflineDocumentsPanel from '@/components/offline/OfflineDocumentsPanel';
 
 type Shown =
   typeof ModificationState.INSTALLED | typeof ModificationState.REMOVED;
