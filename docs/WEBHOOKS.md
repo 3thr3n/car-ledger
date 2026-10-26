@@ -112,42 +112,6 @@ An administrator approved or rejected a request.
 `state` is `APPROVED` or `REJECTED`; `grantedMaxCars` is the new limit of an approval, `comment` the optional comment
 of a rejection.
 
-### `car-access.invited`, `car-access.answered`, `car-access.changed`, `car-access.revoked`
-
-The owner of a car invited an account, the invited one accepted or declined, the owner changed the role or the period,
-or revoked the access (or took back the invitation). All four carry the access as it is after the event, a revoked one
-as it was.
-
-```json
-{
-  "version": 1,
-  "type": "car-access.invited",
-  "id": "5d2b8f1e-7a4c-4e0b-9f3d-1c6a8e2b4f70",
-  "occurredAt": "2026-10-26T18:04:11.532+01:00",
-  "data": {
-    "accessId": 7,
-    "carId": 3,
-    "car": "Golf",
-    "owner": "alice",
-    "account": "bob",
-    "invitee": null,
-    "role": "DRIVER",
-    "state": "PENDING",
-    "validFrom": null,
-    "validUntil": "2026-11-09T00:00:00+01:00",
-    "by": "alice"
-  }
-}
-```
-
-`account` is the user name of the invited account; while it doesn't exist yet, `invitee` has the user name or e-mail
-address it was invited by, and it gets the invitation with its first login. `role` is `EDITOR`, `VIEWER` or `DRIVER`,
-`state` `PENDING`, `ACCEPTED` or `DECLINED`. `validFrom` and `validUntil` (exclusive) are missing for from now on and
-without an end. `by` is the account that did it: the owner, or the invited one for `car-access.answered`.
-
-The app notifies the invited account of `car-access.invited` and the owner of `car-access.answered`, by mail and push
-as they turned it on.
-
 ## Verifying the signature
 
 Compute the HMAC-SHA256 of the **raw** body with the secret and compare it with the header, in constant time. Parse the

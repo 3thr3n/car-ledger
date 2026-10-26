@@ -21,6 +21,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import de.codeflowwizardry.carledger.data.AccountEntity;
+import de.codeflowwizardry.carledger.data.CarAccessEntity;
+import de.codeflowwizardry.carledger.data.CarAccessState;
+import de.codeflowwizardry.carledger.data.CarEntity;
 import de.codeflowwizardry.carledger.data.UnitSystem;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.notification.push.OutgoingPushes;
@@ -29,7 +32,6 @@ import de.codeflowwizardry.carledger.notification.push.PushMessage;
 import de.codeflowwizardry.carledger.notification.push.PushSubscriptionEntity;
 import de.codeflowwizardry.carledger.notification.push.PushSubscriptionRepository;
 import de.codeflowwizardry.carledger.rest.car.reminder.Reminder;
-import de.codeflowwizardry.carledger.webhook.CarAccessEvent;
 import de.codeflowwizardry.carledger.webhook.CarRequestCreated;
 import de.codeflowwizardry.carledger.webhook.CarRequestDecided;
 import de.codeflowwizardry.carledger.webhook.WebhookEvent;
@@ -109,11 +111,6 @@ public class Notifications
 		{
 			case CAR_REQUEST_CREATED -> carRequestCreated(batch, (CarRequestCreated) message.data());
 			case CAR_REQUEST_DECIDED -> carRequestDecided(batch, (CarRequestDecided) message.data());
-			case CAR_ACCESS_INVITED -> carAccessInvited(batch, (CarAccessEvent) message.data());
-			case CAR_ACCESS_ANSWERED -> carAccessAnswered(batch, (CarAccessEvent) message.data());
-			// the owner did it, the end of an access follows with its own notification
-			case CAR_ACCESS_CHANGED, CAR_ACCESS_REVOKED -> {
-			}
 		}
 		batch.fire();
 	}
@@ -153,38 +150,45 @@ public class Notifications
 	}
 
 	/**
-	 * To the invited account, once it exists: one invited by an address it
-	 * doesn't have yet sees the invitation after its first login
+	 * The invitation to the invited account, once it exists: one invited by an
+	 * address it doesn't have yet sees the invitation after its first login. Sent
+	 * after the commit.
 	 */
-	private void carAccessInvited(Batch batch, CarAccessEvent invitation)
+	public void carAccessInvited(CarAccessEntity invitation)
 	{
-		if (invitation.account() == null)
+		AccountEntity account = invitation.getAccount();
+		if (account == null)
 		{
 			return;
 		}
-		accountRepository.find("userId", invitation.account()).singleResultOptional().ifPresent(account -> {
-			DateTimeFormatter dates = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
-					.withLocale(Locale.forLanguageTag(account.getMailLanguage().toLowerCase(Locale.ROOT)));
-			Map<String, Object> data = new HashMap<>();
-			data.put("owner", invitation.owner());
-			data.put("car", invitation.car());
-			data.put("role", invitation.role());
-			data.put("from", invitation.validFrom() == null ? "" : dates.format(day(invitation.validFrom())));
-			// the last day of the access, the end is exclusive
-			data.put("until",
-					invitation.validUntil() == null ? "" : dates.format(day(invitation.validUntil().minusNanos(1))));
-			batch.add(account, "car-access-invited", "/car", "car-access-" + invitation.accessId(), data);
-		});
+		DateTimeFormatter dates = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
+				.withLocale(Locale.forLanguageTag(account.getMailLanguage().toLowerCase(Locale.ROOT)));
+		Map<String, Object> data = new HashMap<>();
+		data.put("owner", invitation.getCar().getUser().getUserId());
+		data.put("car", invitation.getCar().getName());
+		data.put("role", invitation.getRole().name());
+		data.put("from", invitation.getValidFrom() == null ? "" : dates.format(day(invitation.getValidFrom())));
+		// the last day of the access, the end is exclusive
+		data.put("until", invitation.getValidUntil() == null
+				? ""
+				: dates.format(day(invitation.getValidUntil().minusNanos(1))));
+		Batch batch = new Batch("car-access.invited");
+		batch.add(account, "car-access-invited", "/car", "car-access-" + invitation.getId(), data);
+		batch.fire();
 	}
 
 	/**
-	 * To the owner of the car
+	 * The answer of the invited account to the owner of the car. Sent after the
+	 * commit.
 	 */
-	private void carAccessAnswered(Batch batch, CarAccessEvent answer)
+	public void carAccessAnswered(CarAccessEntity answer)
 	{
-		accountRepository.find("userId", answer.owner()).singleResultOptional().ifPresent(owner -> batch.add(owner,
-				"car-access-answered", "/car/" + answer.carId() + "/edit", "car-access-" + answer.accessId(),
-				Map.of("account", answer.by(), "car", answer.car(), "accepted", "ACCEPTED".equals(answer.state()))));
+		CarEntity car = answer.getCar();
+		Batch batch = new Batch("car-access.answered");
+		batch.add(car.getUser(), "car-access-answered", "/car/" + car.getId() + "/edit", "car-access-" + answer.getId(),
+				Map.of("account", answer.getAccount().getUserId(), "car", car.getName(), "accepted",
+						answer.getState() == CarAccessState.ACCEPTED));
+		batch.fire();
 	}
 
 	/**

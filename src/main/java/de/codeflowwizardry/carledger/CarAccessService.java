@@ -15,13 +15,11 @@ import de.codeflowwizardry.carledger.data.repository.CarAccessRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import de.codeflowwizardry.carledger.exception.AlreadyPresentException;
 import de.codeflowwizardry.carledger.exception.WrongUserException;
+import de.codeflowwizardry.carledger.notification.Notifications;
 import de.codeflowwizardry.carledger.rest.car.access.CarAccessEntry;
 import de.codeflowwizardry.carledger.rest.car.access.CarAccessInput;
 import de.codeflowwizardry.carledger.rest.car.access.CarInvitation;
 import de.codeflowwizardry.carledger.rest.car.access.CarInvitationInput;
-import de.codeflowwizardry.carledger.webhook.CarAccessEvent;
-import de.codeflowwizardry.carledger.webhook.WebhookEvent;
-import de.codeflowwizardry.carledger.webhook.Webhooks;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -41,16 +39,16 @@ public class CarAccessService
 	private final CarAccessRepository carAccessRepository;
 	private final CarRepository carRepository;
 	private final AccountRepository accountRepository;
-	private final Webhooks webhooks;
+	private final Notifications notifications;
 
 	@Inject
 	public CarAccessService(CarAccessRepository carAccessRepository, CarRepository carRepository,
-			AccountRepository accountRepository, Webhooks webhooks)
+			AccountRepository accountRepository, Notifications notifications)
 	{
 		this.carAccessRepository = carAccessRepository;
 		this.carRepository = carRepository;
 		this.accountRepository = accountRepository;
-		this.webhooks = webhooks;
+		this.notifications = notifications;
 	}
 
 	/**
@@ -103,7 +101,7 @@ public class CarAccessService
 		}
 		apply(access, input.access());
 		carAccessRepository.flush();
-		webhooks.publish(WebhookEvent.CAR_ACCESS_INVITED, CarAccessEvent.of(access, username));
+		notifications.carAccessInvited(access);
 		return CarAccessEntry.convert(access);
 	}
 
@@ -117,7 +115,6 @@ public class CarAccessService
 		ownedCar(carId, username);
 		CarAccessEntity access = findForCar(carId, id);
 		apply(access, input);
-		webhooks.publish(WebhookEvent.CAR_ACCESS_CHANGED, CarAccessEvent.of(access, username));
 		return CarAccessEntry.convert(access);
 	}
 
@@ -130,9 +127,7 @@ public class CarAccessService
 	{
 		ownedCar(carId, username);
 		CarAccessEntity access = findForCar(carId, id);
-		CarAccessEvent revoked = CarAccessEvent.of(access, username);
 		carAccessRepository.delete(access);
-		webhooks.publish(WebhookEvent.CAR_ACCESS_REVOKED, revoked);
 	}
 
 	/**
@@ -155,7 +150,7 @@ public class CarAccessService
 		CarAccessEntity access = carAccessRepository.findPendingFor(id, username)
 				.orElseThrow(() -> new NotFoundException("Invitation not found for your user."));
 		access.setState(accept ? CarAccessState.ACCEPTED : CarAccessState.DECLINED);
-		webhooks.publish(WebhookEvent.CAR_ACCESS_ANSWERED, CarAccessEvent.of(access, username));
+		notifications.carAccessAnswered(access);
 	}
 
 	/**
