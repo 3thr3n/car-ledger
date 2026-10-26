@@ -14,18 +14,7 @@ public enum WebhookEvent {
 	 * an administrator approved or rejected a request, data:
 	 * {@link CarRequestDecided}
 	 */
-	CAR_REQUEST_DECIDED("car-request.decided"),
-	/** the owner invited an account to a car, data: {@link CarAccessEvent} */
-	CAR_ACCESS_INVITED("car-access.invited"),
-	/** the invited account accepted or declined, data: {@link CarAccessEvent} */
-	CAR_ACCESS_ANSWERED("car-access.answered"),
-	/** the owner changed the role or the period, data: {@link CarAccessEvent} */
-	CAR_ACCESS_CHANGED("car-access.changed"),
-	/**
-	 * the owner revoked the access or the invitation, data:
-	 * {@link CarAccessEvent} as it was
-	 */
-	CAR_ACCESS_REVOKED("car-access.revoked");
+	CAR_REQUEST_DECIDED("car-request.decided");
 
 	private final String type;
 
