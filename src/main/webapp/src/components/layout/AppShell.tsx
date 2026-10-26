@@ -15,6 +15,7 @@ import MenuRounded from '@mui/icons-material/MenuRounded';
 import CloudOffRounded from '@mui/icons-material/CloudOffRounded';
 import { ReactNode, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import useOpenInvitations from '@/hooks/useOpenInvitations';
 import Sidebar from '@/components/layout/Sidebar';
 import useMe from '@/hooks/useMe';
 import useOnline from '@/hooks/useOnline';
@@ -36,6 +37,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
   const { isFetched } = useMe();
   // the sidebar is behind the menu on phones: a dot shows the open requests
   const openRequests = useOpenCarRequests();
+  const invitations = useOpenInvitations().length;
   const online = useOnline();
 
   return (
@@ -83,12 +85,19 @@ export default function AppShell({ children }: { children: ReactNode }) {
                 <Badge
                   variant="dot"
                   color="error"
-                  invisible={openRequests === 0}
+                  invisible={openRequests === 0 && invitations === 0}
                   slotProps={{
                     badge: {
-                      'aria-label': t('admin.requests.openCount', {
-                        count: openRequests,
-                      }),
+                      'aria-label': [
+                        openRequests > 0 &&
+                          t('admin.requests.openCount', {
+                            count: openRequests,
+                          }),
+                        invitations > 0 &&
+                          t('access.openCount', { count: invitations }),
+                      ]
+                        .filter(Boolean)
+                        .join(', '),
                     },
                   }}
                 >

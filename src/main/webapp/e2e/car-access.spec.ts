@@ -63,6 +63,19 @@ test.describe.serial('car access', () => {
     await expect(bobsRow()).toContainText('Without an end');
   });
 
+  test('bob sees the invitation on the dashboard and the garage', async () => {
+    await bob.goto('/dashboard');
+    const note = bob.getByTestId('invitation-note');
+    await expect(note).toContainText(
+      'alice invites you to the car "E2E Up" as Viewer.',
+    );
+    const badge = bob.getByLabel('1 invitation to a car waits for your answer');
+    await expect(badge).toBeVisible();
+
+    await note.getByRole('link', { name: 'Answer' }).click();
+    await expect(bob).toHaveURL(/\/car$/);
+  });
+
   test('bob sees the car only after accepting', async () => {
     await bob.goto('/car');
     const invitation = bob.getByTestId('invitation');
@@ -75,6 +88,9 @@ test.describe.serial('car access', () => {
 
     await expect(bob.getByTestId('invitation')).toHaveCount(0);
     await expect(sharedCar('Viewer')).toBeVisible();
+    await expect(
+      bob.getByLabel('1 invitation to a car waits for your answer'),
+    ).toHaveCount(0);
 
     await alice.reload();
     await expect(bobsRow()).toContainText('Viewer');

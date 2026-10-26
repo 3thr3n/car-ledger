@@ -325,6 +325,13 @@ car:
 
 access:
   title: "Zugriff"
+  openCount_one: "{{count}} Einladung zu einem Fahrzeug wartet auf deine Antwort"
+  openCount_other: "{{count}} Einladungen zu Fahrzeugen warten auf deine Antwort"
+  note:
+    one: "{{owner}} lädt dich zum Fahrzeug „{{car}}“ ein, als {{role}}."
+    other: "{{count}} Einladungen zu Fahrzeugen warten auf deine Antwort."
+    answer: "Antworten"
+    later: "Später"
   text: "Teile das Fahrzeug mit anderen Konten. Der Eingeladene nimmt zuerst an; ein Konto, das es noch nicht gibt, bekommt die Einladung mit seiner ersten Anmeldung."
   invite: "Einladen"
   inviteTitle: "Zum Fahrzeug einladen"
