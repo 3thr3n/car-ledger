@@ -89,7 +89,7 @@ function PlaceForm({
   const submit = (event: SubmitEvent) => {
     event.preventDefault();
     if (!valid) return;
-    if (place.id !== undefined) {
+    if (place.id != null) {
       rename.mutate({
         path: { carId, id: place.id },
         body: { name: name.trim() },
@@ -122,7 +122,7 @@ function PlaceForm({
         />
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2 }}>
-        {place.id !== undefined && (
+        {place.id != null && (
           <Button
             color="error"
             disabled={pending}
