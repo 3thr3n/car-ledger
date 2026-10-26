@@ -4,6 +4,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { Fragment, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
+import useCarRole from '@/hooks/useCarRole';
 import { TripSuggestion } from '@/generated';
 import {
   dismissTripSuggestionMutation,
@@ -23,9 +24,12 @@ import TripPastDialog from './TripPastDialog';
 export default function TripSuggestions({ carId }: { carId: number }) {
   const { t } = useTranslation();
   const [adding, setAdding] = useState<TripSuggestion>();
-  const { data: suggestions } = useQuery(
-    getTripSuggestionsOptions({ client: localClient, path: { carId } }),
-  );
+  // the server only suggests to whom may dismiss them: not a viewer or a driver
+  const canChange = useCarRole(carId)('WRITE');
+  const { data: suggestions } = useQuery({
+    ...getTripSuggestionsOptions({ client: localClient, path: { carId } }),
+    enabled: canChange,
+  });
 
   const dismiss = useMutation({
     ...dismissTripSuggestionMutation({ client: localClient }),

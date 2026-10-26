@@ -14,6 +14,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
+import useCarRole from '@/hooks/useCarRole';
 import { Modification, ModificationState } from '@/generated';
 import {
   deleteModificationMutation,
@@ -73,7 +74,9 @@ export default function ModificationsPage({ carId }: { carId: number }) {
     setFormOpen(true);
   };
 
-  const addButton = (
+  // the others only see them
+  const canChange = useCarRole(carId)('WRITE');
+  const addButton = canChange && (
     <Button
       variant="contained"
       size="small"
@@ -146,6 +149,7 @@ export default function ModificationsPage({ carId }: { carId: number }) {
           />
         ) : (
           <ModificationList
+            readOnly={!canChange}
             carId={carId}
             modifications={modifications}
             onEdit={openForm}

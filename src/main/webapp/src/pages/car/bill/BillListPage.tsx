@@ -5,6 +5,7 @@ import { useNavigate } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 import { BillType } from '@/generated';
 import useBillList from '@/hooks/useBillList';
+import useCarRole from '@/hooks/useCarRole';
 import Section from '@/components/ui/Section';
 import YearFilter from '@/components/ui/YearFilter';
 import { RouterButton } from '@/components/ui/links';
@@ -70,6 +71,11 @@ export default function BillListPage({
   const { columns, mobileRow } = useColumns(type);
   const onDelete = useDeleteBill(carId);
   const navigate = useNavigate();
+  const role = useCarRole(carId);
+  // a driver only sees the own refuels and charges, and changes them
+  const canChange =
+    role('WRITE') ||
+    (role('DRIVE') && (type === BillType.FUEL || type === BillType.CHARGING));
 
   return (
     <>
@@ -89,7 +95,7 @@ export default function BillListPage({
             />
           </Box>
           {/* the export has the format of the import */}
-          {list.total > 0 && billTypes[type].importable && (
+          {list.total > 0 && billTypes[type].importable && role('READ') && (
             <Button
               href={exportUrl(carId, type, list.year)}
               variant="outlined"
@@ -112,25 +118,30 @@ export default function BillListPage({
           sortModel={list.sortModel}
           onSortModelChange={list.setSortModel}
           loading={list.isLoading || list.isFetching}
-          onDelete={onDelete}
-          onEdit={(row) =>
-            navigate({
-              to: '/car/$id/bill/$billId/edit',
-              params: { id: `${carId}`, billId: `${row.id}` },
-              search: { type },
-            })
+          onDelete={canChange ? onDelete : undefined}
+          onEdit={
+            canChange
+              ? (row) =>
+                  navigate({
+                    to: '/car/$id/bill/$billId/edit',
+                    params: { id: `${carId}`, billId: `${row.id}` },
+                    search: { type },
+                  })
+              : undefined
           }
           emptyTitle={t('bill.empty.title', { type: t(`bill.types.${type}`) })}
           emptyText={t(`bill.empty.${type}`)}
           emptyAction={
-            <RouterButton
-              to="/car/$id/bill/add"
-              params={{ id: `${carId}` }}
-              search={{ type }}
-              variant="contained"
-            >
-              {t('bill.add.button')}
-            </RouterButton>
+            canChange && (
+              <RouterButton
+                to="/car/$id/bill/add"
+                params={{ id: `${carId}` }}
+                search={{ type }}
+                variant="contained"
+              >
+                {t('bill.add.button')}
+              </RouterButton>
+            )
           }
         />
       </Section>

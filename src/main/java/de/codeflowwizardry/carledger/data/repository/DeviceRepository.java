@@ -1,9 +1,11 @@
 package de.codeflowwizardry.carledger.data.repository;
 
 import java.time.OffsetDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import de.codeflowwizardry.carledger.data.DeviceEntity;
 import de.codeflowwizardry.carledger.data.repository.CarAccess.Action;
@@ -22,6 +24,22 @@ public class DeviceRepository implements PanacheRepository<DeviceEntity>
 				"select d from device d join d.car c where c.id = :carId and " + CarAccess.condition("c", Action.MANAGE)
 						+ " order by d.id desc",
 				Map.of("carId", carId, CarAccess.USER, username));
+	}
+
+	/**
+	 * @return the ids of the cars with a GPS tracker, also a revoked one: its
+	 *         points stay
+	 */
+	public Set<Long> carsWithTrackers(Collection<Long> carIds)
+	{
+		if (carIds.isEmpty())
+		{
+			return Set.of();
+		}
+		return Set.copyOf(getEntityManager()
+				.createQuery("select distinct d.car.id from device d where d.car.id in :cars", Long.class)
+				.setParameter("cars", carIds)
+				.getResultList());
 	}
 
 	/**

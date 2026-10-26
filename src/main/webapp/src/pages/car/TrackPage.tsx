@@ -26,6 +26,7 @@ import {
   getTrackFrequencyOptions,
   getTrackOptions,
 } from '@/generated/@tanstack/react-query.gen';
+import useCarRole from '@/hooks/useCarRole';
 import { invalidateCar, localClient } from '@/utils/QueryClient';
 import { errorMessage } from '@/utils/BackendError';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
@@ -71,6 +72,8 @@ export default function TrackPage({ carId }: { carId: number }) {
     to: to?.add(1, 'day').startOf('day').toISOString() ?? '',
   };
   const [deleting, setDeleting] = useState(false);
+  // a viewer sees the tracks and the places, the owner deletes them
+  const role = useCarRole(carId);
   const [mode, setMode] = useState<Mode>('speed');
   const [showPlaces, setShowPlaces] = useState(false);
   const [toName, setToName] = useState<Place>();
@@ -222,7 +225,7 @@ export default function TrackPage({ carId }: { carId: number }) {
                 : undefined
             }
             places={showPlaces ? places : undefined}
-            onPlaceClick={setToName}
+            onPlaceClick={role('WRITE') ? setToName : undefined}
           />
         )}
         <Stack
@@ -258,18 +261,22 @@ export default function TrackPage({ carId }: { carId: number }) {
             </Tooltip>
           </Stack>
           {/* not while the track of another period is loading */}
-          {track && valid && track.points > 0 && !isPlaceholderData && (
-            <Button
-              color="error"
-              size="small"
-              startIcon={<DeleteOutlineRounded />}
-              onClick={() => setDeleting(true)}
-              disabled={remove.isPending}
-              sx={{ alignSelf: { xs: 'flex-start', sm: 'center' } }}
-            >
-              {t('track.deletePeriod')}
-            </Button>
-          )}
+          {track &&
+            valid &&
+            track.points > 0 &&
+            !isPlaceholderData &&
+            role('MANAGE') && (
+              <Button
+                color="error"
+                size="small"
+                startIcon={<DeleteOutlineRounded />}
+                onClick={() => setDeleting(true)}
+                disabled={remove.isPending}
+                sx={{ alignSelf: { xs: 'flex-start', sm: 'center' } }}
+              >
+                {t('track.deletePeriod')}
+              </Button>
+            )}
         </Stack>
       </Stack>
       <PlaceDialog

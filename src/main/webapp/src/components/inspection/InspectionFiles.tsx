@@ -27,9 +27,12 @@ import { useOpenKept } from '@/components/offline/useOfflineDocuments';
 export default function InspectionFiles({
   carId,
   inspectionId,
+  readOnly = false,
 }: {
   carId: number;
   inspectionId: number;
+  /** only shows the files, for a viewer */
+  readOnly?: boolean;
 }) {
   const { t } = useTranslation();
   const input = useRef<HTMLInputElement>(null);
@@ -85,20 +88,22 @@ export default function InspectionFiles({
         <Typography variant="subtitle2">
           {t('inspection.files.title')}
         </Typography>
-        <Button
-          size="small"
-          startIcon={
-            upload.isPending ? (
-              <CircularProgress size={16} />
-            ) : (
-              <AttachFileRounded />
-            )
-          }
-          disabled={upload.isPending}
-          onClick={() => input.current?.click()}
-        >
-          {t('inspection.files.add')}
-        </Button>
+        {!readOnly && (
+          <Button
+            size="small"
+            startIcon={
+              upload.isPending ? (
+                <CircularProgress size={16} />
+              ) : (
+                <AttachFileRounded />
+              )
+            }
+            disabled={upload.isPending}
+            onClick={() => input.current?.click()}
+          >
+            {t('inspection.files.add')}
+          </Button>
+        )}
       </Stack>
       {files.length === 0 ? (
         <Typography variant="body2" sx={{ color: 'text.secondary' }}>
@@ -113,7 +118,7 @@ export default function InspectionFiles({
               pdf={file.contentType === 'application/pdf'}
               url={contentUrl(carId, file.id!)}
               previewUrl={previewUrl(carId, file.id!)}
-              onRemove={() => setToDelete(file.id)}
+              onRemove={readOnly ? undefined : () => setToDelete(file.id)}
               onOpen={open(contentUrl(carId, file.id!))}
             />
           ))}

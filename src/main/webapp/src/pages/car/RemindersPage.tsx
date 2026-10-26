@@ -11,6 +11,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
+import useCarRole from '@/hooks/useCarRole';
 import { Reminder } from '@/generated';
 import {
   deleteReminderMutation,
@@ -56,7 +57,9 @@ export default function RemindersPage({ carId }: { carId: number }) {
     setFormOpen(true);
   };
 
-  const addButton = (
+  // the others only see them
+  const canChange = useCarRole(carId)('WRITE');
+  const addButton = canChange && (
     <Button
       variant="contained"
       size="small"
@@ -75,7 +78,7 @@ export default function RemindersPage({ carId }: { carId: number }) {
       // next to the title it would be cut off on a phone
       action={!isPhone && addButton}
     >
-      {isPhone && <Stack sx={{ mb: 1 }}>{addButton}</Stack>}
+      {isPhone && addButton && <Stack sx={{ mb: 1 }}>{addButton}</Stack>}
       {!isLoading && reminders.length === 0 ? (
         <EmptyState
           icon={<NotificationsActiveRounded />}
@@ -85,9 +88,9 @@ export default function RemindersPage({ carId }: { carId: number }) {
       ) : (
         <ReminderList
           reminders={reminders}
-          onDone={setToComplete}
-          onEdit={openForm}
-          onDelete={setToDelete}
+          onDone={canChange ? setToComplete : undefined}
+          onEdit={canChange ? openForm : undefined}
+          onDelete={canChange ? setToDelete : undefined}
         />
       )}
       {odometer !== undefined && reminders.length > 0 && (

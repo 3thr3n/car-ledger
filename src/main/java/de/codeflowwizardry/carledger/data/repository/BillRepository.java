@@ -65,7 +65,8 @@ public class BillRepository extends AbstractBillRepository<BillEntity>
 	{
 		return getEntityManager()
 				.createQuery(
-						"select b.car.id, count(b) from bill b where " + CarAccess.condition("b.car", Action.READ)
+						"select b.car.id, count(b) from bill b where "
+								+ CarAccess.own("b.car", "b.createdBy", Action.READ)
 								+ " group by b.car.id",
 						Object[].class)
 				.setParameter(CarAccess.USER, username)

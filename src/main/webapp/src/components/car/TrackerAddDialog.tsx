@@ -18,11 +18,8 @@ import { SubmitEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
 import { DeviceCreated } from '@/generated';
-import {
-  addTrackerMutation,
-  getTrackersQueryKey,
-} from '@/generated/@tanstack/react-query.gen';
-import queryClient, { localClient } from '@/utils/QueryClient';
+import { addTrackerMutation } from '@/generated/@tanstack/react-query.gen';
+import { invalidateCar, localClient } from '@/utils/QueryClient';
 import { errorMessage } from '@/utils/BackendError';
 
 export interface TrackerAddDialogProps {
@@ -67,9 +64,8 @@ function TrackerAddForm({
     ...addTrackerMutation({ client: localClient }),
     onSuccess: async (created) => {
       setCreated(created);
-      await queryClient.invalidateQueries({
-        queryKey: getTrackersQueryKey({ path: { carId } }),
-      });
+      // the car as well: with its first tracker it shows the map
+      await invalidateCar(carId);
     },
     onError: (e) => toast.error(errorMessage(e, t('errors.backend'))),
   });

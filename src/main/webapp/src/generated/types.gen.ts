@@ -243,6 +243,7 @@ export type Car = {
     pictureId?: number;
     trackRetentionDays?: number;
     role: CarRole;
+    tracked: boolean;
 };
 
 export type CarAccessEntry = {

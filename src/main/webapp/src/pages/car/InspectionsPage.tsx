@@ -6,6 +6,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
+import useCarRole from '@/hooks/useCarRole';
 import { TechnicalInspection } from '@/generated';
 import {
   deleteTechnicalInspectionMutation,
@@ -52,7 +53,9 @@ export default function InspectionsPage({ carId }: { carId: number }) {
     setFormOpen(true);
   };
 
-  const addButton = (
+  // the others only see them
+  const canChange = useCarRole(carId)('WRITE');
+  const addButton = canChange && (
     <Button
       variant="contained"
       size="small"
@@ -104,6 +107,7 @@ export default function InspectionsPage({ carId }: { carId: number }) {
         />
       ) : (
         <InspectionList
+          readOnly={!canChange}
           carId={carId}
           inspections={inspections}
           onEdit={openForm}

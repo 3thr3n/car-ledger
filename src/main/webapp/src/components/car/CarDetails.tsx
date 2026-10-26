@@ -1,6 +1,7 @@
 import { Box, Divider, Stack, Typography } from '@mui/material';
 import { Fragment, ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { can } from '@/utils/carRole';
 import { Car } from '@/generated';
 import { useFormat } from '@/utils/format';
 import Section from '@/components/ui/Section';
@@ -65,7 +66,9 @@ export default function CarDetails({
     });
   }
 
-  const edit = (
+  // only the owner changes the car
+  const canEdit = can(car, 'MANAGE');
+  const edit = canEdit && (
     <RouterButton to="/car/$id/edit" params={params} size="small">
       {t('button.edit')}
     </RouterButton>
@@ -105,14 +108,16 @@ export default function CarDetails({
           compact
           title={t('car.details.empty')}
           action={
-            <RouterButton
-              to="/car/$id/edit"
-              params={params}
-              size="small"
-              variant="outlined"
-            >
-              {t('car.details.add')}
-            </RouterButton>
+            canEdit && (
+              <RouterButton
+                to="/car/$id/edit"
+                params={params}
+                size="small"
+                variant="outlined"
+              >
+                {t('car.details.add')}
+              </RouterButton>
+            )
           }
         />
       )}

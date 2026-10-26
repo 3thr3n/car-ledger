@@ -68,12 +68,20 @@ export const billTypeList = Object.values(billTypes);
 /**
  * The entry types of a car: refuels with a tank, charges with a battery, the
  * others always
+ *
+ * @param driver a driver only refuels and charges
  */
-export function billTypesFor(energyType?: EnergyType): BillTypeMeta[] {
+export function billTypesFor(
+  energyType?: EnergyType,
+  driver = false,
+): BillTypeMeta[] {
   return billTypeList.filter(
     (meta) =>
       (meta.type !== BillType.FUEL || hasTank(energyType)) &&
-      (meta.type !== BillType.CHARGING || hasBattery(energyType)),
+      (meta.type !== BillType.CHARGING || hasBattery(energyType)) &&
+      (!driver ||
+        meta.type === BillType.FUEL ||
+        meta.type === BillType.CHARGING),
   );
 }
 
