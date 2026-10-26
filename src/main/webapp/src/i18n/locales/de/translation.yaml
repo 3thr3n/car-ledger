@@ -735,10 +735,10 @@ notifications:
 
 backup:
   title: "Sicherung"
-  text: "Alle deine Daten in einer Datei: Einstellungen, Fahrzeuge, Einträge, Fixkosten, Erinnerungen, Belege und Bilder. Stelle sie hier oder in einem anderen CarLedger wieder her."
+  text: "Alle deine Daten in einer Datei: Einstellungen, Fahrzeuge, Einträge, Fixkosten, Erinnerungen, Belege und Bilder. Stelle sie hier oder in einem anderen CarLedger wieder her. Ein Fahrzeug, das andere mit dir teilen, ist nur in der Sicherung seines Besitzers, exportiere deine Fahrten damit in seinem Fahrtenbuch."
   download: "Sicherung herunterladen"
   restore: "Sicherung wiederherstellen"
-  restoreHelp: "Stellt eine heruntergeladene Sicherung in deinem Konto wieder her, das noch keine Fahrzeuge hat."
+  restoreHelp: "Stellt eine heruntergeladene Sicherung in deinem Konto wieder her, das noch keine Fahrzeuge hat. Die Konten, mit denen ein Fahrzeug geteilt war, bekommen erneut eine Einladung."
   restoreOnlyEmpty: "Eine Sicherung kann nur in einem Konto ohne Fahrzeuge wiederhergestellt werden."
   restored: "Sicherung wiederhergestellt: {{parts}}"
   restoredEmpty: "Sicherung wiederhergestellt, sie hatte keine Fahrzeuge"
@@ -763,6 +763,8 @@ backup:
     trackers_other: "{{count}} GPS-Tracker"
     files_one: "{{count}} Datei"
     files_other: "{{count}} Dateien"
+    invitations_one: "{{count}} Einladung"
+    invitations_other: "{{count}} Einladungen"
   failed: "Die Sicherung konnte nicht wiederhergestellt werden"
   tooLarge: "Das Backup ist größer, als der Server annimmt. Sein Betreiber kann die Grenze erhöhen (carLedger.attachments.maxRequestSize, siehe docs/DEPLOYMENT.md)."
 

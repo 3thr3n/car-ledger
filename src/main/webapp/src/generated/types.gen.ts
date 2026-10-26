@@ -132,6 +132,7 @@ export type BackupSummary = {
     modifications?: number;
     technicalInspections?: number;
     places?: number;
+    invitations?: number;
 };
 
 export type Bill = {
@@ -874,7 +875,7 @@ export type Trip = {
     deletedBy?: string;
     deleteReason?: string;
     enteredLater: boolean;
-    driver: string;
+    driver?: string;
 };
 
 export type TripConflict = {

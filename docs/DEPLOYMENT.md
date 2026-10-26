@@ -413,6 +413,7 @@ Use the image of a release (a git tag of `main`) or a dev build of `develop`. On
 | 1.30.0    | Access of other accounts to a car with a role and an optional period, for sharing (0.9.0)                            |
 | 1.31.0    | Who created an entry, the owner of its car for the existing ones (0.9.0)                                             |
 | 1.32.0    | Invitations to a car, an access counts once accepted (0.9.0); an older image would count the open ones as well       |
+| 1.33.0    | The trips of a deleted account stay in the cars of others, without a driver (0.9.0)                                  |
 
 An older image refuses to start on the migrated database, as Flyway finds migrations it does not know. To go back,
 restore the backup. Without the backup, the older image runs on the migrated database (the new columns have defaults)
@@ -475,6 +476,10 @@ kubectl set env deployment/car-ledger QUARKUS_FLYWAY_IGNORE_FUTURE_MIGRATIONS=tr
   [GPS_TRACKER.md](GPS_TRACKER.md#flashing).
 - **Places** (0.9.0): the map shows the places a car stops at often and lets the owner name them, see
   [GPS_TRACKER.md](GPS_TRACKER.md#places). The names are part of the backup (migration 1.29.0). Nothing to set up.
+- **Sharing a car** (0.9.0): the owner invites other accounts as editor, viewer or driver, optionally for a period
+  (migrations 1.30.0 to 1.33.0). Only the owner backs up a shared car, its accesses come back from a restore as
+  invitations; a driver exports the own trips from the trip log. Due reminders go to the owner and the editors. A
+  deleted account leaves its entries and trips in the cars of others. Nothing to set up.
 - **Files of the recurring costs** (0.9.0): a recurring cost keeps files like the contract of a leasing, with the
   limits of the files of an entry and part of the backup (migration 1.28.0). Nothing to set up.
 - **Previews** (0.9.0): the lists and the tiles of the files show a small JPEG of each photo (256 px), stored next to

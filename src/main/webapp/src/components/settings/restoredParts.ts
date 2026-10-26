@@ -12,6 +12,7 @@ const PARTS = [
   'places',
   'trackers',
   'files',
+  'invitations',
 ] as const;
 
 export type RestoredPart = (typeof PARTS)[number];

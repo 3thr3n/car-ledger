@@ -28,6 +28,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import de.codeflowwizardry.carledger.CarAccessService;
 import de.codeflowwizardry.carledger.ModificationService;
 import de.codeflowwizardry.carledger.TechnicalInspectionService;
 import de.codeflowwizardry.carledger.Utils;
@@ -36,6 +37,7 @@ import de.codeflowwizardry.carledger.data.*;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.AttachmentRepository;
 import de.codeflowwizardry.carledger.data.repository.BillRepository;
+import de.codeflowwizardry.carledger.data.repository.CarAccessRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import de.codeflowwizardry.carledger.data.repository.DeviceRepository;
 import de.codeflowwizardry.carledger.data.repository.ModificationRepository;
@@ -103,6 +105,8 @@ public class BackupService
 	private final ModificationRepository modificationRepository;
 	private final TechnicalInspectionRepository technicalInspectionRepository;
 	private final PlaceRepository placeRepository;
+	private final CarAccessRepository carAccessRepository;
+	private final CarAccessService carAccessService;
 	private final AttachmentService attachmentService;
 	private final ObjectMapper mapper;
 	private final EntityManager em;
@@ -114,6 +118,7 @@ public class BackupService
 			ReminderRepository reminderRepository, TripRepository tripRepository, DeviceRepository deviceRepository,
 			TrackPointRepository trackPointRepository, ModificationRepository modificationRepository,
 			TechnicalInspectionRepository technicalInspectionRepository, PlaceRepository placeRepository,
+			CarAccessRepository carAccessRepository, CarAccessService carAccessService,
 			AttachmentService attachmentService, ObjectMapper mapper, EntityManager em)
 	{
 		this.accountRepository = accountRepository;
@@ -129,6 +134,8 @@ public class BackupService
 		this.modificationRepository = modificationRepository;
 		this.technicalInspectionRepository = technicalInspectionRepository;
 		this.placeRepository = placeRepository;
+		this.carAccessRepository = carAccessRepository;
+		this.carAccessService = carAccessService;
 		this.attachmentService = attachmentService;
 		this.mapper = mapper;
 		this.em = em;
@@ -346,6 +353,12 @@ public class BackupService
 				reminders, trips, car.isTripLog(), car.getTrackRetentionDays(), trackers, track, modifications,
 				inspections, placeRepository.list(car).stream()
 						.map(place -> new BackupFile.Place(place.getName(), place.getLat(), place.getLon()))
+						.toList(),
+				carAccessRepository.listForCar(car.getId()).stream()
+						.filter(access -> access.getState() != CarAccessState.DECLINED && !access.hasEnded())
+						.map(access -> new BackupFile.Access(
+								access.getAccount() == null ? access.getInvitee() : access.getAccount().getUserId(),
+								access.getRole(), access.getValidFrom(), access.getValidUntil()))
 						.toList());
 	}
 
@@ -414,7 +427,7 @@ public class BackupService
 		}
 		return new BackupSummary(cars.size(), counter.bills, counter.recurringBills, counter.reminders,
 				counter.trips, counter.files, counter.trackers, counter.trackPoints, counter.modifications,
-				counter.technicalInspections, counter.places);
+				counter.technicalInspections, counter.places, counter.invitations);
 	}
 
 	private static final class Counter
@@ -429,6 +442,7 @@ public class BackupService
 		int modifications;
 		int technicalInspections;
 		int places;
+		int invitations;
 	}
 
 	private BackupFile parse(byte[] json)
@@ -559,6 +573,14 @@ public class BackupService
 			Utils.requireValid(placeInput.validate(true));
 			placeRepository.persist(new PlaceEntity(car, place.lat(), place.lon(), place.name().strip()));
 			counter.places++;
+		}
+		for (BackupFile.Access access : list(backup.accesses()))
+		{
+			if (carAccessService.restoreInvitation(car, access.account(), access.role(), access.validFrom(),
+					access.validUntil()))
+			{
+				counter.invitations++;
+			}
 		}
 		boolean open = false;
 		for (BackupFile.Trip trip : list(backup.trips()))

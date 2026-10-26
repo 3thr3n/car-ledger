@@ -22,8 +22,9 @@ public class TripEntity
 	@JoinColumn(name = "tp_car_id", nullable = false, updatable = false)
 	private CarEntity car;
 
-	@ManyToOne(fetch = FetchType.LAZY, optional = false)
-	@JoinColumn(name = "tp_driver_id", nullable = false, updatable = false)
+	/** missing once the account of the driver was deleted, the trip stays */
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "tp_driver_id", updatable = false)
 	private AccountEntity driver;
 
 	@Enumerated(EnumType.STRING)
@@ -165,6 +166,15 @@ public class TripEntity
 	public AccountEntity getDriver()
 	{
 		return driver;
+	}
+
+	/**
+	 * @return the user name of the driver, <code>null</code> once the account
+	 *         was deleted
+	 */
+	public String getDriverName()
+	{
+		return driver == null ? null : driver.getUserId();
 	}
 
 	public TripType getType()

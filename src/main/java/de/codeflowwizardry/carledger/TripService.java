@@ -112,7 +112,7 @@ public class TripService
 		CarEntity car = car(carId, username, Action.USE);
 		boolean readsAll = carRepository.findById(carId, username, Action.READ) != null;
 		Trip open = tripRepository.findOpen(car)
-				.filter(trip -> readsAll || trip.getDriver().getUserId().equals(username))
+				.filter(trip -> readsAll || username.equals(trip.getDriverName()))
 				.map(Trip::convert)
 				.orElse(null);
 		int estimated = odometerService.current(carId, username).get(carId).value();

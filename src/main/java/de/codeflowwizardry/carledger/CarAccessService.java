@@ -1,5 +1,6 @@
 package de.codeflowwizardry.carledger;
 
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -9,6 +10,7 @@ import de.codeflowwizardry.carledger.data.AccountEntity;
 import de.codeflowwizardry.carledger.data.CarAccessEntity;
 import de.codeflowwizardry.carledger.data.CarAccessState;
 import de.codeflowwizardry.carledger.data.CarEntity;
+import de.codeflowwizardry.carledger.data.CarRole;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.CarAccess.Action;
 import de.codeflowwizardry.carledger.data.repository.CarAccessRepository;
@@ -104,6 +106,46 @@ public class CarAccessService
 		carAccessRepository.flush();
 		notifications.carAccessInvited(access);
 		return CarAccessEntry.convert(access);
+	}
+
+	/**
+	 * An access of a restored backup, as an invitation of the restoring owner:
+	 * the account accepts it again, a backup gives no access by itself. One for
+	 * the owner, twice for the same account or ended meanwhile is left out.
+	 *
+	 * @param account
+	 *            user name or e-mail address
+	 * @return whether the account was invited
+	 */
+	public boolean restoreInvitation(CarEntity car, String account, CarRole role, OffsetDateTime validFrom,
+			OffsetDateTime validUntil)
+	{
+		// a period of the backup may be over meanwhile
+		if (validUntil != null && !validUntil.isAfter(OffsetDateTime.now()))
+		{
+			return false;
+		}
+		CarInvitationInput input = new CarInvitationInput(account, role, validFrom, validUntil);
+		Utils.requireValid(input.validate());
+		String name = account.strip().toLowerCase(Locale.ROOT);
+		Optional<AccountEntity> invited = accountRepository.findByNameOrEmail(name);
+		if (invited.isPresent() && invited.get().getId().equals(car.getUser().getId()))
+		{
+			return false;
+		}
+		Optional<CarAccessEntity> existing = invited.isPresent()
+				? carAccessRepository.findForCar(car.getId(), invited.get())
+				: carAccessRepository.findForCar(car.getId(), name);
+		if (existing.isPresent())
+		{
+			return false;
+		}
+		CarAccessEntity access = CarAccessEntity.invite(car, invited.orElse(null), name, role, car.getUser());
+		apply(access, input.access());
+		carAccessRepository.persist(access);
+		carAccessRepository.flush();
+		notifications.carAccessInvited(access);
+		return true;
 	}
 
 	/**
