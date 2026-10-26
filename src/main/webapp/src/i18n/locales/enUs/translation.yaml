@@ -199,6 +199,10 @@ garage:
   entries_one: "{{count}} entry"
   entries_other: "{{count}} entries"
 
+creator:
+  by: "by {{name}}"
+  deleted: "by a deleted user"
+
 car:
   shared: "Shared · {{role}}"
   roles:

@@ -550,7 +550,7 @@ public class AttachmentService
 
 	private BillEntity findBill(long carId, long billId, String userId, Action action)
 	{
-		return billRepository.find("id = :billId and car.id = :carId and " + CarAccess.condition("car", action),
+		return billRepository.find("id = :billId and car.id = :carId and " + CarAccess.own("car", "createdBy", action),
 				Map.of("billId", billId, "carId", carId, CarAccess.USER, userId))
 				.firstResultOptional()
 				.orElseThrow(() -> new NotFoundException("Bill not found"));

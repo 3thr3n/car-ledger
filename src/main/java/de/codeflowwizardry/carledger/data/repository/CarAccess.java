@@ -22,6 +22,10 @@ import de.codeflowwizardry.carledger.data.CarRole;
  * <td>owner, editor, viewer, driver</td>
  * </tr>
  * <tr>
+ * <td>{@link Action#DRIVE}</td>
+ * <td>owner, editor, driver</td>
+ * </tr>
+ * <tr>
  * <td>{@link Action#READ}</td>
  * <td>owner, editor, viewer</td>
  * </tr>
@@ -34,9 +38,9 @@ import de.codeflowwizardry.carledger.data.CarRole;
  * <td>owner</td>
  * </tr>
  * </table>
- * A driver sees only the own trips and refuels, which their queries check with
- * the creator of the entry; the roles here never give a driver the entries of
- * others.
+ * A driver sees and changes only the own trips and refuels: the queries of the
+ * entries check them with {@link #own(String, String, Action)}, the creator of
+ * the entry. The roles never give a driver the entries of others.
  */
 public final class CarAccess
 {
@@ -56,6 +60,8 @@ public final class CarAccess
 		 * driver; not its entries
 		 */
 		USE,
+		/** start and finish trips, add refuels and charges */
+		DRIVE,
 		/** see the car and its entries */
 		READ,
 		/** add, change and delete entries of the car */
@@ -79,6 +85,33 @@ public final class CarAccess
 			case WRITE -> "(" + owner + " or " + shared(car, CarRole.EDITOR) + ")";
 			case READ -> "(" + owner + " or " + shared(car, CarRole.EDITOR, CarRole.VIEWER) + ")";
 			case USE -> "(" + owner + " or " + shared(car, CarRole.EDITOR, CarRole.VIEWER, CarRole.DRIVER) + ")";
+			case DRIVE -> "(" + owner + " or " + shared(car, CarRole.EDITOR, CarRole.DRIVER) + ")";
+		};
+	}
+
+	/**
+	 * Like {@link #condition(String, Action)} for an entry with a creator: a
+	 * driver reads the own entries ({@link Action#READ}) and changes them
+	 * ({@link Action#WRITE}), the other roles as for the car
+	 *
+	 * @param creator
+	 *            path of the account that created the entry, e.g.
+	 *            <code>b.createdBy</code> or <code>t.driver</code>; compared
+	 *            without a join, an entry without one stays visible
+	 */
+	public static String own(String car, String creator, Action action)
+	{
+		String self = creator + " in (select self from Account self where self.userId = :" + USER + ")";
+		return switch (action)
+		{
+			case READ -> "(" + condition(car, Action.READ) + " or (" + condition(car, Action.USE) + " and " + self
+					+ "))";
+			case WRITE -> "(" + condition(car, Action.WRITE) + " or (" + condition(car, Action.DRIVE) + " and "
+					+ self + "))";
+			// never the entries of others through the actions of the car only
+			case USE -> own(car, creator, Action.READ);
+			case DRIVE -> own(car, creator, Action.WRITE);
+			case MANAGE -> condition(car, action);
 		};
 	}
 

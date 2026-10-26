@@ -47,7 +47,7 @@ public final class ChargingBill extends AbstractBill
 
 	public static ChargingBill convert(ChargingBillEntity entity)
 	{
-		return new ChargingBill(entity.getBill().getId(),
+		return created(new ChargingBill(entity.getBill().getId(),
 				entity.getBill().getDate(),
 				entity.getDistance(),
 				entity.getUnit(),
@@ -56,7 +56,7 @@ public final class ChargingBill extends AbstractBill
 				entity.getBill().getTotal(),
 				entity.getBill().getVatRate(),
 				entity.getLocation(),
-				entity.getStateOfCharge());
+				entity.getStateOfCharge()), entity.getBill());
 	}
 
 	public static List<ChargingBill> convert(List<ChargingBillEntity> entities)

@@ -41,7 +41,7 @@ public final class FuelBill extends AbstractBill
 
 	public static FuelBill convert(FuelBillEntity billEntity)
 	{
-		return new FuelBill(billEntity.getBill().getId(),
+		return created(new FuelBill(billEntity.getBill().getId(),
 				billEntity.getBill().getDate(),
 				billEntity.getDistance(),
 				billEntity.getUnit(),
@@ -49,7 +49,7 @@ public final class FuelBill extends AbstractBill
 				billEntity.getEstimate(),
 				billEntity.getAvgConsumption(),
 				billEntity.getBill().getTotal(),
-				billEntity.getBill().getVatRate());
+				billEntity.getBill().getVatRate()), billEntity.getBill());
 	}
 
 	public static List<FuelBill> convert(List<FuelBillEntity> billEntityList)

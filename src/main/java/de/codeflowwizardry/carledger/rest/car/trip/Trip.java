@@ -35,6 +35,8 @@ import de.codeflowwizardry.carledger.data.TripType;
  *            the server received the start or the finish more than
  *            {@link #ENTERED_LATER} after the time of the device: entered
  *            afterwards, not on the road
+ * @param driver
+ *            the user who drove, shown on shared cars
  */
 public record Trip(
 		@Schema(required = true) UUID id,
@@ -55,7 +57,8 @@ public record Trip(
 		OffsetDateTime deletedAt,
 		String deletedBy,
 		String deleteReason,
-		@Schema(required = true) boolean enteredLater)
+		@Schema(required = true) boolean enteredLater,
+		@Schema(required = true) String driver)
 {
 	/**
 	 * a request of the offline queue arrives later as well, but was made on the
@@ -69,7 +72,7 @@ public record Trip(
 				entity.getEndOdometer(), entity.getDistance(), entity.getStartedAt(), entity.getEndedAt(),
 				entity.getDestination(), entity.getPurpose(), entity.getBusinessPartner(), entity.getReviewReason(),
 				entity.isRestored(), entity.getCreatedAt(), entity.getFinishedAt(), entity.getDeletedAt(),
-				entity.getDeletedBy(), entity.getDeleteReason(), enteredLater(entity));
+				entity.getDeletedBy(), entity.getDeleteReason(), enteredLater(entity), entity.getDriver().getUserId());
 	}
 
 	/**

@@ -28,9 +28,9 @@ public final class MiscellaneousBill extends AbstractBill
 
 	public static MiscellaneousBill convert(MiscellaneousBillEntity billEntity)
 	{
-		return new MiscellaneousBill(billEntity.getBill().getId(), billEntity.getBill().getDate(),
+		return created(new MiscellaneousBill(billEntity.getBill().getId(), billEntity.getBill().getDate(),
 				billEntity.getDescription(), billEntity.getBill().getTotal(),
-				billEntity.getBill().getVatRate());
+				billEntity.getBill().getVatRate()), billEntity.getBill());
 	}
 
 	public static List<MiscellaneousBill> convert(List<MiscellaneousBillEntity> billEntityList)

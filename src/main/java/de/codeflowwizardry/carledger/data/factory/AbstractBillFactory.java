@@ -14,6 +14,7 @@ import de.codeflowwizardry.carledger.data.BillEntity;
 import de.codeflowwizardry.carledger.data.BillType;
 import de.codeflowwizardry.carledger.data.CarEntity;
 import de.codeflowwizardry.carledger.data.repository.CarAccess.Action;
+import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import de.codeflowwizardry.carledger.exception.AlreadyPresentException;
 import de.codeflowwizardry.carledger.exception.WrongUserException;
@@ -25,6 +26,7 @@ public abstract class AbstractBillFactory<I extends AbstractBillInput, O extends
 {
 	protected final EntityManager em;
 	protected final CarRepository carRepository;
+	protected final AccountRepository accountRepository;
 	protected final BillType type;
 
 	/**
@@ -33,14 +35,16 @@ public abstract class AbstractBillFactory<I extends AbstractBillInput, O extends
 	 */
 	protected AbstractBillFactory()
 	{
-		this(null, null, null);
+		this(null, null, null, null);
 	}
 
-	protected AbstractBillFactory(BillType type, EntityManager em, CarRepository carRepository)
+	protected AbstractBillFactory(BillType type, EntityManager em, CarRepository carRepository,
+			AccountRepository accountRepository)
 	{
 		this.type = type;
 		this.em = em;
 		this.carRepository = carRepository;
+		this.accountRepository = accountRepository;
 	}
 
 	/**
@@ -84,7 +88,9 @@ public abstract class AbstractBillFactory<I extends AbstractBillInput, O extends
 	{
 		Utils.requireValid(input.validate());
 
-		CarEntity car = carRepository.findById(carId, user, Action.WRITE);
+		// a driver adds refuels and charges, the other entries need an editor
+		Action action = getType() == BillType.FUEL || getType() == BillType.CHARGING ? Action.DRIVE : Action.WRITE;
+		CarEntity car = carRepository.findById(carId, user, action);
 
 		if (car == null)
 		{
@@ -94,6 +100,7 @@ public abstract class AbstractBillFactory<I extends AbstractBillInput, O extends
 		BillEntity bill = new BillEntity();
 		bill.setType(getType());
 		bill.setCar(car);
+		bill.setCreatedBy(accountRepository.findByIdentifier(user));
 		bill.setClientId(clientId);
 
 		bill.setDate(input.getDate());

@@ -5,6 +5,7 @@ import java.util.UUID;
 import de.codeflowwizardry.carledger.data.BillEntity;
 import de.codeflowwizardry.carledger.data.BillType;
 import de.codeflowwizardry.carledger.data.MiscellaneousBillEntity;
+import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import de.codeflowwizardry.carledger.data.repository.MiscellaneousBillRepository;
 import de.codeflowwizardry.carledger.rest.car.miscellaneous.MiscellaneousBillInput;
@@ -19,10 +20,10 @@ public class MiscellaneousBillFactory extends AbstractBillFactory<MiscellaneousB
 	private final MiscellaneousBillRepository miscellaneousBillRepository;
 
 	@Inject
-	public MiscellaneousBillFactory(EntityManager em, CarRepository carRepository,
+	public MiscellaneousBillFactory(EntityManager em, CarRepository carRepository, AccountRepository accountRepository,
 			MiscellaneousBillRepository miscellaneousBillRepository)
 	{
-		super(BillType.MISCELLANEOUS, em, carRepository);
+		super(BillType.MISCELLANEOUS, em, carRepository, accountRepository);
 		this.miscellaneousBillRepository = miscellaneousBillRepository;
 	}
 

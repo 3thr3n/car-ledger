@@ -28,7 +28,8 @@ public class TripRepository implements PanacheRepositoryBase<TripEntity, UUID>
 	public PanacheQuery<TripEntity> page(long carId, String username, Optional<Integer> year, Page page)
 	{
 		Map<String, Object> params = new HashMap<>();
-		String query = "from trip t where t.car.id = :carId and " + CarAccess.condition("t.car", Action.READ);
+		String query = "from trip t where t.car.id = :carId and "
+				+ CarAccess.own("t.car", "t.driver", Action.READ);
 		params.put("carId", carId);
 		params.put(CarAccess.USER, username);
 		if (year.isPresent())
@@ -50,8 +51,8 @@ public class TripRepository implements PanacheRepositoryBase<TripEntity, UUID>
 	public List<TripEntity> list(long carId, String username, OffsetDateTime from, OffsetDateTime until)
 	{
 		Map<String, Object> params = new HashMap<>();
-		String query = "from trip t join fetch t.driver where t.car.id = :carId and "
-				+ CarAccess.condition("t.car", Action.READ);
+		String query = "from trip t where t.car.id = :carId and "
+				+ CarAccess.own("t.car", "t.driver", Action.READ);
 		params.put("carId", carId);
 		params.put(CarAccess.USER, username);
 		if (from != null)
@@ -73,7 +74,7 @@ public class TripRepository implements PanacheRepositoryBase<TripEntity, UUID>
 	public List<Integer> years(long carId, String username)
 	{
 		return getEntityManager().createQuery("select distinct year(t.startedAt) from trip t where t.car.id = :carId"
-				+ " and " + CarAccess.condition("t.car", Action.READ) + " order by 1 desc", Integer.class)
+				+ " and " + CarAccess.own("t.car", "t.driver", Action.READ) + " order by 1 desc", Integer.class)
 				.setParameter("carId", carId)
 				.setParameter(CarAccess.USER, username)
 				.getResultList();
@@ -84,7 +85,8 @@ public class TripRepository implements PanacheRepositoryBase<TripEntity, UUID>
 	 */
 	public Optional<TripEntity> find(long carId, UUID id, String username, Action action)
 	{
-		return find("from trip t where t.id = :id and t.car.id = :carId and " + CarAccess.condition("t.car", action),
+		return find(
+				"from trip t where t.id = :id and t.car.id = :carId and " + CarAccess.own("t.car", "t.driver", action),
 				Map.of("id", id, "carId", carId, CarAccess.USER, username))
 				.firstResultOptional();
 	}

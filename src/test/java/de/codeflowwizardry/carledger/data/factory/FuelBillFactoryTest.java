@@ -15,6 +15,7 @@ import de.codeflowwizardry.carledger.data.AccountEntity;
 import de.codeflowwizardry.carledger.data.CarEntity;
 import de.codeflowwizardry.carledger.data.FuelBillEntity;
 import de.codeflowwizardry.carledger.data.repository.CarAccess.Action;
+import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import de.codeflowwizardry.carledger.rest.car.fuel.FuelBillInput;
 import de.codeflowwizardry.carledger.rest.processors.TestEntityManager;
@@ -102,7 +103,15 @@ class FuelBillFactoryTest
 			}
 		};
 
-		FuelBillFactory fuelBillFactory = new FuelBillFactory(entityManager, carRepository);
+		AccountRepository accountRepository = new AccountRepository() {
+			@Override
+			public AccountEntity findByIdentifier(String userId)
+			{
+				return accountEntity;
+			}
+		};
+
+		FuelBillFactory fuelBillFactory = new FuelBillFactory(entityManager, carRepository, accountRepository);
 
 		FuelBillInput missingUnit = new FuelBillInput(LocalDate.now(),
 				BigDecimal.valueOf(80),
@@ -140,7 +149,15 @@ class FuelBillFactoryTest
 			}
 		};
 
-		FuelBillFactory fuelBillFactory = new FuelBillFactory(entityManager, carRepository);
+		AccountRepository accountRepository = new AccountRepository() {
+			@Override
+			public AccountEntity findByIdentifier(String userId)
+			{
+				return accountEntity;
+			}
+		};
+
+		FuelBillFactory fuelBillFactory = new FuelBillFactory(entityManager, carRepository, accountRepository);
 
 		FuelBillInput noDistance = new FuelBillInput(LocalDate.now(),
 				BigDecimal.valueOf(80),

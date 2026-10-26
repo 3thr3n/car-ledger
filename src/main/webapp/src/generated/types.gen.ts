@@ -137,6 +137,7 @@ export type BackupSummary = {
 export type Bill = {
     attachments?: number;
     photo?: number;
+    createdBy?: string;
     id?: number;
     date?: LocalDate;
     year?: number;
@@ -296,6 +297,7 @@ export enum CarRole {
 export type ChargingBill = {
     attachments?: number;
     photo?: number;
+    createdBy?: string;
     id?: number;
     date?: LocalDate;
     year?: number;
@@ -405,6 +407,7 @@ export type FrequencyLine = {
 export type FuelBill = {
     attachments?: number;
     photo?: number;
+    createdBy?: string;
     id?: number;
     date?: LocalDate;
     year?: number;
@@ -465,6 +468,7 @@ export type LocalDate = string;
 export type MaintenanceBill = {
     attachments?: number;
     photo?: number;
+    createdBy?: string;
     id?: number;
     date?: LocalDate;
     year?: number;
@@ -499,6 +503,7 @@ export type MaxCarsInput = {
 export type MiscellaneousBill = {
     attachments?: number;
     photo?: number;
+    createdBy?: string;
     id?: number;
     date?: LocalDate;
     year?: number;
@@ -827,6 +832,7 @@ export type Trip = {
     deletedBy?: string;
     deleteReason?: string;
     enteredLater: boolean;
+    driver: string;
 };
 
 export type TripConflict = {

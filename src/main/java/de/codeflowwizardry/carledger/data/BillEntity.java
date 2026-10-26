@@ -37,6 +37,11 @@ public class BillEntity extends AbstractBillEntity
 	@JoinColumn(name = "b_car_id", nullable = false)
 	protected CarEntity car;
 
+	/** <code>null</code> once that account was deleted */
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "b_created_by", updatable = false)
+	private AccountEntity createdBy;
+
 	/** created by the client for a new bill, see the header Idempotency-Key */
 	@Column(name = "b_client_id", updatable = false)
 	private UUID clientId;
@@ -143,6 +148,16 @@ public class BillEntity extends AbstractBillEntity
 	public void setVatRate(int vatRate)
 	{
 		this.vatRate = vatRate;
+	}
+
+	public AccountEntity getCreatedBy()
+	{
+		return createdBy;
+	}
+
+	public void setCreatedBy(AccountEntity createdBy)
+	{
+		this.createdBy = createdBy;
 	}
 
 	public CarEntity getCar()

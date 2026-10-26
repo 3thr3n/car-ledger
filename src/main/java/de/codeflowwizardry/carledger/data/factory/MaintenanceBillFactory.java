@@ -5,6 +5,7 @@ import java.util.UUID;
 import de.codeflowwizardry.carledger.data.BillEntity;
 import de.codeflowwizardry.carledger.data.BillType;
 import de.codeflowwizardry.carledger.data.MaintenanceBillEntity;
+import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import de.codeflowwizardry.carledger.data.repository.MaintenanceBillRepository;
 import de.codeflowwizardry.carledger.rest.car.maintenance.MaintenanceBillInput;
@@ -19,10 +20,10 @@ public class MaintenanceBillFactory extends AbstractBillFactory<MaintenanceBillI
 	private final MaintenanceBillRepository maintenanceBillRepository;
 
 	@Inject
-	public MaintenanceBillFactory(EntityManager em, CarRepository carRepository,
+	public MaintenanceBillFactory(EntityManager em, CarRepository carRepository, AccountRepository accountRepository,
 			MaintenanceBillRepository maintenanceBillRepository)
 	{
-		super(BillType.MAINTENANCE, em, carRepository);
+		super(BillType.MAINTENANCE, em, carRepository, accountRepository);
 		this.maintenanceBillRepository = maintenanceBillRepository;
 	}
 
