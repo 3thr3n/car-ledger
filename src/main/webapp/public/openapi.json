@@ -651,9 +651,12 @@
           },
           "role" : {
             "$ref" : "#/components/schemas/CarRole"
+          },
+          "tracked" : {
+            "type" : "boolean"
           }
         },
-        "required" : [ "currentOdometer", "energyType", "tripLog", "role" ]
+        "required" : [ "currentOdometer", "energyType", "tripLog", "role", "tracked" ]
       },
       "CarAccessEntry" : {
         "type" : "object",

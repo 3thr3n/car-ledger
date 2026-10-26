@@ -10,6 +10,7 @@ import { useQuery } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import { lazy, Suspense, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { can } from '@/utils/carRole';
 import CarAvatar from '@/components/layout/CarAvatar';
 import { getMyCarsOptions } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
@@ -91,19 +92,22 @@ export default function DashboardFilter({
         label={t('dashboard.filter.car')}
       >
         <MenuItem value={-1}>{t('dashboard.filter.allCars')}</MenuItem>
-        {cars?.map((car) => (
-          <MenuItem key={car.id} value={car.id}>
-            <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-              <CarAvatar
-                id={car.id}
-                name={car.name}
-                pictureId={car.pictureId}
-                size={20}
-              />
-              <span>{car.name}</span>
-            </Stack>
-          </MenuItem>
-        ))}
+        {/* the statistics only of the cars the user sees all entries of */}
+        {cars
+          ?.filter((car) => can(car, 'READ'))
+          .map((car) => (
+            <MenuItem key={car.id} value={car.id}>
+              <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+                <CarAvatar
+                  id={car.id}
+                  name={car.name}
+                  pictureId={car.pictureId}
+                  size={20}
+                />
+                <span>{car.name}</span>
+              </Stack>
+            </MenuItem>
+          ))}
       </TextField>
 
       <ToggleButtonGroup

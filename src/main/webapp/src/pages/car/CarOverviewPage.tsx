@@ -36,6 +36,7 @@ import MonthlyChart from '@/components/dashboard/LazyMonthlyChart';
 import ReminderList from '@/components/reminder/ReminderList';
 import CarDetails from '@/components/car/CarDetails';
 import PapersSummary from '@/components/car/PapersSummary';
+import { can } from '@/utils/carRole';
 
 /** the chart of the overview shows the current and the 11 months before */
 const lastTwelveMonths = () => ({
@@ -61,6 +62,7 @@ export default function CarOverviewPage({ id }: { id: number }) {
   const { columns, mobileRow } = useLedgerColumns();
   const onDelete = useDeleteBill(id);
   const navigate = useNavigate();
+  const canChange = can(car, 'WRITE');
 
   const { data: running } = useQuery(
     getAllRecurringBillsOptions({
@@ -211,26 +213,31 @@ export default function CarOverviewPage({ id }: { id: number }) {
               sortModel={ledger.sortModel}
               onSortModelChange={ledger.setSortModel}
               loading={ledger.isLoading || ledger.isFetching}
-              onDelete={onDelete}
-              onEdit={(row) =>
-                row.type &&
-                row.type !== BillType.RECURRING &&
-                navigate({
-                  to: '/car/$id/bill/$billId/edit',
-                  params: { id: `${id}`, billId: `${row.id}` },
-                  search: { type: row.type },
-                })
+              onDelete={canChange ? onDelete : undefined}
+              onEdit={
+                canChange
+                  ? (row) =>
+                      row.type &&
+                      row.type !== BillType.RECURRING &&
+                      navigate({
+                        to: '/car/$id/bill/$billId/edit',
+                        params: { id: `${id}`, billId: `${row.id}` },
+                        search: { type: row.type },
+                      })
+                  : undefined
               }
               emptyTitle={t('car.overview.emptyTitle')}
               emptyText={t('car.overview.emptyText')}
               emptyAction={
-                <RouterButton
-                  to="/car/$id/bill/add"
-                  params={params}
-                  variant="contained"
-                >
-                  {t('bill.add.button')}
-                </RouterButton>
+                canChange && (
+                  <RouterButton
+                    to="/car/$id/bill/add"
+                    params={params}
+                    variant="contained"
+                  >
+                    {t('bill.add.button')}
+                  </RouterButton>
+                )
               }
             />
           </Section>
@@ -257,14 +264,16 @@ export default function CarOverviewPage({ id }: { id: number }) {
                   compact
                   title={t('car.overview.remindersEmpty')}
                   action={
-                    <RouterButton
-                      to="/car/$id/reminders"
-                      params={params}
-                      size="small"
-                      variant="outlined"
-                    >
-                      {t('reminder.add.button')}
-                    </RouterButton>
+                    canChange && (
+                      <RouterButton
+                        to="/car/$id/reminders"
+                        params={params}
+                        size="small"
+                        variant="outlined"
+                      >
+                        {t('reminder.add.button')}
+                      </RouterButton>
+                    )
                   }
                 />
               )}
@@ -332,15 +341,17 @@ export default function CarOverviewPage({ id }: { id: number }) {
                   compact
                   title={t('car.overview.runningEmpty')}
                   action={
-                    <RouterButton
-                      to="/car/$id/bill/add"
-                      params={params}
-                      search={{ type: BillType.RECURRING }}
-                      size="small"
-                      variant="outlined"
-                    >
-                      {t('car.overview.addRecurring')}
-                    </RouterButton>
+                    canChange && (
+                      <RouterButton
+                        to="/car/$id/bill/add"
+                        params={params}
+                        search={{ type: BillType.RECURRING }}
+                        size="small"
+                        variant="outlined"
+                      >
+                        {t('car.overview.addRecurring')}
+                      </RouterButton>
+                    )
                   }
                 />
               )}

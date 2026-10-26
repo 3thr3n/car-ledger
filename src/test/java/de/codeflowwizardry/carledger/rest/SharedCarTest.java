@@ -15,10 +15,12 @@ import de.codeflowwizardry.carledger.data.AccountEntity;
 import de.codeflowwizardry.carledger.data.CarAccessEntity;
 import de.codeflowwizardry.carledger.data.CarEntity;
 import de.codeflowwizardry.carledger.data.CarRole;
+import de.codeflowwizardry.carledger.data.DeviceEntity;
 import de.codeflowwizardry.carledger.data.factory.MiscellaneousBillFactory;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.CarAccessRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
+import de.codeflowwizardry.carledger.data.repository.DeviceRepository;
 import de.codeflowwizardry.carledger.rest.car.miscellaneous.MiscellaneousBillInput;
 import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.quarkus.test.junit.QuarkusTest;
@@ -48,6 +50,9 @@ class SharedCarTest
 
 	@Inject
 	EntityManager entityManager;
+
+	@Inject
+	DeviceRepository deviceRepository;
 
 	@Inject
 	MiscellaneousBillFactory miscellaneousBillFactory;
@@ -102,6 +107,20 @@ class SharedCarTest
 	}
 
 	@Test
+	void shouldTellAViewerThatTheCarHasATracker()
+	{
+		share(CarRole.VIEWER);
+		QuarkusTransaction.requiringNew().run(() -> deviceRepository
+				.persist(new DeviceEntity(entityManager.find(CarEntity.class, carId), "ESP32", "hash")));
+
+		// the trackers are only for the owner, the map of the tracks for the viewer as
+		// well
+		given().get("/api/car/my").then().statusCode(200).body("[0].tracked", is(true));
+		given().get("/api/car/my/{id}", carId).then().statusCode(200).body("tracked", is(true));
+		given().get("/api/tracker/{carId}", carId).then().statusCode(200).body("size()", is(0));
+	}
+
+	@Test
 	void shouldShowTheCarWithTheRoleOfAViewer()
 	{
 		share(CarRole.VIEWER);
@@ -145,7 +164,15 @@ class SharedCarTest
 				.body("[0].currentOdometer", notNullValue())
 				// not the purchase
 				.body("[0].purchasePrice", nullValue())
-				.body("[0].purchaseDate", nullValue());
+				.body("[0].purchaseDate", nullValue())
+				// only the own entries
+				.body("[0].amountBills", is(0));
+		// the car on its own as well, for the pages of the driver
+		given().get("/api/car/my/{id}", carId).then().statusCode(200)
+				.body("role", is("DRIVER"))
+				.body("purchasePrice", nullValue())
+				.body("amountBills", is(0))
+				.body("tracked", is(false));
 		// the entries of the owner aren't for the driver
 		given().get("/api/bill/{carId}/miscellaneous/all", carId).then().statusCode(200)
 				.body("total", is(0))

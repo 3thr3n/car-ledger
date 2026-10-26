@@ -39,18 +39,21 @@ import de.codeflowwizardry.carledger.data.EnergyType;
  *            days the GPS track points are kept, missing for forever
  * @param role
  *            of the user: owner, or the role of a shared car
+ * @param tracked
+ *            the car has a GPS tracker, so its tracks can be shown
  */
 public record Car(Long id, String name, int year, int odometer, LocalDate odometerDate,
 		@Schema(required = true) Odometer currentOdometer, long amountBills, String licensePlate, String vin,
 		LocalDate purchaseDate, BigDecimal purchasePrice, @Schema(required = true) EnergyType energyType,
 		BigDecimal tankSize, BigDecimal batteryCapacity, @Schema(required = true) boolean tripLog, Long pictureId,
-		Integer trackRetentionDays, @Schema(required = true) CarRole role)
+		Integer trackRetentionDays, @Schema(required = true) CarRole role, @Schema(required = true) boolean tracked)
 {
 	/**
 	 * @param role
 	 *            a driver doesn't see the purchase of the car
 	 */
-	public static Car convert(CarEntity carEntity, long amountBills, Odometer currentOdometer, CarRole role)
+	public static Car convert(CarEntity carEntity, long amountBills, Odometer currentOdometer, CarRole role,
+			boolean tracked)
 	{
 		boolean driver = role == CarRole.DRIVER;
 		return new Car(carEntity.getId(), carEntity.getName(), carEntity.getManufactureYear(), carEntity.getOdometer(),
@@ -58,6 +61,7 @@ public record Car(Long id, String name, int year, int odometer, LocalDate odomet
 				carEntity.getVin(),
 				driver ? null : carEntity.getPurchaseDate(), driver ? null : carEntity.getPurchasePrice(),
 				carEntity.getEnergyType(), carEntity.getTankSize(), carEntity.getBatteryCapacity(),
-				carEntity.isTripLog(), carEntity.getPictureId(), carEntity.getTrackRetentionDays(), role);
+				carEntity.isTripLog(), carEntity.getPictureId(), carEntity.getTrackRetentionDays(), role,
+				tracked);
 	}
 }

@@ -11,12 +11,13 @@ import UploadFileRounded from '@mui/icons-material/UploadFileRounded';
 import EditRounded from '@mui/icons-material/EditRounded';
 import ArrowBackRounded from '@mui/icons-material/ArrowBackRounded';
 import { useQuery } from '@tanstack/react-query';
-import { Outlet, useLocation } from '@tanstack/react-router';
+import { Navigate, Outlet, useLocation } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 import { getMyCarOptions } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
 import { BackendError } from '@/utils/BackendError';
-import { BillType, EnergyType } from '@/generated';
+import { BillType, Car } from '@/generated';
+import { can, CarAction, isShared } from '@/utils/carRole';
 import { billTypes, billTypesFor } from '@/utils/billTypes';
 import CarAvatar from '@/components/layout/CarAvatar';
 import useTrackMap from '@/components/track/useTrackMap';
@@ -32,20 +33,29 @@ import ErrorPage from '@/pages/ErrorPage';
 /**
  * The entry types of the car between the overview and the reminders, the trips
  * only with the trip log, the map only with a GPS tracker and a map set up,
- * the modifications and the HUs last
+ * the modifications and the HUs last. A driver gets the own refuels, charges
+ * and trips only.
  */
-const tabsFor = (energyType?: EnergyType, tripLog?: boolean, map?: boolean) => [
-  { key: 'overview', to: '/car/$id' } as const,
-  ...billTypesFor(energyType).map((meta) => ({
+const tabsFor = (car: Car | undefined, map: boolean) => {
+  const driver = !!car && !can(car, 'READ');
+  const entries = billTypesFor(car?.energyType, driver).map((meta) => ({
     key: meta.type,
     to: meta.listRoute,
-  })),
-  ...(tripLog ? [{ key: 'trips', to: '/car/$id/trips' } as const] : []),
-  ...(map ? [{ key: 'track', to: '/car/$id/track' } as const] : []),
-  { key: 'reminders', to: '/car/$id/reminders' } as const,
-  { key: 'modifications', to: '/car/$id/modifications' } as const,
-  { key: 'inspections', to: '/car/$id/inspections' } as const,
-];
+  }));
+  const trips = car?.tripLog
+    ? [{ key: 'trips', to: '/car/$id/trips' } as const]
+    : [];
+  if (driver) return [...entries, ...trips];
+  return [
+    { key: 'overview', to: '/car/$id' } as const,
+    ...entries,
+    ...trips,
+    ...(map ? [{ key: 'track', to: '/car/$id/track' } as const] : []),
+    { key: 'reminders', to: '/car/$id/reminders' } as const,
+    { key: 'modifications', to: '/car/$id/modifications' } as const,
+    { key: 'inspections', to: '/car/$id/inspections' } as const,
+  ];
+};
 
 /** the tabs of the car that are no entry type */
 const pageTabs = [
@@ -59,6 +69,25 @@ const pageTabs = [
 type PageTab = (typeof pageTabs)[number];
 const isPageTab = (key: string): key is PageTab =>
   (pageTabs as readonly string[]).includes(key);
+
+/**
+ * @return what the page of the car needs, e.g. the forms; undefined for the
+ *   tabs, they are only shown by the role
+ */
+function neededFor(rest: string): CarAction | undefined {
+  if (rest === '/edit') return 'MANAGE';
+  if (rest === '/bill/import') return 'WRITE';
+  // a driver adds and changes the own refuels and charges
+  if (rest === '/bill/add' || /^\/bill\/\d+\/edit$/.test(rest)) {
+    return 'DRIVE';
+  }
+  if (
+    ['/track', '/reminders', '/modifications', '/inspections'].includes(rest)
+  ) {
+    return 'READ';
+  }
+  return undefined;
+}
 
 export default function CarLayout({ id }: { id: number }) {
   const { t } = useTranslation();
@@ -80,20 +109,19 @@ export default function CarLayout({ id }: { id: number }) {
     return <ErrorPage error={error} />;
   }
 
+  const tabs = tabsFor(car, showMap);
   const base = `/car/${id}`;
   const rest = pathname.replace(base, '').replace(/\/$/, '');
-  const activeTab =
+  const tab =
     rest === ''
       ? 'overview'
-      : rest === '/reminders' ||
-          rest === '/modifications' ||
-          rest === '/inspections' ||
-          (rest === '/trips' && car?.tripLog) ||
-          (rest === '/track' && showMap)
+      : isPageTab(rest.slice(1))
         ? (rest.slice(1) as PageTab)
-        : (Object.values(BillType).find(
+        : Object.values(BillType).find(
             (type) => rest === `/bill/${type.toLowerCase()}`,
-          ) ?? false);
+          );
+  // only the tabs of the car and the role, e.g. not the map without a tracker
+  const activeTab = tabs.some((each) => each.key === tab) ? tab! : false;
   const isSubPage = activeTab === false;
 
   // preselect the type of the current tab when adding an entry
@@ -102,6 +130,16 @@ export default function CarLayout({ id }: { id: number }) {
   const importType =
     addType && billTypes[addType].importable ? addType : undefined;
   const params = { id: `${id}` };
+
+  // a driver has no overview, the first own list instead
+  if (car && rest === '' && !can(car, 'READ') && tabs.length > 0) {
+    return <Navigate to={tabs[0].to} params={params} replace />;
+  }
+  // e.g. a viewer that opened the link of a form
+  const needed = neededFor(rest);
+  if (car && needed && !can(car, needed)) {
+    return <Navigate to="/car/$id" params={params} replace />;
+  }
 
   return (
     <Box sx={{ flexGrow: 1, py: { xs: 3, md: 5 } }}>
@@ -155,6 +193,9 @@ export default function CarLayout({ id }: { id: number }) {
                       <Skeleton width={160} />
                     ) : (
                       <>
+                        {car &&
+                          isShared(car) &&
+                          `${t('car.shared', { role: t(`car.roles.${car.role}`) })} · `}
                         {car?.licensePlate && `${car.licensePlate} · `}
                         {car?.year &&
                           `${t('car.built', { year: car.year })} · `}
@@ -167,32 +208,38 @@ export default function CarLayout({ id }: { id: number }) {
                 </Box>
               </Stack>
               <Stack direction="row" spacing={1} sx={{ flexShrink: 0 }}>
-                <RouterIconButton
-                  to="/car/$id/edit"
-                  params={params}
-                  aria-label={t('button.edit')}
-                  title={t('button.edit')}
-                >
-                  <EditRounded fontSize="small" />
-                </RouterIconButton>
-                <RouterButton
-                  to="/car/$id/bill/import"
-                  params={params}
-                  search={{ type: importType }}
-                  variant="outlined"
-                  startIcon={<UploadFileRounded />}
-                >
-                  {t('button.import')}
-                </RouterButton>
-                <RouterButton
-                  to="/car/$id/bill/add"
-                  params={params}
-                  search={{ type: addType }}
-                  variant="contained"
-                  startIcon={<AddRounded />}
-                >
-                  {t('bill.add.button')}
-                </RouterButton>
+                {can(car, 'MANAGE') && (
+                  <RouterIconButton
+                    to="/car/$id/edit"
+                    params={params}
+                    aria-label={t('button.edit')}
+                    title={t('button.edit')}
+                  >
+                    <EditRounded fontSize="small" />
+                  </RouterIconButton>
+                )}
+                {can(car, 'WRITE') && (
+                  <RouterButton
+                    to="/car/$id/bill/import"
+                    params={params}
+                    search={{ type: importType }}
+                    variant="outlined"
+                    startIcon={<UploadFileRounded />}
+                  >
+                    {t('button.import')}
+                  </RouterButton>
+                )}
+                {can(car, 'DRIVE') && (
+                  <RouterButton
+                    to="/car/$id/bill/add"
+                    params={params}
+                    search={{ type: addType }}
+                    variant="contained"
+                    startIcon={<AddRounded />}
+                  >
+                    {t('bill.add.button')}
+                  </RouterButton>
+                )}
               </Stack>
             </Stack>
 
@@ -202,7 +249,7 @@ export default function CarLayout({ id }: { id: number }) {
               allowScrollButtonsMobile
               sx={{ mb: 3, borderBottom: 1, borderColor: 'divider' }}
             >
-              {tabsFor(car?.energyType, car?.tripLog, showMap).map((tab) => (
+              {tabs.map((tab) => (
                 <RouterTab
                   key={tab.key}
                   value={tab.key}

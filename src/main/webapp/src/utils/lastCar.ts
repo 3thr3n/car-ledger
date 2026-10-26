@@ -1,3 +1,4 @@
+import { can } from '@/utils/carRole';
 import { BillType, Car } from '@/generated';
 import { hasTank } from '@/utils/energy';
 
@@ -23,11 +24,12 @@ function lastCarId(): number | undefined {
 
 /**
  * The car of the shortcut: the last opened one while it exists, else the first
- * one; undefined without cars
+ * one; only the cars the user may refuel (not a viewer); undefined without
  */
 export function shortcutCar(cars: Car[]): Car | undefined {
   const last = lastCarId();
-  return cars.find((car) => car.id === last) ?? cars[0];
+  const drivable = cars.filter((car) => can(car, 'DRIVE'));
+  return drivable.find((car) => car.id === last) ?? drivable[0];
 }
 
 /**
@@ -36,7 +38,7 @@ export function shortcutCar(cars: Car[]): Car | undefined {
  */
 export function shortcutTripCar(cars: Car[]): Car | undefined {
   const last = lastCarId();
-  const withLog = cars.filter((car) => car.tripLog);
+  const withLog = cars.filter((car) => car.tripLog && can(car, 'DRIVE'));
   return withLog.find((car) => car.id === last) ?? withLog[0];
 }
 

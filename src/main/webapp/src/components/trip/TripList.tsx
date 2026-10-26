@@ -20,6 +20,7 @@ import RouteRounded from '@mui/icons-material/RouteRounded';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { Fragment, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import useCarRole from '@/hooks/useCarRole';
 import { Trip } from '@/generated';
 import {
   getTripsOptions,
@@ -107,6 +108,7 @@ export default function TripList({ carId }: { carId: number }) {
   /** the trip whose GPS track is shown below it */
   const [routeOf, setRouteOf] = useState<string>();
   const styleUrl = useTrackMap(carId);
+  const role = useCarRole(carId);
 
   const { data: years } = useQuery(
     getTripYearsOptions({ client: localClient, path: { carId } }),
@@ -128,7 +130,8 @@ export default function TripList({ carId }: { carId: number }) {
       title={t('trip.list.title')}
       subtitle={t('trip.list.subtitle')}
       action={
-        !!years?.length && (
+        !!years?.length &&
+        role('READ') && (
           <Button
             size="small"
             startIcon={<FileDownloadRounded />}
@@ -244,7 +247,7 @@ export default function TripList({ carId }: { carId: number }) {
                               <RouteRounded fontSize="small" />
                             </IconButton>
                           )}
-                          {!trip.deletedAt && (
+                          {!trip.deletedAt && role('WRITE') && (
                             <IconButton
                               size="small"
                               aria-label={t('trip.delete.button')}

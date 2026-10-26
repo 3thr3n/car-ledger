@@ -28,4 +28,14 @@ describe('billTypes', () => {
       expect.arrayContaining([BillType.FUEL, BillType.CHARGING]),
     );
   });
+
+  it('offers a driver only refuels and charges', () => {
+    const types = (energyType: EnergyType) =>
+      billTypesFor(energyType, true).map((meta) => meta.type);
+    expect(types(EnergyType.DIESEL)).toEqual([BillType.FUEL]);
+    expect(types(EnergyType.PLUG_IN_HYBRID)).toEqual([
+      BillType.FUEL,
+      BillType.CHARGING,
+    ]);
+  });
 });
