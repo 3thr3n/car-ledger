@@ -1,0 +1,2 @@
+{#if accepted}{account} hat den Zugriff auf „{car}“ angenommen{#else}{account} hat den Zugriff auf „{car}“ abgelehnt{/if}
+{#if accepted}Das Fahrzeug erscheint jetzt bei {account}.{#else}Die Einladung bleibt abgelehnt, bis du erneut einlädst.{/if}

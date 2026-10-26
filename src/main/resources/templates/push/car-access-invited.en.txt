@@ -1,0 +1,2 @@
+{owner} shares the car "{car}" with you
+As {#if role == 'EDITOR'}an editor{#else if role == 'VIEWER'}a viewer{#else}a driver{/if}{#if until}, until {until}{/if}. Accept or decline the invitation.

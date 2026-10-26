@@ -1,0 +1,2 @@
+{owner} teilt das Fahrzeug „{car}“ mit dir
+Als {#if role == 'EDITOR'}Bearbeiter{#else if role == 'VIEWER'}Betrachter{#else}Fahrer{/if}{#if until}, bis {until}{/if}. Nimm die Einladung an oder lehne sie ab.

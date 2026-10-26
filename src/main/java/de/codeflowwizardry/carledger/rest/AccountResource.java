@@ -9,6 +9,7 @@ import org.hibernate.exception.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.codeflowwizardry.carledger.CarAccessService;
 import de.codeflowwizardry.carledger.data.AccountEntity;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.rest.records.Account;
@@ -49,12 +50,15 @@ public class AccountResource extends AbstractResource
 	private static final Logger LOG = LoggerFactory.getLogger(AccountResource.class);
 
 	private final MailConfig mailConfig;
+	private final CarAccessService carAccessService;
 
 	@Inject
-	public AccountResource(SecurityIdentity identity, AccountRepository accountRepository, MailConfig mailConfig)
+	public AccountResource(SecurityIdentity identity, AccountRepository accountRepository, MailConfig mailConfig,
+			CarAccessService carAccessService)
 	{
 		super(identity, accountRepository);
 		this.mailConfig = mailConfig;
+		this.carAccessService = carAccessService;
 	}
 
 	/**
@@ -80,6 +84,8 @@ public class AccountResource extends AbstractResource
 			account.setLastSeen(now);
 		}
 		remember(account, headers);
+		// the invitations made before the account existed
+		carAccessService.claim(account, account.isEmailVerified() ? account.getEmail() : null);
 
 		return Account.convert(account, isAdmin());
 	}
@@ -97,6 +103,12 @@ public class AccountResource extends AbstractResource
 			if (!Objects.equals(email, account.getEmail()))
 			{
 				account.setEmail(email);
+			}
+			Object confirmed = token.getClaim("email_verified");
+			boolean verified = email != null && "true".equals(String.valueOf(confirmed));
+			if (verified != account.isEmailVerified())
+			{
+				account.setEmailVerified(verified);
 			}
 		}
 		if (account.isAdmin() != isAdmin())

@@ -323,6 +323,53 @@ car:
       vinOld: "At most 17 letters and digits"
       purchaseDate: "Please enter a date that is not in the future"
 
+access:
+  title: "Access"
+  text: "Share the car with other accounts. The invited one accepts first; an account that doesn't exist yet gets the invitation with its first login."
+  invite: "Invite"
+  inviteTitle: "Invite to the car"
+  changeTitle: "Change the access of {{name}}"
+  change: "Change"
+  revoke: "Revoke"
+  withdraw: "Withdraw"
+  revokeTitle: "Revoke the access of {{name}}?"
+  withdrawTitle: "Withdraw the invitation of {{name}}?"
+  revokeText: "The car no longer shows for the account. Its entries stay with the car."
+  invited: "Invitation sent"
+  changed: "Access changed"
+  revoked: "Access revoked"
+  accept: "Accept"
+  decline: "Decline"
+  accepted: "Invitation accepted, the car shows in your garage"
+  declined: "Invitation declined"
+  invitation: "{{owner}} invites you to the car \"{{car}}\" as {{role}}."
+  fields:
+    account: "User name or e-mail address"
+    accountHelp: "An e-mail address finds an account only once its sign-in confirmed it"
+    role: "Role"
+    from: "From"
+    fromHelp: "Empty: from the acceptance on"
+    until: "Until"
+    untilHelp: "Empty: without an end"
+  roleHints:
+    EDITOR: "Sees everything, adds, changes and deletes entries"
+    VIEWER: "Sees everything, changes nothing"
+    DRIVER: "Starts and finishes own trips, adds own refuels"
+  states:
+    PENDING: "Waiting for the answer"
+    NO_ACCOUNT: "Waiting for the first login"
+    DECLINED: "Declined"
+    ENDED: "Ended"
+  period:
+    always: "Without an end"
+    between: "From {{from}} until {{until}}"
+    from: "From {{from}}"
+    until: "Until {{until}}"
+  errors:
+    account: "Please enter a user name or an e-mail address"
+    accountLength: "At most {{max}} characters"
+    period: "The end must not be before the start"
+
 tracker:
   title: "GPS trackers"
   text: "A tracker in the car, e.g. an ESP32, sends its position to CarLedger with its own token."

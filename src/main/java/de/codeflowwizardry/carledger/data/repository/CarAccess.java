@@ -3,6 +3,7 @@ package de.codeflowwizardry.carledger.data.repository;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
+import de.codeflowwizardry.carledger.data.CarAccessState;
 import de.codeflowwizardry.carledger.data.CarRole;
 
 /**
@@ -11,7 +12,8 @@ import de.codeflowwizardry.carledger.data.CarRole;
  * the owner itself.
  * <p>
  * The owner of a car may do everything. Other accounts get a role in
- * <code>car_access</code>, which counts only within its period:
+ * <code>car_access</code>, which counts only once accepted and within its
+ * period:
  * <table>
  * <tr>
  * <th>Action</th>
@@ -126,6 +128,7 @@ public final class CarAccess
 		return "exists (select 1 from car_access access where access.car = " + car
 				+ " and access.account.userId = :" + USER
 				+ " and access.role in (" + names + ")"
+				+ " and access.state = " + CarAccessState.class.getName() + ".ACCEPTED"
 				+ " and (access.validFrom is null or access.validFrom <= current_timestamp)"
 				+ " and (access.validUntil is null or access.validUntil > current_timestamp))";
 	}

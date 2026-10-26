@@ -1,6 +1,9 @@
 package de.codeflowwizardry.carledger.notification;
 
 import java.text.NumberFormat;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.ArrayList;
@@ -26,6 +29,7 @@ import de.codeflowwizardry.carledger.notification.push.PushMessage;
 import de.codeflowwizardry.carledger.notification.push.PushSubscriptionEntity;
 import de.codeflowwizardry.carledger.notification.push.PushSubscriptionRepository;
 import de.codeflowwizardry.carledger.rest.car.reminder.Reminder;
+import de.codeflowwizardry.carledger.webhook.CarAccessEvent;
 import de.codeflowwizardry.carledger.webhook.CarRequestCreated;
 import de.codeflowwizardry.carledger.webhook.CarRequestDecided;
 import de.codeflowwizardry.carledger.webhook.WebhookEvent;
@@ -105,6 +109,11 @@ public class Notifications
 		{
 			case CAR_REQUEST_CREATED -> carRequestCreated(batch, (CarRequestCreated) message.data());
 			case CAR_REQUEST_DECIDED -> carRequestDecided(batch, (CarRequestDecided) message.data());
+			case CAR_ACCESS_INVITED -> carAccessInvited(batch, (CarAccessEvent) message.data());
+			case CAR_ACCESS_ANSWERED -> carAccessAnswered(batch, (CarAccessEvent) message.data());
+			// the owner did it, the end of an access follows with its own notification
+			case CAR_ACCESS_CHANGED, CAR_ACCESS_REVOKED -> {
+			}
 		}
 		batch.fire();
 	}
@@ -141,6 +150,50 @@ public class Notifications
 					data.put("comment", Optional.ofNullable(decision.comment()).orElse(""));
 					batch.add(account, "car-request-decided", "/car", "car-request-" + decision.requestId(), data);
 				});
+	}
+
+	/**
+	 * To the invited account, once it exists: one invited by an address it
+	 * doesn't have yet sees the invitation after its first login
+	 */
+	private void carAccessInvited(Batch batch, CarAccessEvent invitation)
+	{
+		if (invitation.account() == null)
+		{
+			return;
+		}
+		accountRepository.find("userId", invitation.account()).singleResultOptional().ifPresent(account -> {
+			DateTimeFormatter dates = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
+					.withLocale(Locale.forLanguageTag(account.getMailLanguage().toLowerCase(Locale.ROOT)));
+			Map<String, Object> data = new HashMap<>();
+			data.put("owner", invitation.owner());
+			data.put("car", invitation.car());
+			data.put("role", invitation.role());
+			data.put("from", invitation.validFrom() == null ? "" : dates.format(day(invitation.validFrom())));
+			// the last day of the access, the end is exclusive
+			data.put("until",
+					invitation.validUntil() == null ? "" : dates.format(day(invitation.validUntil().minusNanos(1))));
+			batch.add(account, "car-access-invited", "/car", "car-access-" + invitation.accessId(), data);
+		});
+	}
+
+	/**
+	 * To the owner of the car
+	 */
+	private void carAccessAnswered(Batch batch, CarAccessEvent answer)
+	{
+		accountRepository.find("userId", answer.owner()).singleResultOptional().ifPresent(owner -> batch.add(owner,
+				"car-access-answered", "/car/" + answer.carId() + "/edit", "car-access-" + answer.accessId(),
+				Map.of("account", answer.by(), "car", answer.car(), "accepted", "ACCEPTED".equals(answer.state()))));
+	}
+
+	/**
+	 * @return the day of the time on the server, the app shows the days of the
+	 *         access
+	 */
+	private static LocalDate day(OffsetDateTime time)
+	{
+		return time.atZoneSameInstant(ZoneId.systemDefault()).toLocalDate();
 	}
 
 	/**
