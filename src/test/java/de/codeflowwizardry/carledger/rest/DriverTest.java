@@ -2,6 +2,7 @@ package de.codeflowwizardry.carledger.rest;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -24,6 +25,8 @@ import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.CarAccessRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import de.codeflowwizardry.carledger.rest.car.fuel.FuelBillInput;
+import de.codeflowwizardry.carledger.rest.car.trip.Trip;
+import de.codeflowwizardry.carledger.rest.car.trip.TripFinishInput;
 import de.codeflowwizardry.carledger.rest.car.trip.TripStartInput;
 import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.quarkus.test.junit.QuarkusTest;
@@ -268,5 +271,27 @@ class DriverTest
 		given().get("/api/trip/{carId}/current", carId).then().statusCode(200)
 				.body("open.driver", is("peter"));
 		finish(tripId, 10_050, START.plusHours(1)).statusCode(200);
+	}
+
+	@Test
+	void shouldLetTheOwnerFinishTheTripOfADriverWhoseAccessEnded()
+	{
+		share(CarRole.DRIVER);
+		UUID own = UUID.randomUUID();
+		start(own, 10_000, START).statusCode(201);
+
+		// the end of the access passed while the trip is open
+		QuarkusTransaction.requiringNew().run(() -> carAccessRepository.findAll().firstResult()
+				.setValidUntil(OffsetDateTime.now().minusMinutes(1)));
+
+		given().get("/api/car/my").then().statusCode(200).body("size()", is(0));
+		// e.g. sent from the queue of the device after the end
+		finish(own, 10_042, START.plusHours(1)).statusCode(404);
+		refuel().statusCode(404);
+
+		Trip finished = tripService.finish(carId, own,
+				new TripFinishInput(10_042, START.plusHours(1), null, null, null, false), "peter");
+		assertEquals("paul", finished.driver());
+		assertEquals(42, finished.distance());
 	}
 }

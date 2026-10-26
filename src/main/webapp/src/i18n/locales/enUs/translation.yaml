@@ -335,6 +335,10 @@ access:
   revokeTitle: "Revoke the access of {{name}}?"
   withdrawTitle: "Withdraw the invitation of {{name}}?"
   revokeText: "The car no longer shows for the account. Its entries stay with the car."
+  withdrawText: "The account no longer sees the invitation."
+  remove: "Remove"
+  removeTitle: "Remove the ended access of {{name}}?"
+  removeText: "It no longer shows in this list. The entries of the account stay with the car."
   invited: "Invitation sent"
   changed: "Access changed"
   revoked: "Access revoked"
@@ -980,6 +984,11 @@ offline:
     text_other: "{{count}} entries of another account made offline wait on this device. They are sent when that account logs in here."
     discardTitle_one: "Discard {{count}} entry?"
     discardTitle_other: "Discard {{count}} entries?"
+  orphaned:
+    title: "Entries for a car you no longer have"
+    subtitle: "Made without a connection and kept on this device. Your access to the car ended, the server doesn't take them anymore."
+    refused: "Not sent: you no longer have access to the car. Note what you need, then discard it."
+    discardAll: "Discard all"
 
 trip:
   types:

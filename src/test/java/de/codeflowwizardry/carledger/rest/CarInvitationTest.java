@@ -237,6 +237,29 @@ class CarInvitationTest
 	}
 
 	@Test
+	void shouldEndTheAccessByItselfAndAskAgainAfterIt()
+	{
+		long id = invitePaul();
+		paulAnswers(id, true);
+		assertEquals(Map.of(carId, CarRole.DRIVER), rolesOfPaul());
+
+		// the end passed, without a job
+		QuarkusTransaction.requiringNew().run(
+				() -> carAccessRepository.findById(id).setValidUntil(OffsetDateTime.now().minusMinutes(1)));
+
+		assertTrue(rolesOfPaul().isEmpty());
+		// the owner still sees it, as it was
+		given().get("/api/access/{carId}", carId).then()
+				.body("[0].state", is("ACCEPTED"))
+				.body("[0].validUntil", notNullValue());
+
+		invite("paul", "DRIVER").statusCode(201)
+				.body("id", is((int) id))
+				.body("state", is("PENDING"))
+				.body("validUntil", nullValue());
+	}
+
+	@Test
 	void shouldRejectASecondInvitationAndTheOwner()
 	{
 		invitePaul();

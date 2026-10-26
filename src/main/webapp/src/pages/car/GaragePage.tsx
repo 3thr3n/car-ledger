@@ -12,6 +12,7 @@ import AddRounded from '@mui/icons-material/AddRounded';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import OrphanedEntries from '@/components/offline/OrphanedEntries';
 import { isShared, ownCars } from '@/utils/carRole';
 import { getMyCarsOptions } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
@@ -58,6 +59,7 @@ export default function GaragePage() {
 
       <CarRequestOutcome />
       <InvitationList />
+      <OrphanedEntries />
 
       <Grid container spacing={2}>
         {isLoading &&

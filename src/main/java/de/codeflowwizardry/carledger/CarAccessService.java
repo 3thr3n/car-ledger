@@ -63,8 +63,8 @@ public class CarAccessService
 
 	/**
 	 * Invites the account with the user name or e-mail address, one that doesn't
-	 * exist yet gets it with its first login. A declined invitation is asked
-	 * again.
+	 * exist yet gets it with its first login. A declined invitation and an
+	 * ended access are asked again.
 	 *
 	 * @throws AlreadyPresentException
 	 *             if the account has the access or the invitation already
@@ -89,8 +89,9 @@ public class CarAccessService
 		{
 			access = CarAccessEntity.invite(car, account.orElse(null), name, input.role(), car.getUser());
 			carAccessRepository.persist(access);
-		} else if (existing.get().getState() == CarAccessState.DECLINED)
+		} else if (existing.get().getState() == CarAccessState.DECLINED || existing.get().hasEnded())
 		{
+			// asked again, an ended access starts as a new invitation
 			access = existing.get();
 			access.setState(CarAccessState.PENDING);
 		} else
