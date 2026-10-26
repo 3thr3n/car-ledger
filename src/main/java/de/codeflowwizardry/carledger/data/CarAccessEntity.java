@@ -172,6 +172,14 @@ public class CarAccessEntity
 		this.validUntil = validUntil;
 	}
 
+	/**
+	 * @return whether the period is over, the access no longer counts
+	 */
+	public boolean hasEnded()
+	{
+		return validUntil != null && !validUntil.isAfter(OffsetDateTime.now());
+	}
+
 	public AccountEntity getCreatedBy()
 	{
 		return createdBy;

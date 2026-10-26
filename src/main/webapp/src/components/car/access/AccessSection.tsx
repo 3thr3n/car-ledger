@@ -104,24 +104,31 @@ export default function AccessSection({ carId }: { carId: number }) {
       />
       <ConfirmDialog
         open={revoking !== undefined}
-        title={t(
-          revoking?.state === CarAccessState.ACCEPTED
-            ? 'access.revokeTitle'
-            : 'access.withdrawTitle',
-          { name: revoking?.account ?? revoking?.invitee },
-        )}
-        text={t('access.revokeText')}
-        confirmLabel={t(
-          revoking?.state === CarAccessState.ACCEPTED
-            ? 'access.revoke'
-            : 'access.withdraw',
-        )}
+        title={
+          revoking &&
+          t(`access.${ending(revoking)}Title`, {
+            name: revoking.account ?? revoking.invitee,
+          })
+        }
+        text={revoking && t(`access.${ending(revoking)}Text`)}
+        confirmLabel={revoking && t(`access.${ending(revoking)}`)}
         onClose={() => setRevoking(undefined)}
         onConfirm={() => revoke.mutate({ path: { carId, id: revoking!.id } })}
       />
     </Card>
   );
 }
+
+/**
+ * @return how the owner ends it: an ended access is removed from the list, an
+ *   accepted one revoked, an invitation withdrawn
+ */
+const ending = (access: CarAccessEntry) =>
+  hasEnded(access)
+    ? 'remove'
+    : access.state === CarAccessState.ACCEPTED
+      ? 'revoke'
+      : 'withdraw';
 
 function AccessRow({
   access,
@@ -189,9 +196,7 @@ function AccessRow({
           onClick={onRevoke}
           disabled={disabled}
         >
-          {access.state === CarAccessState.ACCEPTED
-            ? t('access.revoke')
-            : t('access.withdraw')}
+          {t(`access.${ending(access)}`)}
         </Button>
       </Stack>
     </Stack>

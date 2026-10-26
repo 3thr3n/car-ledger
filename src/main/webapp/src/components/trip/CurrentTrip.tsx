@@ -5,6 +5,7 @@ import PlayArrowRounded from '@mui/icons-material/PlayArrowRounded';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import CreatorHint from '@/components/ui/CreatorHint';
 import { can } from '@/utils/carRole';
 import { getMyCarOptions } from '@/generated/@tanstack/react-query.gen';
 import EmptyState from '@/components/ui/EmptyState';
@@ -84,6 +85,8 @@ export default function CurrentTrip({ carId }: { carId: number }) {
                 <Typography sx={{ fontWeight: 600 }}>
                   {t('trip.current.open')} · {t(`trip.types.${open.type}`)}
                   {open.destination && ` · ${open.destination}`}
+                  {/* e.g. of a driver whose access ended, to finish it */}
+                  <CreatorHint name={open.driver} />
                 </Typography>
                 <Typography variant="body2" sx={{ color: 'text.secondary' }}>
                   {t('trip.current.since', {

@@ -335,6 +335,10 @@ access:
   revokeTitle: "Zugriff von {{name}} entziehen?"
   withdrawTitle: "Einladung von {{name}} zurückziehen?"
   revokeText: "Das Fahrzeug erscheint für das Konto nicht mehr. Seine Einträge bleiben beim Fahrzeug."
+  withdrawText: "Das Konto sieht die Einladung nicht mehr."
+  remove: "Entfernen"
+  removeTitle: "Beendeten Zugriff von {{name}} entfernen?"
+  removeText: "Er erscheint nicht mehr in dieser Liste. Die Einträge des Kontos bleiben beim Fahrzeug."
   invited: "Einladung gesendet"
   changed: "Zugriff geändert"
   revoked: "Zugriff entzogen"
@@ -980,6 +984,11 @@ offline:
     text_other: "{{count}} offline erfasste Einträge eines anderen Kontos warten auf diesem Gerät. Sie werden gesendet, wenn sich dieses Konto hier anmeldet."
     discardTitle_one: "{{count}} Eintrag verwerfen?"
     discardTitle_other: "{{count}} Einträge verwerfen?"
+  orphaned:
+    title: "Einträge für ein Fahrzeug, das du nicht mehr hast"
+    subtitle: "Ohne Verbindung erfasst und auf diesem Gerät gespeichert. Dein Zugriff auf das Fahrzeug ist beendet, der Server nimmt sie nicht mehr an."
+    refused: "Nicht gesendet: Du hast keinen Zugriff mehr auf das Fahrzeug. Notiere dir, was du brauchst, und verwirf den Eintrag."
+    discardAll: "Alle verwerfen"
 
 trip:
   types:
