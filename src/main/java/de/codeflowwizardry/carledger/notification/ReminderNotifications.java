@@ -2,8 +2,11 @@ package de.codeflowwizardry.carledger.notification;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,24 +14,26 @@ import org.slf4j.LoggerFactory;
 import de.codeflowwizardry.carledger.OdometerService;
 import de.codeflowwizardry.carledger.ReminderService;
 import de.codeflowwizardry.carledger.data.AccountEntity;
+import de.codeflowwizardry.carledger.data.CarEntity;
 import de.codeflowwizardry.carledger.data.ReminderEntity;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
-import de.codeflowwizardry.carledger.data.repository.CarRepository;
+import de.codeflowwizardry.carledger.data.repository.CarAccessRepository;
 import de.codeflowwizardry.carledger.data.repository.ReminderRepository;
 import de.codeflowwizardry.carledger.notification.push.PushConfig;
 import de.codeflowwizardry.carledger.rest.car.reminder.Reminder;
 import de.codeflowwizardry.carledger.rest.car.reminder.ReminderStatus;
-import de.codeflowwizardry.carledger.rest.records.Odometer;
 import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.quarkus.scheduler.Scheduled;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 /**
- * Once a day, every account gets one notification (mail and push) with its
- * reminders that became due soon or overdue (the status of the app: 30 days or
- * 1000 km before). A reminder is notified once per due date and odometer; done
- * or changed, it is notified again when its new due comes.
+ * Once a day, the owner and the editors of a car get one notification (mail and
+ * push) with its reminders that became due soon or overdue (the status of the
+ * app: 30 days or 1000 km before), not the viewers and drivers. A reminder is
+ * notified once per due date and odometer; done or changed, it is notified
+ * again
+ * when its new due comes.
  */
 @ApplicationScoped
 public class ReminderNotifications
@@ -39,17 +44,20 @@ public class ReminderNotifications
 	private final PushConfig pushConfig;
 	private final AccountRepository accountRepository;
 	private final ReminderRepository reminderRepository;
+	private final CarAccessRepository carAccessRepository;
 	private final OdometerService odometerService;
 	private final Notifications notifications;
 
 	@Inject
 	public ReminderNotifications(MailConfig config, PushConfig pushConfig, AccountRepository accountRepository,
-			ReminderRepository reminderRepository, OdometerService odometerService, Notifications notifications)
+			ReminderRepository reminderRepository, CarAccessRepository carAccessRepository,
+			OdometerService odometerService, Notifications notifications)
 	{
 		this.config = config;
 		this.pushConfig = pushConfig;
 		this.accountRepository = accountRepository;
 		this.reminderRepository = reminderRepository;
+		this.carAccessRepository = carAccessRepository;
 		this.odometerService = odometerService;
 		this.notifications = notifications;
 	}
@@ -61,8 +69,9 @@ public class ReminderNotifications
 	}
 
 	/**
-	 * One transaction per account: a failing account does not stop the others,
-	 * its mail is sent after its commit
+	 * The due reminders are claimed at once, then every account gets its
+	 * notification in its own transaction: a failing account does not stop the
+	 * others, its mail is sent after its commit
 	 */
 	void send(LocalDate today)
 	{
@@ -70,51 +79,63 @@ public class ReminderNotifications
 		{
 			return;
 		}
-		List<Long> accounts = QuarkusTransaction.requiringNew().call(() -> accountRepository
-				.find("notifyReminders = true").stream()
-				.map(AccountEntity::getId)
-				.toList());
-		for (Long id : accounts)
-		{
+		Map<Long, List<Reminder>> perAccount = QuarkusTransaction.requiringNew().call(() -> claimDue(today));
+		perAccount.forEach((accountId, due) -> {
 			try
 			{
-				QuarkusTransaction.requiringNew().run(() -> send(id, today));
+				QuarkusTransaction.requiringNew()
+						.run(() -> notifications.reminders(accountRepository.findById(accountId), due));
 			}
 			catch (Exception e)
 			{
-				LOG.error("Could not mail the reminders of account {}", id, e);
+				LOG.error("Could not mail the reminders of account {}", accountId, e);
 			}
-		}
+		});
 	}
 
-	private void send(long accountId, LocalDate today)
+	/**
+	 * @return the due reminders per account, the most urgent first; a reminder
+	 *         goes to the owner and the editors of its car
+	 */
+	private Map<Long, List<Reminder>> claimDue(LocalDate today)
 	{
-		AccountEntity account = accountRepository.findById(accountId);
-		// without a channel the reminders stay unmarked, e.g. for an address added
-		// later
-		if (!notifications.canReach(account))
+		Map<Long, List<Reminder>> perAccount = new LinkedHashMap<>();
+		Map<Long, List<AccountEntity>> recipients = new HashMap<>();
+		Map<Long, Integer> odometers = new HashMap<>();
+		for (ReminderEntity entity : reminderRepository.find("from reminder r join fetch r.car c join fetch c.user")
+				.list())
 		{
-			return;
-		}
-		List<ReminderEntity> reminders = reminderRepository.list(CarRepository.ALL_CARS, account.getUserId());
-		if (reminders.isEmpty())
-		{
-			return;
-		}
-		Map<Long, Odometer> odometers = odometerService.current(CarRepository.ALL_CARS, account.getUserId());
-
-		List<Reminder> due = new ArrayList<>();
-		for (ReminderEntity entity : reminders)
-		{
-			Reminder reminder = ReminderService.convert(entity,
-					odometers.get(entity.getCar().getId()).value(), today);
+			CarEntity car = entity.getCar();
+			List<AccountEntity> to = recipients.computeIfAbsent(car.getId(), id -> recipients(car));
+			// without a channel the reminders stay unmarked, e.g. for an address added
+			// later
+			if (to.isEmpty())
+			{
+				continue;
+			}
+			int odometer = odometers.computeIfAbsent(car.getId(),
+					id -> odometerService.current(id, car.getUser().getUserId()).get(id).value());
+			Reminder reminder = ReminderService.convert(entity, odometer, today);
 			if (reminder.status() != ReminderStatus.UPCOMING && claim(entity))
 			{
-				due.add(reminder);
+				to.forEach(account -> perAccount.computeIfAbsent(account.getId(), id -> new ArrayList<>())
+						.add(reminder));
 			}
 		}
-		due.sort(ReminderService.BY_URGENCY);
-		notifications.reminders(account, due);
+		perAccount.values().forEach(due -> due.sort(ReminderService.BY_URGENCY));
+		return perAccount;
+	}
+
+	/**
+	 * @return the owner and the editors of the car who want the reminders and get
+	 *         notifications
+	 */
+	private List<AccountEntity> recipients(CarEntity car)
+	{
+		return Stream.concat(Stream.of(car.getUser()), carAccessRepository.editorsOf(car.getId()).stream())
+				.filter(AccountEntity::isNotifyReminders)
+				.filter(notifications::canReach)
+				.toList();
 	}
 
 	/**

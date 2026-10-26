@@ -121,6 +121,33 @@ test.describe.serial('car roles', () => {
 
   test('a driver gets the own refuels and trips only', async () => {
     await share('DRIVER');
+    // a trip of bob, to export
+    const headers = { 'X-Requested-With': 'JavaScript' };
+    const trip = `${API_URL}/api/trip/${carId}/${crypto.randomUUID()}`;
+    const startedAt = Date.now() - 7_200_000;
+    expect(
+      (
+        await bob.request.put(trip, {
+          headers,
+          data: {
+            type: 'PRIVATE',
+            startOdometer: 12000,
+            startedAt: new Date(startedAt).toISOString(),
+          },
+        })
+      ).status(),
+    ).toBe(201);
+    expect(
+      (
+        await bob.request.put(`${trip}/finish`, {
+          headers,
+          data: {
+            endOdometer: 12030,
+            endedAt: new Date(startedAt + 3_600_000).toISOString(),
+          },
+        })
+      ).status(),
+    ).toBe(200);
     await bob.goto(`/car/${carId}`);
 
     // no overview, the first own list instead
@@ -137,7 +164,8 @@ test.describe.serial('car roles', () => {
 
     await tab('Trips').click();
     await expect(button('Start trip')).toBeVisible();
-    await expect(button('Export')).toHaveCount(0);
+    // the own trips, instead of a backup
+    await expect(button('Export')).toBeVisible();
 
     // only refuels and charges to add
     await link('Add entry').first().click();

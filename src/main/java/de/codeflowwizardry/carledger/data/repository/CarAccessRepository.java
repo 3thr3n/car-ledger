@@ -38,6 +38,22 @@ public class CarAccessRepository implements PanacheRepository<CarAccessEntity>
 	}
 
 	/**
+	 * @return the accounts that edit the car now, e.g. for its due reminders
+	 */
+	public List<AccountEntity> editorsOf(long carId)
+	{
+		return getEntityManager()
+				.createQuery("select a.account from car_access a where a.car.id = :car and a.role = :editor"
+						+ " and a.state = :accepted"
+						+ " and (a.validFrom is null or a.validFrom <= current_timestamp)"
+						+ " and (a.validUntil is null or a.validUntil > current_timestamp)", AccountEntity.class)
+				.setParameter("car", carId)
+				.setParameter("editor", CarRole.EDITOR)
+				.setParameter("accepted", CarAccessState.ACCEPTED)
+				.getResultList();
+	}
+
+	/**
 	 * @return the accesses and invitations of the car, the oldest first
 	 */
 	public List<CarAccessEntity> listForCar(long carId)

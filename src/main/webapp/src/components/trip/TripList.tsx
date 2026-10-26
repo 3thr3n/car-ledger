@@ -130,8 +130,8 @@ export default function TripList({ carId }: { carId: number }) {
       title={t('trip.list.title')}
       subtitle={t('trip.list.subtitle')}
       action={
-        !!years?.length &&
-        role('READ') && (
+        // a driver exports the own trips
+        !!years?.length && (
           <Button
             size="small"
             startIcon={<FileDownloadRounded />}

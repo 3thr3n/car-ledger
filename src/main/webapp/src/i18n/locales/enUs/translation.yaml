@@ -735,10 +735,10 @@ notifications:
 
 backup:
   title: "Backup"
-  text: "All your data in one file: settings, cars, entries, recurring costs, reminders, receipts and pictures. Restore it here or on another CarLedger."
+  text: "All your data in one file: settings, cars, entries, recurring costs, reminders, receipts and pictures. Restore it here or on another CarLedger. A car others share with you is only in the backup of its owner, export your trips of it in its trip log."
   download: "Download backup"
   restore: "Restore backup"
-  restoreHelp: "Restores a downloaded backup into your account, which has no cars yet."
+  restoreHelp: "Restores a downloaded backup into your account, which has no cars yet. The accounts a car was shared with get an invitation again."
   restoreOnlyEmpty: "A backup can only be restored into an account without cars."
   restored: "Backup restored: {{parts}}"
   restoredEmpty: "Backup restored, it had no cars"
@@ -763,6 +763,8 @@ backup:
     trackers_other: "{{count}} GPS trackers"
     files_one: "{{count}} file"
     files_other: "{{count}} files"
+    invitations_one: "{{count}} invitation"
+    invitations_other: "{{count}} invitations"
   failed: "The backup could not be restored"
   tooLarge: "The backup is larger than the server accepts. Its operator can raise the limit (carLedger.attachments.maxRequestSize, see docs/DEPLOYMENT.md)."
 

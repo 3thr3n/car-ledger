@@ -3,6 +3,8 @@ package de.codeflowwizardry.carledger.rest;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -26,6 +28,7 @@ import de.codeflowwizardry.carledger.data.repository.CarAccessRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import de.codeflowwizardry.carledger.rest.car.fuel.FuelBillInput;
 import de.codeflowwizardry.carledger.rest.car.trip.Trip;
+import de.codeflowwizardry.carledger.rest.car.trip.TripDeleteInput;
 import de.codeflowwizardry.carledger.rest.car.trip.TripFinishInput;
 import de.codeflowwizardry.carledger.rest.car.trip.TripStartInput;
 import io.quarkus.narayana.jta.QuarkusTransaction;
@@ -207,12 +210,69 @@ class DriverTest
 						BigDecimal.valueOf(40), BigDecimal.valueOf(1.75), null),
 				carId, "paul"));
 
+		// a finished, a deleted and an open trip of paul: the trip log stays
+		UUID finished = UUID.randomUUID();
+		UUID deleted = UUID.randomUUID();
+		UUID open = UUID.randomUUID();
+		paulDrives(finished, 10_000, START);
+		tripService.finish(carId, finished, new TripFinishInput(10_042, START.plusHours(1), null, null, null, false),
+				"paul");
+		paulDrives(deleted, 10_042, START.plusHours(2));
+		tripService.finish(carId, deleted, new TripFinishInput(10_050, START.plusHours(3), null, null, null, false),
+				"paul");
+		tripService.delete(carId, deleted, new TripDeleteInput("Entered twice"), "peter");
+		paulDrives(open, 10_050, START.plusHours(4));
+
 		QuarkusTransaction.requiringNew().run(() -> accountRepository.delete("userId", "paul"));
 
 		given().get("/api/bill/{carId}/fuel/all", carId).then().statusCode(200)
 				.body("total", is(2))
 				.body("data[0].createdBy", nullValue())
 				.body("data[1].createdBy", is("peter"));
+		given().get("/api/trip/{carId}", carId).then().statusCode(200)
+				.body("total", is(3))
+				.body("data.driver", everyItem(nullValue()));
+		given().get("/api/trip/{carId}/current", carId).then().body("open.id", is(open.toString()));
+		assertEquals(0, carAccessRepository.count());
+	}
+
+	private void paulDrives(UUID id, int odometer, OffsetDateTime at)
+	{
+		tripService.start(carId, id, new TripStartInput(TripType.PRIVATE, odometer, at, null, null, null, false),
+				"paul");
+	}
+
+	@Test
+	void shouldExportOnlyTheOwnTripsAndNotTheEntriesOrThePapers()
+	{
+		share(CarRole.DRIVER);
+		peterDrives();
+		tripService.finish(carId, tripId, new TripFinishInput(10_042, START.plusHours(1), null, null, null, false),
+				"peter");
+		UUID own = UUID.randomUUID();
+		paulDrives(own, 10_042, START.plusHours(2));
+		tripService.finish(carId, own, new TripFinishInput(10_100, START.plusHours(3), null, null, null, false),
+				"paul");
+
+		String csv = given().get("/api/export/{carId}/trips/csv", carId).then().statusCode(200).extract().asString();
+		assertTrue(csv.contains("paul"), csv);
+		assertFalse(csv.contains("peter"), csv);
+		given().get("/api/export/{carId}/trips/pdf", carId).then().statusCode(200);
+
+		given().get("/api/export/{carId}/all", carId).then().statusCode(404);
+		given().queryParam("type", "FUEL").get("/api/export/{carId}", carId).then().statusCode(404);
+		given().get("/api/export/{carId}/papers/pdf", carId).then().statusCode(404);
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = "user")
+	void shouldRemoveTheAccessesWithTheCar()
+	{
+		share(CarRole.EDITOR);
+
+		given().delete("/api/car/my/{id}", carId).then().statusCode(204);
+
+		assertEquals(0, carAccessRepository.count());
 	}
 
 	@Test

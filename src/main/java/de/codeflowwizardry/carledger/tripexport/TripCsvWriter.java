@@ -55,7 +55,7 @@ public final class TripCsvWriter
 	{
 		return Arrays.asList(export.local(trip.getStartedAt()), export.local(trip.getEndedAt()), trip.getType(),
 				trip.getStartOdometer(), trip.getEndOdometer(), trip.getDistance(), trip.getDestination(),
-				trip.getPurpose(), trip.getBusinessPartner(), trip.getDriver().getUserId(), Trip.enteredLater(trip),
+				trip.getPurpose(), trip.getBusinessPartner(), trip.getDriverName(), Trip.enteredLater(trip),
 				export.local(trip.getCreatedAt()), export.local(trip.getFinishedAt()), trip.getReviewReason(),
 				trip.isRestored(), export.local(trip.getDeletedAt()), trip.getDeletedBy(), trip.getDeleteReason());
 	}

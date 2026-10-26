@@ -355,6 +355,10 @@
           "places" : {
             "type" : "integer",
             "format" : "int32"
+          },
+          "invitations" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         }
       },
@@ -2228,7 +2232,7 @@
       },
       "Trip" : {
         "type" : "object",
-        "required" : [ "id", "carId", "type", "startOdometer", "startedAt", "restored", "createdAt", "enteredLater", "driver" ],
+        "required" : [ "id", "carId", "type", "startOdometer", "startedAt", "restored", "createdAt", "enteredLater" ],
         "properties" : {
           "id" : {
             "$ref" : "#/components/schemas/UUID"

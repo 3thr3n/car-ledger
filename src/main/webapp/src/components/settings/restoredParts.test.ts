@@ -12,6 +12,7 @@ describe('the message after a restore', () => {
         bills: 12,
         technicalInspections: 1,
         trackPoints: 3000,
+        invitations: 2,
       }),
     ).toEqual([
       { part: 'cars', count: 1 },
@@ -19,6 +20,7 @@ describe('the message after a restore', () => {
       { part: 'modifications', count: 2 },
       { part: 'technicalInspections', count: 1 },
       { part: 'files', count: 4 },
+      { part: 'invitations', count: 2 },
     ]);
   });
 
