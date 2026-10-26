@@ -25,6 +25,7 @@ import ErrorPage from '@/pages/ErrorPage';
 import useCarRequest from '@/hooks/useCarRequest';
 import CarRequestDialog from '@/components/request/CarRequestDialog';
 import CarRequestOutcome from '@/components/request/CarRequestOutcome';
+import InvitationList from '@/components/car/access/InvitationList';
 
 export default function GaragePage() {
   const { t } = useTranslation();
@@ -56,6 +57,7 @@ export default function GaragePage() {
       />
 
       <CarRequestOutcome />
+      <InvitationList />
 
       <Grid container spacing={2}>
         {isLoading &&

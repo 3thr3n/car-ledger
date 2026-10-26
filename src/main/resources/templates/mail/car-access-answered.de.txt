@@ -1,0 +1,14 @@
+{#if accepted}{account} hat den Zugriff auf „{car}“ angenommen{#else}{account} hat den Zugriff auf „{car}“ abgelehnt{/if}
+{#if accepted}
+{account} hat deine Einladung zum Fahrzeug „{car}“ angenommen und sieht es jetzt.
+{#else}
+{account} hat deine Einladung zum Fahrzeug „{car}“ abgelehnt.
+{/if}
+{#if link}
+
+Der Zugriff auf das Fahrzeug: {link}
+{/if}
+
+--
+Du kannst diese Mails in den Einstellungen abschalten{#if settingsLink}:
+{settingsLink}{#else}.{/if}

@@ -8,6 +8,8 @@ import jakarta.persistence.*;
 /**
  * The access of another account to a car, with its role and an optional
  * period. The owner of the car isn't one, it is {@link CarEntity#getUser()}.
+ * It starts as an invitation and counts once it is
+ * {@link CarAccessState#ACCEPTED}.
  */
 @Entity(name = "car_access")
 public class CarAccessEntity
@@ -21,9 +23,21 @@ public class CarAccessEntity
 	@JoinColumn(name = "ca_car_id", nullable = false, updatable = false)
 	private CarEntity car;
 
-	@ManyToOne(fetch = FetchType.LAZY, optional = false)
-	@JoinColumn(name = "ca_account_id", nullable = false, updatable = false)
+	/** missing until the invited account exists, see {@link #invitee} */
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "ca_account_id")
 	private AccountEntity account;
+
+	/**
+	 * user name or e-mail address in lower case of an account that doesn't exist
+	 * yet, it gets the invitation with its first login
+	 */
+	@Column(name = "ca_invitee", length = 320)
+	private String invitee;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "ca_state", nullable = false, length = 10)
+	private CarAccessState state = CarAccessState.PENDING;
 
 	/** never {@link CarRole#OWNER} */
 	@Enumerated(EnumType.STRING)
@@ -49,14 +63,38 @@ public class CarAccessEntity
 	{
 	}
 
+	/**
+	 * An access the account already has, e.g. of the time before the invitations
+	 */
 	public CarAccessEntity(CarEntity car, AccountEntity account, CarRole role, AccountEntity createdBy)
+	{
+		this(car, account, null, role, createdBy);
+		this.state = CarAccessState.ACCEPTED;
+	}
+
+	/**
+	 * An invitation, of an account or of one that doesn't exist yet
+	 */
+	public static CarAccessEntity invite(CarEntity car, AccountEntity account, String invitee, CarRole role,
+			AccountEntity createdBy)
+	{
+		return new CarAccessEntity(car, account, account == null ? invitee : null, role, createdBy);
+	}
+
+	private CarAccessEntity(CarEntity car, AccountEntity account, String invitee, CarRole role,
+			AccountEntity createdBy)
 	{
 		if (role == CarRole.OWNER)
 		{
 			throw new IllegalArgumentException("The owner is the user of the car");
 		}
+		if (account == null && invitee == null)
+		{
+			throw new IllegalArgumentException("An account or an invitee is needed");
+		}
 		this.car = car;
 		this.account = account;
+		this.invitee = invitee;
 		this.role = role;
 		this.createdBy = createdBy;
 	}
@@ -74,6 +112,30 @@ public class CarAccessEntity
 	public AccountEntity getAccount()
 	{
 		return account;
+	}
+
+	public String getInvitee()
+	{
+		return invitee;
+	}
+
+	/**
+	 * The invited account logged in for the first time
+	 */
+	public void claim(AccountEntity account)
+	{
+		this.account = account;
+		this.invitee = null;
+	}
+
+	public CarAccessState getState()
+	{
+		return state;
+	}
+
+	public void setState(CarAccessState state)
+	{
+		this.state = state;
 	}
 
 	public CarRole getRole()

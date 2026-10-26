@@ -655,6 +655,57 @@
         },
         "required" : [ "currentOdometer", "energyType", "tripLog", "role" ]
       },
+      "CarAccessEntry" : {
+        "type" : "object",
+        "required" : [ "id", "role", "state", "createdAt" ],
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "account" : {
+            "type" : "string"
+          },
+          "invitee" : {
+            "type" : "string"
+          },
+          "role" : {
+            "$ref" : "#/components/schemas/CarRole"
+          },
+          "state" : {
+            "$ref" : "#/components/schemas/CarAccessState"
+          },
+          "validFrom" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          },
+          "validUntil" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          },
+          "createdAt" : {
+            "type" : "string",
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          }
+        }
+      },
+      "CarAccessInput" : {
+        "type" : "object",
+        "required" : [ "role" ],
+        "properties" : {
+          "role" : {
+            "$ref" : "#/components/schemas/CarRole"
+          },
+          "validFrom" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          },
+          "validUntil" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          }
+        }
+      },
+      "CarAccessState" : {
+        "type" : "string",
+        "enum" : [ "PENDING", "ACCEPTED", "DECLINED" ]
+      },
       "CarInput" : {
         "type" : "object",
         "properties" : {
@@ -692,6 +743,57 @@
           },
           "tripLog" : {
             "type" : "boolean"
+          }
+        }
+      },
+      "CarInvitation" : {
+        "type" : "object",
+        "required" : [ "id", "carId", "car", "owner", "role", "createdAt" ],
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "carId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "car" : {
+            "type" : "string"
+          },
+          "owner" : {
+            "type" : "string"
+          },
+          "role" : {
+            "$ref" : "#/components/schemas/CarRole"
+          },
+          "validFrom" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          },
+          "validUntil" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          },
+          "createdAt" : {
+            "type" : "string",
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          }
+        }
+      },
+      "CarInvitationInput" : {
+        "type" : "object",
+        "required" : [ "account", "role" ],
+        "properties" : {
+          "account" : {
+            "type" : "string"
+          },
+          "role" : {
+            "$ref" : "#/components/schemas/CarRole"
+          },
+          "validFrom" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          },
+          "validUntil" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
           }
         }
       },
@@ -2392,6 +2494,186 @@
     }
   },
   "paths" : {
+    "/api/access/{carId}" : {
+      "put" : {
+        "description" : "Invites an account by its user name or e-mail address. One that doesn't exist yet gets the invitation with its first login, a declined one is asked again.",
+        "operationId" : "inviteToCar",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CarInvitationInput"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CarAccessEntry"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed, please check the response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Car is not for your user."
+          },
+          "409" : {
+            "description" : "The account has the access or the invitation already."
+          }
+        },
+        "summary" : "Invite To Car",
+        "tags" : [ "Car Access Resource" ]
+      },
+      "get" : {
+        "description" : "The accesses and invitations of a car, the oldest first.",
+        "operationId" : "getCarAccess",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/CarAccessEntry"
+                  }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Car is not for your user."
+          }
+        },
+        "summary" : "Get Car Access",
+        "tags" : [ "Car Access Resource" ]
+      }
+    },
+    "/api/access/{carId}/{id}" : {
+      "delete" : {
+        "description" : "Ends the access early or takes back the invitation. The entries of the account stay with the car.",
+        "operationId" : "revokeCarAccess",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
+          },
+          "404" : {
+            "description" : "Access not found for the car of your user."
+          }
+        },
+        "summary" : "Revoke Car Access",
+        "tags" : [ "Car Access Resource" ]
+      },
+      "post" : {
+        "description" : "Changes the role or the period of an access or an invitation.",
+        "operationId" : "changeCarAccess",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CarAccessInput"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CarAccessEntry"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed, please check the response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Access not found for the car of your user."
+          }
+        },
+        "summary" : "Change Car Access",
+        "tags" : [ "Car Access Resource" ]
+      }
+    },
     "/api/admin/accounts" : {
       "get" : {
         "description" : "All accounts with their usage, pages starting at 1",
@@ -5685,6 +5967,75 @@
         },
         "summary" : "Get Field Definitions",
         "tags" : [ "Import Resource" ]
+      }
+    },
+    "/api/invitations" : {
+      "get" : {
+        "description" : "The invitations to cars the user hasn't answered yet, the oldest first.",
+        "operationId" : "getInvitations",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/CarInvitation"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary" : "Get Invitations",
+        "tags" : [ "Car Invitation Resource" ]
+      }
+    },
+    "/api/invitations/{id}/accept" : {
+      "post" : {
+        "description" : "The car shows for the user within the period of the access.",
+        "operationId" : "acceptInvitation",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "204" : { },
+          "404" : {
+            "description" : "Invitation not found for your user."
+          }
+        },
+        "summary" : "Accept Invitation",
+        "tags" : [ "Car Invitation Resource" ]
+      }
+    },
+    "/api/invitations/{id}/decline" : {
+      "post" : {
+        "description" : "The owner sees the invitation declined, a new one asks again.",
+        "operationId" : "declineInvitation",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "204" : { },
+          "404" : {
+            "description" : "Invitation not found for your user."
+          }
+        },
+        "summary" : "Decline Invitation",
+        "tags" : [ "Car Invitation Resource" ]
       }
     },
     "/api/map" : {

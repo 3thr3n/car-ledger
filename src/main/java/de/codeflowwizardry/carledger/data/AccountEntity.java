@@ -60,6 +60,13 @@ public class AccountEntity
 	private String email;
 
 	/**
+	 * Whether the identity provider confirmed {@link #email}: only then an
+	 * invitation to the address finds the account
+	 */
+	@Column(name = "email_verified", nullable = false)
+	private boolean emailVerified;
+
+	/**
 	 * Whether the last login had the role admin: the roles are only known from
 	 * the token, the notifications for the administrators need them without one
 	 */
@@ -176,6 +183,16 @@ public class AccountEntity
 	public void setEmail(String email)
 	{
 		this.email = email;
+	}
+
+	public boolean isEmailVerified()
+	{
+		return emailVerified;
+	}
+
+	public void setEmailVerified(boolean emailVerified)
+	{
+		this.emailVerified = emailVerified;
 	}
 
 	public boolean isAdmin()

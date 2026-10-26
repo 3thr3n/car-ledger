@@ -245,6 +245,29 @@ export type Car = {
     role: CarRole;
 };
 
+export type CarAccessEntry = {
+    id: number;
+    account?: string;
+    invitee?: string;
+    role: CarRole;
+    state: CarAccessState;
+    validFrom?: OffsetDateTime;
+    validUntil?: OffsetDateTime;
+    createdAt: OffsetDateTime;
+};
+
+export type CarAccessInput = {
+    role: CarRole;
+    validFrom?: OffsetDateTime;
+    validUntil?: OffsetDateTime;
+};
+
+export enum CarAccessState {
+    PENDING = 'PENDING',
+    ACCEPTED = 'ACCEPTED',
+    DECLINED = 'DECLINED'
+}
+
 export type CarInput = {
     name?: string;
     year?: number;
@@ -257,6 +280,24 @@ export type CarInput = {
     tankSize?: number;
     batteryCapacity?: number;
     tripLog?: boolean;
+};
+
+export type CarInvitation = {
+    id: number;
+    carId: number;
+    car: string;
+    owner: string;
+    role: CarRole;
+    validFrom?: OffsetDateTime;
+    validUntil?: OffsetDateTime;
+    createdAt: OffsetDateTime;
+};
+
+export type CarInvitationInput = {
+    account: string;
+    role: CarRole;
+    validFrom?: OffsetDateTime;
+    validUntil?: OffsetDateTime;
 };
 
 export type CarOverview = {
@@ -918,6 +959,121 @@ export enum UnitSystem {
 export type Version = {
     version: string;
 };
+
+export type GetCarAccessData = {
+    body?: never;
+    path: {
+        carId: number;
+    };
+    query?: never;
+    url: '/api/access/{carId}';
+};
+
+export type GetCarAccessErrors = {
+    /**
+     * Car is not for your user.
+     */
+    404: unknown;
+};
+
+export type GetCarAccessResponses = {
+    /**
+     * OK
+     */
+    200: Array<CarAccessEntry>;
+};
+
+export type GetCarAccessResponse = GetCarAccessResponses[keyof GetCarAccessResponses];
+
+export type InviteToCarData = {
+    body: CarInvitationInput;
+    path: {
+        carId: number;
+    };
+    query?: never;
+    url: '/api/access/{carId}';
+};
+
+export type InviteToCarErrors = {
+    /**
+     * Validation failed, please check the response
+     */
+    400: Array<unknown>;
+    /**
+     * Car is not for your user.
+     */
+    404: unknown;
+    /**
+     * The account has the access or the invitation already.
+     */
+    409: unknown;
+};
+
+export type InviteToCarError = InviteToCarErrors[keyof InviteToCarErrors];
+
+export type InviteToCarResponses = {
+    201: CarAccessEntry;
+};
+
+export type InviteToCarResponse = InviteToCarResponses[keyof InviteToCarResponses];
+
+export type RevokeCarAccessData = {
+    body?: never;
+    path: {
+        carId: number;
+        id: number;
+    };
+    query?: never;
+    url: '/api/access/{carId}/{id}';
+};
+
+export type RevokeCarAccessErrors = {
+    /**
+     * Access not found for the car of your user.
+     */
+    404: unknown;
+};
+
+export type RevokeCarAccessResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type RevokeCarAccessResponse = RevokeCarAccessResponses[keyof RevokeCarAccessResponses];
+
+export type ChangeCarAccessData = {
+    body: CarAccessInput;
+    path: {
+        carId: number;
+        id: number;
+    };
+    query?: never;
+    url: '/api/access/{carId}/{id}';
+};
+
+export type ChangeCarAccessErrors = {
+    /**
+     * Validation failed, please check the response
+     */
+    400: Array<unknown>;
+    /**
+     * Access not found for the car of your user.
+     */
+    404: unknown;
+};
+
+export type ChangeCarAccessError = ChangeCarAccessErrors[keyof ChangeCarAccessErrors];
+
+export type ChangeCarAccessResponses = {
+    /**
+     * OK
+     */
+    200: CarAccessEntry;
+};
+
+export type ChangeCarAccessResponse = ChangeCarAccessResponses[keyof ChangeCarAccessResponses];
 
 export type GetAdminAccountsData = {
     body?: never;
@@ -2824,6 +2980,66 @@ export type GetCsvFieldsResponses = {
 };
 
 export type GetCsvFieldsResponse = GetCsvFieldsResponses[keyof GetCsvFieldsResponses];
+
+export type GetInvitationsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/invitations';
+};
+
+export type GetInvitationsResponses = {
+    /**
+     * OK
+     */
+    200: Array<CarInvitation>;
+};
+
+export type GetInvitationsResponse = GetInvitationsResponses[keyof GetInvitationsResponses];
+
+export type AcceptInvitationData = {
+    body?: never;
+    path: {
+        id: number;
+    };
+    query?: never;
+    url: '/api/invitations/{id}/accept';
+};
+
+export type AcceptInvitationErrors = {
+    /**
+     * Invitation not found for your user.
+     */
+    404: unknown;
+};
+
+export type AcceptInvitationResponses = {
+    204: void;
+};
+
+export type AcceptInvitationResponse = AcceptInvitationResponses[keyof AcceptInvitationResponses];
+
+export type DeclineInvitationData = {
+    body?: never;
+    path: {
+        id: number;
+    };
+    query?: never;
+    url: '/api/invitations/{id}/decline';
+};
+
+export type DeclineInvitationErrors = {
+    /**
+     * Invitation not found for your user.
+     */
+    404: unknown;
+};
+
+export type DeclineInvitationResponses = {
+    204: void;
+};
+
+export type DeclineInvitationResponse = DeclineInvitationResponses[keyof DeclineInvitationResponses];
 
 export type GetMapSettingsData = {
     body?: never;

@@ -323,6 +323,53 @@ car:
       vinOld: "Höchstens 17 Buchstaben und Ziffern"
       purchaseDate: "Bitte ein Datum eingeben, das nicht in der Zukunft liegt"
 
+access:
+  title: "Zugriff"
+  text: "Teile das Fahrzeug mit anderen Konten. Der Eingeladene nimmt zuerst an; ein Konto, das es noch nicht gibt, bekommt die Einladung mit seiner ersten Anmeldung."
+  invite: "Einladen"
+  inviteTitle: "Zum Fahrzeug einladen"
+  changeTitle: "Zugriff von {{name}} ändern"
+  change: "Ändern"
+  revoke: "Entziehen"
+  withdraw: "Zurückziehen"
+  revokeTitle: "Zugriff von {{name}} entziehen?"
+  withdrawTitle: "Einladung von {{name}} zurückziehen?"
+  revokeText: "Das Fahrzeug erscheint für das Konto nicht mehr. Seine Einträge bleiben beim Fahrzeug."
+  invited: "Einladung gesendet"
+  changed: "Zugriff geändert"
+  revoked: "Zugriff entzogen"
+  accept: "Annehmen"
+  decline: "Ablehnen"
+  accepted: "Einladung angenommen, das Fahrzeug erscheint in deiner Garage"
+  declined: "Einladung abgelehnt"
+  invitation: "{{owner}} lädt dich zum Fahrzeug „{{car}}“ ein, als {{role}}."
+  fields:
+    account: "Benutzername oder E-Mail-Adresse"
+    accountHelp: "Eine E-Mail-Adresse findet ein Konto erst, wenn seine Anmeldung sie bestätigt hat"
+    role: "Rolle"
+    from: "Von"
+    fromHelp: "Leer: ab der Annahme"
+    until: "Bis"
+    untilHelp: "Leer: ohne Ende"
+  roleHints:
+    EDITOR: "Sieht alles, legt Einträge an, ändert und löscht sie"
+    VIEWER: "Sieht alles, ändert nichts"
+    DRIVER: "Startet und beendet eigene Fahrten, trägt eigene Tankfüllungen ein"
+  states:
+    PENDING: "Wartet auf die Antwort"
+    NO_ACCOUNT: "Wartet auf die erste Anmeldung"
+    DECLINED: "Abgelehnt"
+    ENDED: "Beendet"
+  period:
+    always: "Ohne Ende"
+    between: "Vom {{from}} bis {{until}}"
+    from: "Ab {{from}}"
+    until: "Bis {{until}}"
+  errors:
+    account: "Bitte einen Benutzernamen oder eine E-Mail-Adresse eingeben"
+    accountLength: "Höchstens {{max}} Zeichen"
+    period: "Das Ende darf nicht vor dem Anfang liegen"
+
 tracker:
   title: "GPS-Tracker"
   text: "Ein Tracker im Auto, z. B. ein ESP32, sendet seine Position mit einem eigenen Token an CarLedger."
