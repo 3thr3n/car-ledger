@@ -325,6 +325,13 @@ car:
 
 access:
   title: "Access"
+  openCount_one: "{{count}} invitation to a car waits for your answer"
+  openCount_other: "{{count}} invitations to cars wait for your answer"
+  note:
+    one: "{{owner}} invites you to the car \"{{car}}\" as {{role}}."
+    other: "{{count}} invitations to cars wait for your answer."
+    answer: "Answer"
+    later: "Later"
   text: "Share the car with other accounts. The invited one accepts first; an account that doesn't exist yet gets the invitation with its first login."
   invite: "Invite"
   inviteTitle: "Invite to the car"

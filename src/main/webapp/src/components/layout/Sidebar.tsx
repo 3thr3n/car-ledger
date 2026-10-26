@@ -28,6 +28,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useLocation } from '@tanstack/react-router';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import useOpenInvitations from '@/hooks/useOpenInvitations';
 import { isShared, ownCars } from '@/utils/carRole';
 import { getMyCarsOptions } from '@/generated/@tanstack/react-query.gen';
 import { baseUrl, localClient } from '@/utils/QueryClient';
@@ -50,6 +51,7 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const { account, loggedIn, maxCars, isAdmin } = useMe();
   const settings = useSaveSettings();
   const openRequests = useOpenCarRequests();
+  const invitations = useOpenInvitations().length;
   const version = useVersion();
 
   // the language of the settings wins over the one of the browser
@@ -137,6 +139,19 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
                   <GarageRounded fontSize="small" />
                 </ListItemIcon>
                 <ListItemText primary={t('nav.garage')} />
+                {invitations > 0 && (
+                  <Tooltip
+                    title={t('access.openCount', { count: invitations })}
+                  >
+                    <Chip
+                      size="small"
+                      color="primary"
+                      label={invitations}
+                      aria-label={t('access.openCount', { count: invitations })}
+                      sx={{ height: 20, fontWeight: 600 }}
+                    />
+                  </Tooltip>
+                )}
               </RouterListItemButton>
               <RouterListItemButton
                 to="/settings"
