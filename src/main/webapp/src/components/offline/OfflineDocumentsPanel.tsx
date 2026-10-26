@@ -33,8 +33,8 @@ export default function OfflineDocumentsPanel({ carId }: { carId: number }) {
   const { mutate: saveNow, isPending: saving } = save;
 
   useEffect(() => {
-    if (on && parts && inspections && navigator.onLine && !saving) saveNow();
-    // only when a list changed, not when the saving ends
+    if (on && parts && inspections && navigator.onLine) saveNow();
+    // only when a list changed
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [on, parts, inspections]);
 
