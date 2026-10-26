@@ -6,6 +6,7 @@ import java.util.UUID;
 import de.codeflowwizardry.carledger.data.BillEntity;
 import de.codeflowwizardry.carledger.data.BillType;
 import de.codeflowwizardry.carledger.data.FuelBillEntity;
+import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import de.codeflowwizardry.carledger.rest.car.fuel.FuelBillInput;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -17,9 +18,9 @@ import jakarta.transaction.Transactional;
 public class FuelBillFactory extends AbstractBillFactory<FuelBillInput, FuelBillEntity>
 {
 	@Inject
-	public FuelBillFactory(EntityManager em, CarRepository carRepository)
+	public FuelBillFactory(EntityManager em, CarRepository carRepository, AccountRepository accountRepository)
 	{
-		super(BillType.FUEL, em, carRepository);
+		super(BillType.FUEL, em, carRepository, accountRepository);
 	}
 
 	@Override

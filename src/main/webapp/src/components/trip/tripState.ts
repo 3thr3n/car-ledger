@@ -2,7 +2,9 @@ import { Trip, TripCurrent, TripType } from '@/generated';
 import { QueuedRequest } from '@/offline/queue';
 
 /** a trip of the server, or one started on the device and not sent yet */
-export type TripView = Trip & {
+export type TripView = Omit<Trip, 'driver'> & {
+  /** missing for a trip of the queue: the user of the device drives it */
+  driver?: string;
   /** only on the device: its start is in the offline queue */
   pending?: boolean;
 };

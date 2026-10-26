@@ -199,6 +199,10 @@ garage:
   entries_one: "{{count}} Eintrag"
   entries_other: "{{count}} Einträge"
 
+creator:
+  by: "von {{name}}"
+  deleted: "von einem gelöschten Konto"
+
 car:
   shared: "Geteilt · {{role}}"
   roles:

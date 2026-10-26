@@ -20,6 +20,7 @@ import { Fragment, ReactNode, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import AttachmentsDialog from './AttachmentsDialog';
+import CreatorHint from '@/components/ui/CreatorHint';
 import { previewUrl } from './attachments';
 import EmptyState from '@/components/ui/EmptyState';
 import { PageModel, SortModel } from '@/hooks/useBillList';
@@ -36,6 +37,8 @@ export interface BillTableProps<
     id?: number;
     attachments?: number;
     photo?: number;
+    /** `null` once that account was deleted */
+    createdBy?: string | null;
   },
 > {
   carId: number;
@@ -66,6 +69,8 @@ export default function BillTable<
     id?: number;
     attachments?: number;
     photo?: number;
+    /** `null` once that account was deleted */
+    createdBy?: string | null;
   },
 >({
   carId,
@@ -118,11 +123,14 @@ export default function BillTable<
   );
 
   const hint = (row: R) => (
-    <AttachmentHint
-      count={row.attachments}
-      photo={row.photo ? previewUrl(carId, row.photo) : undefined}
-      onClick={() => setShown(row)}
-    />
+    <>
+      <AttachmentHint
+        count={row.attachments}
+        photo={row.photo ? previewUrl(carId, row.photo) : undefined}
+        onClick={() => setShown(row)}
+      />
+      <CreatorHint name={row.createdBy} />
+    </>
   );
 
   const actions = (row: R) => (

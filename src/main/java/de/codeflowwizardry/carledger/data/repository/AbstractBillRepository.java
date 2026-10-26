@@ -73,7 +73,8 @@ public abstract class AbstractBillRepository<T extends AbstractBillEntity> imple
 			throw new IllegalArgumentException("Cannot sort by " + sortField);
 		}
 
-		String query = fromClause() + " where b.car.id = :carId and " + CarAccess.condition("b.car", Action.READ);
+		String query = fromClause() + " where b.car.id = :carId and "
+				+ CarAccess.own("b.car", "b.createdBy", Action.READ);
 		Map<String, Object> params = new HashMap<>();
 		params.put("carId", carId);
 		params.put(CarAccess.USER, username);
@@ -108,7 +109,7 @@ public abstract class AbstractBillRepository<T extends AbstractBillEntity> imple
 	{
 		return find("from " + entityName + " e join fetch e.bill b"
 				+ " where b.clientId = :clientId and b.car.id = :carId and "
-				+ CarAccess.condition("b.car", Action.WRITE),
+				+ CarAccess.own("b.car", "b.createdBy", Action.WRITE),
 				Map.of("clientId", clientId, "carId", carId, CarAccess.USER, username))
 				.firstResultOptional();
 	}
@@ -120,7 +121,7 @@ public abstract class AbstractBillRepository<T extends AbstractBillEntity> imple
 	public Optional<T> findBill(long carId, long billId, String username, Action action)
 	{
 		return find("from " + entityName + " e join fetch e.bill b"
-				+ " where b.id = :billId and b.car.id = :carId and " + CarAccess.condition("b.car", action),
+				+ " where b.id = :billId and b.car.id = :carId and " + CarAccess.own("b.car", "b.createdBy", action),
 				Map.of("billId", billId, "carId", carId, CarAccess.USER, username))
 				.firstResultOptional();
 	}
@@ -133,7 +134,7 @@ public abstract class AbstractBillRepository<T extends AbstractBillEntity> imple
 	public List<Integer> getBillYears(long carId, String username, BillType type)
 	{
 		String query = "select distinct year(b.date) from bill b"
-				+ " where b.car.id = :carId and " + CarAccess.condition("b.car", Action.READ);
+				+ " where b.car.id = :carId and " + CarAccess.own("b.car", "b.createdBy", Action.READ);
 		if (type != null)
 		{
 			query += " and b.type = :type";
@@ -156,7 +157,7 @@ public abstract class AbstractBillRepository<T extends AbstractBillEntity> imple
 	public List<T> listBills(long carId, String username, Optional<Integer> year)
 	{
 		String query = "from " + entityName + " e join fetch e.bill b"
-				+ " where b.car.id = :carId and " + CarAccess.condition("b.car", Action.READ);
+				+ " where b.car.id = :carId and " + CarAccess.own("b.car", "b.createdBy", Action.READ);
 		Map<String, Object> params = new HashMap<>();
 		params.put("carId", carId);
 		params.put(CarAccess.USER, username);

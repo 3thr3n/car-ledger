@@ -59,9 +59,23 @@ class CarAccessTest
 
 	/** what each role may do, the actions missing here it may not */
 	private static final Map<CarRole, Set<Action>> ALLOWED = Map.of(
-			CarRole.EDITOR, EnumSet.of(Action.USE, Action.READ, Action.WRITE),
+			CarRole.EDITOR, EnumSet.of(Action.USE, Action.DRIVE, Action.READ, Action.WRITE),
 			CarRole.VIEWER, EnumSet.of(Action.USE, Action.READ),
-			CarRole.DRIVER, EnumSet.of(Action.USE));
+			CarRole.DRIVER, EnumSet.of(Action.USE, Action.DRIVE));
+
+	/**
+	 * the action of the car an entry of another account needs: USE and DRIVE
+	 * never give the entries of others
+	 */
+	private static Action forEntry(Action action)
+	{
+		return switch (action)
+		{
+			case USE -> Action.READ;
+			case DRIVE -> Action.WRITE;
+			default -> action;
+		};
+	}
 
 	long carId;
 	long billId;
@@ -182,11 +196,13 @@ class CarAccessTest
 		for (Action action : Action.values())
 		{
 			boolean allowed = ALLOWED.get(role).contains(action);
+			// the bill and the trip are of peter
+			boolean entry = ALLOWED.get(role).contains(forEntry(action));
 			QuarkusTransaction.requiringNew().run(() -> {
 				assertEquals(allowed, carRepository.findById(carId, "paul", action) != null, role + " " + action);
-				assertEquals(allowed, miscellaneousBillRepository.findBill(carId, billId, "paul", action).isPresent(),
+				assertEquals(entry, miscellaneousBillRepository.findBill(carId, billId, "paul", action).isPresent(),
 						role + " " + action + " of a bill");
-				assertEquals(allowed, tripRepository.find(carId, tripId, "paul", action).isPresent(),
+				assertEquals(entry, tripRepository.find(carId, tripId, "paul", action).isPresent(),
 						role + " " + action + " of a trip");
 			});
 		}

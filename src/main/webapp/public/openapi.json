@@ -369,6 +369,9 @@
             "type" : "integer",
             "format" : "int64"
           },
+          "createdBy" : {
+            "type" : "string"
+          },
           "id" : {
             "type" : "integer",
             "format" : "int64"
@@ -790,6 +793,9 @@
             "type" : "integer",
             "format" : "int64"
           },
+          "createdBy" : {
+            "type" : "string"
+          },
           "id" : {
             "type" : "integer",
             "format" : "int64"
@@ -1066,6 +1072,9 @@
             "type" : "integer",
             "format" : "int64"
           },
+          "createdBy" : {
+            "type" : "string"
+          },
           "id" : {
             "type" : "integer",
             "format" : "int64"
@@ -1214,6 +1223,9 @@
             "type" : "integer",
             "format" : "int64"
           },
+          "createdBy" : {
+            "type" : "string"
+          },
           "id" : {
             "type" : "integer",
             "format" : "int64"
@@ -1308,6 +1320,9 @@
           "photo" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "createdBy" : {
+            "type" : "string"
           },
           "id" : {
             "type" : "integer",
@@ -2108,7 +2123,7 @@
       },
       "Trip" : {
         "type" : "object",
-        "required" : [ "id", "carId", "type", "startOdometer", "startedAt", "restored", "createdAt", "enteredLater" ],
+        "required" : [ "id", "carId", "type", "startOdometer", "startedAt", "restored", "createdAt", "enteredLater", "driver" ],
         "properties" : {
           "id" : {
             "$ref" : "#/components/schemas/UUID"
@@ -2172,6 +2187,9 @@
           },
           "enteredLater" : {
             "type" : "boolean"
+          },
+          "driver" : {
+            "type" : "string"
           }
         }
       },

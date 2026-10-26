@@ -33,8 +33,8 @@ public class Bill extends AbstractBill
 
 	public static Bill convert(BillEntity entity)
 	{
-		return new Bill(entity.getId(), entity.getDate(), entity.getDate().getYear(), entity.getTotal(),
-				entity.getVatRate(), entity.getUstAmount(), entity.getNetAmount(), entity.getType());
+		return created(new Bill(entity.getId(), entity.getDate(), entity.getDate().getYear(), entity.getTotal(),
+				entity.getVatRate(), entity.getUstAmount(), entity.getNetAmount(), entity.getType()), entity);
 	}
 
 	public static List<Bill> convert(List<BillEntity> entityList)

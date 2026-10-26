@@ -23,7 +23,7 @@ public class AttachmentRepository implements PanacheRepository<AttachmentEntity>
 	 */
 	public List<AttachmentEntity> listForBill(long carId, long billId, String userId)
 	{
-		return list("bill.id = :billId and car.id = :carId and " + CarAccess.condition("car", Action.READ),
+		return list("bill.id = :billId and car.id = :carId and " + ownBill(Action.READ),
 				Sort.by("createdAt").and("id"),
 				Map.of("billId", billId, "carId", carId, CarAccess.USER, userId));
 	}
@@ -90,9 +90,21 @@ public class AttachmentRepository implements PanacheRepository<AttachmentEntity>
 	 */
 	public Optional<AttachmentEntity> findForUser(long carId, long id, String userId, Action action)
 	{
-		return find("id = :id and car.id = :carId and " + CarAccess.condition("car", action),
+		return find("id = :id and car.id = :carId and " + ownBill(action),
 				Map.of("id", id, "carId", carId, CarAccess.USER, userId))
 				.firstResultOptional();
+	}
+
+	/**
+	 * @return condition that the user may do the action with the car of the
+	 *         attachment, or with its bill as the creator of the bill (a driver
+	 *         with the receipts of the own refuels); the bill in a subquery, so
+	 *         the files without one stay
+	 */
+	private static String ownBill(Action action)
+	{
+		return "(" + CarAccess.condition("car", action) + " or bill.id in (select own.id from bill own where "
+				+ CarAccess.own("own.car", "own.createdBy", action) + "))";
 	}
 
 	/**

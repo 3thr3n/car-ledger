@@ -822,6 +822,8 @@ public class BackupService
 		}
 		BillEntity bill = new BillEntity();
 		bill.setCar(car);
+		// restored as an own car, its entries are of its owner
+		bill.setCreatedBy(car.getUser());
 		bill.setType(backup.type());
 		bill.setDate(backup.date());
 		bill.setTotal(backup.total());

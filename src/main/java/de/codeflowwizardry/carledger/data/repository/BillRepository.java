@@ -182,7 +182,7 @@ public class BillRepository extends AbstractBillRepository<BillEntity>
 	public void delete(long carId, long billId, String username)
 	{
 		Optional<BillEntity> any = find(
-				"id = :billId and car.id = :carId and " + CarAccess.condition("car", Action.WRITE),
+				"id = :billId and car.id = :carId and " + CarAccess.own("car", "createdBy", Action.WRITE),
 				Map.of("carId", carId, CarAccess.USER, username, "billId", billId))
 				.firstResultOptional();
 

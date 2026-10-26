@@ -34,6 +34,7 @@ import TripDeleteDialog from './TripDeleteDialog';
 import TripExportDialog from './TripExportDialog';
 import TripTrack from './TripTrack';
 import useTrackMap from '@/components/track/useTrackMap';
+import CreatorHint from '@/components/ui/CreatorHint';
 
 const PAGE_SIZES = [10, 25, 50];
 
@@ -178,6 +179,7 @@ export default function TripList({ carId }: { carId: number }) {
                           sx={{ alignItems: 'center' }}
                         >
                           <span>{format.dateTime(trip.startedAt)}</span>
+                          <CreatorHint name={trip.driver} />
                           {trip.restored && (
                             <Tooltip title={t('trip.list.restored')}>
                               <RestoreRounded

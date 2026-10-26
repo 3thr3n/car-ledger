@@ -12,6 +12,7 @@ const serverTrip: Trip = {
   restored: false,
   createdAt: '2026-10-19T08:00:01Z',
   enteredLater: false,
+  driver: 'alice',
 };
 
 const current = (patch: Partial<TripCurrent> = {}): TripCurrent => ({
