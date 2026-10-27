@@ -75,6 +75,19 @@ authentik:
         memory: 768Mi
       limits:
         memory: 1536Mi
+    securityContext: &podSecurityContext
+      runAsUser: 1000
+      runAsGroup: 1000
+      runAsNonRoot: true
+      seccompProfile:
+        type: RuntimeDefault
+    containerSecurityContext: &containerSecurityContext
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop: [ "ALL" ]
+    # the server doesn't call the Kubernetes API, the token mounts only with a named account
+    serviceAccountName: default
+    automountServiceAccountToken: false
   worker:
     resources:
       requests:
@@ -82,6 +95,9 @@ authentik:
         memory: 384Mi
       limits:
         memory: 1Gi
+    # keeps the token of its service account, it manages the outposts in the cluster
+    securityContext: *podSecurityContext
+    containerSecurityContext: *containerSecurityContext
   blueprints:
     configMaps:
       - authentik-car-ledger-blueprint
