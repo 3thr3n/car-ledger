@@ -466,6 +466,12 @@ track:
   subtitle: "Die Strecken der GPS-Tracker dieses Autos"
   summary_one: "{{distance}} GPS-Strecke in {{count}} Abschnitt"
   summary_other: "{{distance}} GPS-Strecke in {{count}} Abschnitten"
+  shortcuts:
+    label: "Zeitraum"
+    today: "Heute"
+    last3: "Letzte 3 Tage"
+    last7: "Letzte 7 Tage"
+    month: "Dieser Monat"
   earlier: "Früher"
   later: "Später"
   empty: "Keine Strecke in diesem Zeitraum."
