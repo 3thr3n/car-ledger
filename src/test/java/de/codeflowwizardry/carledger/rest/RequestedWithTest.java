@@ -17,19 +17,21 @@ class RequestedWithTest
 	@Test
 	void shouldRejectAChangeOfTheSessionWithoutTheHeader()
 	{
-		assertTrue(RequestedWith.isForged(HttpMethod.POST, "q_session=abc", null));
-		assertTrue(RequestedWith.isForged(HttpMethod.DELETE, "a=b; q_session_chunk_1=abc", ""));
-		assertTrue(RequestedWith.isForged(HttpMethod.PUT, "q_session=abc", " "));
+		assertTrue(RequestedWith.isForged(HttpMethod.POST, "q_session=abc", null, null));
+		assertTrue(RequestedWith.isForged(HttpMethod.DELETE, "a=b; q_session_chunk_1=abc", null, ""));
+		assertTrue(RequestedWith.isForged(HttpMethod.PUT, "q_session=abc", null, " "));
 	}
 
 	@Test
 	void shouldAcceptTheAppTokensAndReads()
 	{
-		assertFalse(RequestedWith.isForged(HttpMethod.POST, "q_session=abc", "JavaScript"));
+		assertFalse(RequestedWith.isForged(HttpMethod.POST, "q_session=abc", null, "JavaScript"));
 		// a service account or a tracker, no cookie of the browser
-		assertFalse(RequestedWith.isForged(HttpMethod.POST, null, null));
-		assertFalse(RequestedWith.isForged(HttpMethod.GET, "q_session=abc", null));
-		assertFalse(RequestedWith.isForged(HttpMethod.HEAD, "q_session=abc", null));
+		assertFalse(RequestedWith.isForged(HttpMethod.POST, null, null, null));
+		// a token, also next to a cookie: a form can't set it
+		assertFalse(RequestedWith.isForged(HttpMethod.POST, "q_session=abc", "Bearer cl_abc", null));
+		assertFalse(RequestedWith.isForged(HttpMethod.GET, "q_session=abc", null, null));
+		assertFalse(RequestedWith.isForged(HttpMethod.HEAD, "q_session=abc", null, null));
 	}
 
 	@Test

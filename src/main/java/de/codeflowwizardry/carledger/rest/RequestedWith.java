@@ -19,7 +19,8 @@ import jakarta.enterprise.event.Observes;
  * preflight, which fails without CORS.
  * <p>
  * Requests with a token (<code>Authorization</code>, service accounts and GPS
- * trackers) carry no cookie of the browser and are not affected.
+ * trackers) are not affected, also with a cookie: a form of another page
+ * can't set the header either.
  */
 @ApplicationScoped
 public class RequestedWith
@@ -42,7 +43,7 @@ public class RequestedWith
 	static void handle(RoutingContext context)
 	{
 		if (isForged(context.request().method(), context.request().getHeader(HttpHeaders.COOKIE),
-				context.request().getHeader(HEADER)))
+				context.request().getHeader(HttpHeaders.AUTHORIZATION), context.request().getHeader(HEADER)))
 		{
 			context.response().setStatusCode(403).end("Requests of the app need the header " + HEADER);
 			return;
@@ -54,9 +55,9 @@ public class RequestedWith
 	 * @return whether the request changes something with the cookie of the
 	 *         session but without the header
 	 */
-	static boolean isForged(HttpMethod method, String cookies, String requestedWith)
+	static boolean isForged(HttpMethod method, String cookies, String authorization, String requestedWith)
 	{
-		return !SAFE.contains(method) && cookies != null && cookies.contains(SESSION_COOKIE)
+		return !SAFE.contains(method) && cookies != null && cookies.contains(SESSION_COOKIE) && authorization == null
 				&& (requestedWith == null || requestedWith.isBlank());
 	}
 }
