@@ -24,7 +24,7 @@ import jakarta.inject.Singleton;
 @ApplicationScoped
 public class NulBytes
 {
-	/** before the body is read, like {@link RequestedWith} */
+	/** before the body is read, e.g. of an upload */
 	static final int ORDER = -900;
 
 	void install(@Observes Router router)
