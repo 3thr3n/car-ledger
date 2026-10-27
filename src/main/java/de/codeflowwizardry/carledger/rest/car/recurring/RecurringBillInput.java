@@ -9,6 +9,7 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
+import de.codeflowwizardry.carledger.Utils;
 import de.codeflowwizardry.carledger.data.BillCategory;
 import de.codeflowwizardry.carledger.data.BillInterval;
 
@@ -31,6 +32,8 @@ public record RecurringBillInput(String name,
 		{
 			errors.add("Name cannot be blank!");
 		}
+		Utils.checkLength(errors, "Name", name, 100);
+		Utils.checkLength(errors, "Description", description, 1000);
 		if (category == null)
 		{
 			errors.add("Category must be set!");

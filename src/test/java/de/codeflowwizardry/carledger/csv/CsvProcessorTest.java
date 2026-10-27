@@ -62,4 +62,25 @@ class CsvProcessorTest
 		// an IllegalArgumentException of a library is no message of CarLedger
 		assertEquals("Unexpected error, see the server log", result.getErrors().get(2).message());
 	}
+
+	@Test
+	void shouldImportAtMostTheLimitOfRows() throws IOException
+	{
+		CsvImporter<AbstractBillInput> counting = new FailingImporter() {
+			@Override
+			public void save(AbstractBillInput entity, long carId, String name)
+			{
+			}
+		};
+		String csv = "date\n" + "2024-01-01\n".repeat(CsvProcessor.MAX_ROWS + 2);
+
+		CsvImportResult result = new CsvProcessor<>(counting)
+				.process(new StringReader(csv), new CsvColumnMapping(Map.of("date", 0)), 1, 19,
+						ImportUnits.of(null), 1, "peter");
+
+		assertEquals(CsvProcessor.MAX_ROWS, result.getSuccessCount());
+		assertEquals(1, result.getErrorCount());
+		// the header is row 1
+		assertEquals(CsvProcessor.MAX_ROWS + 2, result.getErrors().getFirst().rowNumber());
+	}
 }

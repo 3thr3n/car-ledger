@@ -18,6 +18,12 @@ public class CsvProcessor<T extends AbstractBillInput>
 {
 	private static final Logger LOG = LoggerFactory.getLogger(CsvProcessor.class);
 
+	/**
+	 * rows of one import, a larger file is imported up to it; imported again,
+	 * the imported rows are skipped as present
+	 */
+	public static final int MAX_ROWS = 5000;
+
 	private final CsvImporter<T> importer;
 
 	public CsvProcessor(CsvImporter<T> importer)
@@ -43,6 +49,13 @@ public class CsvProcessor<T extends AbstractBillInput>
 			while ((line = csvReader.readNext()) != null)
 			{
 				rowNumber++;
+				if (rowNumber - skipLines > MAX_ROWS)
+				{
+					result.addError(rowNumber,
+							"At most " + MAX_ROWS
+									+ " rows per import, this row and the ones after it were not imported");
+					break;
+				}
 
 				try
 				{
