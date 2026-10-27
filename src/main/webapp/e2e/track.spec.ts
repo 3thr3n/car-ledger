@@ -66,6 +66,12 @@ test.describe.serial('GPS track', () => {
   });
 
   test('shows the track of today with the speed scale', async () => {
+    // the last 3 days by default
+    await expect(
+      page
+        .getByRole('group', { name: 'Period' })
+        .getByRole('button', { name: 'Last 3 days' }),
+    ).toHaveAttribute('aria-pressed', 'true');
     await expect(
       page.getByText('0.1 km GPS distance in 1 section'),
     ).toBeVisible();
@@ -179,7 +185,7 @@ test.describe.serial('GPS track', () => {
     await page.getByRole('switch', { name: 'Places' }).uncheck();
   });
 
-  test('shows no track on the day before', async () => {
+  test('shows no track in the days before', async () => {
     await page.getByRole('button', { name: 'Earlier' }).click();
 
     await expect(page.getByText('No track in this period.')).toBeVisible();
@@ -214,11 +220,10 @@ test.describe.serial('GPS track', () => {
       0,
     );
 
-    // back to today for the next tests
-    await shortcuts.getByRole('button', { name: 'Today' }).click();
-    await expect(
-      shortcuts.getByRole('button', { name: 'Today' }),
-    ).toHaveAttribute('aria-pressed', 'true');
+    // back to the default for the next tests
+    const last3 = shortcuts.getByRole('button', { name: 'Last 3 days' });
+    await last3.click();
+    await expect(last3).toHaveAttribute('aria-pressed', 'true');
     await expect(
       page.getByText('0.1 km GPS distance in 1 section'),
     ).toBeVisible();
@@ -270,6 +275,11 @@ test.describe.serial('GPS track', () => {
     await device.dispose();
 
     await page.getByRole('tab', { name: 'Map' }).click();
+    // only today, the default of the last 3 days has yesterday's point as well
+    await page
+      .getByRole('group', { name: 'Period' })
+      .getByRole('button', { name: 'Today' })
+      .click();
     await expect(
       page.getByText('0.1 km GPS distance in 1 section'),
     ).toBeVisible();
