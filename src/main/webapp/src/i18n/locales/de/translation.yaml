@@ -1,6 +1,8 @@
 app:
   title: "CarLedger"
   loading: "Wird geladen"
+  hideSidebar: "Seitenleiste ausblenden"
+  pinSidebar: "Seitenleiste dauerhaft zeigen"
   language: "Sprache"
   openSource: "CarLedger ist freie Software unter der AGPL-3.0 — zu finden auf"
   version: "CarLedger {{version}}"

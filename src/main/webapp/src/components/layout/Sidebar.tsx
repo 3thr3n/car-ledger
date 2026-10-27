@@ -24,6 +24,8 @@ import AdminPanelSettingsRounded from '@mui/icons-material/AdminPanelSettingsRou
 import LightModeRounded from '@mui/icons-material/LightModeRounded';
 import DarkModeRounded from '@mui/icons-material/DarkModeRounded';
 import SettingsBrightnessRounded from '@mui/icons-material/SettingsBrightnessRounded';
+import MenuOpenRounded from '@mui/icons-material/MenuOpenRounded';
+import PushPinOutlined from '@mui/icons-material/PushPinOutlined';
 import { useQuery } from '@tanstack/react-query';
 import { useLocation } from '@tanstack/react-router';
 import { useEffect } from 'react';
@@ -45,7 +47,19 @@ import productLogo from '@/assets/car-ledger.svg';
 
 const languages = ['EN', 'DE'];
 
-export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
+/**
+ * @param onHide hides the sidebar beside the pages, on a large screen
+ * @param onPin shows it beside the pages again, from the menu
+ */
+export default function Sidebar({
+  onNavigate,
+  onHide,
+  onPin,
+}: {
+  onNavigate?: () => void;
+  onHide?: () => void;
+  onPin?: () => void;
+}) {
   const { t, i18n } = useTranslation();
   const { pathname } = useLocation();
   const { account, loggedIn, maxCars, isAdmin } = useMe();
@@ -112,6 +126,31 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
         >
           {t('app.title')}
         </Typography>
+        <Box sx={{ flexGrow: 1 }} />
+        {onHide && (
+          <Tooltip title={t('app.hideSidebar')}>
+            <IconButton
+              size="small"
+              onClick={onHide}
+              aria-label={t('app.hideSidebar')}
+              sx={{ mr: -1 }}
+            >
+              <MenuOpenRounded fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        )}
+        {onPin && (
+          <Tooltip title={t('app.pinSidebar')}>
+            <IconButton
+              size="small"
+              onClick={onPin}
+              aria-label={t('app.pinSidebar')}
+              sx={{ mr: -1 }}
+            >
+              <PushPinOutlined fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        )}
       </Stack>
 
       <Box sx={{ flexGrow: 1, overflowY: 'auto', px: 1.5 }}>
