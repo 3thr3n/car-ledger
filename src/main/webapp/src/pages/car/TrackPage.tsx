@@ -38,7 +38,12 @@ import LazyTrackMap from '@/components/track/LazyTrackMap';
 import SpeedLegend from '@/components/track/SpeedLegend';
 import FrequencyLegend from '@/components/track/FrequencyLegend';
 import PlaceDialog from '@/components/track/PlaceDialog';
-import { rangeOf, SHORTCUTS, shortcutOf } from '@/components/track/periods';
+import {
+  Range,
+  rangeOf,
+  SHORTCUTS,
+  shortcutOf,
+} from '@/components/track/periods';
 import { Place } from '@/generated';
 
 /** the server returns at most this many days */
@@ -53,11 +58,8 @@ type Mode = 'speed' | 'frequency';
 export default function TrackPage({ carId }: { carId: number }) {
   const { t } = useTranslation();
   const format = useFormat();
-  const today = toApiDate(dayjs())!;
-  const [range, setRange] = useState<{ from?: string; to?: string }>({
-    from: today,
-    to: today,
-  });
+  // the last days by default: a drive yesterday evening still shows
+  const [range, setRange] = useState<Range>(() => rangeOf('last3'));
 
   const { data: settings } = useQuery(
     getMapSettingsOptions({ client: localClient }),
