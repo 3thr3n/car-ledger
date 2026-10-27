@@ -6,7 +6,8 @@ import java.time.temporal.ChronoUnit;
 import jakarta.persistence.*;
 
 /**
- * A place the owner of the car named, e.g. a fuel station it stops at often
+ * A place the owner or an editor of the car named, e.g. a fuel station it stops
+ * at often
  */
 @Entity(name = "place")
 public class PlaceEntity

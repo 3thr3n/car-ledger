@@ -15,6 +15,7 @@ import de.codeflowwizardry.carledger.data.CarRole;
  * <code>car_access</code>, which counts only once accepted and within its
  * period:
  * <table>
+ * <caption>The actions and the roles allowed to do them</caption>
  * <tr>
  * <th>Action</th>
  * <th>Roles</th>

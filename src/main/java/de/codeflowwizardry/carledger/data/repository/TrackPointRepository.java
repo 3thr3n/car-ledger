@@ -179,8 +179,8 @@ public class TrackPointRepository
 
 	/**
 	 * Inserts many points at once with <code>COPY</code>, e.g. of a restore, in
-	 * the transaction of the caller: {@link #add} the points, then
-	 * {@link #finish}. A point of a tracker with the same time is skipped.
+	 * the transaction of the caller: {@link Bulk#add} the points, then
+	 * {@link Bulk#finish}. A point of a tracker with the same time is skipped.
 	 */
 	public Bulk bulk(long carId)
 	{

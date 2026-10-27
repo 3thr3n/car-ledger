@@ -381,6 +381,18 @@
                     </execution>
                 </executions>
             </plugin>
+            <!-- ./mvnw javadoc:javadoc builds the site of the backend to target/reports/apidocs, with the private
+                 members: it is an app, not a library. Broken references, HTML and tags fail it, missing comments not -->
+            <plugin>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.12.0</version>
+                <configuration>
+                    <show>private</show>
+                    <doclint>all,-missing</doclint>
+                    <failOnWarnings>true</failOnWarnings>
+                    <quiet>true</quiet>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
