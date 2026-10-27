@@ -477,6 +477,12 @@ kubectl set env deployment/car-ledger QUARKUS_FLYWAY_IGNORE_FUTURE_MIGRATIONS=tr
   users flash the firmware and the settings of a tracker from Chrome or Edge over USB; the firmware is not part of
   CarLedger. `carLedger.imagePullSecrets` pulls the images of the pod from a private registry, see
   [GPS_TRACKER.md](GPS_TRACKER.md#flashing).
+- **Security contexts** (0.10.0; keycloak chart 0.5.2, authentik chart 0.4.1): the pods run with `seccompProfile:
+  RuntimeDefault`, without privilege escalation and capabilities. The app has a read-only root filesystem and writes
+  only to `/tmp`, an `emptyDir` (uploads, the ZIP of a restore, the truststore of `carLedger.trust`); a value
+  `carLedger.securityContext` of your own replaces these defaults, keep them in it. Keycloak and the authentik server
+  get no token of a service account, the authentik worker keeps its one for the outposts. Infinispan only gets the
+  security context of the pod, its chart has none for the container. Nothing to set up.
 - **No webhooks** (0.9.0): CarLedger sends no webhooks anymore, the mails and push messages and the decisions on the
   administration page stay. A configured `carLedger.webhook.*` (`CARLEDGER_WEBHOOK_URL` and the others) is ignored,
   remove it from your values; a script that decided the car requests on a webhook can poll

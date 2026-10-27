@@ -23,8 +23,19 @@ carLedger:
   # secrets of type kubernetes.io/dockerconfigjson for private registries, e.g. [{name: regcred}]. They
   # apply to every image of the pod: the app and an image volume of tracker.firmware
   imagePullSecrets: []
+  # the pod of the app
+  podSecurityContext:
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+  # the container of the app: it writes only to /tmp, an emptyDir (the truststore of carLedger.trust, the ZIP of a
+  # restore, uploads)
   securityContext:
     runAsNonRoot: true
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop: [ "ALL" ]
+    readOnlyRootFilesystem: true
   # OpenID Connect provider, Keycloak of the keycloak chart by default, any other works as well
   # (see docs/DEPLOYMENT.md), e.g. authentik of the authentik chart
   auth:
@@ -232,7 +243,11 @@ infinispan:
     nameOverride: "car-ledger-infinispan"
     # the server runs as user 185: a new volume of block storage (e.g. Longhorn) belongs to root, without the group the
     # server can not write its data directory (Permission denied on ___global.lck)
+    # the subchart sets only the security context of the pod, not of its container
     securityContext:
       fsGroup: 185
+      runAsNonRoot: true
+      seccompProfile:
+        type: RuntimeDefault
     security:
       secretName: infinispan

@@ -96,6 +96,21 @@ keycloak:
     limits:
       cpu: "1"
       memory: 1Gi
+  # the defaults of keycloakx (uid 1000, fsGroup 1000) hardened; the root filesystem stays writable, Keycloak keeps
+  # its build and temporary files in /opt/keycloak/data
+  podSecurityContext:
+    fsGroup: 1000
+    seccompProfile:
+      type: RuntimeDefault
+  securityContext:
+    runAsUser: 1000
+    runAsNonRoot: true
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop: [ "ALL" ]
+  # Keycloak doesn't call the Kubernetes API (no KUBE_PING, allowReadPods is off)
+  serviceAccount:
+    automountServiceAccountToken: false
 
   ingress:
     enabled: true
