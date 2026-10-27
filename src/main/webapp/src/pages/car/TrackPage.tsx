@@ -38,6 +38,7 @@ import LazyTrackMap from '@/components/track/LazyTrackMap';
 import SpeedLegend from '@/components/track/SpeedLegend';
 import FrequencyLegend from '@/components/track/FrequencyLegend';
 import PlaceDialog from '@/components/track/PlaceDialog';
+import { rangeOf, SHORTCUTS, shortcutOf } from '@/components/track/periods';
 import { Place } from '@/generated';
 
 /** the server returns at most this many days */
@@ -171,6 +172,20 @@ export default function TrackPage({ carId }: { carId: number }) {
       }
     >
       <Stack spacing={2}>
+        <ToggleButtonGroup
+          size="small"
+          exclusive
+          value={shortcutOf(range) ?? null}
+          onChange={(_, shortcut) => shortcut && setRange(rangeOf(shortcut))}
+          aria-label={t('track.shortcuts.label')}
+          sx={{ flexWrap: 'wrap' }}
+        >
+          {SHORTCUTS.map((shortcut) => (
+            <ToggleButton key={shortcut} value={shortcut} sx={{ px: 1.5 }}>
+              {t(`track.shortcuts.${shortcut}`)}
+            </ToggleButton>
+          ))}
+        </ToggleButtonGroup>
         <Stack
           direction="row"
           spacing={1}

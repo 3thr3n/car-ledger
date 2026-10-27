@@ -186,6 +186,44 @@ test.describe.serial('GPS track', () => {
     await expect(page.getByRole('button', { name: 'Later' })).toBeEnabled();
   });
 
+  test('sets the period with a shortcut', async () => {
+    const shortcuts = page.getByRole('group', { name: 'Period' });
+    // the day before, moved with the arrows: no shortcut
+    await expect(shortcuts.getByRole('button', { pressed: true })).toHaveCount(
+      0,
+    );
+
+    const week = shortcuts.getByRole('button', { name: 'Last 7 days' });
+    const loaded = page.waitForResponse(
+      (response) => /\/api\/track\/\d+\?/.test(response.url()) && response.ok(),
+    );
+    await week.click();
+    const url = new URL((await loaded).url());
+    const days =
+      (Date.parse(url.searchParams.get('to')!) -
+        Date.parse(url.searchParams.get('from')!)) /
+      86_400_000;
+    expect(Math.round(days)).toBe(7);
+    await expect(week).toHaveAttribute('aria-pressed', 'true');
+    await expect(
+      page.getByText('0.1 km GPS distance in 1 section'),
+    ).toBeVisible();
+
+    await page.getByRole('button', { name: 'Earlier' }).click();
+    await expect(shortcuts.getByRole('button', { pressed: true })).toHaveCount(
+      0,
+    );
+
+    // back to today for the next tests
+    await shortcuts.getByRole('button', { name: 'Today' }).click();
+    await expect(
+      shortcuts.getByRole('button', { name: 'Today' }),
+    ).toHaveAttribute('aria-pressed', 'true');
+    await expect(
+      page.getByText('0.1 km GPS distance in 1 section'),
+    ).toBeVisible();
+  });
+
   test('shows the track of a trip next to its odometer distance', async () => {
     const api = await aliceApi();
     const trip = await api.put(

@@ -466,6 +466,12 @@ track:
   subtitle: "The tracks of the GPS trackers of this car"
   summary_one: "{{distance}} GPS distance in {{count}} section"
   summary_other: "{{distance}} GPS distance in {{count}} sections"
+  shortcuts:
+    label: "Period"
+    today: "Today"
+    last3: "Last 3 days"
+    last7: "Last 7 days"
+    month: "This month"
   earlier: "Earlier"
   later: "Later"
   empty: "No track in this period."
