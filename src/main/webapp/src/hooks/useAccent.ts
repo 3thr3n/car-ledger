@@ -83,11 +83,9 @@ export default function useAccent(): Accent {
   const [cached] = useState(() => stored(KEY) ?? Accent.TEAL);
   const accent = chosen ?? account?.accent ?? cached;
 
+  // the saved choice is dropped below, once the account has it: the cached
+  // account is updated a tick later, without it the old accent would flash
   const settings = useSaveSettings({
-    onSuccess: () => {
-      // a newer choice is sent with the next run
-      if (pending === sent) setPending(undefined);
-    },
     onError: (error) => {
       // without a connection it is sent later
       if (error instanceof BackendError && error.status === 0) return;
@@ -97,12 +95,13 @@ export default function useAccent(): Accent {
   });
 
   useEffect(() => {
-    if (!chosen || !account || !online || settings.isPending) return;
+    if (!chosen || !account) return;
     if (chosen === account.accent) {
       setPending(undefined);
       return;
     }
-    sent = chosen;
+    // a newer choice is sent with the next run
+    if (!online || settings.isPending) return;
     settings.save({
       vatCountry: account.vatCountry,
       currency: account.currency,
@@ -141,6 +140,3 @@ function keepThemeColor(color: string) {
     .then((cache) => cache.put(THEME_COLOR, new Response(color)))
     .catch(() => undefined);
 }
-
-/** the accent of the last request, only one is sent at a time */
-let sent: Accent | undefined;
