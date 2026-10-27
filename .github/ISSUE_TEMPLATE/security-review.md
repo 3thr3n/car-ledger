@@ -30,6 +30,8 @@ reviewed with its milestone (see #481 for the full review before 0.9.0).
       ends
 - [ ] Logs and error answers without tokens, secrets or data of other users
 - [ ] Charts: new secrets, values and permissions
+- [ ] Workflows: actions pinned to a commit SHA with the version as comment, permissions of the token as small as
+      possible
 
 ### Done when
 Every point is checked or has an issue of its own; the fixes are merged before the release, or moved to the next
