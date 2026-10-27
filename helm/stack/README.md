@@ -27,7 +27,7 @@ The stack has the version of the app: the release `0.8.0` runs the image `0.8.0`
 same commit. Builds of `develop` are published as prereleases like the app chart (`--devel`).
 
 Name the release `car-ledger` and install it once per namespace: the names of the resources are fixed (e.g. the
-PostgreSQL of the app `car-ledger-postgresql`, the secrets `car-ledger-oidc` and `car-ledger-webhook`). The
+PostgreSQL of the app `car-ledger-postgresql`, the secrets `car-ledger-oidc` and `car-ledger-push`). The
 PostgreSQL of Keycloak and authentik are `car-ledger-keycloak-postgresql` and `car-ledger-authentik-postgresql`.
 
 After the install, the notes of the release name the admin passwords and the next steps:

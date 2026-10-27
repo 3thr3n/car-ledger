@@ -31,17 +31,15 @@ import de.codeflowwizardry.carledger.notification.push.PushConfig;
 import de.codeflowwizardry.carledger.notification.push.PushMessage;
 import de.codeflowwizardry.carledger.notification.push.PushSubscriptionEntity;
 import de.codeflowwizardry.carledger.notification.push.PushSubscriptionRepository;
+import de.codeflowwizardry.carledger.request.CarLimitPayload;
+import de.codeflowwizardry.carledger.request.RequestEntity;
+import de.codeflowwizardry.carledger.request.RequestState;
 import de.codeflowwizardry.carledger.rest.car.reminder.Reminder;
-import de.codeflowwizardry.carledger.webhook.CarRequestCreated;
-import de.codeflowwizardry.carledger.webhook.CarRequestDecided;
-import de.codeflowwizardry.carledger.webhook.WebhookEvent;
-import de.codeflowwizardry.carledger.webhook.WebhookMessage;
 import io.quarkus.mailer.Mail;
 import io.quarkus.qute.Engine;
 import io.quarkus.qute.Template;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Event;
-import jakarta.enterprise.event.Observes;
 import jakarta.inject.Inject;
 
 /**
@@ -100,53 +98,50 @@ public class Notifications
 		return mailConfig.enabled() && account.isNotifyByMail() && account.getEmail() != null;
 	}
 
-	void onEvent(@Observes WebhookMessage message)
+	/**
+	 * The new request for more cars to the administrators who want it, not to the
+	 * one who asked. Sent after the commit.
+	 *
+	 * @param maxCars
+	 *            the limit of the account when it asked
+	 */
+	public void carRequestCreated(RequestEntity request, int cars, int maxCars)
 	{
-		if (!mailConfig.enabled() && !pushConfig.enabled())
+		String account = request.getAccount().getUserId();
+		List<AccountEntity> admins = accountRepository.list(
+				"admin = true and notifyNewRequests = true and userId <> ?1", account);
+		Batch batch = new Batch("car-request.created");
+		for (AccountEntity admin : admins)
 		{
-			return;
-		}
-		Batch batch = new Batch(message.type());
-		switch (WebhookEvent.ofType(message.type()).orElseThrow())
-		{
-			case CAR_REQUEST_CREATED -> carRequestCreated(batch, (CarRequestCreated) message.data());
-			case CAR_REQUEST_DECIDED -> carRequestDecided(batch, (CarRequestDecided) message.data());
+			batch.add(admin, "car-request-created", "/admin", "car-request-" + request.getId(), Map.of(
+					"account", account,
+					"cars", cars,
+					"maxCars", maxCars,
+					"reason", Optional.ofNullable(request.getReason()).orElse("")));
 		}
 		batch.fire();
 	}
 
 	/**
-	 * To the administrators who want it, not to the one who asked
+	 * The decision on a request for more cars to the user who asked, if wanted.
+	 * Sent after the commit.
 	 */
-	private void carRequestCreated(Batch batch, CarRequestCreated request)
+	public void carRequestDecided(RequestEntity request)
 	{
-		List<AccountEntity> admins = accountRepository.list(
-				"admin = true and notifyNewRequests = true and userId <> ?1", request.account());
-		for (AccountEntity admin : admins)
+		AccountEntity account = request.getAccount();
+		if (!account.isNotifyRequestDecided())
 		{
-			batch.add(admin, "car-request-created", "/admin", "car-request-" + request.requestId(), Map.of(
-					"account", request.account(),
-					"cars", request.cars(),
-					"maxCars", request.maxCars(),
-					"reason", Optional.ofNullable(request.reason()).orElse("")));
+			return;
 		}
-	}
-
-	/**
-	 * To the user who asked, if wanted
-	 */
-	private void carRequestDecided(Batch batch, CarRequestDecided decision)
-	{
-		accountRepository.find("userId", decision.account()).singleResultOptional()
-				.filter(AccountEntity::isNotifyRequestDecided)
-				.ifPresent(account -> {
-					Map<String, Object> data = new HashMap<>();
-					data.put("approved", "APPROVED".equals(decision.state()));
-					data.put("cars", decision.cars());
-					data.put("grantedMaxCars", Optional.ofNullable(decision.grantedMaxCars()).orElse(0));
-					data.put("comment", Optional.ofNullable(decision.comment()).orElse(""));
-					batch.add(account, "car-request-decided", "/car", "car-request-" + decision.requestId(), data);
-				});
+		CarLimitPayload payload = CarLimitPayload.of(request.getPayload());
+		Map<String, Object> data = new HashMap<>();
+		data.put("approved", request.getState() == RequestState.APPROVED);
+		data.put("cars", payload.cars());
+		data.put("grantedMaxCars", Optional.ofNullable(payload.grantedMaxCars()).orElse(0));
+		data.put("comment", Optional.ofNullable(request.getComment()).orElse(""));
+		Batch batch = new Batch("car-request.decided");
+		batch.add(account, "car-request-decided", "/car", "car-request-" + request.getId(), data);
+		batch.fire();
 	}
 
 	/**
