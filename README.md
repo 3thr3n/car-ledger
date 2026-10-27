@@ -373,6 +373,9 @@ Contributions are welcome! Please follow these steps to contribute:
 ### Branches and releases
 
 - `develop` gets all pull requests, its builds are published as prereleases (`<next release>-dev.<run number>`).
+- Every milestone ends with a security review of the pull requests since the last release, an issue of the
+  template *Security review of a milestone* (`.github/ISSUE_TEMPLATE/security-review.md`). Its findings are fixed
+  before the release or moved to the next milestone on purpose.
 - `main` only holds released states. A release is a pull request from `develop` to `main`, merged with a merge
   commit (not squashed, so both branches keep the same history), then the tag of the version in
   `helm/car-ledger/Chart.yaml` on `main`. Afterwards the next version is set in `Chart.yaml` on `develop`.
