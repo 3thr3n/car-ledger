@@ -146,6 +146,7 @@ export default function RecurringForm({
             placeholder={t('bill.recurringPlaceholder')}
             value={form.name}
             onChange={(e) => set({ name: e.target.value })}
+            slotProps={{ htmlInput: { maxLength: 100 } }}
             required
             error={touched && !!errors.name}
             helperText={touched && errors.name}
@@ -168,6 +169,7 @@ export default function RecurringForm({
             label={t('bill.fields.description')}
             value={form.description}
             onChange={(e) => set({ description: e.target.value })}
+            slotProps={{ htmlInput: { maxLength: 1000 } }}
           />
         </Grid>
         <Grid size={{ xs: 12, sm: 6 }}>

@@ -2,7 +2,9 @@ package de.codeflowwizardry.carledger.rest.car.maintenance;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
+import de.codeflowwizardry.carledger.Utils;
 import de.codeflowwizardry.carledger.rest.records.input.AbstractBillInput;
 
 public class MaintenanceBillInput extends AbstractBillInput
@@ -47,5 +49,14 @@ public class MaintenanceBillInput extends AbstractBillInput
 	public String getWorkshop()
 	{
 		return workshop;
+	}
+
+	@Override
+	public List<String> validate()
+	{
+		List<String> errors = super.validate();
+		Utils.checkLength(errors, "Workshop", workshop, 100);
+		Utils.checkLength(errors, "Description", description, 1000);
+		return errors;
 	}
 }

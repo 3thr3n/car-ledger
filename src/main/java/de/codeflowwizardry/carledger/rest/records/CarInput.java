@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 
+import de.codeflowwizardry.carledger.Utils;
 import de.codeflowwizardry.carledger.data.EnergyType;
 
 /**
@@ -34,6 +35,7 @@ public record CarInput(String name, int year, int odometer, String licensePlate,
 		BigDecimal purchasePrice, EnergyType energyType, BigDecimal tankSize, BigDecimal batteryCapacity,
 		Boolean tripLog)
 {
+	public static final int MAX_NAME_LENGTH = 100;
 	public static final int MAX_PLATE_LENGTH = 20;
 	public static final BigDecimal MAX_PRICE = new BigDecimal("9999999999.99");
 
@@ -94,6 +96,7 @@ public record CarInput(String name, int year, int odometer, String licensePlate,
 	public List<String> validateDetails()
 	{
 		List<String> errors = new ArrayList<>();
+		Utils.checkLength(errors, "Name", name, MAX_NAME_LENGTH);
 
 		String plate = normalizedLicensePlate();
 		if (plate != null && plate.length() > MAX_PLATE_LENGTH)

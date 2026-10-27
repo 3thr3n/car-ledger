@@ -277,6 +277,7 @@ function CarForm({
           error={touched && !!errors.name}
           helperText={touched && errors.name}
           required
+          slotProps={{ htmlInput: { maxLength: 100 } }}
         />
         <NumberField
           label={t('car.form.year')}

@@ -139,6 +139,7 @@ export default function MaintenanceForm({
             label={t('bill.fields.workshop')}
             value={form.workshop}
             onChange={(e) => set({ workshop: e.target.value })}
+            slotProps={{ htmlInput: { maxLength: 100 } }}
           />
         </Grid>
         <Grid size={{ xs: 12, sm: 6 }}>
@@ -165,6 +166,7 @@ export default function MaintenanceForm({
             onChange={(e) => set({ description: e.target.value })}
             multiline
             minRows={2}
+            slotProps={{ htmlInput: { maxLength: 1000 } }}
           />
         </Grid>
         <Grid size={{ xs: 12, sm: 4 }}>
