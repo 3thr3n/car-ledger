@@ -22,7 +22,6 @@ render() {
     --set ingress.enabled=false --set httpRoute.enabled=true \
     --set carLedger.mail.host=smtp.example.com --set carLedger.mail.username=car-ledger \
     --set carLedger.mail.existingSecret=mail \
-    --set carLedger.webhook.url=https://hooks.example.com --set carLedger.webhook.existingSecret=webhook \
     --set 'carLedger.trust.certificates[0].secret=company-ca' \
     --set 'carLedger.trust.certificates[1].configMap=other-ca' \
     --set 'networkPolicy.extraFrom[0].podSelector.matchLabels.app=pg-backup'

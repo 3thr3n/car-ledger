@@ -69,8 +69,8 @@ authentik or any other provider).
   pictures) as one ZIP and restores it into an account without cars, e.g. on another installation.
 - **Car requests:** users who reached their car limit request more cars, administrators decide on the administration
   page.
-- **Webhooks and service accounts:** events like a new car request are sent as signed HTTP requests, scripts use the API
-  with tokens of the identity provider, see [docs/WEBHOOKS.md](docs/WEBHOOKS.md).
+- **Service accounts:** scripts use the API with tokens of the identity provider, e.g. to decide car requests, see
+  [Service accounts](docs/DEPLOYMENT.md#service-accounts).
 - **Administration:** usage statistics, all accounts with their cars, the car limit per account, deleting accounts.
 
 ## Installation
@@ -196,7 +196,6 @@ described in [values.yaml](helm/car-ledger/values.yaml), the options in [docs/DE
 | `carLedger.mail.host`                         |                                 | SMTP server for the notifications, none sent without it ([E-mail](docs/DEPLOYMENT.md#e-mail)) |
 | `carLedger.push.enabled`                      | `true`                          | Push messages to the browsers, the key is generated ([Push](docs/DEPLOYMENT.md#push)) |
 | `carLedger.map.styleUrl`                      |                                 | MapLibre style for the map of the GPS tracks, hidden without it        |
-| `carLedger.webhook.url`                       |                                 | Receiver of the webhooks ([WEBHOOKS.md](docs/WEBHOOKS.md))             |
 | `carLedger.attachments.maxSize`               | `10M`                           | Largest receipt; proxies in front need `maxRequestSize` (`12M`) as well |
 | `carLedger.attachments.storage`               | `DB`                            | `S3` with `carLedger.attachments.s3.*` keeps the files in a bucket ([docs](docs/DEPLOYMENT.md#attachments-in-s3)) |
 | `carLedger.trust.certificates`                | `[]`                            | CAs the app trusts for its own HTTPS requests ([self-signed](docs/DEPLOYMENT.md#self-signed-certificates)) |

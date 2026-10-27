@@ -178,8 +178,6 @@ with the role `user`, the roles are missing in the tokens of the client.
   explains a backup that is too large. The track points take about 6 bytes each in the ZIP: a year of commuting at
   one point per second (2.3 million points) is 14 MB. A download or a restore may take
   `carLedger.backup.transactionTimeout` seconds (1800), the other requests 60 s; such a restore takes under a minute.
-- **Webhooks**: `carLedger.webhook.url` sends events like a new car request as signed HTTP requests; the key of the
-  signature comes from `carLedger.webhook.existingSecret`. See [WEBHOOKS.md](WEBHOOKS.md).
 - **Service accounts**: besides the login of the browser, the API accepts access tokens of the identity provider
   (`Authorization: Bearer …`), e.g. of a script deciding car requests. See [Service accounts](#service-accounts).
 - **GPS trackers**: a tracker in the car (e.g. an ESP32) sends its points to `/api/device/points` with its own token,
@@ -189,7 +187,7 @@ with the role `user`, the roles are missing in the tokens of the client.
 - **E-mail**: `carLedger.mail.host` sends notifications by e-mail, see [E-mail](#e-mail).
 - **Push**: the notifications reach the browsers as push messages, on by default, see [Push](#push).
 - **Self-signed certificates**: the app trusts the CA of the ingresses and further certificates for its own HTTPS
-  requests (login, SMTP, webhooks), see [Self-signed certificates](#self-signed-certificates).
+  requests (login, SMTP, push), see [Self-signed certificates](#self-signed-certificates).
 - **Network policies**: only the app reaches its PostgreSQL and Infinispan, only Keycloak and authentik their
   PostgreSQL (`networkPolicy.enabled`, on by default in all charts; needs a network plugin that enforces them). Further
   sources, e.g. a backup tool: `networkPolicy.extraFrom`. `kubectl exec … pg_dump` (see [Operations](#operations))
@@ -273,6 +271,11 @@ TOKEN=$(curl -s https://keycloak.example.com/realms/car-ledger/protocol/openid-c
 curl -H "Authorization: Bearer $TOKEN" "https://car-ledger.example.com/api/admin/car-requests?state=OPEN"
 ```
 
+The car requests of the users are decided with `POST /api/admin/car-requests/{id}/approve` (body `{ "maxCars": 2 }`,
+optional, the default is the current limit plus the requested cars) or `POST /api/admin/car-requests/{id}/reject`
+(body `{ "comment": "..." }`, optional, shown to the user). `GET /api/admin/car-requests?state=OPEN` lists the open
+ones with the user, the number of further cars, the current limit and the reason.
+
 Requests decided this way show `service-account-car-ledger-bot` as the deciding administrator. authentik issues such
 tokens with the `client_credentials` grant of the provider *CarLedger*, the user name of a service account in the group
 `admin` and an app password, see the
@@ -312,7 +315,7 @@ until it can.
 
 ### Self-signed certificates
 
-The app makes HTTPS requests of its own: to the identity provider (the login), the SMTP server, webhooks and the push
+The app makes HTTPS requests of its own: to the identity provider (the login), the SMTP server and the push
 services. It trusts the public CAs, and the certificates of `carLedger.trust` besides them. Without them a login at an
 identity provider with a self-signed certificate fails with `PKIX path building failed` in the log of the app.
 
@@ -474,6 +477,10 @@ kubectl set env deployment/car-ledger QUARKUS_FLYWAY_IGNORE_FUTURE_MIGRATIONS=tr
   users flash the firmware and the settings of a tracker from Chrome or Edge over USB; the firmware is not part of
   CarLedger. `carLedger.imagePullSecrets` pulls the images of the pod from a private registry, see
   [GPS_TRACKER.md](GPS_TRACKER.md#flashing).
+- **No webhooks** (0.9.0): CarLedger sends no webhooks anymore, the mails and push messages and the decisions on the
+  administration page stay. A configured `carLedger.webhook.*` (`CARLEDGER_WEBHOOK_URL` and the others) is ignored,
+  remove it from your values; a script that decided the car requests on a webhook can poll
+  `GET /api/admin/car-requests?state=OPEN` with a [service account](#service-accounts) instead.
 - **Places** (0.9.0): the map shows the places a car stops at often and lets the owner name them, see
   [GPS_TRACKER.md](GPS_TRACKER.md#places). The names are part of the backup (migration 1.29.0). Nothing to set up.
 - **Sharing a car** (0.9.0): the owner invites other accounts as editor, viewer or driver, optionally for a period
@@ -518,8 +525,7 @@ kubectl set env deployment/car-ledger QUARKUS_FLYWAY_IGNORE_FUTURE_MIGRATIONS=tr
 - **Car requests** (0.4.0): users who reached their car limit request more cars in the garage, the role `admin` approves
   or rejects them on the administration page; the entry *Administration* shows the number of open requests. Nothing
   to set up.
-- **Webhooks and service accounts** (0.4.0, optional): without `carLedger.webhook.url` no events are sent, see
-  [WEBHOOKS.md](WEBHOOKS.md). Scripts can call the API with the access token of a service account, see
+- **Service accounts** (0.4.0, optional): scripts can call the API with the access token of a service account, see
   [Service accounts](#service-accounts).
 - **Chart name** (0.4.0): the app chart is named `car-ledger` now, published at
   `oci://ghcr.io/3thr3n/car-ledger/car-ledger`. The old path `oci://ghcr.io/3thr3n/car-ledger/helm` ends with 0.3.0,

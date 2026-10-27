@@ -195,23 +195,6 @@ spec:
             - name: CARLEDGER_TRACKER_MIN_DRIVE_DURATION
               value: {{ .minDriveDuration | quote }}
             {{- end }}
-            {{- with .Values.carLedger.webhook }}
-            {{- if .url }}
-            - name: CARLEDGER_WEBHOOK_URL
-              value: {{ .url | quote }}
-            {{- if .existingSecret }}
-            - name: CARLEDGER_WEBHOOK_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .existingSecret }}
-                  key: {{ .secretKey }}
-            {{- end }}
-            {{- if .events }}
-            - name: CARLEDGER_WEBHOOK_EVENTS
-              value: {{ join "," .events | quote }}
-            {{- end }}
-            {{- end }}
-            {{- end }}
           # liveness and readiness start after the startup probe succeeded
           startupProbe:
             httpGet:
