@@ -19,6 +19,7 @@ import RouteRounded from '@mui/icons-material/RouteRounded';
 import GpsFixedRounded from '@mui/icons-material/GpsFixedRounded';
 import InstallMobileRounded from '@mui/icons-material/InstallMobileRounded';
 import BackupRounded from '@mui/icons-material/BackupRounded';
+import GroupRounded from '@mui/icons-material/GroupRounded';
 import { ReactNode, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import useMe from '@/hooks/useMe';
@@ -88,6 +89,11 @@ const features: Feature[] = [
   },
   { key: 'trips', icon: <RouteRounded fontSize="small" />, color: 'primary' },
   { key: 'gps', icon: <GpsFixedRounded fontSize="small" />, color: 'primary' },
+  {
+    key: 'sharing',
+    icon: <GroupRounded fontSize="small" />,
+    color: 'primary',
+  },
   {
     key: 'offline',
     icon: <InstallMobileRounded fontSize="small" />,

@@ -92,6 +92,9 @@ landing:
     gps:
       title: "GPS-Tracking"
       text: "Ein Tracker im Auto sendet die Strecke: die Karte nach Tempo oder Häufigkeit, vergessene Fahrten vorgeschlagen."
+    sharing:
+      title: "Teilen"
+      text: "Lade deinen Haushalt oder deine Fahrer zu einem Auto ein, als Bearbeiter, Betrachter oder Fahrer, auch für einen Zeitraum."
     offline:
       title: "App und offline"
       text: "Auf dem Startbildschirm wie eine App; Tankungen und Fahrten gehen ohne Verbindung, die Papiere bleiben auf dem Handy."

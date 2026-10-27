@@ -19,6 +19,7 @@ test('shows all features on the landing page', async ({ page }) => {
     'Reminders',
     'Trip log',
     'GPS tracking',
+    'Sharing',
     'App and offline',
     'Backup',
   ]) {

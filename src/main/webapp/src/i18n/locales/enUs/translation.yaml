@@ -92,6 +92,9 @@ landing:
     gps:
       title: "GPS tracking"
       text: "A tracker in the car sends its route: the map by speed or by how often you drove it, forgotten trips suggested."
+    sharing:
+      title: "Sharing"
+      text: "Invite your household or your drivers to a car as editor, viewer or driver, also for a period."
     offline:
       title: "App and offline"
       text: "On the home screen like an app; refuels and trips work without a connection, the papers stay on the phone."
