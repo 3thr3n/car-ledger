@@ -135,14 +135,14 @@ shorter ones), 32 or more are recommended, and all replicas need the same one.
 helm install car-ledger oci://ghcr.io/3thr3n/car-ledger/car-ledger --set ingress.host=example.com
 ```
 
-Without `--version` the latest release is installed. A release (e.g. `0.8.0`, see the
-[releases](https://github.com/3thr3n/car-ledger/releases)) publishes the image `ghcr.io/3thr3n/car-ledger:0.8.0` and the
-chart `oci://ghcr.io/3thr3n/car-ledger/car-ledger` in version `0.8.0`, which runs that image (up to 0.3.x the chart was
+Without `--version` the latest release is installed. A release (e.g. `0.9.0`, see the
+[releases](https://github.com/3thr3n/car-ledger/releases)) publishes the image `ghcr.io/3thr3n/car-ledger:0.9.0` and the
+chart `oci://ghcr.io/3thr3n/car-ledger/car-ledger` in version `0.9.0`, which runs that image (up to 0.3.x the chart was
 `oci://ghcr.io/3thr3n/car-ledger/helm`).
 
 Every build of `develop` publishes the image `ghcr.io/3thr3n/car-ledger:<run number>` and the chart as the prerelease
-`<next release>-dev.<run number>`, e.g. `0.9.0-dev.123`, which runs the image of the same build: `--version
-0.9.0-dev.123` installs build 123, `--devel` the latest build. Leave `carLedger.image.tag` empty, it would override
+`<next release>-dev.<run number>`, e.g. `0.10.0-dev.123`, which runs the image of the same build: `--version
+0.10.0-dev.123` installs build 123, `--devel` the latest build. Leave `carLedger.image.tag` empty, it would override
 the image of the chart.
 
 From the repository (`helm dependency update helm/car-ledger`, `helm install car-ledger helm/car-ledger ...`) the chart
@@ -481,6 +481,11 @@ kubectl set env deployment/car-ledger QUARKUS_FLYWAY_IGNORE_FUTURE_MIGRATIONS=tr
   administration page stay. A configured `carLedger.webhook.*` (`CARLEDGER_WEBHOOK_URL` and the others) is ignored,
   remove it from your values; a script that decided the car requests on a webhook can poll
   `GET /api/admin/car-requests?state=OPEN` with a [service account](#service-accounts) instead.
+- **Security hardening** (0.9.0): requests of the login session that change something need the header
+  `X-Requested-With` (the app sends it; requests with a token, e.g. of a service account, don't). Texts have length
+  limits (e.g. 100 characters for the name of a car), a NUL character is rejected, a CSV import takes at most 5000
+  rows, and push subscriptions only reach the push services over https. Text cells of the CSV exports that a
+  spreadsheet would run as a formula start with `'`. Nothing to set up.
 - **Places** (0.9.0): the map shows the places a car stops at often and lets the owner name them, see
   [GPS_TRACKER.md](GPS_TRACKER.md#places). The names are part of the backup (migration 1.29.0). Nothing to set up.
 - **Sharing a car** (0.9.0): the owner invites other accounts as editor, viewer or driver, optionally for a period
