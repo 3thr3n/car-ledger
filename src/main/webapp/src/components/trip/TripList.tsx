@@ -20,6 +20,7 @@ import RouteRounded from '@mui/icons-material/RouteRounded';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { Fragment, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import useCarRole from '@/hooks/useCarRole';
 import { Trip } from '@/generated';
 import {
   getTripsOptions,
@@ -34,6 +35,7 @@ import TripDeleteDialog from './TripDeleteDialog';
 import TripExportDialog from './TripExportDialog';
 import TripTrack from './TripTrack';
 import useTrackMap from '@/components/track/useTrackMap';
+import CreatorHint from '@/components/ui/CreatorHint';
 
 const PAGE_SIZES = [10, 25, 50];
 
@@ -106,6 +108,7 @@ export default function TripList({ carId }: { carId: number }) {
   /** the trip whose GPS track is shown below it */
   const [routeOf, setRouteOf] = useState<string>();
   const styleUrl = useTrackMap(carId);
+  const role = useCarRole(carId);
 
   const { data: years } = useQuery(
     getTripYearsOptions({ client: localClient, path: { carId } }),
@@ -127,6 +130,7 @@ export default function TripList({ carId }: { carId: number }) {
       title={t('trip.list.title')}
       subtitle={t('trip.list.subtitle')}
       action={
+        // a driver exports the own trips
         !!years?.length && (
           <Button
             size="small"
@@ -178,6 +182,7 @@ export default function TripList({ carId }: { carId: number }) {
                           sx={{ alignItems: 'center' }}
                         >
                           <span>{format.dateTime(trip.startedAt)}</span>
+                          <CreatorHint name={trip.driver} />
                           {trip.restored && (
                             <Tooltip title={t('trip.list.restored')}>
                               <RestoreRounded
@@ -242,7 +247,7 @@ export default function TripList({ carId }: { carId: number }) {
                               <RouteRounded fontSize="small" />
                             </IconButton>
                           )}
-                          {!trip.deletedAt && (
+                          {!trip.deletedAt && role('WRITE') && (
                             <IconButton
                               size="small"
                               aria-label={t('trip.delete.button')}

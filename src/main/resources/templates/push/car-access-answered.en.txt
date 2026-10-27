@@ -1,0 +1,2 @@
+{#if accepted}{account} accepted the access to "{car}"{#else}{account} declined the access to "{car}"{/if}
+{#if accepted}The car shows for {account} now.{#else}The invitation stays declined until you invite again.{/if}

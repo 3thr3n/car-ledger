@@ -43,12 +43,29 @@ carLedger:
     secretKeys:
       clientSecret: "secret"
       stateSecret: "state-secret"
-  # receipts and other files attached to the entries, stored in PostgreSQL. Photos are scaled down
-  # by the browser (about 0.5 MB), PDFs are uploaded as they are
+  # receipts and other files attached to the entries, the documents of the modifications and the
+  # reports of the HUs. Photos are scaled down by the browser (about 0.5 MB), PDFs are uploaded as they are
   attachments:
     # largest file
     maxSize: 10M
     maxPerBill: 10
+    # where new files are stored: DB (PostgreSQL) or S3. The files of the other storage stay readable,
+    # with moveExisting they are moved into this one in the background (see docs/DEPLOYMENT.md)
+    storage: DB
+    moveExisting: false
+    # an S3 compatible storage (AWS, MinIO, Garage, ...), used with a bucket. The bucket must exist,
+    # the app stores its files below attachments/
+    s3:
+      bucket: ""
+      # empty for AWS, e.g. https://s3.example.com for others
+      endpoint: ""
+      region: us-east-1
+      # bucket in the path of the URL instead of the host name, needed by most storages besides AWS
+      pathStyle: true
+      # secret with the access key, without one the default chain of AWS is used (e.g. IRSA)
+      existingSecret: ""
+      accessKeyIdKey: accessKeyId
+      secretAccessKeyKey: secretAccessKey
     # largest request, a bit more than maxSize for the multipart envelope. With className nginx the
     # ingress gets the annotation nginx.ingress.kubernetes.io/proxy-body-size with this value (unless
     # set in ingress.annotations); other proxies in front of the app need a similar limit
@@ -58,14 +75,6 @@ carLedger:
   # attachments.maxRequestSize
   backup:
     transactionTimeout: 1800
-  # events as signed HTTP webhooks (see docs/WEBHOOKS.md); without a url nothing is sent
-  webhook:
-    url:
-    # secret with the key of the HMAC-SHA256 signature (X-CarLedger-Signature), unsigned without one
-    existingSecret:
-    secretKey: "webhook-secret"
-    # event types to send, all without a list, e.g. [car-request.created, car-request.decided]
-    events: []
   # map of the GPS tracks (see docs/GPS_TRACKER.md): the browser loads a MapLibre style and its tiles,
   # e.g. of an own tile server or of a provider with a key. Without a styleUrl the map is hidden
   map:
@@ -133,7 +142,7 @@ carLedger:
     # when the due reminders are mailed (Quartz cron), in UTC: 07:00 UTC by default, "off" for never
     remindersCron: "0 0 7 * * ?"
   # certificates the app trusts for its own HTTPS requests (the login at the identity provider, SMTP,
-  # webhooks, push) besides the public CAs, e.g. self-signed ones or the CA of a company, as PEM. See
+  # push) besides the public CAs, e.g. self-signed ones or the CA of a company, as PEM. See
   # docs/DEPLOYMENT.md#self-signed-certificates
   trust:
     # the ca.crt of the TLS secrets of the ingresses, as cert-manager writes it for a CA or self-signed

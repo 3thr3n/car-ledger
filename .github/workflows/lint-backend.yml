@@ -30,3 +30,7 @@ jobs:
 
     - name: Build with Maven
       run: ./mvnw -B validate
+
+    # broken references, HTML and tags in the Javadoc, see maven-javadoc-plugin in the pom
+    - name: Javadoc
+      run: ./mvnw -B -Dquarkus.quinoa=false javadoc:javadoc

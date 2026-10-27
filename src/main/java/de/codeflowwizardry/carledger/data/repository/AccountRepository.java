@@ -30,6 +30,17 @@ public class AccountRepository implements PanacheRepository<AccountEntity>
 	}
 
 	/**
+	 * @param name
+	 *            user name or e-mail address in lower case; an address finds only
+	 *            an account whose identity provider confirmed it
+	 */
+	public Optional<AccountEntity> findByNameOrEmail(String name)
+	{
+		return find("lower(userId) = ?1", name).firstResultOptional()
+				.or(() -> find("lower(email) = ?1 and emailVerified = true", name).firstResultOptional());
+	}
+
+	/**
 	 * Creates the account in its own transaction and flushes immediately, so a
 	 * concurrent insert of the same user
 	 * fails here with a

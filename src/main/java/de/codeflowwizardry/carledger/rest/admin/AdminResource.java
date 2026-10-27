@@ -9,9 +9,11 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
 import de.codeflowwizardry.carledger.Utils;
+import de.codeflowwizardry.carledger.attachment.AttachmentStorages;
 import de.codeflowwizardry.carledger.data.AccountEntity;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository.AccountUsage;
+import de.codeflowwizardry.carledger.data.repository.AttachmentRepository;
 import de.codeflowwizardry.carledger.data.repository.BillRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import de.codeflowwizardry.carledger.data.repository.RecurringBillRepository;
@@ -41,17 +43,22 @@ public class AdminResource extends AbstractResource
 	private final BillRepository billRepository;
 	private final RecurringBillRepository recurringBillRepository;
 	private final RequestRepository requestRepository;
+	private final AttachmentRepository attachmentRepository;
+	private final AttachmentStorages attachmentStorages;
 
 	@Inject
 	public AdminResource(SecurityIdentity identity, AccountRepository accountRepository, CarRepository carRepository,
 			BillRepository billRepository, RecurringBillRepository recurringBillRepository,
-			RequestRepository requestRepository)
+			RequestRepository requestRepository, AttachmentRepository attachmentRepository,
+			AttachmentStorages attachmentStorages)
 	{
 		super(identity, accountRepository);
 		this.carRepository = carRepository;
 		this.billRepository = billRepository;
 		this.recurringBillRepository = recurringBillRepository;
 		this.requestRepository = requestRepository;
+		this.attachmentRepository = attachmentRepository;
+		this.attachmentStorages = attachmentStorages;
 	}
 
 	@GET
@@ -66,7 +73,9 @@ public class AdminResource extends AbstractResource
 				carRepository.count(),
 				billRepository.count(),
 				recurringBillRepository.count(),
-				requestRepository.count(RequestType.CAR_LIMIT, RequestState.OPEN));
+				requestRepository.count(RequestType.CAR_LIMIT, RequestState.OPEN),
+				attachmentStorages.configured().name(),
+				attachmentRepository.usagePerStorage());
 	}
 
 	@GET

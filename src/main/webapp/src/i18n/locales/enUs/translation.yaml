@@ -1,6 +1,8 @@
 app:
   title: "CarLedger"
   loading: "Loading"
+  hideSidebar: "Hide the sidebar"
+  pinSidebar: "Keep the sidebar open"
   language: "Language"
   openSource: "CarLedger is free software under the AGPL-3.0 — find it on"
   version: "CarLedger {{version}}"
@@ -90,6 +92,9 @@ landing:
     gps:
       title: "GPS tracking"
       text: "A tracker in the car sends its route: the map by speed or by how often you drove it, forgotten trips suggested."
+    sharing:
+      title: "Sharing"
+      text: "Invite your household or your drivers to a car as editor, viewer or driver, also for a period."
     offline:
       title: "App and offline"
       text: "On the home screen like an app; refuels and trips work without a connection, the papers stay on the phone."
@@ -199,7 +204,17 @@ garage:
   entries_one: "{{count}} entry"
   entries_other: "{{count}} entries"
 
+creator:
+  by: "by {{name}}"
+  deleted: "by a deleted user"
+
 car:
+  shared: "Shared · {{role}}"
+  roles:
+    OWNER: "Owner"
+    EDITOR: "Editor"
+    VIEWER: "Viewer"
+    DRIVER: "Driver"
   odometerEstimated: "Last reading {{reading}} on {{date}}, plus {{driven}} from the refuels since"
   built: "Built {{year}}"
   energyTypes:
@@ -313,6 +328,64 @@ car:
       vinOld: "At most 17 letters and digits"
       purchaseDate: "Please enter a date that is not in the future"
 
+access:
+  title: "Access"
+  openCount_one: "{{count}} invitation to a car waits for your answer"
+  openCount_other: "{{count}} invitations to cars wait for your answer"
+  note:
+    one: "{{owner}} invites you to the car \"{{car}}\" as {{role}}."
+    other: "{{count}} invitations to cars wait for your answer."
+    answer: "Answer"
+    later: "Later"
+  text: "Share the car with other accounts. The invited one accepts first; an account that doesn't exist yet gets the invitation with its first login."
+  invite: "Invite"
+  inviteTitle: "Invite to the car"
+  changeTitle: "Change the access of {{name}}"
+  change: "Change"
+  revoke: "Revoke"
+  withdraw: "Withdraw"
+  revokeTitle: "Revoke the access of {{name}}?"
+  withdrawTitle: "Withdraw the invitation of {{name}}?"
+  revokeText: "The car no longer shows for the account. Its entries stay with the car."
+  withdrawText: "The account no longer sees the invitation."
+  remove: "Remove"
+  removeTitle: "Remove the ended access of {{name}}?"
+  removeText: "It no longer shows in this list. The entries of the account stay with the car."
+  invited: "Invitation sent"
+  changed: "Access changed"
+  revoked: "Access revoked"
+  accept: "Accept"
+  decline: "Decline"
+  accepted: "Invitation accepted, the car shows in your garage"
+  declined: "Invitation declined"
+  invitation: "{{owner}} invites you to the car \"{{car}}\" as {{role}}."
+  fields:
+    account: "User name or e-mail address"
+    accountHelp: "An e-mail address finds an account only once its sign-in confirmed it"
+    role: "Role"
+    from: "From"
+    fromHelp: "Empty: from the acceptance on"
+    until: "Until"
+    untilHelp: "Empty: without an end"
+  roleHints:
+    EDITOR: "Sees everything, adds, changes and deletes entries"
+    VIEWER: "Sees everything, changes nothing"
+    DRIVER: "Starts and finishes own trips, adds own refuels"
+  states:
+    PENDING: "Waiting for the answer"
+    NO_ACCOUNT: "Waiting for the first login"
+    DECLINED: "Declined"
+    ENDED: "Ended"
+  period:
+    always: "Without an end"
+    between: "From {{from}} until {{until}}"
+    from: "From {{from}}"
+    until: "Until {{until}}"
+  errors:
+    account: "Please enter a user name or an e-mail address"
+    accountLength: "At most {{max}} characters"
+    period: "The end must not be before the start"
+
 tracker:
   title: "GPS trackers"
   text: "A tracker in the car, e.g. an ESP32, sends its position to CarLedger with its own token."
@@ -415,6 +488,21 @@ track:
   deletePeriodTitle: "Delete the track of {{period}}?"
   deletePeriodText_one: "{{count}} point of this period is deleted and can't be restored. Trips and odometers stay as they are."
   deletePeriodText_other: "{{count}} points of this period are deleted and can't be restored. Trips and odometers stay as they are."
+  places:
+    show: "Places"
+    showHint: "Places the car stopped at at least 3 times in this period, and the named ones"
+    unnamed: "Place"
+    visits_zero: "Not visited in this period"
+    visits_one: "Visited once · last {{date}}"
+    visits_other: "Visited {{count}}× · last {{date}}"
+    label: "{{name}}, {{visits}}"
+    title: "Name this place"
+    renameTitle: "Rename {{name}}"
+    name: "Name"
+    nameHelp: "E.g. Fuel station or Office. The name stays when the tracks are deleted."
+    removeName: "Remove the name"
+    saved: "Place named"
+    removed: "Name removed"
   history:
     title: "Track history"
     text: "The points of the trackers are personal data. Points older than the chosen period are deleted every night."
@@ -439,7 +527,8 @@ track:
 attachments:
   title: "Receipts and files"
   add: "Add"
-  help: "Photos or PDFs, up to 10 MB. Photos are scaled down before the upload."
+  help: "Photos or PDFs. Photos are scaled down before the upload."
+  helpLimits: "Photos or PDFs, up to {{size}} each and {{count}} files. Photos are scaled down before the upload."
   open: "Open {{name}}"
   remove: "Remove {{name}}"
   deleteTitle: "Remove this file?"
@@ -658,10 +747,10 @@ notifications:
 
 backup:
   title: "Backup"
-  text: "All your data in one file: settings, cars, entries, recurring costs, reminders, receipts and pictures. Restore it here or on another CarLedger."
+  text: "All your data in one file: settings, cars, entries, recurring costs, reminders, receipts and pictures. Restore it here or on another CarLedger. A car others share with you is only in the backup of its owner, export your trips of it in its trip log."
   download: "Download backup"
   restore: "Restore backup"
-  restoreHelp: "Restores a downloaded backup into your account, which has no cars yet."
+  restoreHelp: "Restores a downloaded backup into your account, which has no cars yet. The accounts a car was shared with get an invitation again."
   restoreOnlyEmpty: "A backup can only be restored into an account without cars."
   restored: "Backup restored: {{parts}}"
   restoredEmpty: "Backup restored, it had no cars"
@@ -680,10 +769,14 @@ backup:
     modifications_other: "{{count}} modifications"
     technicalInspections_one: "{{count}} HU"
     technicalInspections_other: "{{count}} HUs"
+    places_one: "{{count}} named place"
+    places_other: "{{count}} named places"
     trackers_one: "{{count}} GPS tracker"
     trackers_other: "{{count}} GPS trackers"
     files_one: "{{count}} file"
     files_other: "{{count}} files"
+    invitations_one: "{{count}} invitation"
+    invitations_other: "{{count}} invitations"
   failed: "The backup could not be restored"
   tooLarge: "The backup is larger than the server accepts. Its operator can raise the limit (carLedger.attachments.maxRequestSize, see docs/DEPLOYMENT.md)."
 
@@ -740,6 +833,11 @@ admin:
     bills: "Entries"
     recurringBills: "Recurring costs"
     openRequests: "Open requests"
+    files: "Files"
+    newFiles: "New files: {{storage}}"
+    storage:
+      DB: "Database"
+      S3: "S3"
   requests:
     title: "Car requests"
     subtitle: "Users who reached their car limit and ask for more"
@@ -900,6 +998,11 @@ offline:
     text_other: "{{count}} entries of another account made offline wait on this device. They are sent when that account logs in here."
     discardTitle_one: "Discard {{count}} entry?"
     discardTitle_other: "Discard {{count}} entries?"
+  orphaned:
+    title: "Entries for a car you no longer have"
+    subtitle: "Made without a connection and kept on this device. Your access to the car ended, the server doesn't take them anymore."
+    refused: "Not sent: you no longer have access to the car. Note what you need, then discard it."
+    discardAll: "Discard all"
 
 trip:
   types:

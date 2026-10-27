@@ -1,6 +1,7 @@
 import { Box, ButtonBase, Card, Grid, Stack, Typography } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
+import { can } from '@/utils/carRole';
 import { BillType } from '@/generated';
 import { getMyCarOptions } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
@@ -36,7 +37,8 @@ export default function AddBillPage({
     getMyCarOptions({ client: localClient, path: { id: carId } }),
   );
   // an electric car is not refueled, a petrol car not charged
-  const types = billTypesFor(car?.energyType);
+  // a driver adds refuels and charges only
+  const types = billTypesFor(car?.energyType, !!car && !can(car, 'READ'));
   const type = types.some((meta) => meta.type === requestedType)
     ? requestedType!
     : types[0].type;

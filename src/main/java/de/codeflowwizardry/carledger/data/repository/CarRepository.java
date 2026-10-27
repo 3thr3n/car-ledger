@@ -40,11 +40,12 @@ public class CarRepository implements PanacheRepository<CarEntity>
 	}
 
 	/**
-	 * @return the cars the user may see
+	 * @return the cars the user may use, the own and the shared ones (also of
+	 *         a driver)
 	 */
 	public List<CarEntity> listForUser(String name)
 	{
-		return list(CarAccess.condition("this", Action.READ) + " order by id", Map.of(CarAccess.USER, name));
+		return list(CarAccess.condition("this", Action.USE) + " order by id", Map.of(CarAccess.USER, name));
 	}
 
 	/**

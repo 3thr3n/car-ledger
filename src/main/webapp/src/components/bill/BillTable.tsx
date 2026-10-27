@@ -20,6 +20,8 @@ import { Fragment, ReactNode, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import AttachmentsDialog from './AttachmentsDialog';
+import CreatorHint from '@/components/ui/CreatorHint';
+import { previewUrl } from './attachments';
 import EmptyState from '@/components/ui/EmptyState';
 import { PageModel, SortModel } from '@/hooks/useBillList';
 
@@ -31,9 +33,17 @@ export interface MobileRow {
 }
 
 export interface BillTableProps<
-  R extends GridValidRowModel & { id?: number; attachments?: number },
+  R extends GridValidRowModel & {
+    id?: number;
+    attachments?: number;
+    photo?: number;
+    /** `null` once that account was deleted */
+    createdBy?: string | null;
+  },
 > {
   carId: number;
+  /** whether the rows are recurring costs, for their files */
+  recurring?: boolean;
   rows: R[];
   total: number;
   columns: GridColDef<R>[];
@@ -55,9 +65,16 @@ export interface BillTableProps<
 }
 
 export default function BillTable<
-  R extends GridValidRowModel & { id?: number; attachments?: number },
+  R extends GridValidRowModel & {
+    id?: number;
+    attachments?: number;
+    photo?: number;
+    /** `null` once that account was deleted */
+    createdBy?: string | null;
+  },
 >({
   carId,
+  recurring,
   rows,
   total,
   columns,
@@ -98,6 +115,7 @@ export default function BillTable<
       <AttachmentsDialog
         carId={carId}
         billId={shown?.id}
+        recurring={recurring}
         onClose={() => setShown(undefined)}
         onEdit={shown && onEdit && (() => onEdit(shown))}
       />
@@ -105,7 +123,14 @@ export default function BillTable<
   );
 
   const hint = (row: R) => (
-    <AttachmentHint count={row.attachments} onClick={() => setShown(row)} />
+    <>
+      <AttachmentHint
+        count={row.attachments}
+        photo={row.photo ? previewUrl(carId, row.photo) : undefined}
+        onClick={() => setShown(row)}
+      />
+      <CreatorHint name={row.createdBy} />
+    </>
   );
 
   const actions = (row: R) => (
@@ -252,9 +277,9 @@ export default function BillTable<
     );
   }
 
-  // the date shows whether files are attached
+  // the date (the name of a recurring cost) shows whether files are attached
   const withHint = columns.map((column) =>
-    column.field === 'date'
+    column.field === (recurring ? 'name' : 'date')
       ? {
           ...column,
           renderCell: ({ formattedValue, row }) => (
@@ -320,12 +345,18 @@ export default function BillTable<
   );
 }
 
-/** paperclip with the amount of attached files that shows them, nothing without */
+/**
+ * the first photo small (a paperclip without photos) with the amount of
+ * attached files that shows them, nothing without
+ */
 function AttachmentHint({
   count,
+  photo,
   onClick,
 }: {
   count?: number;
+  /** address of the preview of the first photo */
+  photo?: string;
   onClick: () => void;
 }) {
   const { t } = useTranslation();
@@ -352,7 +383,27 @@ function AttachmentHint({
           '&:hover': { color: 'primary.main', bgcolor: 'action.hover' },
         }}
       >
-        <AttachFileRounded sx={{ fontSize: 16, transform: 'rotate(45deg)' }} />
+        {photo ? (
+          <Box
+            component="img"
+            src={photo}
+            alt=""
+            loading="lazy"
+            sx={{
+              width: 20,
+              height: 20,
+              mr: 0.25,
+              borderRadius: 0.5,
+              objectFit: 'cover',
+              border: 1,
+              borderColor: 'divider',
+            }}
+          />
+        ) : (
+          <AttachFileRounded
+            sx={{ fontSize: 16, transform: 'rotate(45deg)' }}
+          />
+        )}
         {count > 1 && count}
       </ButtonBase>
     </Tooltip>

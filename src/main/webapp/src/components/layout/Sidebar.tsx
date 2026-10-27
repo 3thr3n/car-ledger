@@ -24,10 +24,14 @@ import AdminPanelSettingsRounded from '@mui/icons-material/AdminPanelSettingsRou
 import LightModeRounded from '@mui/icons-material/LightModeRounded';
 import DarkModeRounded from '@mui/icons-material/DarkModeRounded';
 import SettingsBrightnessRounded from '@mui/icons-material/SettingsBrightnessRounded';
+import MenuOpenRounded from '@mui/icons-material/MenuOpenRounded';
+import PushPinOutlined from '@mui/icons-material/PushPinOutlined';
 import { useQuery } from '@tanstack/react-query';
 import { useLocation } from '@tanstack/react-router';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import useOpenInvitations from '@/hooks/useOpenInvitations';
+import { isShared, ownCars } from '@/utils/carRole';
 import { getMyCarsOptions } from '@/generated/@tanstack/react-query.gen';
 import { baseUrl, localClient } from '@/utils/QueryClient';
 import useMe from '@/hooks/useMe';
@@ -43,12 +47,25 @@ import productLogo from '@/assets/car-ledger.svg';
 
 const languages = ['EN', 'DE'];
 
-export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
+/**
+ * @param onHide hides the sidebar beside the pages, on a large screen
+ * @param onPin shows it beside the pages again, from the menu
+ */
+export default function Sidebar({
+  onNavigate,
+  onHide,
+  onPin,
+}: {
+  onNavigate?: () => void;
+  onHide?: () => void;
+  onPin?: () => void;
+}) {
   const { t, i18n } = useTranslation();
   const { pathname } = useLocation();
   const { account, loggedIn, maxCars, isAdmin } = useMe();
   const settings = useSaveSettings();
   const openRequests = useOpenCarRequests();
+  const invitations = useOpenInvitations().length;
   const version = useVersion();
 
   // the language of the settings wins over the one of the browser
@@ -78,7 +95,7 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
     enabled: loggedIn,
   });
 
-  const canAddCar = (cars?.length ?? 0) < maxCars;
+  const canAddCar = ownCars(cars).length < maxCars;
 
   const nextMode =
     mode === 'light' ? 'dark' : mode === 'dark' ? 'system' : 'light';
@@ -109,6 +126,31 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
         >
           {t('app.title')}
         </Typography>
+        <Box sx={{ flexGrow: 1 }} />
+        {onHide && (
+          <Tooltip title={t('app.hideSidebar')}>
+            <IconButton
+              size="small"
+              onClick={onHide}
+              aria-label={t('app.hideSidebar')}
+              sx={{ mr: -1 }}
+            >
+              <MenuOpenRounded fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        )}
+        {onPin && (
+          <Tooltip title={t('app.pinSidebar')}>
+            <IconButton
+              size="small"
+              onClick={onPin}
+              aria-label={t('app.pinSidebar')}
+              sx={{ mr: -1 }}
+            >
+              <PushPinOutlined fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        )}
       </Stack>
 
       <Box sx={{ flexGrow: 1, overflowY: 'auto', px: 1.5 }}>
@@ -136,6 +178,19 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
                   <GarageRounded fontSize="small" />
                 </ListItemIcon>
                 <ListItemText primary={t('nav.garage')} />
+                {invitations > 0 && (
+                  <Tooltip
+                    title={t('access.openCount', { count: invitations })}
+                  >
+                    <Chip
+                      size="small"
+                      color="primary"
+                      label={invitations}
+                      aria-label={t('access.openCount', { count: invitations })}
+                      sx={{ height: 20, fontWeight: 600 }}
+                    />
+                  </Tooltip>
+                )}
               </RouterListItemButton>
               <RouterListItemButton
                 to="/settings"
@@ -217,9 +272,11 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
                   </ListItemIcon>
                   <ListItemText
                     primary={car.name}
-                    secondary={t('garage.entries', {
-                      count: car.amountBills ?? 0,
-                    })}
+                    secondary={
+                      isShared(car)
+                        ? t('car.shared', { role: t(`car.roles.${car.role}`) })
+                        : t('garage.entries', { count: car.amountBills ?? 0 })
+                    }
                     slotProps={{
                       primary: { noWrap: true, sx: { fontWeight: 500 } },
                       secondary: { noWrap: true, variant: 'caption' },
@@ -305,8 +362,15 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
               <IconButton
                 size="small"
                 href={`${baseUrl}/api/auth/logout`}
-                // the next user of the device doesn't see the kept data
-                onClick={() => void forgetQueries(offlineStore)}
+                // the next user of the device doesn't see the kept data: it is
+                // deleted before the browser leaves the page
+                onClick={(event) => {
+                  event.preventDefault();
+                  const logout = event.currentTarget.href;
+                  void forgetQueries(offlineStore).finally(() =>
+                    location.assign(logout),
+                  );
+                }}
               >
                 <LogoutRounded fontSize="small" />
               </IconButton>

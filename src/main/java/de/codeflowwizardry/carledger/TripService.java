@@ -103,10 +103,18 @@ public class TripService
 		return Trip.convert(find(carId, id, username, Action.READ));
 	}
 
+	/**
+	 * The open trip, also for a driver: only the own one, the open trip of
+	 * another driver isn't shown (starting a trip answers that one is open)
+	 */
 	public TripCurrent current(long carId, String username)
 	{
-		CarEntity car = car(carId, username, Action.READ);
-		Trip open = tripRepository.findOpen(car).map(Trip::convert).orElse(null);
+		CarEntity car = car(carId, username, Action.USE);
+		boolean readsAll = carRepository.findById(carId, username, Action.READ) != null;
+		Trip open = tripRepository.findOpen(car)
+				.filter(trip -> readsAll || username.equals(trip.getDriverName()))
+				.map(Trip::convert)
+				.orElse(null);
 		int estimated = odometerService.current(carId, username).get(carId).value();
 		return new TripCurrent(open, highestBefore(car, OffsetDateTime.now(), NONE), estimated);
 	}
@@ -342,14 +350,15 @@ public class TripService
 	}
 
 	/**
-	 * Deletes a trip with a reason, only the owner of the car; the trip stays
-	 * listed. Sent again, it answers with the deleted trip.
+	 * Deletes a trip with a reason, the owner of the car or an editor, not a
+	 * driver; the trip stays listed with the reason. Sent again, it answers with
+	 * the deleted trip.
 	 */
 	@Transactional
 	public Trip delete(long carId, UUID id, TripDeleteInput input, String username)
 	{
 		Utils.requireValid(input.validate());
-		TripEntity trip = find(car(carId, username, Action.MANAGE).getId(), id, username, Action.MANAGE);
+		TripEntity trip = find(car(carId, username, Action.WRITE).getId(), id, username, Action.WRITE);
 		if (!trip.isDeleted())
 		{
 			trip.delete(OffsetDateTime.now(), username, input.reason().strip());
@@ -447,11 +456,11 @@ public class TripService
 
 	/**
 	 * Starts and finishes of a car one after the other, so two at the same time
-	 * see each other
+	 * see each other. A driver starts and finishes trips as well, the own ones.
 	 */
 	private CarEntity lockedCar(long carId, String username)
 	{
-		CarEntity car = car(carId, username, Action.WRITE);
+		CarEntity car = car(carId, username, Action.DRIVE);
 		em.lock(car, LockModeType.PESSIMISTIC_WRITE);
 		return car;
 	}

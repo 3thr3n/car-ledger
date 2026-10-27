@@ -1,0 +1,15 @@
+{owner} shares the car "{car}" with you
+{owner} invited you to the car "{car}" as {#if role == 'EDITOR'}an editor: you see everything and add, change and delete entries{#else if role == 'VIEWER'}a viewer: you see everything and change nothing{#else}a driver: you start and finish your trips and add your refuels{/if}.
+{#if from && until}
+The access is from {from} until {until}.
+{#else if from}
+The access starts on {from}.
+{#else if until}
+The access ends on {until}.
+{/if}
+
+Accept or decline the invitation on the page of your cars{#if link}: {link}{#else}.{/if}
+
+--
+You can turn off these mails in the settings{#if settingsLink}:
+{settingsLink}{#else}.{/if}

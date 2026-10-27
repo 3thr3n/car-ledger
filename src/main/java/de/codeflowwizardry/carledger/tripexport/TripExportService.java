@@ -90,7 +90,8 @@ public class TripExportService
 					Response.status(400).type(MediaType.APPLICATION_JSON_TYPE).entity(errors).build());
 		}
 
-		CarEntity car = carRepository.findById(carId, username, Action.READ);
+		// a driver as well: the list has only the own trips of a driver
+		CarEntity car = carRepository.findById(carId, username, Action.USE);
 		if (car == null)
 		{
 			throw new WrongUserException();

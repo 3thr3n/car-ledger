@@ -96,6 +96,89 @@ test.describe.serial('GPS track', () => {
     await expect(page.getByTestId('speed-legend')).toBeVisible();
   });
 
+  test('shows the places and names them', async () => {
+    const api = await aliceApi();
+    const named = await api.put(`/api/track/${carId}/places`, {
+      data: { lat: 50, lon: 10, name: 'Home' },
+    });
+    expect(named.status()).toBe(204);
+    await api.dispose();
+
+    await page.getByRole('switch', { name: 'Places' }).check();
+    // named, but not stopped at today
+    const home = page.getByRole('button', {
+      name: 'Home, Not visited in this period',
+    });
+    await expect(home).toBeVisible();
+
+    await home.click();
+    const dialog = page.getByRole('dialog', { name: 'Rename Home' });
+    await dialog.getByRole('textbox', { name: 'Name' }).fill('Garage');
+    await dialog.getByRole('button', { name: 'Save' }).click();
+    await expect(page.getByText('Place named')).toBeVisible();
+    const garage = page.getByRole('button', { name: /^Garage, / });
+    await expect(garage).toBeVisible();
+
+    await garage.click();
+    await page
+      .getByRole('dialog', { name: 'Rename Garage' })
+      .getByRole('button', { name: 'Remove the name' })
+      .click();
+    await expect(page.getByText('Name removed')).toBeVisible();
+    await expect(garage).toHaveCount(0);
+
+    await page.getByRole('switch', { name: 'Places' }).uncheck();
+  });
+
+  test('names a place the car stops at', async () => {
+    // three stops take a while, the list gets one as the server sends it
+    await page.route(
+      /\/api\/track\/\d+\/places(\?|$)/,
+      async (route) => {
+        const response = await route.fetch();
+        await route.fulfill({
+          response,
+          json: [
+            ...((await response.json()) as unknown[]),
+            {
+              id: null,
+              name: null,
+              lat: 50.0005,
+              lon: 10,
+              visits: 3,
+              lastVisit: new Date(start).toISOString(),
+            },
+          ],
+        });
+      },
+      { times: 1 },
+    );
+    await page.getByRole('switch', { name: 'Places' }).check();
+
+    await page.getByRole('button', { name: /^Place, Visited 3×/ }).click();
+    const dialog = page.getByRole('dialog', { name: 'Name this place' });
+    await dialog.getByRole('textbox', { name: 'Name' }).fill('Office');
+    const named = page.waitForRequest(
+      (request) => request.method() === 'PUT' && /\/places/.test(request.url()),
+    );
+    await dialog.getByRole('button', { name: 'Save' }).click();
+    expect(new URL((await named).url()).pathname).toBe(
+      `/api/track/${carId}/places`,
+    );
+    // the toast of the rename before may still show
+    await expect(page.getByText('Place named').last()).toBeVisible();
+    const office = page.getByRole('button', { name: /^Office, / });
+    await expect(office).toBeVisible();
+
+    await office.click();
+    await page
+      .getByRole('dialog', { name: 'Rename Office' })
+      .getByRole('button', { name: 'Remove the name' })
+      .click();
+    await expect(office).toHaveCount(0);
+    await page.getByRole('switch', { name: 'Places' }).uncheck();
+  });
+
   test('shows no track on the day before', async () => {
     await page.getByRole('button', { name: 'Earlier' }).click();
 

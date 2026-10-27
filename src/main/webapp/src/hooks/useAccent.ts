@@ -12,6 +12,8 @@ import { BackendError, errorMessage } from '@/utils/BackendError';
 const KEY = 'accent';
 /** chosen but not saved yet, e.g. without a connection */
 const PENDING = 'accentPending';
+/** the color of the bar, set by public/theme-color.js before the app starts */
+const THEME_COLOR_KEY = 'themeColor';
 
 function stored(key: string): Accent | undefined {
   try {
@@ -23,10 +25,10 @@ function stored(key: string): Accent | undefined {
   return undefined;
 }
 
-function store(key: string, accent?: Accent) {
+function store(key: string, value?: string) {
   try {
-    if (accent) {
-      localStorage.setItem(key, accent);
+    if (value) {
+      localStorage.setItem(key, value);
     } else {
       localStorage.removeItem(key);
     }
@@ -81,11 +83,9 @@ export default function useAccent(): Accent {
   const [cached] = useState(() => stored(KEY) ?? Accent.TEAL);
   const accent = chosen ?? account?.accent ?? cached;
 
+  // the saved choice is dropped below, once the account has it: the cached
+  // account is updated a tick later, without it the old accent would flash
   const settings = useSaveSettings({
-    onSuccess: () => {
-      // a newer choice is sent with the next run
-      if (pending === sent) setPending(undefined);
-    },
     onError: (error) => {
       // without a connection it is sent later
       if (error instanceof BackendError && error.status === 0) return;
@@ -95,12 +95,13 @@ export default function useAccent(): Accent {
   });
 
   useEffect(() => {
-    if (!chosen || !account || !online || settings.isPending) return;
+    if (!chosen || !account) return;
     if (chosen === account.accent) {
       setPending(undefined);
       return;
     }
-    sent = chosen;
+    // a newer choice is sent with the next run
+    if (!online || settings.isPending) return;
     settings.save({
       vatCountry: account.vatCountry,
       currency: account.currency,
@@ -114,12 +115,14 @@ export default function useAccent(): Accent {
   useEffect(() => store(KEY, accent), [accent]);
 
   // the bar of the browser on phones, and of the installed app: the service
-  // worker puts it into the manifest
+  // worker puts it into the manifest, public/theme-color.js into the page on
+  // the next start
   useEffect(() => {
     const color = ACCENTS[accent].light.main;
     document
       .querySelector('meta[name="theme-color"]')
       ?.setAttribute('content', color);
+    store(THEME_COLOR_KEY, color);
     keepThemeColor(color);
   }, [accent]);
 
@@ -137,6 +140,3 @@ function keepThemeColor(color: string) {
     .then((cache) => cache.put(THEME_COLOR, new Response(color)))
     .catch(() => undefined);
 }
-
-/** the accent of the last request, only one is sent at a time */
-let sent: Accent | undefined;

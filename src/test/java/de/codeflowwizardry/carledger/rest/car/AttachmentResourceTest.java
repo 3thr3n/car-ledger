@@ -3,10 +3,13 @@ package de.codeflowwizardry.carledger.rest.car;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.awt.image.BufferedImage;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.Arrays;
 
@@ -15,8 +18,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import de.codeflowwizardry.carledger.attachment.AttachmentService;
+import de.codeflowwizardry.carledger.attachment.TestImages;
 import de.codeflowwizardry.carledger.data.AccountEntity;
+import de.codeflowwizardry.carledger.data.AttachmentContentEntity;
 import de.codeflowwizardry.carledger.data.CarEntity;
+import de.codeflowwizardry.carledger.data.Preview;
 import de.codeflowwizardry.carledger.data.factory.MiscellaneousBillFactory;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.AttachmentRepository;
@@ -132,6 +138,33 @@ class AttachmentResourceTest
 
 	@Test
 	@TestSecurity(user = "peter", roles = "user")
+	void shouldTellTheLimits()
+	{
+		given().get("/api/attachment/limits").then()
+				.statusCode(200)
+				.body("maxSize", is(64 * 1024))
+				.body("maxFiles", is(3));
+	}
+
+	@Test
+	void shouldTellTheLimitsOnlyAfterTheLogin()
+	{
+		// to the login of the browser
+		given().redirects().follow(false).get("/api/attachment/limits").then().statusCode(302);
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = "user")
+	void shouldExplainAHeicPhoto()
+	{
+		upload("IMG_0001.HEIC", "\0\0\0\u0018ftypheic\0\0\0\0mif1heic".getBytes(StandardCharsets.ISO_8859_1),
+				"image/heic")
+				.statusCode(400)
+				.body("[0]", containsString("HEIC photos cannot be read"));
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = "user")
 	void shouldUseTheTypeOfTheContent()
 	{
 		// a PDF named like an image and sent as text
@@ -234,6 +267,106 @@ class AttachmentResourceTest
 	long attachAsPeter()
 	{
 		return attachmentService.addToBill(carId, billId, "peter", "receipt.jpg", JPEG).getId();
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = "user")
+	void shouldServeASmallPreviewOfAPhoto()
+	{
+		int id = upload("photo.png", TestImages.png(1000, 800), "image/png").statusCode(201).extract().path("id");
+		assertEquals(Preview.JPEG, preview(id));
+
+		byte[] preview = given()
+				.get("/api/attachment/{carId}/{id}/preview", carId, id)
+				.then()
+				.statusCode(200)
+				.contentType("image/jpeg")
+				.header("Content-Security-Policy", containsString("sandbox"))
+				.extract().asByteArray();
+		BufferedImage image = TestImages.read(preview);
+		assertEquals(256, image.getWidth());
+		assertEquals(205, image.getHeight());
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = "user")
+	void shouldNameTheFirstPhotoInTheList()
+	{
+		given().get("/api/bill/{carId}/miscellaneous/all", carId).then().statusCode(200)
+				.body("data[0].attachments", is(0))
+				.body("data[0].photo", nullValue());
+
+		upload("scan.pdf", PDF, "application/pdf").statusCode(201);
+		given().get("/api/bill/{carId}/miscellaneous/all", carId).then().statusCode(200)
+				.body("data[0].attachments", is(1))
+				.body("data[0].photo", nullValue());
+
+		int photo = upload("photo.jpg", JPEG, "image/jpeg").statusCode(201).extract().path("id");
+		upload("second.png", PDF, "image/png").statusCode(201);
+		given().get("/api/bill/{carId}/miscellaneous/all", carId).then().statusCode(200)
+				.body("data[0].attachments", is(3))
+				.body("data[0].photo", is(photo));
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = "user")
+	void shouldServeTheFileWithoutAPreview()
+	{
+		int pdf = upload("scan.pdf", PDF, "application/pdf").statusCode(201).extract().path("id");
+		int undecodable = upload("receipt.jpg", JPEG, "image/jpeg").statusCode(201).extract().path("id");
+		assertEquals(Preview.NONE, preview(pdf));
+		assertEquals(Preview.NONE, preview(undecodable));
+
+		byte[] content = given().get("/api/attachment/{carId}/{id}/preview", carId, pdf).then()
+				.statusCode(200).contentType("application/pdf").extract().asByteArray();
+		assertArrayEquals(PDF, content);
+		content = given().get("/api/attachment/{carId}/{id}/preview", carId, undecodable).then()
+				.statusCode(200).contentType("image/jpeg").extract().asByteArray();
+		assertArrayEquals(JPEG, content);
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = "user")
+	void shouldGenerateThePreviewOfAnOlderFileOnce()
+	{
+		int id = upload("photo.png", TestImages.png(400, 400), "image/png").statusCode(201).extract().path("id");
+		forgetPreview(id);
+
+		byte[] preview = given().get("/api/attachment/{carId}/{id}/preview", carId, id).then()
+				.statusCode(200).contentType("image/jpeg").extract().asByteArray();
+		assertEquals(256, TestImages.read(preview).getWidth());
+		assertEquals(Preview.JPEG, preview(id));
+	}
+
+	@Test
+	@TestSecurity(user = "paul", roles = "user")
+	void shouldNotServeThePreviewOfAnotherCar()
+	{
+		long id = savePicture();
+
+		given().get("/api/attachment/{carId}/{id}/preview", carId, id).then().statusCode(404);
+	}
+
+	/** of the car of peter */
+	@Transactional
+	long savePicture()
+	{
+		return attachmentService.restore(entityManager.find(CarEntity.class, carId), null, "car.png",
+				TestImages.png(300, 300)).getId();
+	}
+
+	@Transactional
+	Preview preview(long id)
+	{
+		return attachmentRepository.findById(id).getPreview();
+	}
+
+	/** like a file of an older version */
+	@Transactional
+	void forgetPreview(long id)
+	{
+		attachmentRepository.findById(id).setPreview(null);
+		entityManager.find(AttachmentContentEntity.class, id).setPreview(null);
 	}
 
 	@Transactional

@@ -12,19 +12,28 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
 import {
   deleteAttachmentMutation,
-  getBillAttachmentsOptions,
+  getAttachmentLimitsOptions,
 } from '@/generated/@tanstack/react-query.gen';
 import { invalidateCar, localClient } from '@/utils/QueryClient';
 import { errorMessage } from '@/utils/BackendError';
+import { fileSize } from '@/utils/format';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import useObjectUrl from '@/hooks/useObjectUrl';
 import AttachmentTile, { TILE } from './AttachmentTile';
-import { ACCEPT, contentUrl, uploadAttachment } from './attachments';
+import {
+  ACCEPT,
+  attachmentsOptions,
+  contentUrl,
+  uploadAttachment,
+  previewUrl,
+} from './attachments';
 
 export interface BillAttachmentsProps {
   carId: number;
   /** existing bill, its files are uploaded at once */
   billId?: number;
+  /** whether the bill is a recurring cost, its files are e.g. the contract */
+  recurring?: boolean;
   /** files of a new bill, uploaded after it is saved */
   pending: File[];
   onPendingChange: (files: File[]) => void;
@@ -37,25 +46,28 @@ export interface BillAttachmentsProps {
 export default function BillAttachments({
   carId,
   billId,
+  recurring,
   pending,
   onPendingChange,
 }: BillAttachmentsProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const input = useRef<HTMLInputElement>(null);
+  // set up by the operator, they change only with a new start of the server
+  const { data: limits } = useQuery({
+    ...getAttachmentLimitsOptions({ client: localClient }),
+    staleTime: Infinity,
+  });
   const [toDelete, setToDelete] = useState<number>();
 
   const { data: attachments } = useQuery({
-    ...getBillAttachmentsOptions({
-      client: localClient,
-      path: { carId, billId: billId ?? 0 },
-    }),
+    ...attachmentsOptions(carId, billId ?? 0, recurring),
     enabled: billId !== undefined,
   });
 
   const upload = useMutation({
     mutationFn: async (files: File[]) => {
       for (const file of files) {
-        await uploadAttachment(carId, billId!, file);
+        await uploadAttachment(carId, billId!, file, recurring);
       }
     },
     onSettled: () => invalidateCar(carId),
@@ -96,6 +108,7 @@ export default function BillAttachments({
             name={attachment.fileName ?? ''}
             pdf={attachment.contentType === 'application/pdf'}
             url={contentUrl(carId, attachment.id!)}
+            previewUrl={previewUrl(carId, attachment.id!)}
             onRemove={() => setToDelete(attachment.id)}
           />
         ))}
@@ -139,7 +152,12 @@ export default function BillAttachments({
         variant="caption"
         sx={{ display: 'block', mt: 1, color: 'text.secondary' }}
       >
-        {t('attachments.help')}
+        {limits
+          ? t('attachments.helpLimits', {
+              size: fileSize(i18n.language, limits.maxSize),
+              count: limits.maxFiles,
+            })
+          : t('attachments.help')}
       </Typography>
       <input
         ref={input}

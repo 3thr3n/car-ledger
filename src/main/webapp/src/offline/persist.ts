@@ -5,7 +5,7 @@ import {
   Query,
   QueryClient,
 } from '@tanstack/react-query';
-import { forgetDocuments } from './documents';
+import { dropDocumentsExcept, forgetDocuments } from './documents';
 import { OfflineStore } from './store';
 
 /**
@@ -33,6 +33,17 @@ const DELAY = 500;
 const idOf = (query: Query) =>
   (query.queryKey[0] as { _id?: string } | undefined)?._id ?? '';
 
+/** the car of a kept query, missing for the account and the list of the cars */
+const carOf = (query: Query) => {
+  const path = (
+    query.queryKey[0] as { path?: { carId?: number; id?: number } } | undefined
+  )?.path;
+  return path?.carId ?? path?.id;
+};
+
+/** the account the kept queries belong to, of the restore or the first load */
+let owner: string | undefined;
+
 export const isKept = (query: Query) =>
   KEPT.has(idOf(query)) && query.state.status === 'success';
 
@@ -41,6 +52,11 @@ export async function restoreQueries(client: QueryClient, store: OfflineStore) {
   try {
     const state = await store.get<DehydratedState>('cache', KEY);
     if (state) hydrate(client, state);
+    owner = client
+      .getQueryCache()
+      .findAll({ predicate: (query) => idOf(query) === 'getMyself' })
+      .map((query) => (query.state.data as { name?: string } | undefined)?.name)
+      .find(Boolean);
   } catch {
     // without IndexedDB (e.g. a private window) the app works online only
   }
@@ -64,6 +80,11 @@ export function keepQueries(client: QueryClient, store: OfflineStore) {
     ) {
       return;
     }
+    if (idOf(event.query) === 'getMyself') {
+      followAccount(client, store, event.query.state.data);
+    } else if (idOf(event.query) === 'getMyCars') {
+      followCars(client, store, event.query.state.data);
+    }
     clearTimeout(timer);
     timer = setTimeout(() => {
       store
@@ -74,10 +95,54 @@ export function keepQueries(client: QueryClient, store: OfflineStore) {
 }
 
 /**
+ * Another account logged in on the device, e.g. after the session of the last
+ * one expired without a logout: the queries and documents kept for that one
+ * are dropped, the shown ones load again.
+ */
+function followAccount(
+  client: QueryClient,
+  store: OfflineStore,
+  data: unknown,
+) {
+  const name = (data as { name?: string } | undefined)?.name;
+  if (!name) return;
+  if (owner && owner !== name) {
+    void client.resetQueries({
+      predicate: (query) => idOf(query) !== 'getMyself',
+    });
+    void forgetDocuments(store).catch(() => undefined);
+  }
+  owner = name;
+}
+
+/**
+ * The kept queries and documents of the cars no longer in the list, e.g. the
+ * access to a shared car ended or was revoked
+ */
+function followCars(client: QueryClient, store: OfflineStore, data: unknown) {
+  if (!Array.isArray(data)) return;
+  const carIds = new Set(data.map((car: { id?: number }) => car.id ?? -1));
+  client.removeQueries({
+    predicate: (query) => {
+      const carId = carOf(query);
+      return KEPT.has(idOf(query)) && carId !== undefined && !carIds.has(carId);
+    },
+  });
+  void dropDocumentsExcept(store, carIds)
+    .then((gone) =>
+      gone.forEach((carId) =>
+        client.removeQueries({ queryKey: ['offlineDocuments', carId] }),
+      ),
+    )
+    .catch(() => undefined);
+}
+
+/**
  * On the logout: the next user of the device doesn't see them, nor the kept
  * documents
  */
 export async function forgetQueries(store: OfflineStore) {
+  owner = undefined;
   await store.delete('cache', KEY).catch(() => undefined);
   await forgetDocuments(store).catch(() => undefined);
 }

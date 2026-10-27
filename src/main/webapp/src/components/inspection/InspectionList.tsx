@@ -26,6 +26,8 @@ export interface InspectionListProps {
   inspections: TechnicalInspection[];
   onEdit: (inspection: TechnicalInspection) => void;
   onDelete: (inspection: TechnicalInspection) => void;
+  /** without the actions, for a viewer */
+  readOnly?: boolean;
 }
 
 /** the HUs, the latest first, the defects and the report below each one */
@@ -34,6 +36,7 @@ export default function InspectionList({
   inspections,
   onEdit,
   onDelete,
+  readOnly = false,
 }: InspectionListProps) {
   const { t } = useTranslation();
   const format = useFormat();
@@ -102,26 +105,28 @@ export default function InspectionList({
                     </Stack>
                   )}
                 </Box>
-                <Stack direction="row" sx={{ flexShrink: 0 }}>
-                  <Tooltip title={t('button.edit')}>
-                    <IconButton
-                      size="small"
-                      aria-label={t('button.edit')}
-                      onClick={() => onEdit(inspection)}
-                    >
-                      <EditOutlined fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title={t('button.delete')}>
-                    <IconButton
-                      size="small"
-                      aria-label={t('button.delete')}
-                      onClick={() => onDelete(inspection)}
-                    >
-                      <DeleteOutlineRounded fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                </Stack>
+                {!readOnly && (
+                  <Stack direction="row" sx={{ flexShrink: 0 }}>
+                    <Tooltip title={t('button.edit')}>
+                      <IconButton
+                        size="small"
+                        aria-label={t('button.edit')}
+                        onClick={() => onEdit(inspection)}
+                      >
+                        <EditOutlined fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title={t('button.delete')}>
+                      <IconButton
+                        size="small"
+                        aria-label={t('button.delete')}
+                        onClick={() => onDelete(inspection)}
+                      >
+                        <DeleteOutlineRounded fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  </Stack>
+                )}
               </Stack>
 
               <Button
@@ -182,7 +187,11 @@ export default function InspectionList({
                       </Typography>
                     </Box>
                   )}
-                  <InspectionFiles carId={carId} inspectionId={inspection.id} />
+                  <InspectionFiles
+                    carId={carId}
+                    inspectionId={inspection.id}
+                    readOnly={readOnly}
+                  />
                 </Stack>
               </Collapse>
             </Box>

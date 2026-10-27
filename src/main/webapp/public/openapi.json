@@ -169,6 +169,23 @@
           }
         }
       },
+      "AdminFileStorage" : {
+        "type" : "object",
+        "required" : [ "storage", "files", "bytes" ],
+        "properties" : {
+          "storage" : {
+            "type" : "string"
+          },
+          "files" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "bytes" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      },
       "AdminStats" : {
         "type" : "object",
         "properties" : {
@@ -195,8 +212,18 @@
           "openRequests" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "fileStorage" : {
+            "type" : "string"
+          },
+          "files" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/AdminFileStorage"
+            }
           }
-        }
+        },
+        "required" : [ "fileStorage", "files" ]
       },
       "ApprovalType" : {
         "type" : "string",
@@ -233,6 +260,20 @@
           },
           "kind" : {
             "$ref" : "#/components/schemas/DocumentKind"
+          }
+        }
+      },
+      "AttachmentLimits" : {
+        "type" : "object",
+        "required" : [ "maxSize", "maxFiles" ],
+        "properties" : {
+          "maxSize" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "maxFiles" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         }
       },
@@ -310,6 +351,14 @@
           "technicalInspections" : {
             "type" : "integer",
             "format" : "int32"
+          },
+          "places" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "invitations" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         }
       },
@@ -319,6 +368,13 @@
           "attachments" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "photo" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "createdBy" : {
+            "type" : "string"
           },
           "id" : {
             "type" : "integer",
@@ -596,9 +652,66 @@
           "trackRetentionDays" : {
             "type" : "integer",
             "format" : "int32"
+          },
+          "role" : {
+            "$ref" : "#/components/schemas/CarRole"
+          },
+          "tracked" : {
+            "type" : "boolean"
           }
         },
-        "required" : [ "currentOdometer", "energyType", "tripLog" ]
+        "required" : [ "currentOdometer", "energyType", "tripLog", "role", "tracked" ]
+      },
+      "CarAccessEntry" : {
+        "type" : "object",
+        "required" : [ "id", "role", "state", "createdAt" ],
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "account" : {
+            "type" : "string"
+          },
+          "invitee" : {
+            "type" : "string"
+          },
+          "role" : {
+            "$ref" : "#/components/schemas/CarRole"
+          },
+          "state" : {
+            "$ref" : "#/components/schemas/CarAccessState"
+          },
+          "validFrom" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          },
+          "validUntil" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          },
+          "createdAt" : {
+            "type" : "string",
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          }
+        }
+      },
+      "CarAccessInput" : {
+        "type" : "object",
+        "required" : [ "role" ],
+        "properties" : {
+          "role" : {
+            "$ref" : "#/components/schemas/CarRole"
+          },
+          "validFrom" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          },
+          "validUntil" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          }
+        }
+      },
+      "CarAccessState" : {
+        "type" : "string",
+        "enum" : [ "PENDING", "ACCEPTED", "DECLINED" ]
       },
       "CarInput" : {
         "type" : "object",
@@ -637,6 +750,57 @@
           },
           "tripLog" : {
             "type" : "boolean"
+          }
+        }
+      },
+      "CarInvitation" : {
+        "type" : "object",
+        "required" : [ "id", "carId", "car", "owner", "role", "createdAt" ],
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "carId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "car" : {
+            "type" : "string"
+          },
+          "owner" : {
+            "type" : "string"
+          },
+          "role" : {
+            "$ref" : "#/components/schemas/CarRole"
+          },
+          "validFrom" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          },
+          "validUntil" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          },
+          "createdAt" : {
+            "type" : "string",
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          }
+        }
+      },
+      "CarInvitationInput" : {
+        "type" : "object",
+        "required" : [ "account", "role" ],
+        "properties" : {
+          "account" : {
+            "type" : "string"
+          },
+          "role" : {
+            "$ref" : "#/components/schemas/CarRole"
+          },
+          "validFrom" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          },
+          "validUntil" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
           }
         }
       },
@@ -723,12 +887,23 @@
           }
         }
       },
+      "CarRole" : {
+        "type" : "string",
+        "enum" : [ "OWNER", "EDITOR", "VIEWER", "DRIVER" ]
+      },
       "ChargingBill" : {
         "type" : "object",
         "properties" : {
           "attachments" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "photo" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "createdBy" : {
+            "type" : "string"
           },
           "id" : {
             "type" : "integer",
@@ -1002,6 +1177,13 @@
             "type" : "integer",
             "format" : "int64"
           },
+          "photo" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "createdBy" : {
+            "type" : "string"
+          },
           "id" : {
             "type" : "integer",
             "format" : "int64"
@@ -1146,6 +1328,13 @@
             "type" : "integer",
             "format" : "int64"
           },
+          "photo" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "createdBy" : {
+            "type" : "string"
+          },
           "id" : {
             "type" : "integer",
             "format" : "int64"
@@ -1236,6 +1425,13 @@
           "attachments" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "photo" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "createdBy" : {
+            "type" : "string"
           },
           "id" : {
             "type" : "integer",
@@ -1538,6 +1734,50 @@
           }
         }
       },
+      "Place" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "lat" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "lon" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "visits" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "lastVisit" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          }
+        },
+        "required" : [ "lat", "lon", "visits" ]
+      },
+      "PlaceInput" : {
+        "type" : "object",
+        "properties" : {
+          "lat" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "lon" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "name" : {
+            "type" : "string"
+          }
+        }
+      },
       "PushSettings" : {
         "type" : "object",
         "required" : [ "available", "publicKey", "browsers" ],
@@ -1608,6 +1848,14 @@
           },
           "finished" : {
             "type" : "boolean"
+          },
+          "attachments" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "photo" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         }
       },
@@ -2048,6 +2296,9 @@
           },
           "enteredLater" : {
             "type" : "boolean"
+          },
+          "driver" : {
+            "type" : "string"
           }
         }
       },
@@ -2250,6 +2501,186 @@
     }
   },
   "paths" : {
+    "/api/access/{carId}" : {
+      "put" : {
+        "description" : "Invites an account by its user name or e-mail address. One that doesn't exist yet gets the invitation with its first login, a declined one is asked again.",
+        "operationId" : "inviteToCar",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CarInvitationInput"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CarAccessEntry"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed, please check the response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Car is not for your user."
+          },
+          "409" : {
+            "description" : "The account has the access or the invitation already."
+          }
+        },
+        "summary" : "Invite To Car",
+        "tags" : [ "Car Access Resource" ]
+      },
+      "get" : {
+        "description" : "The accesses and invitations of a car, the oldest first.",
+        "operationId" : "getCarAccess",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/CarAccessEntry"
+                  }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Car is not for your user."
+          }
+        },
+        "summary" : "Get Car Access",
+        "tags" : [ "Car Access Resource" ]
+      }
+    },
+    "/api/access/{carId}/{id}" : {
+      "delete" : {
+        "description" : "Ends the access early or takes back the invitation. The entries of the account stay with the car.",
+        "operationId" : "revokeCarAccess",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
+          },
+          "404" : {
+            "description" : "Access not found for the car of your user."
+          }
+        },
+        "summary" : "Revoke Car Access",
+        "tags" : [ "Car Access Resource" ]
+      },
+      "post" : {
+        "description" : "Changes the role or the period of an access or an invitation.",
+        "operationId" : "changeCarAccess",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CarAccessInput"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CarAccessEntry"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed, please check the response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Access not found for the car of your user."
+          }
+        },
+        "summary" : "Change Car Access",
+        "tags" : [ "Car Access Resource" ]
+      }
+    },
     "/api/admin/accounts" : {
       "get" : {
         "description" : "All accounts with their usage, pages starting at 1",
@@ -2547,6 +2978,26 @@
         "tags" : [ "Admin Resource" ]
       }
     },
+    "/api/attachment/limits" : {
+      "get" : {
+        "description" : "The largest file and the files per entry",
+        "operationId" : "getAttachmentLimits",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AttachmentLimits"
+                }
+              }
+            }
+          }
+        },
+        "summary" : "Get Attachment Limits",
+        "tags" : [ "Attachment Limits Resource" ]
+      }
+    },
     "/api/attachment/{carId}/bill/{billId}" : {
       "get" : {
         "description" : "Attachments of the bill, oldest first",
@@ -2772,6 +3223,117 @@
         "tags" : [ "Attachment Resource" ]
       }
     },
+    "/api/attachment/{carId}/recurring/{recurringBillId}" : {
+      "get" : {
+        "description" : "Files of the recurring cost, e.g. the contract, oldest first",
+        "operationId" : "getRecurringBillFiles",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "recurringBillId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Files found.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/Attachment"
+                  }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Recurring bill not found."
+          }
+        },
+        "summary" : "Get Recurring Bill Files",
+        "tags" : [ "Attachment Resource" ]
+      },
+      "post" : {
+        "description" : "Attaches a JPEG, PNG, WebP or PDF file to the recurring cost, e.g. the contract",
+        "operationId" : "addRecurringBillFile",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "recurringBillId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "multipart/form-data" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "file" : {
+                    "type" : "string",
+                    "format" : "binary"
+                  }
+                }
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "File attached.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Attachment"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "File empty, too large, of another type or too many files",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Recurring bill not found."
+          },
+          "413" : {
+            "description" : "Request larger than allowed by the server."
+          }
+        },
+        "summary" : "Add Recurring Bill File",
+        "tags" : [ "Attachment Resource" ]
+      }
+    },
     "/api/attachment/{carId}/technical-inspection/{inspectionId}" : {
       "get" : {
         "description" : "Files of the HU, e.g. the report, oldest first",
@@ -2952,6 +3514,45 @@
           }
         },
         "summary" : "Get Attachment Content",
+        "tags" : [ "Attachment Resource" ]
+      }
+    },
+    "/api/attachment/{carId}/{id}/preview" : {
+      "get" : {
+        "description" : "A small JPEG of a photo for the lists, the file itself if it has none (PDFs, images the server cannot decode)",
+        "operationId" : "getAttachmentPreview",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Preview found.",
+            "content" : {
+              "image/jpeg" : { },
+              "image/png" : { },
+              "image/webp" : { },
+              "application/pdf" : { }
+            }
+          },
+          "404" : {
+            "description" : "Attachment not found."
+          }
+        },
+        "summary" : "Get Attachment Preview",
         "tags" : [ "Attachment Resource" ]
       }
     },
@@ -5375,6 +5976,75 @@
         "tags" : [ "Import Resource" ]
       }
     },
+    "/api/invitations" : {
+      "get" : {
+        "description" : "The invitations to cars the user hasn't answered yet, the oldest first.",
+        "operationId" : "getInvitations",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/CarInvitation"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary" : "Get Invitations",
+        "tags" : [ "Car Invitation Resource" ]
+      }
+    },
+    "/api/invitations/{id}/accept" : {
+      "post" : {
+        "description" : "The car shows for the user within the period of the access.",
+        "operationId" : "acceptInvitation",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "204" : { },
+          "404" : {
+            "description" : "Invitation not found for your user."
+          }
+        },
+        "summary" : "Accept Invitation",
+        "tags" : [ "Car Invitation Resource" ]
+      }
+    },
+    "/api/invitations/{id}/decline" : {
+      "post" : {
+        "description" : "The owner sees the invitation declined, a new one asks again.",
+        "operationId" : "declineInvitation",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "204" : { },
+          "404" : {
+            "description" : "Invitation not found for your user."
+          }
+        },
+        "summary" : "Decline Invitation",
+        "tags" : [ "Car Invitation Resource" ]
+      }
+    },
     "/api/map" : {
       "get" : {
         "description" : "Style of the map, without one the map isn't set up and hidden.",
@@ -6289,6 +6959,183 @@
         "tags" : [ "Track Resource" ]
       }
     },
+    "/api/track/{carId}/places" : {
+      "put" : {
+        "description" : "Names the place at the position, or renames a named one near it. The name stays when the track points are deleted.",
+        "operationId" : "namePlace",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PlaceInput"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "204" : {
+            "description" : "Named."
+          },
+          "400" : {
+            "description" : "Name or position missing or invalid",
+            "content" : { }
+          },
+          "404" : {
+            "description" : "Car is not for your user."
+          }
+        },
+        "summary" : "Name Place",
+        "tags" : [ "Track Resource" ]
+      },
+      "get" : {
+        "description" : "The places the car stopped at at least 3 times in a time range of at most 31 days, from the stops of its GPS track, and the places its owner named; the most visited first.",
+        "operationId" : "getPlaces",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "description" : "Start of the range, inclusive",
+          "required" : true,
+          "name" : "from",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          }
+        }, {
+          "description" : "End of the range, exclusive",
+          "required" : true,
+          "name" : "to",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Places found.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/Place"
+                  }
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Range missing, empty or too long",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Car is not for your user."
+          }
+        },
+        "summary" : "Get Places",
+        "tags" : [ "Track Resource" ]
+      }
+    },
+    "/api/track/{carId}/places/{id}" : {
+      "put" : {
+        "description" : "Renames a named place, its position stays.",
+        "operationId" : "renamePlace",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PlaceInput"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "204" : {
+            "description" : "Renamed."
+          },
+          "400" : {
+            "description" : "Name missing or too long",
+            "content" : { }
+          },
+          "404" : {
+            "description" : "Place not found."
+          }
+        },
+        "summary" : "Rename Place",
+        "tags" : [ "Track Resource" ]
+      },
+      "delete" : {
+        "description" : "Removes the name of a place; it shows again only with enough visits.",
+        "operationId" : "deletePlaceName",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "Removed."
+          },
+          "404" : {
+            "description" : "Place not found."
+          }
+        },
+        "summary" : "Delete Place Name",
+        "tags" : [ "Track Resource" ]
+      }
+    },
     "/api/track/{carId}/retention" : {
       "put" : {
         "description" : "Days the GPS track points of the car are kept, forever without. Older points are deleted every night; only the points of cars that keep them forever are in the backup.",
@@ -6877,7 +7724,7 @@
     },
     "/api/trip/{carId}/{id}/delete" : {
       "post" : {
-        "description" : "Deletes a trip with a reason, only the owner of the car. The trip stays listed as deleted and doesn't count for the odometer anymore. Sent again, it answers with the deleted trip.",
+        "description" : "Deletes a trip with a reason, the owner of the car or an editor. The trip stays listed as deleted and doesn't count for the odometer anymore. Sent again, it answers with the deleted trip.",
         "operationId" : "deleteTrip",
         "parameters" : [ {
           "name" : "carId",

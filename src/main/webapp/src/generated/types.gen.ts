@@ -64,6 +64,12 @@ export type AdminCarRequestPage = {
     data?: Array<AdminCarRequest>;
 };
 
+export type AdminFileStorage = {
+    storage: string;
+    files: number;
+    bytes: number;
+};
+
 export type AdminStats = {
     accounts?: number;
     activeAccounts?: number;
@@ -71,6 +77,8 @@ export type AdminStats = {
     bills?: number;
     recurringBills?: number;
     openRequests?: number;
+    fileStorage: string;
+    files: Array<AdminFileStorage>;
 };
 
 export enum ApprovalType {
@@ -93,6 +101,11 @@ export type Attachment = {
     size?: number;
     createdAt?: OffsetDateTime;
     kind?: DocumentKind;
+};
+
+export type AttachmentLimits = {
+    maxSize: number;
+    maxFiles: number;
 };
 
 export type AverageStats = {
@@ -118,10 +131,14 @@ export type BackupSummary = {
     trackPoints?: number;
     modifications?: number;
     technicalInspections?: number;
+    places?: number;
+    invitations?: number;
 };
 
 export type Bill = {
     attachments?: number;
+    photo?: number;
+    createdBy?: string;
     id?: number;
     date?: LocalDate;
     year?: number;
@@ -226,7 +243,32 @@ export type Car = {
     tripLog: boolean;
     pictureId?: number;
     trackRetentionDays?: number;
+    role: CarRole;
+    tracked: boolean;
 };
+
+export type CarAccessEntry = {
+    id: number;
+    account?: string;
+    invitee?: string;
+    role: CarRole;
+    state: CarAccessState;
+    validFrom?: OffsetDateTime;
+    validUntil?: OffsetDateTime;
+    createdAt: OffsetDateTime;
+};
+
+export type CarAccessInput = {
+    role: CarRole;
+    validFrom?: OffsetDateTime;
+    validUntil?: OffsetDateTime;
+};
+
+export enum CarAccessState {
+    PENDING = 'PENDING',
+    ACCEPTED = 'ACCEPTED',
+    DECLINED = 'DECLINED'
+}
 
 export type CarInput = {
     name?: string;
@@ -240,6 +282,24 @@ export type CarInput = {
     tankSize?: number;
     batteryCapacity?: number;
     tripLog?: boolean;
+};
+
+export type CarInvitation = {
+    id: number;
+    carId: number;
+    car: string;
+    owner: string;
+    role: CarRole;
+    validFrom?: OffsetDateTime;
+    validUntil?: OffsetDateTime;
+    createdAt: OffsetDateTime;
+};
+
+export type CarInvitationInput = {
+    account: string;
+    role: CarRole;
+    validFrom?: OffsetDateTime;
+    validUntil?: OffsetDateTime;
 };
 
 export type CarOverview = {
@@ -270,8 +330,17 @@ export type CarRequestInput = {
     reason?: string;
 };
 
+export enum CarRole {
+    OWNER = 'OWNER',
+    EDITOR = 'EDITOR',
+    VIEWER = 'VIEWER',
+    DRIVER = 'DRIVER'
+}
+
 export type ChargingBill = {
     attachments?: number;
+    photo?: number;
+    createdBy?: string;
     id?: number;
     date?: LocalDate;
     year?: number;
@@ -380,6 +449,8 @@ export type FrequencyLine = {
 
 export type FuelBill = {
     attachments?: number;
+    photo?: number;
+    createdBy?: string;
     id?: number;
     date?: LocalDate;
     year?: number;
@@ -439,6 +510,8 @@ export type LocalDate = string;
 
 export type MaintenanceBill = {
     attachments?: number;
+    photo?: number;
+    createdBy?: string;
     id?: number;
     date?: LocalDate;
     year?: number;
@@ -472,6 +545,8 @@ export type MaxCarsInput = {
 
 export type MiscellaneousBill = {
     attachments?: number;
+    photo?: number;
+    createdBy?: string;
     id?: number;
     date?: LocalDate;
     year?: number;
@@ -580,6 +655,21 @@ export type Part = {
     offset: number;
 };
 
+export type Place = {
+    id?: number;
+    name?: string;
+    lat: number;
+    lon: number;
+    visits: number;
+    lastVisit?: OffsetDateTime;
+};
+
+export type PlaceInput = {
+    lat?: number;
+    lon?: number;
+    name?: string;
+};
+
 export type PushSettings = {
     available: boolean;
     publicKey: string;
@@ -615,6 +705,8 @@ export type RecurringBill = {
     amount?: number;
     total?: number;
     finished?: boolean;
+    attachments?: number;
+    photo?: number;
 };
 
 export type RecurringBillEndInput = {
@@ -783,6 +875,7 @@ export type Trip = {
     deletedBy?: string;
     deleteReason?: string;
     enteredLater: boolean;
+    driver?: string;
 };
 
 export type TripConflict = {
@@ -868,6 +961,121 @@ export enum UnitSystem {
 export type Version = {
     version: string;
 };
+
+export type GetCarAccessData = {
+    body?: never;
+    path: {
+        carId: number;
+    };
+    query?: never;
+    url: '/api/access/{carId}';
+};
+
+export type GetCarAccessErrors = {
+    /**
+     * Car is not for your user.
+     */
+    404: unknown;
+};
+
+export type GetCarAccessResponses = {
+    /**
+     * OK
+     */
+    200: Array<CarAccessEntry>;
+};
+
+export type GetCarAccessResponse = GetCarAccessResponses[keyof GetCarAccessResponses];
+
+export type InviteToCarData = {
+    body: CarInvitationInput;
+    path: {
+        carId: number;
+    };
+    query?: never;
+    url: '/api/access/{carId}';
+};
+
+export type InviteToCarErrors = {
+    /**
+     * Validation failed, please check the response
+     */
+    400: Array<unknown>;
+    /**
+     * Car is not for your user.
+     */
+    404: unknown;
+    /**
+     * The account has the access or the invitation already.
+     */
+    409: unknown;
+};
+
+export type InviteToCarError = InviteToCarErrors[keyof InviteToCarErrors];
+
+export type InviteToCarResponses = {
+    201: CarAccessEntry;
+};
+
+export type InviteToCarResponse = InviteToCarResponses[keyof InviteToCarResponses];
+
+export type RevokeCarAccessData = {
+    body?: never;
+    path: {
+        carId: number;
+        id: number;
+    };
+    query?: never;
+    url: '/api/access/{carId}/{id}';
+};
+
+export type RevokeCarAccessErrors = {
+    /**
+     * Access not found for the car of your user.
+     */
+    404: unknown;
+};
+
+export type RevokeCarAccessResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type RevokeCarAccessResponse = RevokeCarAccessResponses[keyof RevokeCarAccessResponses];
+
+export type ChangeCarAccessData = {
+    body: CarAccessInput;
+    path: {
+        carId: number;
+        id: number;
+    };
+    query?: never;
+    url: '/api/access/{carId}/{id}';
+};
+
+export type ChangeCarAccessErrors = {
+    /**
+     * Validation failed, please check the response
+     */
+    400: Array<unknown>;
+    /**
+     * Access not found for the car of your user.
+     */
+    404: unknown;
+};
+
+export type ChangeCarAccessError = ChangeCarAccessErrors[keyof ChangeCarAccessErrors];
+
+export type ChangeCarAccessResponses = {
+    /**
+     * OK
+     */
+    200: CarAccessEntry;
+};
+
+export type ChangeCarAccessResponse = ChangeCarAccessResponses[keyof ChangeCarAccessResponses];
 
 export type GetAdminAccountsData = {
     body?: never;
@@ -1055,6 +1263,22 @@ export type GetAdminStatsResponses = {
 
 export type GetAdminStatsResponse = GetAdminStatsResponses[keyof GetAdminStatsResponses];
 
+export type GetAttachmentLimitsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/attachment/limits';
+};
+
+export type GetAttachmentLimitsResponses = {
+    /**
+     * OK
+     */
+    200: AttachmentLimits;
+};
+
+export type GetAttachmentLimitsResponse = GetAttachmentLimitsResponses[keyof GetAttachmentLimitsResponses];
+
 export type GetBillAttachmentsData = {
     body?: never;
     path: {
@@ -1184,6 +1408,70 @@ export type AddModificationDocumentResponses = {
 
 export type AddModificationDocumentResponse = AddModificationDocumentResponses[keyof AddModificationDocumentResponses];
 
+export type GetRecurringBillFilesData = {
+    body?: never;
+    path: {
+        carId: number;
+        recurringBillId: number;
+    };
+    query?: never;
+    url: '/api/attachment/{carId}/recurring/{recurringBillId}';
+};
+
+export type GetRecurringBillFilesErrors = {
+    /**
+     * Recurring bill not found.
+     */
+    404: unknown;
+};
+
+export type GetRecurringBillFilesResponses = {
+    /**
+     * Files found.
+     */
+    200: Array<Attachment>;
+};
+
+export type GetRecurringBillFilesResponse = GetRecurringBillFilesResponses[keyof GetRecurringBillFilesResponses];
+
+export type AddRecurringBillFileData = {
+    body: {
+        file?: Blob | File;
+    };
+    path: {
+        carId: number;
+        recurringBillId: number;
+    };
+    query?: never;
+    url: '/api/attachment/{carId}/recurring/{recurringBillId}';
+};
+
+export type AddRecurringBillFileErrors = {
+    /**
+     * File empty, too large, of another type or too many files
+     */
+    400: Array<unknown>;
+    /**
+     * Recurring bill not found.
+     */
+    404: unknown;
+    /**
+     * Request larger than allowed by the server.
+     */
+    413: unknown;
+};
+
+export type AddRecurringBillFileError = AddRecurringBillFileErrors[keyof AddRecurringBillFileErrors];
+
+export type AddRecurringBillFileResponses = {
+    /**
+     * File attached.
+     */
+    201: Attachment;
+};
+
+export type AddRecurringBillFileResponse = AddRecurringBillFileResponses[keyof AddRecurringBillFileResponses];
+
 export type GetTechnicalInspectionFilesData = {
     body?: never;
     path: {
@@ -1294,6 +1582,30 @@ export type GetAttachmentContentErrors = {
 export type GetAttachmentContentResponses = {
     /**
      * File found.
+     */
+    200: unknown;
+};
+
+export type GetAttachmentPreviewData = {
+    body?: never;
+    path: {
+        carId: number;
+        id: number;
+    };
+    query?: never;
+    url: '/api/attachment/{carId}/{id}/preview';
+};
+
+export type GetAttachmentPreviewErrors = {
+    /**
+     * Attachment not found.
+     */
+    404: unknown;
+};
+
+export type GetAttachmentPreviewResponses = {
+    /**
+     * Preview found.
      */
     200: unknown;
 };
@@ -2671,6 +2983,66 @@ export type GetCsvFieldsResponses = {
 
 export type GetCsvFieldsResponse = GetCsvFieldsResponses[keyof GetCsvFieldsResponses];
 
+export type GetInvitationsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/invitations';
+};
+
+export type GetInvitationsResponses = {
+    /**
+     * OK
+     */
+    200: Array<CarInvitation>;
+};
+
+export type GetInvitationsResponse = GetInvitationsResponses[keyof GetInvitationsResponses];
+
+export type AcceptInvitationData = {
+    body?: never;
+    path: {
+        id: number;
+    };
+    query?: never;
+    url: '/api/invitations/{id}/accept';
+};
+
+export type AcceptInvitationErrors = {
+    /**
+     * Invitation not found for your user.
+     */
+    404: unknown;
+};
+
+export type AcceptInvitationResponses = {
+    204: void;
+};
+
+export type AcceptInvitationResponse = AcceptInvitationResponses[keyof AcceptInvitationResponses];
+
+export type DeclineInvitationData = {
+    body?: never;
+    path: {
+        id: number;
+    };
+    query?: never;
+    url: '/api/invitations/{id}/decline';
+};
+
+export type DeclineInvitationErrors = {
+    /**
+     * Invitation not found for your user.
+     */
+    404: unknown;
+};
+
+export type DeclineInvitationResponses = {
+    204: void;
+};
+
+export type DeclineInvitationResponse = DeclineInvitationResponses[keyof DeclineInvitationResponses];
+
 export type GetMapSettingsData = {
     body?: never;
     path?: never;
@@ -3225,6 +3597,131 @@ export type GetTrackFrequencyResponses = {
 };
 
 export type GetTrackFrequencyResponse = GetTrackFrequencyResponses[keyof GetTrackFrequencyResponses];
+
+export type GetPlacesData = {
+    body?: never;
+    path: {
+        carId: number;
+    };
+    query: {
+        /**
+         * Start of the range, inclusive
+         */
+        from: OffsetDateTime;
+        /**
+         * End of the range, exclusive
+         */
+        to: OffsetDateTime;
+    };
+    url: '/api/track/{carId}/places';
+};
+
+export type GetPlacesErrors = {
+    /**
+     * Range missing, empty or too long
+     */
+    400: Array<unknown>;
+    /**
+     * Car is not for your user.
+     */
+    404: unknown;
+};
+
+export type GetPlacesError = GetPlacesErrors[keyof GetPlacesErrors];
+
+export type GetPlacesResponses = {
+    /**
+     * Places found.
+     */
+    200: Array<Place>;
+};
+
+export type GetPlacesResponse = GetPlacesResponses[keyof GetPlacesResponses];
+
+export type NamePlaceData = {
+    body: PlaceInput;
+    path: {
+        carId: number;
+    };
+    query?: never;
+    url: '/api/track/{carId}/places';
+};
+
+export type NamePlaceErrors = {
+    /**
+     * Name or position missing or invalid
+     */
+    400: unknown;
+    /**
+     * Car is not for your user.
+     */
+    404: unknown;
+};
+
+export type NamePlaceResponses = {
+    /**
+     * Named.
+     */
+    204: void;
+};
+
+export type NamePlaceResponse = NamePlaceResponses[keyof NamePlaceResponses];
+
+export type DeletePlaceNameData = {
+    body?: never;
+    path: {
+        carId: number;
+        id: number;
+    };
+    query?: never;
+    url: '/api/track/{carId}/places/{id}';
+};
+
+export type DeletePlaceNameErrors = {
+    /**
+     * Place not found.
+     */
+    404: unknown;
+};
+
+export type DeletePlaceNameResponses = {
+    /**
+     * Removed.
+     */
+    204: void;
+};
+
+export type DeletePlaceNameResponse = DeletePlaceNameResponses[keyof DeletePlaceNameResponses];
+
+export type RenamePlaceData = {
+    body: PlaceInput;
+    path: {
+        carId: number;
+        id: number;
+    };
+    query?: never;
+    url: '/api/track/{carId}/places/{id}';
+};
+
+export type RenamePlaceErrors = {
+    /**
+     * Name missing or too long
+     */
+    400: unknown;
+    /**
+     * Place not found.
+     */
+    404: unknown;
+};
+
+export type RenamePlaceResponses = {
+    /**
+     * Renamed.
+     */
+    204: void;
+};
+
+export type RenamePlaceResponse = RenamePlaceResponses[keyof RenamePlaceResponses];
 
 export type SetTrackRetentionData = {
     body: TrackRetentionInput;

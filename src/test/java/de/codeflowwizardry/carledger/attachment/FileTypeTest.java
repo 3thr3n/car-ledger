@@ -1,6 +1,8 @@
 package de.codeflowwizardry.carledger.attachment;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
@@ -32,6 +34,20 @@ class FileTypeTest
 				(byte) 0xFF
 		}));
 		assertEquals(Optional.empty(), FileType.detect(new byte[0]));
+	}
+
+	@Test
+	void shouldRecognizeHeicPhotos()
+	{
+		byte[] heic = ascii("\0\0\0\u0018ftypheic\0\0\0\0mif1heic");
+		assertTrue(FileType.isHeic(heic));
+		assertEquals(Optional.empty(), FileType.detect(heic), "not allowed");
+		assertTrue(FileType.isHeic(ascii("\0\0\0\u0018ftypmif1\0\0\0\0")));
+
+		assertFalse(FileType.isHeic(ascii("\0\0\0\u0018ftypavif\0\0\0\0")), "AVIF");
+		assertFalse(FileType.isHeic(ascii("\0\0\0\u0018ftypisom")), "MP4");
+		assertFalse(FileType.isHeic(ascii("\0\0\0\u0018ftyp")));
+		assertFalse(FileType.isHeic(new byte[0]));
 	}
 
 	private static byte[] ascii(String value)

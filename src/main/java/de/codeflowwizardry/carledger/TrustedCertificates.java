@@ -23,7 +23,7 @@ import java.util.stream.Stream;
  * <p>
  * The PEM files of a directory (one or several certificates each) are added to
  * a copy of the truststore of the JVM, which becomes the truststore of the JVM.
- * So every client trusts them: the login (OIDC), the mailer, webhooks and push.
+ * So every client trusts them: the login (OIDC), the mailer and push.
  * Runs before Quarkus starts, as the JVM reads the truststore on the first use
  * of TLS.
  */

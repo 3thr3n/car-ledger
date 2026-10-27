@@ -1,0 +1,14 @@
+{#if accepted}{account} accepted the access to "{car}"{#else}{account} declined the access to "{car}"{/if}
+{#if accepted}
+{account} accepted your invitation to the car "{car}" and sees it now.
+{#else}
+{account} declined your invitation to the car "{car}".
+{/if}
+{#if link}
+
+The access to the car: {link}
+{/if}
+
+--
+You can turn off these mails in the settings{#if settingsLink}:
+{settingsLink}{#else}.{/if}

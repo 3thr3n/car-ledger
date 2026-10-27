@@ -104,6 +104,15 @@
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-mailer</artifactId>
         </dependency>
+        <!-- attachments in an S3 compatible storage (optional, carledger.attachments.storage=S3) -->
+        <dependency>
+            <groupId>io.quarkiverse.amazonservices</groupId>
+            <artifactId>quarkus-amazon-s3</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>url-connection-client</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>io.quarkiverse.quinoa</groupId>
@@ -139,6 +148,11 @@
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-jdbc-h2</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -366,6 +380,18 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <!-- ./mvnw javadoc:javadoc builds the site of the backend to target/reports/apidocs, with the private
+                 members: it is an app, not a library. Broken references, HTML and tags fail it, missing comments not -->
+            <plugin>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.12.0</version>
+                <configuration>
+                    <show>private</show>
+                    <doclint>all,-missing</doclint>
+                    <failOnWarnings>true</failOnWarnings>
+                    <quiet>true</quiet>
+                </configuration>
             </plugin>
         </plugins>
     </build>

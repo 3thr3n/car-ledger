@@ -5,9 +5,7 @@ import java.util.List;
 import de.codeflowwizardry.carledger.Utils;
 import de.codeflowwizardry.carledger.data.AccountEntity;
 import de.codeflowwizardry.carledger.exception.AlreadyPresentException;
-import de.codeflowwizardry.carledger.webhook.CarRequestDecided;
-import de.codeflowwizardry.carledger.webhook.WebhookEvent;
-import de.codeflowwizardry.carledger.webhook.Webhooks;
+import de.codeflowwizardry.carledger.notification.Notifications;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -23,13 +21,13 @@ public class RequestService
 	public static final int MAX_TEXT = 500;
 
 	private final RequestRepository repository;
-	private final Webhooks webhooks;
+	private final Notifications notifications;
 
 	@Inject
-	public RequestService(RequestRepository repository, Webhooks webhooks)
+	public RequestService(RequestRepository repository, Notifications notifications)
 	{
 		this.repository = repository;
-		this.webhooks = webhooks;
+		this.notifications = notifications;
 	}
 
 	/**
@@ -44,7 +42,7 @@ public class RequestService
 		RequestEntity request = findOpen(id, handler.type());
 		handler.approve(request, input);
 		request.decide(RequestState.APPROVED, decidedBy, null);
-		publishDecision(request);
+		notifyDecision(request);
 		return request;
 	}
 
@@ -60,7 +58,7 @@ public class RequestService
 				: List.of());
 		RequestEntity request = findOpen(id, type);
 		request.decide(RequestState.REJECTED, decidedBy, comment == null || comment.isBlank() ? null : comment.trim());
-		publishDecision(request);
+		notifyDecision(request);
 		return request;
 	}
 
@@ -79,17 +77,11 @@ public class RequestService
 		}
 	}
 
-	private void publishDecision(RequestEntity request)
+	private void notifyDecision(RequestEntity request)
 	{
 		switch (request.getType())
 		{
-			case CAR_LIMIT -> {
-				CarLimitPayload payload = CarLimitPayload.of(request.getPayload());
-				webhooks.publish(WebhookEvent.CAR_REQUEST_DECIDED, new CarRequestDecided(request.getId(),
-						request.getAccount().getUserId(), request.getState().name(), payload.cars(),
-						payload.grantedMaxCars(), request.getComment(), request.getDecidedBy(),
-						request.getDecidedAt()));
-			}
+			case CAR_LIMIT -> notifications.carRequestDecided(request);
 		}
 	}
 

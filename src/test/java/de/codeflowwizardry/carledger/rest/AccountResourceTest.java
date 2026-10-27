@@ -26,6 +26,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.security.runtime.QuarkusSecurityIdentity;
 import io.quarkus.test.security.TestSecurity;
 import io.quarkus.test.security.oidc.Claim;
+import io.quarkus.test.security.oidc.ClaimType;
 import io.quarkus.test.security.oidc.OidcSecurity;
 import java.time.OffsetDateTime;
 
@@ -121,7 +122,7 @@ class AccountResourceTest
 
 		// when
 		AccountEntity accountEntity = new AccountResource(
-				QuarkusSecurityIdentity.builder().setPrincipal(principal).build(), repository, null)
+				QuarkusSecurityIdentity.builder().setPrincipal(principal).build(), repository, null, null)
 				.checkUser("peter");
 
 		// then
@@ -331,6 +332,19 @@ class AccountResourceTest
 				.statusCode(204);
 
 		assertEquals(0, accountRepository.count());
+	}
+
+	@Test
+	@TestSecurity(user = "peter", roles = "user")
+	@OidcSecurity(claims = {
+			@Claim(key = "email", value = "peter@example.com"),
+			@Claim(key = "email_verified", value = "true", type = ClaimType.BOOLEAN)
+	})
+	void shouldRememberThatTheAddressIsConfirmed()
+	{
+		given().get("/api/user/me").then().statusCode(200);
+
+		assertTrue(account("peter").isEmailVerified());
 	}
 
 	@Test

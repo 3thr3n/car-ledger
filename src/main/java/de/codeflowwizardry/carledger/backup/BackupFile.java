@@ -8,6 +8,7 @@ import java.util.List;
 import de.codeflowwizardry.carledger.data.BillCategory;
 import de.codeflowwizardry.carledger.data.BillInterval;
 import de.codeflowwizardry.carledger.data.BillType;
+import de.codeflowwizardry.carledger.data.CarRole;
 import de.codeflowwizardry.carledger.data.ChargingLocation;
 import de.codeflowwizardry.carledger.data.DocumentKind;
 import de.codeflowwizardry.carledger.data.EnergyType;
@@ -72,13 +73,41 @@ public record BackupFile(String format, int version, OffsetDateTime createdAt, S
 	 *            missing in backups before them
 	 * @param technicalInspections
 	 *            the HUs, missing in backups before them
+	 * @param places
+	 *            the named places, missing in backups before them
+	 * @param accesses
+	 *            the accounts the car is shared with, restored as invitations;
+	 *            missing in backups before them
 	 */
 	public record Car(String name, int year, int odometer, LocalDate odometerDate, String licensePlate, String vin,
 			LocalDate purchaseDate, BigDecimal purchasePrice, EnergyType energyType, BigDecimal tankSize,
 			BigDecimal batteryCapacity, File picture, List<Bill> bills, List<RecurringBill> recurringBills,
 			List<Reminder> reminders, List<Trip> trips, Boolean tripLog, Integer trackRetentionDays,
 			List<Tracker> trackers, File track, List<Modification> modifications,
-			List<TechnicalInspection> technicalInspections)
+			List<TechnicalInspection> technicalInspections, List<Place> places, List<Access> accesses)
+	{
+	}
+
+	/**
+	 * An access of another account to the car, open or accepted; ended and
+	 * declined ones aren't in the backup
+	 *
+	 * @param account
+	 *            user name, or the user name or e-mail address of an invitation
+	 *            for an account that didn't exist yet
+	 * @param validFrom
+	 *            start, from the acceptance on without
+	 * @param validUntil
+	 *            end (exclusive), without an end without
+	 */
+	public record Access(String account, CarRole role, OffsetDateTime validFrom, OffsetDateTime validUntil)
+	{
+	}
+
+	/**
+	 * A place the owner named, e.g. a fuel station
+	 */
+	public record Place(String name, double lat, double lon)
 	{
 	}
 
@@ -129,9 +158,13 @@ public record BackupFile(String format, int version, OffsetDateTime createdAt, S
 	{
 	}
 
+	/**
+	 * @param files
+	 *            e.g. the contract, missing in backups before them
+	 */
 	public record RecurringBill(String name, String description, BigDecimal amount, BillCategory category,
 			BillInterval interval, LocalDate startDate, LocalDate nextDueDate, LocalDate endDate, BigDecimal total,
-			List<Payment> payments)
+			List<Payment> payments, List<File> files)
 	{
 	}
 

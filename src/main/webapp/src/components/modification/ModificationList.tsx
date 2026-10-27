@@ -28,6 +28,8 @@ export interface ModificationListProps {
   onEdit: (modification: Modification) => void;
   onRemove: (modification: Modification) => void;
   onDelete: (modification: Modification) => void;
+  /** without the actions, for a viewer */
+  readOnly?: boolean;
 }
 
 function Detail({ label, children }: { label: string; children: ReactNode }) {
@@ -53,6 +55,7 @@ export default function ModificationList({
   onEdit,
   onRemove,
   onDelete,
+  readOnly = false,
 }: ModificationListProps) {
   const { t } = useTranslation();
   const format = useFormat();
@@ -172,37 +175,39 @@ export default function ModificationList({
                     )}
                   </Stack>
                 </Box>
-                <Stack direction="row" sx={{ flexShrink: 0 }}>
-                  {modification.installed && (
-                    <Tooltip title={t('modification.remove.button')}>
+                {!readOnly && (
+                  <Stack direction="row" sx={{ flexShrink: 0 }}>
+                    {modification.installed && (
+                      <Tooltip title={t('modification.remove.button')}>
+                        <IconButton
+                          size="small"
+                          aria-label={t('modification.remove.button')}
+                          onClick={() => onRemove(modification)}
+                        >
+                          <LogoutRounded fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+                    <Tooltip title={t('button.edit')}>
                       <IconButton
                         size="small"
-                        aria-label={t('modification.remove.button')}
-                        onClick={() => onRemove(modification)}
+                        aria-label={t('button.edit')}
+                        onClick={() => onEdit(modification)}
                       >
-                        <LogoutRounded fontSize="small" />
+                        <EditOutlined fontSize="small" />
                       </IconButton>
                     </Tooltip>
-                  )}
-                  <Tooltip title={t('button.edit')}>
-                    <IconButton
-                      size="small"
-                      aria-label={t('button.edit')}
-                      onClick={() => onEdit(modification)}
-                    >
-                      <EditOutlined fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title={t('button.delete')}>
-                    <IconButton
-                      size="small"
-                      aria-label={t('button.delete')}
-                      onClick={() => onDelete(modification)}
-                    >
-                      <DeleteOutlineRounded fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                </Stack>
+                    <Tooltip title={t('button.delete')}>
+                      <IconButton
+                        size="small"
+                        aria-label={t('button.delete')}
+                        onClick={() => onDelete(modification)}
+                      >
+                        <DeleteOutlineRounded fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  </Stack>
+                )}
               </Stack>
 
               <Button
@@ -294,6 +299,7 @@ export default function ModificationList({
                   <ModificationDocuments
                     carId={carId}
                     modificationId={modification.id}
+                    readOnly={readOnly}
                   />
                 </Stack>
               </Collapse>

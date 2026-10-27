@@ -21,6 +21,7 @@ import BillTable from '@/components/bill/BillTable';
 import { useRecurringColumns } from '@/components/bill/columns';
 import useDeleteBill from '@/components/bill/useDeleteBill';
 import EndRecurringDialog from '@/components/bill/EndRecurringDialog';
+import useCarRole from '@/hooks/useCarRole';
 
 export default function RecurringListPage({ carId }: { carId: number }) {
   const { t } = useTranslation();
@@ -33,6 +34,7 @@ export default function RecurringListPage({ carId }: { carId: number }) {
   const { columns, mobileRow } = useRecurringColumns();
   const onDelete = useDeleteBill(carId, true);
   const [toEnd, setToEnd] = useState<RecurringBill>();
+  const canChange = useCarRole(carId)('WRITE');
 
   const { data, isLoading, isFetching } = useQuery({
     ...getAllRecurringBillsOptions({
@@ -84,6 +86,7 @@ export default function RecurringListPage({ carId }: { carId: number }) {
       </Stack>
       <BillTable
         carId={carId}
+        recurring
         rows={data?.data ?? []}
         total={data?.total ?? 0}
         columns={columns}
@@ -91,15 +94,19 @@ export default function RecurringListPage({ carId }: { carId: number }) {
         pageModel={pageModel}
         onPageModelChange={setPageModel}
         loading={isLoading || isFetching}
-        onDelete={onDelete}
-        onEdit={(row) =>
-          navigate({
-            to: '/car/$id/bill/$billId/edit',
-            params: { id: `${carId}`, billId: `${row.id}` },
-            search: { type: BillType.RECURRING },
-          })
+        onDelete={canChange ? onDelete : undefined}
+        onEdit={
+          canChange
+            ? (row) =>
+                navigate({
+                  to: '/car/$id/bill/$billId/edit',
+                  params: { id: `${carId}`, billId: `${row.id}` },
+                  search: { type: BillType.RECURRING },
+                })
+            : undefined
         }
         rowActions={(row) =>
+          canChange &&
           !row.finished && (
             <Tooltip title={t('bill.end.button')}>
               <IconButton
@@ -117,14 +124,16 @@ export default function RecurringListPage({ carId }: { carId: number }) {
         emptyTitle={t('bill.empty.title', { type: t('bill.types.RECURRING') })}
         emptyText={t('bill.empty.RECURRING')}
         emptyAction={
-          <RouterButton
-            to="/car/$id/bill/add"
-            params={{ id: `${carId}` }}
-            search={{ type: BillType.RECURRING }}
-            variant="contained"
-          >
-            {t('bill.add.button')}
-          </RouterButton>
+          canChange && (
+            <RouterButton
+              to="/car/$id/bill/add"
+              params={{ id: `${carId}` }}
+              search={{ type: BillType.RECURRING }}
+              variant="contained"
+            >
+              {t('bill.add.button')}
+            </RouterButton>
+          )
         }
       />
       <EndRecurringDialog

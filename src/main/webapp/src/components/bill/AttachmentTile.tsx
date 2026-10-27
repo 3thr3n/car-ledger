@@ -11,6 +11,7 @@ export default function AttachmentTile({
   name,
   pdf,
   url,
+  previewUrl,
   onRemove,
   onOpen,
 }: {
@@ -18,7 +19,10 @@ export default function AttachmentTile({
   pdf: boolean;
   /** undefined while the preview of a picked file is prepared */
   url?: string;
-  onRemove: () => void;
+  /** smaller image shown in the tile, the file itself without one */
+  previewUrl?: string;
+  /** without it the file can't be removed, e.g. for a viewer */
+  onRemove?: () => void;
   /** before the link opens the file, e.g. to open a kept copy offline */
   onOpen?: (event: MouseEvent<HTMLAnchorElement>) => void;
 }) {
@@ -64,7 +68,7 @@ export default function AttachmentTile({
           ) : (
             <Box
               component="img"
-              src={url}
+              src={previewUrl ?? url}
               alt={name}
               loading="lazy"
               sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
@@ -72,22 +76,24 @@ export default function AttachmentTile({
           )}
         </Box>
       </Tooltip>
-      <IconButton
-        size="small"
-        onClick={onRemove}
-        aria-label={t('attachments.remove', { name })}
-        sx={{
-          position: 'absolute',
-          top: 2,
-          right: 2,
-          p: 0.25,
-          bgcolor: 'background.paper',
-          boxShadow: 1,
-          '&:hover': { bgcolor: 'background.paper' },
-        }}
-      >
-        <CloseRounded sx={{ fontSize: 16 }} />
-      </IconButton>
+      {onRemove && (
+        <IconButton
+          size="small"
+          onClick={onRemove}
+          aria-label={t('attachments.remove', { name })}
+          sx={{
+            position: 'absolute',
+            top: 2,
+            right: 2,
+            p: 0.25,
+            bgcolor: 'background.paper',
+            boxShadow: 1,
+            '&:hover': { bgcolor: 'background.paper' },
+          }}
+        >
+          <CloseRounded sx={{ fontSize: 16 }} />
+        </IconButton>
+      )}
     </Box>
   );
 }

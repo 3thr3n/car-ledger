@@ -47,6 +47,8 @@ export default function useOfflineDocuments(carId: number) {
   });
 
   const save = useMutation({
+    // one after the other: a list that changes while saving saves again after
+    scope: { id: `offlineDocuments-${carId}` },
     mutationFn: async () => {
       // the lists of the pages, not loaded again: they start the saving
       const modifications = await queryClient.ensureQueryData(

@@ -18,6 +18,7 @@ import { localClient } from '@/utils/QueryClient';
 import { toApiDate, useFormat } from '@/utils/format';
 import NumberField from './NumberField';
 import FormActions from './FormActions';
+import BillAttachments from './BillAttachments';
 import useSaveBill from './useSaveBill';
 
 interface RecurringState {
@@ -145,6 +146,7 @@ export default function RecurringForm({
             placeholder={t('bill.recurringPlaceholder')}
             value={form.name}
             onChange={(e) => set({ name: e.target.value })}
+            slotProps={{ htmlInput: { maxLength: 100 } }}
             required
             error={touched && !!errors.name}
             helperText={touched && errors.name}
@@ -167,6 +169,7 @@ export default function RecurringForm({
             label={t('bill.fields.description')}
             value={form.description}
             onChange={(e) => set({ description: e.target.value })}
+            slotProps={{ htmlInput: { maxLength: 1000 } }}
           />
         </Grid>
         <Grid size={{ xs: 12, sm: 6 }}>
@@ -242,6 +245,8 @@ export default function RecurringForm({
               {t('bill.recurringPastHint')}
             </Alert>
           )}
+
+      <BillAttachments {...save.attachments} />
 
       <FormActions
         pending={create.isPending || update.isPending}

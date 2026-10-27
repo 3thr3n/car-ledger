@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.ResourceBundle;
 
 import org.openpdf.text.Document;
@@ -163,7 +164,8 @@ public final class TripPdfWriter
 			table.addCell(cell(trip.getDestination(), font, Element.ALIGN_LEFT));
 			table.addCell(cell(trip.getPurpose(), font, Element.ALIGN_LEFT));
 			table.addCell(cell(trip.getBusinessPartner(), font, Element.ALIGN_LEFT));
-			table.addCell(cell(trip.getDriver().getUserId(), font, Element.ALIGN_LEFT));
+			table.addCell(cell(Objects.requireNonNullElseGet(trip.getDriverName(), () -> text("deletedDriver")),
+					font, Element.ALIGN_LEFT));
 			table.addCell(notes(trip));
 		}
 		return table;

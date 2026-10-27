@@ -37,10 +37,10 @@ public final class MaintenanceBill extends AbstractBill
 
 	public static MaintenanceBill convert(MaintenanceBillEntity billEntity)
 	{
-		return new MaintenanceBill(billEntity.getBill().getId(), billEntity.getBill().getDate(),
+		return created(new MaintenanceBill(billEntity.getBill().getId(), billEntity.getBill().getDate(),
 				billEntity.getWorkshop(), billEntity.getDescription(), billEntity.getBill().getTotal(),
 				billEntity.getLaborCost(), billEntity.getPartsCost(), billEntity.getOdometer(),
-				billEntity.getBill().getVatRate());
+				billEntity.getBill().getVatRate()), billEntity.getBill());
 	}
 
 	public static List<MaintenanceBill> convert(List<MaintenanceBillEntity> billEntityList)

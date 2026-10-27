@@ -22,6 +22,7 @@ authentik or any other provider).
 - [Usage](#usage)
 - [CSV Format](#csv-format)
 - [Development](#development)
+    - [Architecture](#architecture)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -32,8 +33,10 @@ authentik or any other provider).
 - **Refuels, charges, maintenance and other costs** per car, corrected or deleted afterwards; calculated values like
   the consumption follow.
 - **Electric and hybrid cars:** charges in kWh with the consumption in kWh/100km next to the refuels in liters.
-- **Recurring costs** (insurance, tax, leasing) with their payments; ending one removes the payments from the end date on.
-- **Receipts:** photos and PDFs attached to the entries, a picture per car, details like plate, VIN and purchase price.
+- **Recurring costs** (insurance, tax, leasing) with their payments and files like the contract; ending one removes the
+  payments from the end date on.
+- **Receipts:** photos and PDFs attached to the entries and the recurring costs, shown small in the lists, a picture per
+  car, details like plate, VIN and purchase price.
 - **Units:** metric, US (miles, gallons, mpg) or UK (miles, liters, mpg) per account. They are stored in km and liters,
   the API always uses those.
 - **Statistics:** totals, averages and the consumption over time per car and for all cars.
@@ -55,19 +58,25 @@ authentik or any other provider).
 - **Trip log (Fahrtenbuch):** start and finish trips with the odometer, enter forgotten ones, delete with a reason
   (they stay in the log), export as PDF or CSV.
 - **GPS tracking:** a tracker in the car (e.g. an ESP32) sends its points, the app shows the tracks on a map colored
-  by speed and the track of a trip, and suggests forgotten trips from the drives; the owner chooses how long the
-  points are kept, see [docs/GPS_TRACKER.md](docs/GPS_TRACKER.md).
+  by speed or by how often a road was driven and the track of a trip, names the places the car stops at often and
+  suggests forgotten trips from the drives; the owner chooses how long the points are kept, see
+  [docs/GPS_TRACKER.md](docs/GPS_TRACKER.md).
 - **Reminders and notifications:** due reminders by e-mail and push message, once a day; each can be turned off.
 
 **Data and integration**
 
+- **Sharing a car:** the owner invites other accounts (by user name or e-mail address) as editor, viewer or driver,
+  optionally for a period; the entries show who created them, a driver sees only the own trips and refuels. Only the
+  owner backs up a shared car.
+
 - **CSV import and export** of each entry type, and all expenses of a car in one CSV for spreadsheets.
 - **Backup:** every user downloads all of their data (settings, cars, entries, recurring costs, reminders, trips,
-  modifications and their documents, the HUs, GPS trackers and the tracks kept forever, receipts and pictures) as one ZIP and restores it into an account without cars, e.g. on another installation.
+  modifications and their documents, the HUs, GPS trackers and the tracks kept forever, receipts, contracts and
+  pictures) as one ZIP and restores it into an account without cars, e.g. on another installation.
 - **Car requests:** users who reached their car limit request more cars, administrators decide on the administration
   page.
-- **Webhooks and service accounts:** events like a new car request are sent as signed HTTP requests, scripts use the API
-  with tokens of the identity provider, see [docs/WEBHOOKS.md](docs/WEBHOOKS.md).
+- **Service accounts:** scripts use the API with tokens of the identity provider, e.g. to decide car requests, see
+  [Service accounts](docs/DEPLOYMENT.md#service-accounts).
 - **Administration:** usage statistics, all accounts with their cars, the car limit per account, deleting accounts.
 
 ## Installation
@@ -193,8 +202,8 @@ described in [values.yaml](helm/car-ledger/values.yaml), the options in [docs/DE
 | `carLedger.mail.host`                         |                                 | SMTP server for the notifications, none sent without it ([E-mail](docs/DEPLOYMENT.md#e-mail)) |
 | `carLedger.push.enabled`                      | `true`                          | Push messages to the browsers, the key is generated ([Push](docs/DEPLOYMENT.md#push)) |
 | `carLedger.map.styleUrl`                      |                                 | MapLibre style for the map of the GPS tracks, hidden without it        |
-| `carLedger.webhook.url`                       |                                 | Receiver of the webhooks ([WEBHOOKS.md](docs/WEBHOOKS.md))             |
 | `carLedger.attachments.maxSize`               | `10M`                           | Largest receipt; proxies in front need `maxRequestSize` (`12M`) as well |
+| `carLedger.attachments.storage`               | `DB`                            | `S3` with `carLedger.attachments.s3.*` keeps the files in a bucket ([docs](docs/DEPLOYMENT.md#attachments-in-s3)) |
 | `carLedger.trust.certificates`                | `[]`                            | CAs the app trusts for its own HTTPS requests ([self-signed](docs/DEPLOYMENT.md#self-signed-certificates)) |
 | `carLedger.replicas`                          | `1`                             | Replicas of the app, sessions are shared by Infinispan                 |
 | `carLedger.resources`                         | 100m / 256Mi, limit 350m / 768Mi | Resources of the app                                                  |
@@ -204,13 +213,13 @@ described in [values.yaml](helm/car-ledger/values.yaml), the options in [docs/DE
 
 ### Versions
 
-A [release](https://github.com/3thr3n/car-ledger/releases) (e.g. `0.8.0`) publishes the image
-`ghcr.io/3thr3n/car-ledger:0.8.0` and the charts `car-ledger` and `stack` in the same version, which run that image.
+A [release](https://github.com/3thr3n/car-ledger/releases) (e.g. `0.9.0`) publishes the image
+`ghcr.io/3thr3n/car-ledger:0.9.0` and the charts `car-ledger` and `stack` in the same version, which run that image.
 `keycloak` and `authentik` have their own versions, the release notes name them. Without `--version`, Helm installs the
 latest release.
 
-Every build of `develop` is published as a prerelease, `<next release>-dev.<run number>` (e.g. `0.9.0-dev.123`): `--devel`
-installs the latest one, a version range takes them only with a prerelease suffix (`>=0.9.0-0`). Leave
+Every build of `develop` is published as a prerelease, `<next release>-dev.<run number>` (e.g. `0.10.0-dev.123`): `--devel`
+installs the latest one, a version range takes them only with a prerelease suffix (`>=0.10.0-0`). Leave
 `carLedger.image.tag` empty, the chart runs the image of its own build.
 
 Up to 0.3.x the app chart was `oci://ghcr.io/3thr3n/car-ledger/helm`, since 0.4.0 it is `car-ledger`.
@@ -333,6 +342,12 @@ helm/validate-manifests.sh
 The build writes the OpenAPI spec of the backend to `src/main/webapp/public/openapi.json`, the frontend client is
 generated from it with `yarn openapi-ts`. Commit both, the CI fails if they are outdated.
 
+### Architecture
+
+[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) shows how the parts fit together: the layers of the backend, the access
+check of the cars, the storages, the scheduled jobs. Each package of the backend has an overview in its Javadoc;
+`./mvnw javadoc:javadoc` builds the site to `target/reports/apidocs`, and the CI fails on broken Javadoc.
+
 ### Local cluster
 
 `hack/kind/up.sh` creates a cluster in Docker with [kind](https://kind.sigs.k8s.io) and installs the stack chart from
@@ -363,6 +378,9 @@ Contributions are welcome! Please follow these steps to contribute:
 ### Branches and releases
 
 - `develop` gets all pull requests, its builds are published as prereleases (`<next release>-dev.<run number>`).
+- Every milestone ends with a security review of the pull requests since the last release, an issue of the
+  template *Security review of a milestone* (`.github/ISSUE_TEMPLATE/security-review.md`). Its findings are fixed
+  before the release or moved to the next milestone on purpose.
 - `main` only holds released states. A release is a pull request from `develop` to `main`, merged with a merge
   commit (not squashed, so both branches keep the same history), then the tag of the version in
   `helm/car-ledger/Chart.yaml` on `main`. Afterwards the next version is set in `Chart.yaml` on `develop`.

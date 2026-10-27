@@ -12,6 +12,8 @@ import AddRounded from '@mui/icons-material/AddRounded';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import OrphanedEntries from '@/components/offline/OrphanedEntries';
+import { isShared, ownCars } from '@/utils/carRole';
 import { getMyCarsOptions } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
 import OdometerValue from '@/components/ui/OdometerValue';
@@ -24,6 +26,7 @@ import ErrorPage from '@/pages/ErrorPage';
 import useCarRequest from '@/hooks/useCarRequest';
 import CarRequestDialog from '@/components/request/CarRequestDialog';
 import CarRequestOutcome from '@/components/request/CarRequestOutcome';
+import InvitationList from '@/components/car/access/InvitationList';
 
 export default function GaragePage() {
   const { t } = useTranslation();
@@ -43,7 +46,7 @@ export default function GaragePage() {
     return <ErrorPage error={error} />;
   }
 
-  const used = cars?.length ?? 0;
+  const used = ownCars(cars).length;
   const canAdd = used < maxCars;
 
   return (
@@ -55,6 +58,8 @@ export default function GaragePage() {
       />
 
       <CarRequestOutcome />
+      <InvitationList />
+      <OrphanedEntries />
 
       <Grid container spacing={2}>
         {isLoading &&
@@ -101,6 +106,8 @@ export default function GaragePage() {
                       }}
                     >
                       {[
+                        isShared(car) &&
+                          t('car.shared', { role: t(`car.roles.${car.role}`) }),
                         car.year && t('car.built', { year: car.year }),
                         t(`car.energyTypes.${car.energyType}`),
                       ]

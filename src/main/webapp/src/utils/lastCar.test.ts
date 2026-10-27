@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { BillType, Car, EnergyType } from '@/generated';
+import { BillType, Car, CarRole, EnergyType } from '@/generated';
 import {
   rememberCar,
   shortcutCar,
@@ -7,8 +7,12 @@ import {
   shortcutType,
 } from '@/utils/lastCar';
 
-const car = (id: number, energyType = EnergyType.PETROL, tripLog = false) =>
-  ({ id, name: `Car ${id}`, energyType, tripLog }) as Car;
+const car = (
+  id: number,
+  energyType = EnergyType.PETROL,
+  tripLog = false,
+  role = CarRole.OWNER,
+) => ({ id, name: `Car ${id}`, energyType, tripLog, role }) as Car;
 const logged = (id: number) => car(id, EnergyType.PETROL, true);
 
 describe('shortcut "Add refuel"', () => {
@@ -24,6 +28,14 @@ describe('shortcut "Add refuel"', () => {
   it('takes the last opened car', () => {
     rememberCar(2);
     expect(shortcutCar([car(1), car(2)])?.id).toBe(2);
+  });
+
+  it('skips the cars the user only views', () => {
+    rememberCar(1);
+    const viewed = car(1, EnergyType.PETROL, true, CarRole.VIEWER);
+    expect(shortcutCar([viewed, car(2)])?.id).toBe(2);
+    expect(shortcutTripCar([viewed, logged(3)])?.id).toBe(3);
+    expect(shortcutCar([viewed])).toBeUndefined();
   });
 
   it('takes the first car without one or when it is gone', () => {

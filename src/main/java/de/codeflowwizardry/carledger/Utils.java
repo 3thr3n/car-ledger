@@ -38,6 +38,21 @@ public class Utils
 	 * @throws BadRequestException
 	 *             with the errors as body, if there are any
 	 */
+	/**
+	 * Adds an error if the text is longer than the limit, without the spaces
+	 * around it
+	 *
+	 * @param name
+	 *            of the field in the message, e.g. "Description"
+	 */
+	public static void checkLength(List<String> errors, String name, String value, int max)
+	{
+		if (value != null && value.strip().length() > max)
+		{
+			errors.add(name + " must not be longer than " + max + " characters!");
+		}
+	}
+
 	public static void requireValid(List<String> errors)
 	{
 		if (!errors.isEmpty())

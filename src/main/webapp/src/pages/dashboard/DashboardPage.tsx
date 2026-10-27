@@ -12,6 +12,8 @@ import {
   getMyCarsOptions,
   getRemindersOptions,
 } from '@/generated/@tanstack/react-query.gen';
+import InvitationNote from '@/components/car/access/InvitationNote';
+import { can } from '@/utils/carRole';
 import { localClient } from '@/utils/QueryClient';
 import { hasValue, useFormat } from '@/utils/format';
 import Page from '@/components/layout/Page';
@@ -66,7 +68,8 @@ export default function DashboardPage({
   // the energy types of the shown cars, loaded by the filter already
   const { data: cars } = useQuery(getMyCarsOptions({ client: localClient }));
   const energyTypes = cars
-    ?.filter((car) => search.car === undefined || car.id === search.car)
+    ?.filter((car) => can(car, 'READ'))
+    .filter((car) => search.car === undefined || car.id === search.car)
     .map((car) => car.energyType);
 
   // the data of the last visit stays when the connection fails
@@ -89,6 +92,7 @@ export default function DashboardPage({
         title={t('dashboard.title')}
         subtitle={t('dashboard.subtitle')}
       />
+      <InvitationNote />
       <InstallHint />
       <DashboardFilter search={search} onChange={onSearchChange} />
 

@@ -38,6 +38,10 @@ class PushEndpointsTest
 		assertFalse(PushEndpoints.isAllowed("https://user@fcm.googleapis.com/x", SERVICES));
 		// other ports
 		assertFalse(PushEndpoints.isAllowed("https://fcm.googleapis.com:8443/x", SERVICES));
+		// the VAPID token would travel in plain text
+		assertFalse(PushEndpoints.isAllowed("http://fcm.googleapis.com/fcm/send/abc", SERVICES));
+		assertFalse(PushEndpoints.isAllowed("http://fcm.googleapis.com:443/fcm/send/abc", SERVICES));
+		assertFalse(PushEndpoints.isAllowed("ftp://fcm.googleapis.com/fcm/send/abc", SERVICES));
 		assertFalse(PushEndpoints.isAllowed("not a url", SERVICES));
 		assertFalse(PushEndpoints.isAllowed(null, SERVICES));
 	}

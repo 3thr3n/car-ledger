@@ -17,7 +17,7 @@ import { useNavigate, useRouter } from '@tanstack/react-router';
 import { SubmitEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
-import { Car, createCar, CarInput, EnergyType } from '@/generated';
+import { Car, CarRole, createCar, CarInput, EnergyType } from '@/generated';
 import { toApiDate, useFormat } from '@/utils/format';
 import { normalizeVin, vinError } from '@/utils/vin';
 import {
@@ -46,6 +46,7 @@ import Page from '@/components/layout/Page';
 import PageHeader from '@/components/ui/PageHeader';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import TrackerSection from '@/components/car/TrackerSection';
+import AccessSection from '@/components/car/access/AccessSection';
 
 export interface CarFormPageProps {
   /** set when editing an existing car */
@@ -80,6 +81,9 @@ export default function CarFormPage({ id }: CarFormPageProps) {
       />
       {id !== undefined && (
         <TrackerSection carId={id} retentionDays={car?.trackRetentionDays} />
+      )}
+      {id !== undefined && car?.role === CarRole.OWNER && (
+        <AccessSection carId={id} />
       )}
       {id !== undefined && car && (
         <DeleteCar
@@ -273,6 +277,7 @@ function CarForm({
           error={touched && !!errors.name}
           helperText={touched && errors.name}
           required
+          slotProps={{ htmlInput: { maxLength: 100 } }}
         />
         <NumberField
           label={t('car.form.year')}

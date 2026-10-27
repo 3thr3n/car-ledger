@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import de.codeflowwizardry.carledger.Utils;
 import de.codeflowwizardry.carledger.data.ApprovalType;
 import de.codeflowwizardry.carledger.rest.car.reminder.ReminderInput;
 
@@ -40,12 +41,12 @@ public record ModificationInput(String part, String manufacturer, ApprovalType a
 		{
 			errors.add("Part must be set!");
 		}
-		length(errors, "Part", part, 100);
-		length(errors, "Manufacturer", manufacturer, 100);
-		length(errors, "Approval number", approvalNumber, 50);
-		length(errors, "Conditions", conditions, 2000);
-		length(errors, "Testing body", testingBody, 100);
-		length(errors, "Notes", notes, 1000);
+		Utils.checkLength(errors, "Part", part, 100);
+		Utils.checkLength(errors, "Manufacturer", manufacturer, 100);
+		Utils.checkLength(errors, "Approval number", approvalNumber, 50);
+		Utils.checkLength(errors, "Conditions", conditions, 2000);
+		Utils.checkLength(errors, "Testing body", testingBody, 100);
+		Utils.checkLength(errors, "Notes", notes, 1000);
 		if (approvalType == null)
 		{
 			errors.add("Approval type must be set!");
@@ -73,14 +74,6 @@ public record ModificationInput(String part, String manufacturer, ApprovalType a
 			errors.add("A bill must not be empty!");
 		}
 		return errors;
-	}
-
-	private static void length(List<String> errors, String name, String value, int max)
-	{
-		if (value != null && value.strip().length() > max)
-		{
-			errors.add(name + " must not be longer than " + max + " characters!");
-		}
 	}
 
 	private static void odometer(List<String> errors, String name, Integer value)

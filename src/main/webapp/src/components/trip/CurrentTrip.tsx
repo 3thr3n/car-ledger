@@ -5,6 +5,8 @@ import PlayArrowRounded from '@mui/icons-material/PlayArrowRounded';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import CreatorHint from '@/components/ui/CreatorHint';
+import { can } from '@/utils/carRole';
 import { getMyCarOptions } from '@/generated/@tanstack/react-query.gen';
 import EmptyState from '@/components/ui/EmptyState';
 import Section from '@/components/ui/Section';
@@ -32,6 +34,8 @@ export default function CurrentTrip({ carId }: { carId: number }) {
   const { data: car } = useQuery(
     getMyCarOptions({ client: localClient, path: { id: carId } }),
   );
+  // a viewer only sees the open trip
+  const canDrive = can(car, 'DRIVE');
 
   if (car && !car.tripLog && !open) {
     return (
@@ -40,13 +44,15 @@ export default function CurrentTrip({ carId }: { carId: number }) {
           title={t('trip.off.title')}
           text={t('trip.off.text')}
           action={
-            <RouterButton
-              to="/car/$id/edit"
-              params={{ id: `${carId}` }}
-              variant="contained"
-            >
-              {t('trip.off.turnOn')}
-            </RouterButton>
+            can(car, 'MANAGE') && (
+              <RouterButton
+                to="/car/$id/edit"
+                params={{ id: `${carId}` }}
+                variant="contained"
+              >
+                {t('trip.off.turnOn')}
+              </RouterButton>
+            )
           }
         />
       </Section>
@@ -57,7 +63,8 @@ export default function CurrentTrip({ carId }: { carId: number }) {
     <Section
       title={t('trip.current.title')}
       action={
-        car?.tripLog && (
+        car?.tripLog &&
+        canDrive && (
           <Button size="small" onClick={() => setAddingPast(true)}>
             {t('trip.past.button')}
           </Button>
@@ -78,6 +85,8 @@ export default function CurrentTrip({ carId }: { carId: number }) {
                 <Typography sx={{ fontWeight: 600 }}>
                   {t('trip.current.open')} · {t(`trip.types.${open.type}`)}
                   {open.destination && ` · ${open.destination}`}
+                  {/* e.g. of a driver whose access ended, to finish it */}
+                  <CreatorHint name={open.driver} />
                 </Typography>
                 <Typography variant="body2" sx={{ color: 'text.secondary' }}>
                   {t('trip.current.since', {
@@ -97,7 +106,7 @@ export default function CurrentTrip({ carId }: { carId: number }) {
               </>
             )}
           </Box>
-          {open ? (
+          {!canDrive ? null : open ? (
             <Button
               variant="contained"
               size="large"

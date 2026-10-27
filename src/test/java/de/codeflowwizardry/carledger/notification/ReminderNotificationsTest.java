@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.Duration;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.List;
@@ -15,14 +16,18 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import de.codeflowwizardry.carledger.data.AccountEntity;
+import de.codeflowwizardry.carledger.data.CarAccessEntity;
 import de.codeflowwizardry.carledger.data.CarEntity;
+import de.codeflowwizardry.carledger.data.CarRole;
 import de.codeflowwizardry.carledger.data.ReminderEntity;
 import de.codeflowwizardry.carledger.data.UnitSystem;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
+import de.codeflowwizardry.carledger.data.repository.CarAccessRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import de.codeflowwizardry.carledger.data.repository.ReminderRepository;
 import io.quarkus.mailer.Mail;
 import io.quarkus.mailer.MockMailbox;
+import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -50,6 +55,9 @@ class ReminderNotificationsTest
 
 	@Inject
 	ReminderRepository reminderRepository;
+
+	@Inject
+	CarAccessRepository carAccessRepository;
 
 	long tuev;
 
@@ -159,6 +167,39 @@ class ReminderNotificationsTest
 		reminderNotifications.send(TODAY.plusDays(1));
 		Thread.sleep(200);
 		assertEquals(0, mailbox.getTotalMessagesSent());
+	}
+
+	@Test
+	void shouldMailTheEditorsOfASharedCarAsWellButNotTheViewersAndDrivers() throws Exception
+	{
+		QuarkusTransaction.requiringNew().run(() -> {
+			CarEntity golf = carRepository.find("name", "Golf").firstResult();
+			AccountEntity peter = golf.getUser();
+			carAccessRepository.persist(new CarAccessEntity(golf,
+					account("eddie", "eddie@example.com", null, UnitSystem.METRIC), CarRole.EDITOR, peter));
+			carAccessRepository.persist(new CarAccessEntity(golf,
+					account("vera", "vera@example.com", null, UnitSystem.METRIC), CarRole.VIEWER, peter));
+			carAccessRepository.persist(new CarAccessEntity(golf,
+					account("dirk", "dirk@example.com", null, UnitSystem.METRIC), CarRole.DRIVER, peter));
+			// ended: no longer an editor
+			CarAccessEntity ended = new CarAccessEntity(golf,
+					account("emil", "emil@example.com", null, UnitSystem.METRIC), CarRole.EDITOR, peter);
+			ended.setValidUntil(OffsetDateTime.now().minusDays(1));
+			carAccessRepository.persist(ended);
+		});
+
+		reminderNotifications.send(TODAY);
+
+		Mail toEddie = mailsTo("eddie@example.com", 1).getFirst();
+		assertEquals("3 reminders are due", toEddie.getSubject());
+		assertTrue(toEddie.getText().contains("- Golf: TÜV"), toEddie.getText());
+		mailsTo("peter@example.com", 1);
+		mailsTo("anna@example.com", 1);
+		Thread.sleep(200);
+		assertEquals(3, mailbox.getTotalMessagesSent());
+		assertEquals(0, mailbox.getMailsSentTo("vera@example.com").size());
+		assertEquals(0, mailbox.getMailsSentTo("dirk@example.com").size());
+		assertEquals(0, mailbox.getMailsSentTo("emil@example.com").size());
 	}
 
 	@Test

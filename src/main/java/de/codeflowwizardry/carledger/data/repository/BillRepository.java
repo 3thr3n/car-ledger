@@ -65,7 +65,8 @@ public class BillRepository extends AbstractBillRepository<BillEntity>
 	{
 		return getEntityManager()
 				.createQuery(
-						"select b.car.id, count(b) from bill b where " + CarAccess.condition("b.car", Action.READ)
+						"select b.car.id, count(b) from bill b where "
+								+ CarAccess.own("b.car", "b.createdBy", Action.READ)
 								+ " group by b.car.id",
 						Object[].class)
 				.setParameter(CarAccess.USER, username)
@@ -182,7 +183,7 @@ public class BillRepository extends AbstractBillRepository<BillEntity>
 	public void delete(long carId, long billId, String username)
 	{
 		Optional<BillEntity> any = find(
-				"id = :billId and car.id = :carId and " + CarAccess.condition("car", Action.WRITE),
+				"id = :billId and car.id = :carId and " + CarAccess.own("car", "createdBy", Action.WRITE),
 				Map.of("carId", carId, CarAccess.USER, username, "billId", billId))
 				.firstResultOptional();
 

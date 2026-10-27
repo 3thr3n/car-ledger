@@ -1,6 +1,9 @@
 package de.codeflowwizardry.carledger.notification;
 
 import java.text.NumberFormat;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.ArrayList;
@@ -18,6 +21,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import de.codeflowwizardry.carledger.data.AccountEntity;
+import de.codeflowwizardry.carledger.data.CarAccessEntity;
+import de.codeflowwizardry.carledger.data.CarAccessState;
+import de.codeflowwizardry.carledger.data.CarEntity;
 import de.codeflowwizardry.carledger.data.UnitSystem;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.notification.push.OutgoingPushes;
@@ -25,17 +31,15 @@ import de.codeflowwizardry.carledger.notification.push.PushConfig;
 import de.codeflowwizardry.carledger.notification.push.PushMessage;
 import de.codeflowwizardry.carledger.notification.push.PushSubscriptionEntity;
 import de.codeflowwizardry.carledger.notification.push.PushSubscriptionRepository;
+import de.codeflowwizardry.carledger.request.CarLimitPayload;
+import de.codeflowwizardry.carledger.request.RequestEntity;
+import de.codeflowwizardry.carledger.request.RequestState;
 import de.codeflowwizardry.carledger.rest.car.reminder.Reminder;
-import de.codeflowwizardry.carledger.webhook.CarRequestCreated;
-import de.codeflowwizardry.carledger.webhook.CarRequestDecided;
-import de.codeflowwizardry.carledger.webhook.WebhookEvent;
-import de.codeflowwizardry.carledger.webhook.WebhookMessage;
 import io.quarkus.mailer.Mail;
 import io.quarkus.qute.Engine;
 import io.quarkus.qute.Template;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Event;
-import jakarta.enterprise.event.Observes;
 import jakarta.inject.Inject;
 
 /**
@@ -94,58 +98,106 @@ public class Notifications
 		return mailConfig.enabled() && account.isNotifyByMail() && account.getEmail() != null;
 	}
 
-	void onEvent(@Observes WebhookMessage message)
+	/**
+	 * The new request for more cars to the administrators who want it, not to the
+	 * one who asked. Sent after the commit.
+	 *
+	 * @param maxCars
+	 *            the limit of the account when it asked
+	 */
+	public void carRequestCreated(RequestEntity request, int cars, int maxCars)
 	{
-		if (!mailConfig.enabled() && !pushConfig.enabled())
+		String account = request.getAccount().getUserId();
+		List<AccountEntity> admins = accountRepository.list(
+				"admin = true and notifyNewRequests = true and userId <> ?1", account);
+		Batch batch = new Batch("car-request.created");
+		for (AccountEntity admin : admins)
 		{
-			return;
-		}
-		Batch batch = new Batch(message.type());
-		switch (WebhookEvent.ofType(message.type()).orElseThrow())
-		{
-			case CAR_REQUEST_CREATED -> carRequestCreated(batch, (CarRequestCreated) message.data());
-			case CAR_REQUEST_DECIDED -> carRequestDecided(batch, (CarRequestDecided) message.data());
+			batch.add(admin, "car-request-created", "/admin", "car-request-" + request.getId(), Map.of(
+					"account", account,
+					"cars", cars,
+					"maxCars", maxCars,
+					"reason", Optional.ofNullable(request.getReason()).orElse("")));
 		}
 		batch.fire();
 	}
 
 	/**
-	 * To the administrators who want it, not to the one who asked
+	 * The decision on a request for more cars to the user who asked, if wanted.
+	 * Sent after the commit.
 	 */
-	private void carRequestCreated(Batch batch, CarRequestCreated request)
+	public void carRequestDecided(RequestEntity request)
 	{
-		List<AccountEntity> admins = accountRepository.list(
-				"admin = true and notifyNewRequests = true and userId <> ?1", request.account());
-		for (AccountEntity admin : admins)
+		AccountEntity account = request.getAccount();
+		if (!account.isNotifyRequestDecided())
 		{
-			batch.add(admin, "car-request-created", "/admin", "car-request-" + request.requestId(), Map.of(
-					"account", request.account(),
-					"cars", request.cars(),
-					"maxCars", request.maxCars(),
-					"reason", Optional.ofNullable(request.reason()).orElse("")));
+			return;
 		}
+		CarLimitPayload payload = CarLimitPayload.of(request.getPayload());
+		Map<String, Object> data = new HashMap<>();
+		data.put("approved", request.getState() == RequestState.APPROVED);
+		data.put("cars", payload.cars());
+		data.put("grantedMaxCars", Optional.ofNullable(payload.grantedMaxCars()).orElse(0));
+		data.put("comment", Optional.ofNullable(request.getComment()).orElse(""));
+		Batch batch = new Batch("car-request.decided");
+		batch.add(account, "car-request-decided", "/car", "car-request-" + request.getId(), data);
+		batch.fire();
 	}
 
 	/**
-	 * To the user who asked, if wanted
+	 * The invitation to the invited account, once it exists: one invited by an
+	 * address it doesn't have yet sees the invitation after its first login. Sent
+	 * after the commit.
 	 */
-	private void carRequestDecided(Batch batch, CarRequestDecided decision)
+	public void carAccessInvited(CarAccessEntity invitation)
 	{
-		accountRepository.find("userId", decision.account()).singleResultOptional()
-				.filter(AccountEntity::isNotifyRequestDecided)
-				.ifPresent(account -> {
-					Map<String, Object> data = new HashMap<>();
-					data.put("approved", "APPROVED".equals(decision.state()));
-					data.put("cars", decision.cars());
-					data.put("grantedMaxCars", Optional.ofNullable(decision.grantedMaxCars()).orElse(0));
-					data.put("comment", Optional.ofNullable(decision.comment()).orElse(""));
-					batch.add(account, "car-request-decided", "/car", "car-request-" + decision.requestId(), data);
-				});
+		AccountEntity account = invitation.getAccount();
+		if (account == null)
+		{
+			return;
+		}
+		DateTimeFormatter dates = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
+				.withLocale(Locale.forLanguageTag(account.getMailLanguage().toLowerCase(Locale.ROOT)));
+		Map<String, Object> data = new HashMap<>();
+		data.put("owner", invitation.getCar().getUser().getUserId());
+		data.put("car", invitation.getCar().getName());
+		data.put("role", invitation.getRole().name());
+		data.put("from", invitation.getValidFrom() == null ? "" : dates.format(day(invitation.getValidFrom())));
+		// the last day of the access, the end is exclusive
+		data.put("until", invitation.getValidUntil() == null
+				? ""
+				: dates.format(day(invitation.getValidUntil().minusNanos(1))));
+		Batch batch = new Batch("car-access.invited");
+		batch.add(account, "car-access-invited", "/car", "car-access-" + invitation.getId(), data);
+		batch.fire();
 	}
 
 	/**
-	 * The reminders that became due to the owner of the cars, in one mail and one
-	 * push message. Sent after the commit.
+	 * The answer of the invited account to the owner of the car. Sent after the
+	 * commit.
+	 */
+	public void carAccessAnswered(CarAccessEntity answer)
+	{
+		CarEntity car = answer.getCar();
+		Batch batch = new Batch("car-access.answered");
+		batch.add(car.getUser(), "car-access-answered", "/car/" + car.getId() + "/edit", "car-access-" + answer.getId(),
+				Map.of("account", answer.getAccount().getUserId(), "car", car.getName(), "accepted",
+						answer.getState() == CarAccessState.ACCEPTED));
+		batch.fire();
+	}
+
+	/**
+	 * @return the day of the time on the server, the app shows the days of the
+	 *         access
+	 */
+	private static LocalDate day(OffsetDateTime time)
+	{
+		return time.atZoneSameInstant(ZoneId.systemDefault()).toLocalDate();
+	}
+
+	/**
+	 * The reminders that became due to the owner or an editor of the cars, in one
+	 * mail and one push message. Sent after the commit.
 	 */
 	public void reminders(AccountEntity owner, List<Reminder> due)
 	{

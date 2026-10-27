@@ -108,6 +108,7 @@ export default function MiscellaneousForm({
             placeholder={t('bill.miscellaneousPlaceholder')}
             value={form.description}
             onChange={(e) => set({ description: e.target.value })}
+            slotProps={{ htmlInput: { maxLength: 1000 } }}
           />
         </Grid>
         <Grid size={{ xs: 12, sm: 4 }}>

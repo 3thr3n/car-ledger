@@ -136,7 +136,7 @@ public final class ExpenseExporter
 			case null -> "";
 			// no exponent, e.g. 1E+2
 			case BigDecimal number -> number.toPlainString();
-			default -> value.toString();
+			default -> CsvText.cell(value);
 		};
 	}
 }

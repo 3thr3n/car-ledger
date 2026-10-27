@@ -8,6 +8,7 @@ import {
   Stack,
   Typography,
 } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 import ArrowForwardRounded from '@mui/icons-material/ArrowForwardRounded';
 import UploadFileRounded from '@mui/icons-material/UploadFileRounded';
 import InsightsRounded from '@mui/icons-material/InsightsRounded';
@@ -19,6 +20,7 @@ import RouteRounded from '@mui/icons-material/RouteRounded';
 import GpsFixedRounded from '@mui/icons-material/GpsFixedRounded';
 import InstallMobileRounded from '@mui/icons-material/InstallMobileRounded';
 import BackupRounded from '@mui/icons-material/BackupRounded';
+import GroupRounded from '@mui/icons-material/GroupRounded';
 import { ReactNode, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import useMe from '@/hooks/useMe';
@@ -32,10 +34,32 @@ import { billTypes, BillPaletteKey } from '@/utils/billTypes';
 import { BillType } from '@/generated';
 import { SOURCE_URL } from '@/utils/source';
 
+/** a color of its own, for light and dark mode */
+interface Hue {
+  light: string;
+  dark: string;
+}
+
+/** the colors of the cards beyond the entry types, so neighbors differ */
+const hues = {
+  cyan: { light: '#0891b2', dark: '#22d3ee' },
+  orange: { light: '#ea580c', dark: '#fb923c' },
+  sky: { light: '#0284c7', dark: '#38bdf8' },
+  red: { light: '#dc2626', dark: '#f87171' },
+  indigo: { light: '#4f46e5', dark: '#818cf8' },
+  teal: { light: '#0d9488', dark: '#2dd4bf' },
+  lime: { light: '#65a30d', dark: '#a3e635' },
+  rose: { light: '#e11d48', dark: '#fb7185' },
+  slate: { light: '#475569', dark: '#94a3b8' },
+  emerald: { light: '#059669', dark: '#34d399' },
+  violet: { light: '#7c3aed', dark: '#a78bfa' },
+} satisfies Record<string, Hue>;
+
 interface Feature {
   key: string;
   icon: ReactNode;
-  color: BillPaletteKey | 'primary';
+  /** an entry type has the color of its lists */
+  color: BillPaletteKey | Hue;
 }
 
 /** the costs first, then the papers of the car, the road and the data */
@@ -64,41 +88,50 @@ const features: Feature[] = [
   {
     key: 'stats',
     icon: <InsightsRounded fontSize="small" />,
-    color: 'primary',
+    color: hues.cyan,
   },
   {
     key: 'modifications',
     icon: <TuneRounded fontSize="small" />,
-    color: 'primary',
+    color: hues.orange,
   },
   {
     key: 'inspections',
     icon: <FactCheckRounded fontSize="small" />,
-    color: 'primary',
+    color: hues.sky,
   },
   {
     key: 'papers',
     icon: <PictureAsPdfRounded fontSize="small" />,
-    color: 'primary',
+    color: hues.red,
   },
   {
     key: 'reminders',
     icon: <NotificationsActiveRounded fontSize="small" />,
-    color: 'primary',
+    color: hues.indigo,
   },
-  { key: 'trips', icon: <RouteRounded fontSize="small" />, color: 'primary' },
-  { key: 'gps', icon: <GpsFixedRounded fontSize="small" />, color: 'primary' },
+  { key: 'trips', icon: <RouteRounded fontSize="small" />, color: hues.teal },
+  { key: 'gps', icon: <GpsFixedRounded fontSize="small" />, color: hues.lime },
+  {
+    key: 'sharing',
+    icon: <GroupRounded fontSize="small" />,
+    color: hues.rose,
+  },
   {
     key: 'offline',
     icon: <InstallMobileRounded fontSize="small" />,
-    color: 'primary',
+    color: hues.slate,
   },
   {
     key: 'import',
     icon: <UploadFileRounded fontSize="small" />,
-    color: 'primary',
+    color: hues.emerald,
   },
-  { key: 'backup', icon: <BackupRounded fontSize="small" />, color: 'primary' },
+  {
+    key: 'backup',
+    icon: <BackupRounded fontSize="small" />,
+    color: hues.violet,
+  },
 ];
 
 export default function LandingPage() {
@@ -181,8 +214,19 @@ export default function LandingPage() {
                     height: 36,
                     borderRadius: 2.5,
                     mb: 1.5,
-                    color: theme.vars.palette[feature.color].main,
-                    backgroundColor: `rgba(${theme.vars.palette[feature.color].mainChannel} / 0.12)`,
+                    ...(typeof feature.color === 'string'
+                      ? {
+                          color: theme.vars.palette[feature.color].main,
+                          backgroundColor: `rgba(${theme.vars.palette[feature.color].mainChannel} / 0.12)`,
+                        }
+                      : {
+                          color: feature.color.light,
+                          backgroundColor: alpha(feature.color.light, 0.12),
+                          ...theme.applyStyles('dark', {
+                            color: feature.color.dark,
+                            backgroundColor: alpha(feature.color.dark, 0.16),
+                          }),
+                        }),
                   })}
                 >
                   {feature.icon}

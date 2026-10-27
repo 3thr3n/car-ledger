@@ -1,0 +1,15 @@
+{owner} teilt das Fahrzeug „{car}“ mit dir
+{owner} hat dich zum Fahrzeug „{car}“ eingeladen, als {#if role == 'EDITOR'}Bearbeiter: Du siehst alles und legst Einträge an, änderst und löschst sie{#else if role == 'VIEWER'}Betrachter: Du siehst alles und änderst nichts{#else}Fahrer: Du startest und beendest deine Fahrten und trägst deine Tankvorgänge ein{/if}.
+{#if from && until}
+Der Zugriff gilt vom {from} bis {until}.
+{#else if from}
+Der Zugriff beginnt am {from}.
+{#else if until}
+Der Zugriff endet am {until}.
+{/if}
+
+Nimm die Einladung auf der Seite deiner Fahrzeuge an oder lehne sie ab{#if link}: {link}{#else}.{/if}
+
+--
+Du kannst diese Mails in den Einstellungen abschalten{#if settingsLink}:
+{settingsLink}{#else}.{/if}

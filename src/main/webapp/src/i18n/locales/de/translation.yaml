@@ -1,6 +1,8 @@
 app:
   title: "CarLedger"
   loading: "Wird geladen"
+  hideSidebar: "Seitenleiste ausblenden"
+  pinSidebar: "Seitenleiste dauerhaft zeigen"
   language: "Sprache"
   openSource: "CarLedger ist freie Software unter der AGPL-3.0 — zu finden auf"
   version: "CarLedger {{version}}"
@@ -90,6 +92,9 @@ landing:
     gps:
       title: "GPS-Tracking"
       text: "Ein Tracker im Auto sendet die Strecke: die Karte nach Tempo oder Häufigkeit, vergessene Fahrten vorgeschlagen."
+    sharing:
+      title: "Teilen"
+      text: "Lade deinen Haushalt oder deine Fahrer zu einem Auto ein, als Bearbeiter, Betrachter oder Fahrer, auch für einen Zeitraum."
     offline:
       title: "App und offline"
       text: "Auf dem Startbildschirm wie eine App; Tankungen und Fahrten gehen ohne Verbindung, die Papiere bleiben auf dem Handy."
@@ -199,7 +204,17 @@ garage:
   entries_one: "{{count}} Eintrag"
   entries_other: "{{count}} Einträge"
 
+creator:
+  by: "von {{name}}"
+  deleted: "von einem gelöschten Konto"
+
 car:
+  shared: "Geteilt · {{role}}"
+  roles:
+    OWNER: "Besitzer"
+    EDITOR: "Bearbeiter"
+    VIEWER: "Betrachter"
+    DRIVER: "Fahrer"
   odometerEstimated: "Letzter Stand {{reading}} am {{date}}, plus {{driven}} aus den Tankfüllungen seitdem"
   built: "Baujahr {{year}}"
   energyTypes:
@@ -313,6 +328,64 @@ car:
       vinOld: "Höchstens 17 Buchstaben und Ziffern"
       purchaseDate: "Bitte ein Datum eingeben, das nicht in der Zukunft liegt"
 
+access:
+  title: "Zugriff"
+  openCount_one: "{{count}} Einladung zu einem Fahrzeug wartet auf deine Antwort"
+  openCount_other: "{{count}} Einladungen zu Fahrzeugen warten auf deine Antwort"
+  note:
+    one: "{{owner}} lädt dich zum Fahrzeug „{{car}}“ ein, als {{role}}."
+    other: "{{count}} Einladungen zu Fahrzeugen warten auf deine Antwort."
+    answer: "Antworten"
+    later: "Später"
+  text: "Teile das Fahrzeug mit anderen Konten. Der Eingeladene nimmt zuerst an; ein Konto, das es noch nicht gibt, bekommt die Einladung mit seiner ersten Anmeldung."
+  invite: "Einladen"
+  inviteTitle: "Zum Fahrzeug einladen"
+  changeTitle: "Zugriff von {{name}} ändern"
+  change: "Ändern"
+  revoke: "Entziehen"
+  withdraw: "Zurückziehen"
+  revokeTitle: "Zugriff von {{name}} entziehen?"
+  withdrawTitle: "Einladung von {{name}} zurückziehen?"
+  revokeText: "Das Fahrzeug erscheint für das Konto nicht mehr. Seine Einträge bleiben beim Fahrzeug."
+  withdrawText: "Das Konto sieht die Einladung nicht mehr."
+  remove: "Entfernen"
+  removeTitle: "Beendeten Zugriff von {{name}} entfernen?"
+  removeText: "Er erscheint nicht mehr in dieser Liste. Die Einträge des Kontos bleiben beim Fahrzeug."
+  invited: "Einladung gesendet"
+  changed: "Zugriff geändert"
+  revoked: "Zugriff entzogen"
+  accept: "Annehmen"
+  decline: "Ablehnen"
+  accepted: "Einladung angenommen, das Fahrzeug erscheint in deiner Garage"
+  declined: "Einladung abgelehnt"
+  invitation: "{{owner}} lädt dich zum Fahrzeug „{{car}}“ ein, als {{role}}."
+  fields:
+    account: "Benutzername oder E-Mail-Adresse"
+    accountHelp: "Eine E-Mail-Adresse findet ein Konto erst, wenn seine Anmeldung sie bestätigt hat"
+    role: "Rolle"
+    from: "Von"
+    fromHelp: "Leer: ab der Annahme"
+    until: "Bis"
+    untilHelp: "Leer: ohne Ende"
+  roleHints:
+    EDITOR: "Sieht alles, legt Einträge an, ändert und löscht sie"
+    VIEWER: "Sieht alles, ändert nichts"
+    DRIVER: "Startet und beendet eigene Fahrten, trägt eigene Tankfüllungen ein"
+  states:
+    PENDING: "Wartet auf die Antwort"
+    NO_ACCOUNT: "Wartet auf die erste Anmeldung"
+    DECLINED: "Abgelehnt"
+    ENDED: "Beendet"
+  period:
+    always: "Ohne Ende"
+    between: "Vom {{from}} bis {{until}}"
+    from: "Ab {{from}}"
+    until: "Bis {{until}}"
+  errors:
+    account: "Bitte einen Benutzernamen oder eine E-Mail-Adresse eingeben"
+    accountLength: "Höchstens {{max}} Zeichen"
+    period: "Das Ende darf nicht vor dem Anfang liegen"
+
 tracker:
   title: "GPS-Tracker"
   text: "Ein Tracker im Auto, z. B. ein ESP32, sendet seine Position mit einem eigenen Token an CarLedger."
@@ -415,6 +488,21 @@ track:
   deletePeriodTitle: "Strecke vom {{period}} löschen?"
   deletePeriodText_one: "{{count}} Punkt dieses Zeitraums wird gelöscht und kann nicht wiederhergestellt werden. Fahrten und Kilometerstände bleiben, wie sie sind."
   deletePeriodText_other: "{{count}} Punkte dieses Zeitraums werden gelöscht und können nicht wiederhergestellt werden. Fahrten und Kilometerstände bleiben, wie sie sind."
+  places:
+    show: "Orte"
+    showHint: "Orte, an denen das Fahrzeug in diesem Zeitraum mindestens 3-mal gehalten hat, und die benannten"
+    unnamed: "Ort"
+    visits_zero: "In diesem Zeitraum nicht besucht"
+    visits_one: "Einmal besucht · zuletzt {{date}}"
+    visits_other: "{{count}}-mal besucht · zuletzt {{date}}"
+    label: "{{name}}, {{visits}}"
+    title: "Ort benennen"
+    renameTitle: "{{name}} umbenennen"
+    name: "Name"
+    nameHelp: "Z. B. Tankstelle oder Büro. Der Name bleibt, wenn die Tracks gelöscht werden."
+    removeName: "Name entfernen"
+    saved: "Ort benannt"
+    removed: "Name entfernt"
   history:
     title: "Streckenverlauf"
     text: "Die Punkte der Tracker sind personenbezogene Daten. Punkte, die älter als der gewählte Zeitraum sind, werden jede Nacht gelöscht."
@@ -439,7 +527,8 @@ track:
 attachments:
   title: "Belege und Dateien"
   add: "Hinzufügen"
-  help: "Fotos oder PDFs, bis 10 MB. Fotos werden vor dem Hochladen verkleinert."
+  help: "Fotos oder PDFs. Fotos werden vor dem Hochladen verkleinert."
+  helpLimits: "Fotos oder PDFs, je bis {{size}} und bis zu {{count}} Dateien. Fotos werden vor dem Hochladen verkleinert."
   open: "{{name}} öffnen"
   remove: "{{name}} entfernen"
   deleteTitle: "Diese Datei entfernen?"
@@ -658,10 +747,10 @@ notifications:
 
 backup:
   title: "Sicherung"
-  text: "Alle deine Daten in einer Datei: Einstellungen, Fahrzeuge, Einträge, Fixkosten, Erinnerungen, Belege und Bilder. Stelle sie hier oder in einem anderen CarLedger wieder her."
+  text: "Alle deine Daten in einer Datei: Einstellungen, Fahrzeuge, Einträge, Fixkosten, Erinnerungen, Belege und Bilder. Stelle sie hier oder in einem anderen CarLedger wieder her. Ein Fahrzeug, das andere mit dir teilen, ist nur in der Sicherung seines Besitzers, exportiere deine Fahrten damit in seinem Fahrtenbuch."
   download: "Sicherung herunterladen"
   restore: "Sicherung wiederherstellen"
-  restoreHelp: "Stellt eine heruntergeladene Sicherung in deinem Konto wieder her, das noch keine Fahrzeuge hat."
+  restoreHelp: "Stellt eine heruntergeladene Sicherung in deinem Konto wieder her, das noch keine Fahrzeuge hat. Die Konten, mit denen ein Fahrzeug geteilt war, bekommen erneut eine Einladung."
   restoreOnlyEmpty: "Eine Sicherung kann nur in einem Konto ohne Fahrzeuge wiederhergestellt werden."
   restored: "Sicherung wiederhergestellt: {{parts}}"
   restoredEmpty: "Sicherung wiederhergestellt, sie hatte keine Fahrzeuge"
@@ -680,10 +769,14 @@ backup:
     modifications_other: "{{count}} Umbauten"
     technicalInspections_one: "{{count}} HU"
     technicalInspections_other: "{{count}} HUs"
+    places_one: "{{count}} benannter Ort"
+    places_other: "{{count}} benannte Orte"
     trackers_one: "{{count}} GPS-Tracker"
     trackers_other: "{{count}} GPS-Tracker"
     files_one: "{{count}} Datei"
     files_other: "{{count}} Dateien"
+    invitations_one: "{{count}} Einladung"
+    invitations_other: "{{count}} Einladungen"
   failed: "Die Sicherung konnte nicht wiederhergestellt werden"
   tooLarge: "Das Backup ist größer, als der Server annimmt. Sein Betreiber kann die Grenze erhöhen (carLedger.attachments.maxRequestSize, siehe docs/DEPLOYMENT.md)."
 
@@ -740,6 +833,11 @@ admin:
     bills: "Einträge"
     recurringBills: "Laufende Kosten"
     openRequests: "Offene Anfragen"
+    files: "Dateien"
+    newFiles: "Neue Dateien: {{storage}}"
+    storage:
+      DB: "Datenbank"
+      S3: "S3"
   requests:
     title: "Fahrzeug-Anfragen"
     subtitle: "Nutzer, die ihr Fahrzeuglimit erreicht haben und mehr anfragen"
@@ -900,6 +998,11 @@ offline:
     text_other: "{{count}} offline erfasste Einträge eines anderen Kontos warten auf diesem Gerät. Sie werden gesendet, wenn sich dieses Konto hier anmeldet."
     discardTitle_one: "{{count}} Eintrag verwerfen?"
     discardTitle_other: "{{count}} Einträge verwerfen?"
+  orphaned:
+    title: "Einträge für ein Fahrzeug, das du nicht mehr hast"
+    subtitle: "Ohne Verbindung erfasst und auf diesem Gerät gespeichert. Dein Zugriff auf das Fahrzeug ist beendet, der Server nimmt sie nicht mehr an."
+    refused: "Nicht gesendet: Du hast keinen Zugriff mehr auf das Fahrzeug. Notiere dir, was du brauchst, und verwirf den Eintrag."
+    discardAll: "Alle verwerfen"
 
 trip:
   types:

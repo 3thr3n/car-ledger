@@ -15,6 +15,7 @@ import MenuRounded from '@mui/icons-material/MenuRounded';
 import CloudOffRounded from '@mui/icons-material/CloudOffRounded';
 import { ReactNode, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import useOpenInvitations from '@/hooks/useOpenInvitations';
 import Sidebar from '@/components/layout/Sidebar';
 import useMe from '@/hooks/useMe';
 import useOnline from '@/hooks/useOnline';
@@ -23,12 +24,34 @@ import productLogo from '@/assets/car-ledger.svg';
 import OfflineSync from '@/offline/OfflineSync';
 
 const SIDEBAR_WIDTH = 264;
+/** the sidebar is hidden on a large screen, e.g. a phone in landscape */
+const SIDEBAR_HIDDEN = 'sidebarHidden';
+
+function storedHidden() {
+  try {
+    return localStorage.getItem(SIDEBAR_HIDDEN) === 'true';
+  } catch {
+    return false;
+  }
+}
 
 export default function AppShell({ children }: { children: ReactNode }) {
   const { t } = useTranslation();
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
   const [open, setOpen] = useState(false);
+  const [hidden, setHidden] = useState(storedHidden);
+  // beside the pages on a large screen, unless hidden; behind the menu else
+  const beside = isDesktop && !hidden;
+  const hide = (value: boolean) => {
+    setHidden(value);
+    setOpen(false);
+    try {
+      localStorage.setItem(SIDEBAR_HIDDEN, String(value));
+    } catch {
+      // only a convenience of this device
+    }
+  };
   // the pages start with the settings of the account, e.g. a form with its
   // units: rendered once the account is loaded, or known to be missing. Not
   // when it is fetched again, a query with an error is fetched again whenever
@@ -36,6 +59,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
   const { isFetched } = useMe();
   // the sidebar is behind the menu on phones: a dot shows the open requests
   const openRequests = useOpenCarRequests();
+  const invitations = useOpenInvitations().length;
   const online = useOnline();
 
   return (
@@ -47,7 +71,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
       }}
     >
       <OfflineSync />
-      {isDesktop ? (
+      {beside ? (
         <Box
           component="nav"
           sx={{
@@ -61,7 +85,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
             bgcolor: 'background.paper',
           }}
         >
-          <Sidebar />
+          <Sidebar onHide={() => hide(true)} />
         </Box>
       ) : (
         <>
@@ -83,12 +107,19 @@ export default function AppShell({ children }: { children: ReactNode }) {
                 <Badge
                   variant="dot"
                   color="error"
-                  invisible={openRequests === 0}
+                  invisible={openRequests === 0 && invitations === 0}
                   slotProps={{
                     badge: {
-                      'aria-label': t('admin.requests.openCount', {
-                        count: openRequests,
-                      }),
+                      'aria-label': [
+                        openRequests > 0 &&
+                          t('admin.requests.openCount', {
+                            count: openRequests,
+                          }),
+                        invitations > 0 &&
+                          t('access.openCount', { count: invitations }),
+                      ]
+                        .filter(Boolean)
+                        .join(', '),
                     },
                   }}
                 >
@@ -111,7 +142,10 @@ export default function AppShell({ children }: { children: ReactNode }) {
             onClose={() => setOpen(false)}
             slotProps={{ paper: { sx: { width: SIDEBAR_WIDTH } } }}
           >
-            <Sidebar onNavigate={() => setOpen(false)} />
+            <Sidebar
+              onNavigate={() => setOpen(false)}
+              onPin={isDesktop ? () => hide(false) : undefined}
+            />
           </Drawer>
         </>
       )}
@@ -121,7 +155,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
         sx={{
           flexGrow: 1,
           minWidth: 0,
-          pt: isDesktop ? 0 : 7,
+          pt: beside ? 0 : 7,
           display: 'flex',
           flexDirection: 'column',
         }}

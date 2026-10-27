@@ -14,6 +14,8 @@ import de.codeflowwizardry.carledger.data.BillEntity;
 import de.codeflowwizardry.carledger.data.CarEntity;
 import de.codeflowwizardry.carledger.data.DocumentKind;
 import de.codeflowwizardry.carledger.data.ModificationEntity;
+import de.codeflowwizardry.carledger.data.Preview;
+import de.codeflowwizardry.carledger.data.RecurringBillEntity;
 import de.codeflowwizardry.carledger.data.TechnicalInspectionEntity;
 import de.codeflowwizardry.carledger.data.repository.AttachmentRepository;
 import de.codeflowwizardry.carledger.data.repository.BillRepository;
@@ -21,6 +23,7 @@ import de.codeflowwizardry.carledger.data.repository.CarAccess;
 import de.codeflowwizardry.carledger.data.repository.CarAccess.Action;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import de.codeflowwizardry.carledger.data.repository.ModificationRepository;
+import de.codeflowwizardry.carledger.data.repository.RecurringBillRepository;
 import de.codeflowwizardry.carledger.data.repository.TechnicalInspectionRepository;
 import io.quarkus.runtime.configuration.MemorySize;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -32,20 +35,23 @@ import jakarta.ws.rs.NotFoundException;
 public class AttachmentService
 {
 	static final int MAX_FILE_NAME = 200;
+	private static final String PREVIEW_TYPE = "image/jpeg";
 
 	private final AttachmentRepository attachmentRepository;
 	private final BillRepository billRepository;
 	private final CarRepository carRepository;
 	private final ModificationRepository modificationRepository;
 	private final TechnicalInspectionRepository technicalInspectionRepository;
-	private final AttachmentStorage storage;
+	private final RecurringBillRepository recurringBillRepository;
+	private final AttachmentStorages storages;
 	private final long maxSize;
 	private final int maxPerBill;
 
 	@Inject
 	public AttachmentService(AttachmentRepository attachmentRepository, BillRepository billRepository,
 			CarRepository carRepository, ModificationRepository modificationRepository,
-			TechnicalInspectionRepository technicalInspectionRepository, AttachmentStorage storage,
+			TechnicalInspectionRepository technicalInspectionRepository,
+			RecurringBillRepository recurringBillRepository, AttachmentStorages storages,
 			@ConfigProperty(name = "carledger.attachments.max-size", defaultValue = "10M") MemorySize maxSize,
 			@ConfigProperty(name = "carledger.attachments.max-per-bill", defaultValue = "10") int maxPerBill)
 	{
@@ -54,7 +60,8 @@ public class AttachmentService
 		this.carRepository = carRepository;
 		this.modificationRepository = modificationRepository;
 		this.technicalInspectionRepository = technicalInspectionRepository;
-		this.storage = storage;
+		this.recurringBillRepository = recurringBillRepository;
+		this.storages = storages;
 		this.maxSize = maxSize.asLongValue();
 		this.maxPerBill = maxPerBill;
 	}
@@ -92,6 +99,72 @@ public class AttachmentService
 		FileType type = requireValid(content, false, errors);
 
 		return save(of(bill), fileName, type, content);
+	}
+
+	/**
+	 * @throws NotFoundException
+	 *             if the recurring cost does not belong to the car of the user
+	 */
+	@Transactional
+	public List<AttachmentEntity> listForRecurringBill(long carId, long recurringBillId, String userId)
+	{
+		findRecurringBill(carId, recurringBillId, userId, Action.READ);
+		return attachmentRepository.listForRecurringBill(carId, recurringBillId, userId);
+	}
+
+	/**
+	 * Checks size, type and the amount per recurring cost (the same as per
+	 * bill), then saves the file, e.g. the contract
+	 *
+	 * @throws NotFoundException
+	 *             if the recurring cost does not belong to the car of the user
+	 * @throws jakarta.ws.rs.BadRequestException
+	 *             with the reasons, if the file cannot be attached
+	 */
+	@Transactional
+	public AttachmentEntity addToRecurringBill(long carId, long recurringBillId, String userId, String fileName,
+			byte[] content)
+	{
+		RecurringBillEntity recurringBill = findRecurringBill(carId, recurringBillId, userId, Action.WRITE);
+		return addToRecurringBill(recurringBill, fileName, content,
+				attachmentRepository.countForRecurringBill(recurringBillId));
+	}
+
+	/**
+	 * Saves a file of a recurring cost of a restored backup, checked like an
+	 * upload
+	 *
+	 * @param files
+	 *            the recurring cost has already
+	 */
+	public AttachmentEntity restore(RecurringBillEntity recurringBill, String fileName, byte[] content, long files)
+	{
+		return addToRecurringBill(recurringBill, fileName, content, files);
+	}
+
+	private AttachmentEntity addToRecurringBill(RecurringBillEntity recurringBill, String fileName, byte[] content,
+			long files)
+	{
+		List<String> errors = new ArrayList<>();
+		if (files >= maxPerBill)
+		{
+			errors.add("A recurring cost can have at most " + maxPerBill + " files!");
+		}
+		FileType type = requireValid(content, false, errors);
+
+		AttachmentEntity attachment = of(recurringBill.getCar());
+		attachment.setRecurringBill(recurringBill);
+		return save(attachment, fileName, type, content);
+	}
+
+	private RecurringBillEntity findRecurringBill(long carId, long recurringBillId, String userId, Action action)
+	{
+		RecurringBillEntity recurringBill = recurringBillRepository.getById(carId, userId, recurringBillId, action);
+		if (recurringBill == null)
+		{
+			throw new NotFoundException("Recurring bill not found");
+		}
+		return recurringBill;
 	}
 
 	/**
@@ -269,6 +342,10 @@ public class AttachmentService
 		} else if (content.length > maxSize)
 		{
 			errors.add("The file is larger than " + maxSize / 1024 / 1024 + " MB!");
+		} else if (FileType.isHeic(content))
+		{
+			errors.add("HEIC photos cannot be read, please save the photo as JPEG"
+					+ " (on an iPhone: Settings, Camera, Formats, Most Compatible)!");
 		} else if (type.isEmpty())
 		{
 			errors.add(onlyImages
@@ -305,11 +382,32 @@ public class AttachmentService
 		attachment.setFileName(cleanFileName(fileName));
 		attachment.setContentType(type.contentType());
 		attachment.setSize(content.length);
+		AttachmentStorage storage = storages.configured();
 		attachment.setStorage(storage.name());
 		attachmentRepository.persistAndFlush(attachment);
 
 		storage.store(attachment, content);
+		createPreview(attachment, storage, content);
 		return attachment;
+	}
+
+	/**
+	 * Stores the preview of a photo next to it, PDFs and images that cannot be
+	 * decoded get none
+	 */
+	private static void createPreview(AttachmentEntity attachment, AttachmentStorage storage, byte[] content)
+	{
+		Optional<byte[]> preview = attachment.getContentType().startsWith("image/")
+				? PreviewImage.of(content)
+				: Optional.empty();
+		if (preview.isPresent())
+		{
+			storage.storePreview(attachment, preview.get());
+			attachment.setPreview(Preview.JPEG);
+		} else
+		{
+			attachment.setPreview(Preview.NONE);
+		}
 	}
 
 	/**
@@ -361,9 +459,12 @@ public class AttachmentService
 		return maxPerBill;
 	}
 
+	/**
+	 * The content of a storage outside the database is queued for deletion by
+	 * the database (see {@link AttachmentCleanup})
+	 */
 	private void remove(AttachmentEntity attachment)
 	{
-		storageOf(attachment).delete(attachment);
 		attachmentRepository.delete(attachment);
 	}
 
@@ -376,6 +477,43 @@ public class AttachmentService
 	{
 		AttachmentEntity attachment = find(carId, id, userId, Action.READ);
 		return new Content(attachment, storageOf(attachment).load(attachment));
+	}
+
+	/**
+	 * The preview for the lists, generated for the files of older versions on
+	 * the first request
+	 *
+	 * @return the file itself, if it has no preview (PDFs, images that cannot
+	 *         be decoded)
+	 * @throws NotFoundException
+	 *             if the attachment does not belong to the car of the user
+	 */
+	@Transactional
+	public Content loadPreview(long carId, long id, String userId)
+	{
+		AttachmentEntity attachment = find(carId, id, userId, Action.READ);
+		AttachmentStorage storage = storageOf(attachment);
+		if (attachment.getPreview() == Preview.JPEG)
+		{
+			try
+			{
+				return new Content(attachment, storage.loadPreview(attachment), PREVIEW_TYPE);
+			}
+			catch (NotFoundException e)
+			{
+				// lost, e.g. objects of the bucket restored without it: generated again
+			}
+		}
+		byte[] content = storage.load(attachment);
+		if (attachment.getPreview() != Preview.NONE)
+		{
+			createPreview(attachment, storage, content);
+			if (attachment.getPreview() == Preview.JPEG)
+			{
+				return new Content(attachment, storage.loadPreview(attachment), PREVIEW_TYPE);
+			}
+		}
+		return new Content(attachment, content);
 	}
 
 	/**
@@ -412,7 +550,7 @@ public class AttachmentService
 
 	private BillEntity findBill(long carId, long billId, String userId, Action action)
 	{
-		return billRepository.find("id = :billId and car.id = :carId and " + CarAccess.condition("car", action),
+		return billRepository.find("id = :billId and car.id = :carId and " + CarAccess.own("car", "createdBy", action),
 				Map.of("billId", billId, "carId", carId, CarAccess.USER, userId))
 				.firstResultOptional()
 				.orElseThrow(() -> new NotFoundException("Bill not found"));
@@ -455,14 +593,18 @@ public class AttachmentService
 
 	private AttachmentStorage storageOf(AttachmentEntity attachment)
 	{
-		if (!storage.name().equals(attachment.getStorage()))
-		{
-			throw new IllegalStateException("Storage " + attachment.getStorage() + " is not configured");
-		}
-		return storage;
+		return storages.get(attachment.getStorage());
 	}
 
-	public record Content(AttachmentEntity attachment, byte[] data)
+	/**
+	 * @param contentType
+	 *            of the data, the one of the attachment or of its preview
+	 */
+	public record Content(AttachmentEntity attachment, byte[] data, String contentType)
 	{
+		public Content(AttachmentEntity attachment, byte[] data)
+		{
+			this(attachment, data, attachment.getContentType());
+		}
 	}
 }

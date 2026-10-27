@@ -22,12 +22,14 @@ import { errorMessage } from '@/utils/BackendError';
 import { prepareUpload } from '@/utils/image';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import AttachmentTile from '@/components/bill/AttachmentTile';
-import { ACCEPT, contentUrl } from '@/components/bill/attachments';
+import { ACCEPT, contentUrl, previewUrl } from '@/components/bill/attachments';
 import { useOpenKept } from '@/components/offline/useOfflineDocuments';
 
 export interface ModificationDocumentsProps {
   carId: number;
   modificationId: number;
+  /** only shows the documents, for a viewer */
+  readOnly?: boolean;
 }
 
 /**
@@ -37,6 +39,7 @@ export interface ModificationDocumentsProps {
 export default function ModificationDocuments({
   carId,
   modificationId,
+  readOnly = false,
 }: ModificationDocumentsProps) {
   const { t } = useTranslation();
   const input = useRef<HTMLInputElement>(null);
@@ -111,20 +114,22 @@ export default function ModificationDocuments({
         <Typography variant="subtitle2">
           {t('modification.documents.title')}
         </Typography>
-        <Button
-          size="small"
-          startIcon={
-            upload.isPending ? (
-              <CircularProgress size={16} />
-            ) : (
-              <AttachFileRounded />
-            )
-          }
-          disabled={upload.isPending}
-          onClick={(event) => setMenu(event.currentTarget)}
-        >
-          {t('modification.documents.add')}
-        </Button>
+        {!readOnly && (
+          <Button
+            size="small"
+            startIcon={
+              upload.isPending ? (
+                <CircularProgress size={16} />
+              ) : (
+                <AttachFileRounded />
+              )
+            }
+            disabled={upload.isPending}
+            onClick={(event) => setMenu(event.currentTarget)}
+          >
+            {t('modification.documents.add')}
+          </Button>
+        )}
         <Menu anchorEl={menu} open={!!menu} onClose={() => setMenu(undefined)}>
           {Object.values(DocumentKind).map((each) => (
             <MenuItem key={each} onClick={() => pick(each)}>
@@ -156,7 +161,10 @@ export default function ModificationDocuments({
                       name={document.fileName ?? ''}
                       pdf={document.contentType === 'application/pdf'}
                       url={contentUrl(carId, document.id!)}
-                      onRemove={() => setToDelete(document.id)}
+                      previewUrl={previewUrl(carId, document.id!)}
+                      onRemove={
+                        readOnly ? undefined : () => setToDelete(document.id)
+                      }
                       onOpen={open(contentUrl(carId, document.id!))}
                     />
                   ))}

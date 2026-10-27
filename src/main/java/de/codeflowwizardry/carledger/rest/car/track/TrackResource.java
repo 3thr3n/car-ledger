@@ -13,6 +13,7 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.rest.AbstractResource;
+import de.codeflowwizardry.carledger.tracker.Places;
 import de.codeflowwizardry.carledger.tracker.TrackRetention;
 import de.codeflowwizardry.carledger.tracker.TrackService;
 import jakarta.inject.Inject;
@@ -27,14 +28,16 @@ public class TrackResource extends AbstractResource
 {
 	private final TrackService trackService;
 	private final TrackRetention trackRetention;
+	private final Places places;
 
 	@Inject
 	public TrackResource(SecurityIdentity identity, AccountRepository accountRepository, TrackService trackService,
-			TrackRetention trackRetention)
+			TrackRetention trackRetention, Places places)
 	{
 		super(identity, accountRepository);
 		this.trackService = trackService;
 		this.trackRetention = trackRetention;
+		this.places = places;
 	}
 
 	@GET
@@ -62,6 +65,54 @@ public class TrackResource extends AbstractResource
 			@Parameter(description = "End of the range, exclusive", required = true) @QueryParam("to") OffsetDateTime to)
 	{
 		return trackService.frequency(carId, from, to, context.getName());
+	}
+
+	@GET
+	@Path("places")
+	@Produces(MediaType.APPLICATION_JSON)
+	@Operation(operationId = "getPlaces", description = "The places the car stopped at at least 3 times in a time range of at most 31 days, from the stops of its GPS track, and the places its owner named; the most visited first.")
+	@APIResponse(responseCode = "200", description = "Places found.")
+	@APIResponse(responseCode = "400", description = "Range missing, empty or too long", content = @Content(schema = @Schema(implementation = List.class)))
+	@APIResponse(responseCode = "404", description = "Car is not for your user.")
+	public List<Place> getPlaces(@PathParam("carId") long carId,
+			@Parameter(description = "Start of the range, inclusive", required = true) @QueryParam("from") OffsetDateTime from,
+			@Parameter(description = "End of the range, exclusive", required = true) @QueryParam("to") OffsetDateTime to)
+	{
+		return places.list(carId, from, to, context.getName());
+	}
+
+	@PUT
+	@Path("places")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Operation(operationId = "namePlace", description = "Names the place at the position, or renames a named one near it. The name stays when the track points are deleted.")
+	@APIResponse(responseCode = "204", description = "Named.")
+	@APIResponse(responseCode = "400", description = "Name or position missing or invalid", content = @Content(schema = @Schema(implementation = List.class)))
+	@APIResponse(responseCode = "404", description = "Car is not for your user.")
+	public void namePlace(@PathParam("carId") long carId, PlaceInput input)
+	{
+		places.name(carId, input, context.getName());
+	}
+
+	@PUT
+	@Path("places/{id}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Operation(operationId = "renamePlace", description = "Renames a named place, its position stays.")
+	@APIResponse(responseCode = "204", description = "Renamed.")
+	@APIResponse(responseCode = "400", description = "Name missing or too long", content = @Content(schema = @Schema(implementation = List.class)))
+	@APIResponse(responseCode = "404", description = "Place not found.")
+	public void renamePlace(@PathParam("carId") long carId, @PathParam("id") long id, PlaceInput input)
+	{
+		places.rename(carId, id, input, context.getName());
+	}
+
+	@DELETE
+	@Path("places/{id}")
+	@Operation(operationId = "deletePlaceName", description = "Removes the name of a place; it shows again only with enough visits.")
+	@APIResponse(responseCode = "204", description = "Removed.")
+	@APIResponse(responseCode = "404", description = "Place not found.")
+	public void deletePlaceName(@PathParam("carId") long carId, @PathParam("id") long id)
+	{
+		places.delete(carId, id, context.getName());
 	}
 
 	@PUT

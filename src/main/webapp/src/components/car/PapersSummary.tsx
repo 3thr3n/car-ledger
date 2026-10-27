@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
 import { useFormat } from '@/utils/format';
+import useCarRole from '@/hooks/useCarRole';
 import Section from '@/components/ui/Section';
 import EmptyState from '@/components/ui/EmptyState';
 import { RouterButton, RouterLink } from '@/components/ui/links';
@@ -24,6 +25,7 @@ export default function PapersSummary({ carId }: { carId: number }) {
   const { t } = useTranslation();
   const format = useFormat();
   const params = { id: `${carId}` };
+  const canChange = useCarRole(carId)('WRITE');
   const { data: inspections } = useQuery(inspectionsOptions(carId));
   const { data: modifications } = useQuery(installedOptions(carId));
 
@@ -39,14 +41,16 @@ export default function PapersSummary({ carId }: { carId: number }) {
           compact
           title={t('car.overview.papers.empty')}
           action={
-            <RouterButton
-              to="/car/$id/inspections"
-              params={params}
-              size="small"
-              variant="outlined"
-            >
-              {t('inspection.add.button')}
-            </RouterButton>
+            canChange && (
+              <RouterButton
+                to="/car/$id/inspections"
+                params={params}
+                size="small"
+                variant="outlined"
+              >
+                {t('inspection.add.button')}
+              </RouterButton>
+            )
           }
         />
       </Section>

@@ -5,11 +5,11 @@ import java.io.StringWriter;
 import java.io.UncheckedIOException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
 import com.opencsv.CSVWriter;
 import com.opencsv.ICSVWriter;
 
+import de.codeflowwizardry.carledger.csv.CsvText;
 import de.codeflowwizardry.carledger.data.TripEntity;
 import de.codeflowwizardry.carledger.rest.car.trip.Trip;
 
@@ -37,7 +37,7 @@ public final class TripCsvWriter
 			writer.writeNext(HEADER.toArray(String[]::new), false);
 			for (TripEntity trip : export.trips())
 			{
-				writer.writeNext(values(export, trip).stream().map(value -> Objects.toString(value, ""))
+				writer.writeNext(values(export, trip).stream().map(CsvText::cell)
 						.toArray(String[]::new), false);
 			}
 		}
@@ -55,7 +55,7 @@ public final class TripCsvWriter
 	{
 		return Arrays.asList(export.local(trip.getStartedAt()), export.local(trip.getEndedAt()), trip.getType(),
 				trip.getStartOdometer(), trip.getEndOdometer(), trip.getDistance(), trip.getDestination(),
-				trip.getPurpose(), trip.getBusinessPartner(), trip.getDriver().getUserId(), Trip.enteredLater(trip),
+				trip.getPurpose(), trip.getBusinessPartner(), trip.getDriverName(), Trip.enteredLater(trip),
 				export.local(trip.getCreatedAt()), export.local(trip.getFinishedAt()), trip.getReviewReason(),
 				trip.isRestored(), export.local(trip.getDeletedAt()), trip.getDeletedBy(), trip.getDeleteReason());
 	}

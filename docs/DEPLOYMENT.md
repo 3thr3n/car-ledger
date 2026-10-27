@@ -135,14 +135,14 @@ shorter ones), 32 or more are recommended, and all replicas need the same one.
 helm install car-ledger oci://ghcr.io/3thr3n/car-ledger/car-ledger --set ingress.host=example.com
 ```
 
-Without `--version` the latest release is installed. A release (e.g. `0.8.0`, see the
-[releases](https://github.com/3thr3n/car-ledger/releases)) publishes the image `ghcr.io/3thr3n/car-ledger:0.8.0` and the
-chart `oci://ghcr.io/3thr3n/car-ledger/car-ledger` in version `0.8.0`, which runs that image (up to 0.3.x the chart was
+Without `--version` the latest release is installed. A release (e.g. `0.9.0`, see the
+[releases](https://github.com/3thr3n/car-ledger/releases)) publishes the image `ghcr.io/3thr3n/car-ledger:0.9.0` and the
+chart `oci://ghcr.io/3thr3n/car-ledger/car-ledger` in version `0.9.0`, which runs that image (up to 0.3.x the chart was
 `oci://ghcr.io/3thr3n/car-ledger/helm`).
 
 Every build of `develop` publishes the image `ghcr.io/3thr3n/car-ledger:<run number>` and the chart as the prerelease
-`<next release>-dev.<run number>`, e.g. `0.9.0-dev.123`, which runs the image of the same build: `--version
-0.9.0-dev.123` installs build 123, `--devel` the latest build. Leave `carLedger.image.tag` empty, it would override
+`<next release>-dev.<run number>`, e.g. `0.10.0-dev.123`, which runs the image of the same build: `--version
+0.10.0-dev.123` installs build 123, `--devel` the latest build. Leave `carLedger.image.tag` empty, it would override
 the image of the chart.
 
 From the repository (`helm dependency update helm/car-ledger`, `helm install car-ledger helm/car-ledger ...`) the chart
@@ -164,20 +164,20 @@ with the role `user`, the roles are missing in the tokens of the client.
   by VMs with the default QEMU CPU model). Set `infinispan.images.server=quay.io/infinispan/server:16.2` if your nodes
   support it.
 - **External PostgreSQL**: `carledgerpostgres.enabled=false` and `carLedger.postgres.*` (or `carLedger.postgres.jdbc`).
-- **Attachments**: receipts, the documents of the modifications and the reports of the HUs are stored in PostgreSQL,
-  up to `carLedger.attachments.maxSize` (10 MB) per file and `carLedger.attachments.maxPerBill` (10) per entry,
-  modification or HU. Uploads need requests up to `carLedger.attachments.maxRequestSize`
-  (12 MB): the nginx ingress gets the annotation `nginx.ingress.kubernetes.io/proxy-body-size` automatically, other
-  proxies (e.g. a Gateway or a reverse proxy in front of the cluster) need the same limit, otherwise uploads fail with
-  413.
+- **Attachments**: receipts, the files of the recurring costs, the documents of the modifications and the reports of the
+  HUs are stored in PostgreSQL or in an S3 compatible storage (see [Attachments in S3](#attachments-in-s3)), up to
+  `carLedger.attachments.maxSize` (10 MB) per file and `carLedger.attachments.maxPerBill` (10) per entry, recurring
+  cost, modification or HU; the forms show these limits. HEIC photos are rejected with a hint, browsers other than
+  Safari cannot decode them (an iPhone uploads JPEG by default). Uploads need requests up to
+  `carLedger.attachments.maxRequestSize` (12 MB): the nginx ingress gets the annotation
+  `nginx.ingress.kubernetes.io/proxy-body-size` automatically, other proxies (e.g. a Gateway or a reverse proxy in
+  front of the cluster) need the same limit, otherwise uploads fail with 413.
 - **Backups**: users download all of their data as ZIP in the settings and restore it into an account without cars.
   The restore is an upload as well and limited by `carLedger.attachments.maxRequestSize`: a backup with many receipts
   or with GPS tracks kept forever can be larger, raise the limit (and the one of the proxies) for the restore; the app
   explains a backup that is too large. The track points take about 6 bytes each in the ZIP: a year of commuting at
   one point per second (2.3 million points) is 14 MB. A download or a restore may take
   `carLedger.backup.transactionTimeout` seconds (1800), the other requests 60 s; such a restore takes under a minute.
-- **Webhooks**: `carLedger.webhook.url` sends events like a new car request as signed HTTP requests; the key of the
-  signature comes from `carLedger.webhook.existingSecret`. See [WEBHOOKS.md](WEBHOOKS.md).
 - **Service accounts**: besides the login of the browser, the API accepts access tokens of the identity provider
   (`Authorization: Bearer …`), e.g. of a script deciding car requests. See [Service accounts](#service-accounts).
 - **GPS trackers**: a tracker in the car (e.g. an ESP32) sends its points to `/api/device/points` with its own token,
@@ -187,7 +187,7 @@ with the role `user`, the roles are missing in the tokens of the client.
 - **E-mail**: `carLedger.mail.host` sends notifications by e-mail, see [E-mail](#e-mail).
 - **Push**: the notifications reach the browsers as push messages, on by default, see [Push](#push).
 - **Self-signed certificates**: the app trusts the CA of the ingresses and further certificates for its own HTTPS
-  requests (login, SMTP, webhooks), see [Self-signed certificates](#self-signed-certificates).
+  requests (login, SMTP, push), see [Self-signed certificates](#self-signed-certificates).
 - **Network policies**: only the app reaches its PostgreSQL and Infinispan, only Keycloak and authentik their
   PostgreSQL (`networkPolicy.enabled`, on by default in all charts; needs a network plugin that enforces them). Further
   sources, e.g. a backup tool: `networkPolicy.extraFrom`. `kubectl exec … pg_dump` (see [Operations](#operations))
@@ -271,14 +271,51 @@ TOKEN=$(curl -s https://keycloak.example.com/realms/car-ledger/protocol/openid-c
 curl -H "Authorization: Bearer $TOKEN" "https://car-ledger.example.com/api/admin/car-requests?state=OPEN"
 ```
 
+The car requests of the users are decided with `POST /api/admin/car-requests/{id}/approve` (body `{ "maxCars": 2 }`,
+optional, the default is the current limit plus the requested cars) or `POST /api/admin/car-requests/{id}/reject`
+(body `{ "comment": "..." }`, optional, shown to the user). `GET /api/admin/car-requests?state=OPEN` lists the open
+ones with the user, the number of further cars, the current limit and the reason.
+
 Requests decided this way show `service-account-car-ledger-bot` as the deciding administrator. authentik issues such
 tokens with the `client_credentials` grant of the provider *CarLedger*, the user name of a service account in the group
 `admin` and an app password, see the
 [authentik documentation](https://docs.goauthentik.io/add-secure-apps/providers/oauth2/client_credentials/).
 
+### Attachments in S3
+
+By default the files are stored in PostgreSQL, so the database and its dumps grow with them. A larger installation
+keeps them in a bucket of an S3 compatible storage (AWS, MinIO, Garage, Ceph, ...) instead:
+
+```yaml
+carLedger:
+  attachments:
+    storage: S3
+    s3:
+      bucket: car-ledger                # must exist, the files go below attachments/
+      endpoint: https://s3.example.com  # empty for AWS
+      region: us-east-1
+      pathStyle: true                   # bucket in the path, needed by most storages besides AWS
+      existingSecret: car-ledger-s3     # keys accessKeyId and secretAccessKey
+```
+
+Without `existingSecret` the default credentials of AWS are used (e.g. IRSA on EKS). The app needs to read, write,
+delete and list the objects below `attachments/`. A bucket that cannot be reached is logged at the start, uploads fail
+until it can.
+
+- **Switching**: the storage is saved with every file, the files of the other storage stay readable. With
+  `carLedger.attachments.moveExisting=true` the app moves them into the configured storage in the background, a file
+  per transaction: after a restart it continues with the files left, several replicas share the work. The log names
+  the moved and failed files, *Administration* shows the files per storage. Back to PostgreSQL works the same way
+  (`storage: DB`, the bucket still set until all files are moved).
+- **Deleting**: the database queues the objects of deleted files (also of deleted entries, cars and accounts) and the
+  app deletes them within a minute, with their previews. Every night it deletes objects below `attachments/` older
+  than a day that no file knows, e.g. of an upload that failed.
+- **Backups**: the backup of the users contains the files of both storages. A dump of PostgreSQL contains only the
+  files stored there: back up the bucket as well (e.g. with versioning or a replication of the storage).
+
 ### Self-signed certificates
 
-The app makes HTTPS requests of its own: to the identity provider (the login), the SMTP server, webhooks and the push
+The app makes HTTPS requests of its own: to the identity provider (the login), the SMTP server and the push
 services. It trusts the public CAs, and the certificates of `carLedger.trust` besides them. Without them a login at an
 identity provider with a self-signed certificate fails with `PKIX path building failed` in the log of the app.
 
@@ -372,6 +409,14 @@ Use the image of a release (a git tag of `main`) or a dev build of `develop`. On
 | 1.23.0    | Documents of the modifications as attachments with their kind (0.8.0)                                                |
 | 1.24.0    | Several bills per modification, the existing links move into a table (0.8.0)                                         |
 | 1.25.0    | Table for the HUs, their reports as attachments, the reminders the app keeps (0.8.0)                                 |
+| 1.26.0    | Queue of the files to delete outside the database, filled by a trigger (0.9.0)                                       |
+| 1.27.0    | Previews of the photos next to the files, generated for the existing ones on their first request (0.9.0)             |
+| 1.28.0    | Files of the recurring costs, e.g. the contract (0.9.0)                                                              |
+| 1.29.0    | Names of the places of the GPS tracks (0.9.0)                                                                        |
+| 1.30.0    | Access of other accounts to a car with a role and an optional period, for sharing (0.9.0)                            |
+| 1.31.0    | Who created an entry, the owner of its car for the existing ones (0.9.0)                                             |
+| 1.32.0    | Invitations to a car, an access counts once accepted (0.9.0); an older image would count the open ones as well       |
+| 1.33.0    | The trips of a deleted account stay in the cars of others, without a driver (0.9.0)                                  |
 
 An older image refuses to start on the migrated database, as Flyway finds migrations it does not know. To go back,
 restore the backup. Without the backup, the older image runs on the migrated database (the new columns have defaults)
@@ -432,6 +477,30 @@ kubectl set env deployment/car-ledger QUARKUS_FLYWAY_IGNORE_FUTURE_MIGRATIONS=tr
   users flash the firmware and the settings of a tracker from Chrome or Edge over USB; the firmware is not part of
   CarLedger. `carLedger.imagePullSecrets` pulls the images of the pod from a private registry, see
   [GPS_TRACKER.md](GPS_TRACKER.md#flashing).
+- **No webhooks** (0.9.0): CarLedger sends no webhooks anymore, the mails and push messages and the decisions on the
+  administration page stay. A configured `carLedger.webhook.*` (`CARLEDGER_WEBHOOK_URL` and the others) is ignored,
+  remove it from your values; a script that decided the car requests on a webhook can poll
+  `GET /api/admin/car-requests?state=OPEN` with a [service account](#service-accounts) instead.
+- **Security hardening** (0.9.0): requests of the login session that change something need the header
+  `X-Requested-With` (the app sends it; requests with a token, e.g. of a service account, don't). Texts have length
+  limits (e.g. 100 characters for the name of a car), a NUL character is rejected, a CSV import takes at most 5000
+  rows, and push subscriptions only reach the push services over https. Text cells of the CSV exports that a
+  spreadsheet would run as a formula start with `'`. Nothing to set up.
+- **Places** (0.9.0): the map shows the places a car stops at often and lets the owner name them, see
+  [GPS_TRACKER.md](GPS_TRACKER.md#places). The names are part of the backup (migration 1.29.0). Nothing to set up.
+- **Sharing a car** (0.9.0): the owner invites other accounts as editor, viewer or driver, optionally for a period
+  (migrations 1.30.0 to 1.33.0). Only the owner backs up a shared car, its accesses come back from a restore as
+  invitations; a driver exports the own trips from the trip log. Due reminders go to the owner and the editors. A
+  deleted account leaves its entries and trips in the cars of others. Nothing to set up.
+- **Files of the recurring costs** (0.9.0): a recurring cost keeps files like the contract of a leasing, with the
+  limits of the files of an entry and part of the backup (migration 1.28.0). Nothing to set up.
+- **Previews** (0.9.0): the lists and the tiles of the files show a small JPEG of each photo (256 px), stored next to
+  the file in the same storage (in S3 as `<key>.preview`). New photos get it on the upload, the existing ones on their
+  first request, so the first visit of a list with many old photos takes a moment. PDFs keep their icon. Not part of
+  the backup of the users, a restore generates them again (migration 1.27.0).
+- **Attachments in S3** (0.9.0, optional): `carLedger.attachments.storage=S3` stores new files in a bucket, the
+  existing ones stay in PostgreSQL unless `carLedger.attachments.moveExisting` moves them, see
+  [Attachments in S3](#attachments-in-s3). Nothing changes without it (migration 1.26.0).
 - **Accent colors** (0.8.0): each user picks one of five accent colors in the settings, stored with the account
   (migration 1.21.0, teal for the existing ones) and part of the backup. Nothing to set up.
 - **Modifications** (0.8.0): the tab *Modifications* of a car keeps the parts with their approval, the Abnahme and
@@ -461,8 +530,7 @@ kubectl set env deployment/car-ledger QUARKUS_FLYWAY_IGNORE_FUTURE_MIGRATIONS=tr
 - **Car requests** (0.4.0): users who reached their car limit request more cars in the garage, the role `admin` approves
   or rejects them on the administration page; the entry *Administration* shows the number of open requests. Nothing
   to set up.
-- **Webhooks and service accounts** (0.4.0, optional): without `carLedger.webhook.url` no events are sent, see
-  [WEBHOOKS.md](WEBHOOKS.md). Scripts can call the API with the access token of a service account, see
+- **Service accounts** (0.4.0, optional): scripts can call the API with the access token of a service account, see
   [Service accounts](#service-accounts).
 - **Chart name** (0.4.0): the app chart is named `car-ledger` now, published at
   `oci://ghcr.io/3thr3n/car-ledger/car-ledger`. The old path `oci://ghcr.io/3thr3n/car-ledger/helm` ends with 0.3.0,

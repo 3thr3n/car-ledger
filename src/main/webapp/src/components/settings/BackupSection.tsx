@@ -12,6 +12,7 @@ import {
 import queryClient, { baseUrl, localClient } from '@/utils/QueryClient';
 import { BackendError, errorMessage } from '@/utils/BackendError';
 import { restoredParts } from './restoredParts';
+import { ownCars } from '@/utils/carRole';
 
 /** where the browser downloads the backup */
 export const backupUrl = `${baseUrl}/api/user/me/backup`;
@@ -24,7 +25,8 @@ export default function BackupSection() {
   const { t, i18n } = useTranslation();
   const input = useRef<HTMLInputElement>(null);
   const { data: cars } = useQuery(getMyCarsOptions({ client: localClient }));
-  const canRestore = cars !== undefined && cars.length === 0;
+  // the shared cars of others stay, they aren't in the backup
+  const canRestore = cars !== undefined && ownCars(cars).length === 0;
 
   const restore = useMutation({
     ...restoreBackupMutation({ client: localClient }),
