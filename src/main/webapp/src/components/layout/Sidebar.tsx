@@ -323,8 +323,15 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
               <IconButton
                 size="small"
                 href={`${baseUrl}/api/auth/logout`}
-                // the next user of the device doesn't see the kept data
-                onClick={() => void forgetQueries(offlineStore)}
+                // the next user of the device doesn't see the kept data: it is
+                // deleted before the browser leaves the page
+                onClick={(event) => {
+                  event.preventDefault();
+                  const logout = event.currentTarget.href;
+                  void forgetQueries(offlineStore).finally(() =>
+                    location.assign(logout),
+                  );
+                }}
               >
                 <LogoutRounded fontSize="small" />
               </IconButton>
