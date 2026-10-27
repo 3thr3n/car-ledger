@@ -27,9 +27,9 @@ import jakarta.ws.rs.NotFoundException;
 
 /**
  * The places a car stops at often, found in the stops of its GPS track: every
- * drive ends with a visit of a place. The owner names them; the name is stored
- * with its position, so it stays when the track points are deleted, and a
- * named place shows even without visits.
+ * drive ends with a visit of a place. The owner and the editors name them; the
+ * name is stored with its position, so it stays when the track points are
+ * deleted, and a named place shows even without visits.
  */
 @ApplicationScoped
 public class Places

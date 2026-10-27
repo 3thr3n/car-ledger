@@ -22,6 +22,7 @@ authentik or any other provider).
 - [Usage](#usage)
 - [CSV Format](#csv-format)
 - [Development](#development)
+    - [Architecture](#architecture)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -335,6 +336,12 @@ helm/validate-manifests.sh
 
 The build writes the OpenAPI spec of the backend to `src/main/webapp/public/openapi.json`, the frontend client is
 generated from it with `yarn openapi-ts`. Commit both, the CI fails if they are outdated.
+
+### Architecture
+
+[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) shows how the parts fit together: the layers of the backend, the access
+check of the cars, the storages, the scheduled jobs. Each package of the backend has an overview in its Javadoc;
+`./mvnw javadoc:javadoc` builds the site to `target/reports/apidocs`, and the CI fails on broken Javadoc.
 
 ### Local cluster
 

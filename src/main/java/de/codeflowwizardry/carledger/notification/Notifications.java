@@ -196,8 +196,8 @@ public class Notifications
 	}
 
 	/**
-	 * The reminders that became due to the owner of the cars, in one mail and one
-	 * push message. Sent after the commit.
+	 * The reminders that became due to the owner or an editor of the cars, in one
+	 * mail and one push message. Sent after the commit.
 	 */
 	public void reminders(AccountEntity owner, List<Reminder> due)
 	{
