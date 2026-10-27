@@ -7,7 +7,8 @@ import java.util.regex.Pattern;
 
 /**
  * Which endpoints a subscription may have: https on the default port at a
- * known push service. Without the check, a user could make the server send
+ * known push service; http only on a port named explicitly (the tests). Without
+ * the check, a user could make the server send
  * requests to any host, also inside the network of the server.
  */
 public final class PushEndpoints
@@ -36,7 +37,8 @@ public final class PushEndpoints
 			return false;
 		}
 		String host = uri.getHost();
-		if (host == null || uri.getUserInfo() != null)
+		boolean https = "https".equals(uri.getScheme());
+		if (host == null || uri.getUserInfo() != null || (!https && !"http".equals(uri.getScheme())))
 		{
 			return false;
 		}
@@ -55,6 +57,9 @@ public final class PushEndpoints
 			{
 				allowedPort = pattern.substring(colon + 1);
 				pattern = pattern.substring(0, colon);
+			} else if (!https)
+			{
+				continue;
 			}
 			boolean hostMatches = pattern.startsWith("*.")
 					? host.endsWith(pattern.substring(1)) && host.length() > pattern.length() - 1

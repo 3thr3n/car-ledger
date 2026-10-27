@@ -5,11 +5,11 @@ import java.io.StringWriter;
 import java.io.UncheckedIOException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
 import com.opencsv.CSVWriter;
 import com.opencsv.ICSVWriter;
 
+import de.codeflowwizardry.carledger.csv.CsvText;
 import de.codeflowwizardry.carledger.data.TripEntity;
 import de.codeflowwizardry.carledger.rest.car.trip.Trip;
 
@@ -37,7 +37,7 @@ public final class TripCsvWriter
 			writer.writeNext(HEADER.toArray(String[]::new), false);
 			for (TripEntity trip : export.trips())
 			{
-				writer.writeNext(values(export, trip).stream().map(value -> Objects.toString(value, ""))
+				writer.writeNext(values(export, trip).stream().map(CsvText::cell)
 						.toArray(String[]::new), false);
 			}
 		}
