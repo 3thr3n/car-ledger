@@ -76,4 +76,73 @@ describe('queries kept for offline', () => {
       { id: 1 },
     ]);
   });
+
+  it('forgets the kept data of another account', async () => {
+    // alice's session expired without a logout
+    const before = new QueryClient();
+    keepQueries(before, store);
+    before.setQueryData(key('getMyself'), { name: 'alice' });
+    before.setQueryData(key('getMyCar', { id: 1 }), { id: 1, name: 'Golf' });
+    await store.put('cache', 'documents', { 1: { urls: [], skipped: [] } });
+    await vi.runAllTimersAsync();
+
+    // bob logs in on the same device
+    const now = new QueryClient();
+    keepQueries(now, store);
+    await restoreQueries(now, store);
+    expect(now.getQueryData(key('getMyCar', { id: 1 }))).toBeDefined();
+    now.setQueryData(key('getMyself'), { name: 'bob' });
+    await vi.runAllTimersAsync();
+
+    expect(now.getQueryData(key('getMyCar', { id: 1 }))).toBe(undefined);
+    expect(await store.get('cache', 'documents')).toBe(undefined);
+    const next = new QueryClient();
+    await restoreQueries(next, store);
+    expect(next.getQueryData(key('getMyself'))).toEqual({ name: 'bob' });
+    expect(next.getQueryData(key('getMyCar', { id: 1 }))).toBe(undefined);
+  });
+
+  it('keeps the data when the same account logs in again', async () => {
+    const before = new QueryClient();
+    keepQueries(before, store);
+    before.setQueryData(key('getMyself'), { name: 'alice' });
+    before.setQueryData(key('getMyCar', { id: 1 }), { id: 1, name: 'Golf' });
+    await vi.runAllTimersAsync();
+
+    const now = new QueryClient();
+    keepQueries(now, store);
+    await restoreQueries(now, store);
+    now.setQueryData(key('getMyself'), { name: 'alice' });
+    await vi.runAllTimersAsync();
+
+    expect(now.getQueryData(key('getMyCar', { id: 1 }))).toEqual({
+      id: 1,
+      name: 'Golf',
+    });
+  });
+
+  it('drops the data of a car no longer in the list', async () => {
+    const client = new QueryClient();
+    keepQueries(client, store);
+    client.setQueryData(key('getMyCar', { id: 1 }), { id: 1 });
+    client.setQueryData(key('getMyCar', { id: 2 }), { id: 2 });
+    client.setQueryData(key('getModifications', { carId: 2 }), [{ id: 5 }]);
+    await store.put('cache', 'documents', {
+      1: { urls: [], skipped: [] },
+      2: { urls: [], skipped: [] },
+    });
+
+    // the access to car 2 ended
+    client.setQueryData(key('getMyCars'), [{ id: 1 }]);
+    await vi.runAllTimersAsync();
+
+    expect(client.getQueryData(key('getMyCar', { id: 1 }))).toEqual({ id: 1 });
+    expect(client.getQueryData(key('getMyCar', { id: 2 }))).toBe(undefined);
+    expect(client.getQueryData(key('getModifications', { carId: 2 }))).toBe(
+      undefined,
+    );
+    expect(await store.get('cache', 'documents')).toEqual({
+      1: { urls: [], skipped: [] },
+    });
+  });
 });

@@ -116,6 +116,33 @@ export async function dropDocuments(
   await setKept(store, carId, undefined);
 }
 
+/**
+ * The documents of the cars no longer in the list, e.g. the access to a shared
+ * car ended
+ *
+ * @param carIds the cars the account may still use
+ */
+export async function dropDocumentsExcept(
+  store: OfflineStore,
+  carIds: Set<number>,
+) {
+  const kept = (await store.get<Kept>('cache', KEY)) ?? {};
+  const gone = Object.keys(kept)
+    .map(Number)
+    .filter((carId) => !carIds.has(carId));
+  const cache = canKeepDocuments()
+    ? await caches.open(DOCUMENTS_CACHE)
+    : undefined;
+  for (const carId of gone) {
+    if (cache) {
+      await dropDocuments(store, cache, carId);
+    } else {
+      await setKept(store, carId, undefined);
+    }
+  }
+  return gone;
+}
+
 /** on the logout: the next user of the device doesn't see them */
 export async function forgetDocuments(store: OfflineStore) {
   await store.delete('cache', KEY);
