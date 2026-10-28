@@ -51,8 +51,9 @@ public class TrackService
 	}
 
 	/**
-	 * Reads the points segment by segment: only one segment of raw points is in
-	 * memory at a time.
+	 * Reads the points twice: for the shared line of the streets driven more than
+	 * once, then segment by segment, only one segment of raw points is in memory
+	 * at a time.
 	 *
 	 * @param to
 	 *            exclusive
@@ -66,12 +67,14 @@ public class TrackService
 			throw new WrongUserException();
 		}
 
-		return collect(carId, from, to);
+		SharedLine shared = new SharedLine(GAP);
+		trackPointRepository.forEach(carId, from, to, shared::add);
+		return collect(carId, from, to, shared);
 	}
 
 	/**
 	 * How often the car passed the roads of its track: reads the points twice, to
-	 * count and then to draw the lines
+	 * count (and for the shared line) and then to draw the lines
 	 *
 	 * @param to
 	 *            exclusive
@@ -85,8 +88,12 @@ public class TrackService
 			throw new WrongUserException();
 		}
 
-		PassCounter counter = new PassCounter(GAP, tolerance(Duration.between(from, to)));
-		trackPointRepository.forEach(carId, from, to, counter::count);
+		SharedLine shared = new SharedLine(GAP);
+		PassCounter counter = new PassCounter(GAP, tolerance(Duration.between(from, to)), shared);
+		trackPointRepository.forEach(carId, from, to, point -> {
+			counter.count(point);
+			shared.add(point);
+		});
 		trackPointRepository.forEach(carId, from, to, counter::trace);
 		return counter.frequency();
 	}
@@ -95,7 +102,8 @@ public class TrackService
 	 * The track during a trip, from its start to its end (now while it is open),
 	 * also of a deleted trip. Only a hint next to the odometers: the trip log
 	 * doesn't depend on it. A trip left open for longer is cut after
-	 * {@link #MAX_RANGE}.
+	 * {@link #MAX_RANGE}. The points stay where they are: a single drive has no
+	 * shared line.
 	 */
 	@Transactional
 	public Track tripTrack(long carId, UUID tripId, String username)
@@ -110,12 +118,17 @@ public class TrackService
 		{
 			to = from.plus(MAX_RANGE);
 		}
-		return collect(carId, from, to);
+		return collect(carId, from, to, null);
 	}
 
-	private Track collect(long carId, OffsetDateTime from, OffsetDateTime to)
+	/**
+	 * @param shared
+	 *            of the points of the range, <code>null</code> for the raw
+	 *            points
+	 */
+	private Track collect(long carId, OffsetDateTime from, OffsetDateTime to, SharedLine shared)
 	{
-		Collector collector = new Collector(tolerance(Duration.between(from, to)));
+		Collector collector = new Collector(tolerance(Duration.between(from, to)), shared);
 		trackPointRepository.forEach(carId, from, to, collector::add);
 		collector.finish();
 		return new Track(collector.segments, Math.round(collector.meters / 10) / 100.0, collector.count);
@@ -148,19 +161,21 @@ public class TrackService
 
 	/**
 	 * Splits the points at the gaps, sums their distance and simplifies each
-	 * finished segment
+	 * finished segment, moved onto the shared line
 	 */
 	private static class Collector
 	{
 		private final double tolerance;
+		private final SharedLine shared;
 		private final List<List<TrackPoint>> segments = new ArrayList<>();
 		private List<TrackPoint> current = new ArrayList<>();
 		private double meters;
 		private int count;
 
-		Collector(double tolerance)
+		Collector(double tolerance, SharedLine shared)
 		{
 			this.tolerance = tolerance;
+			this.shared = shared;
 		}
 
 		void add(TrackPoint point)
@@ -184,7 +199,8 @@ public class TrackService
 		{
 			if (!current.isEmpty())
 			{
-				segments.add(TrackSimplifier.simplify(current, tolerance, SPEED_THRESHOLD));
+				List<TrackPoint> points = shared == null ? current : shared.apply(current);
+				segments.add(TrackSimplifier.simplify(points, tolerance, SPEED_THRESHOLD));
 				current = new ArrayList<>();
 			}
 		}

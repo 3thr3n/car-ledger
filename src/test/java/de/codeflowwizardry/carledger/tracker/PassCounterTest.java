@@ -63,8 +63,12 @@ class PassCounterTest
 
 	private TrackFrequency frequency()
 	{
-		PassCounter counter = new PassCounter(Duration.ofMinutes(5), 5);
-		points.forEach(counter::count);
+		SharedLine shared = new SharedLine(Duration.ofMinutes(5));
+		PassCounter counter = new PassCounter(Duration.ofMinutes(5), 5, shared);
+		points.forEach(point -> {
+			counter.count(point);
+			shared.add(point);
+		});
 		points.forEach(counter::trace);
 		return counter.frequency();
 	}
