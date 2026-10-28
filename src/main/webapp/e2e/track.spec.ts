@@ -104,9 +104,13 @@ test.describe.serial('GPS track', () => {
     await expect(
       page.getByRole('button', { name: 'Earlier' }),
     ).toBeInViewport();
+    // no slip that deletes the whole period
+    const remove = page.getByRole('button', { name: 'Delete this track' });
+    await expect(remove).toHaveCount(0);
 
     await page.keyboard.press('Escape');
     await expect(enter).toBeVisible();
+    await expect(remove).toBeVisible();
     await expect
       .poll(
         async () => (await page.getByTestId('track-map').boundingBox())?.height,
