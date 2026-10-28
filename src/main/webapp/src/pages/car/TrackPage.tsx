@@ -370,11 +370,13 @@ export default function TrackPage({
               />
             </Tooltip>
           </Stack>
-          {/* not while the track of another period is loading */}
+          {/* not while the track of another period is loading, and not in
+              the fullscreen, which is for looking at the map */}
           {track &&
             valid &&
             track.points > 0 &&
             !isPlaceholderData &&
+            !fullscreen &&
             role('MANAGE') && (
               <Button
                 color="error"
