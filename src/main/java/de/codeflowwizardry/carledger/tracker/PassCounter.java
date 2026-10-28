@@ -23,7 +23,8 @@ import de.codeflowwizardry.carledger.rest.car.track.TrackPoint;
  * with the drift of the GPS between them; the pieces between the points are
  * sampled, so a fast car marks every cell it crosses. A cell counts a pass when
  * the car wasn't in it for longer than the gap: standing in it or a jam doesn't
- * add one, the way back after a stop does.
+ * add one, the way back after a stop does. The lines are drawn on the
+ * {@link SharedLine}, the passes are counted on the raw points.
  */
 final class PassCounter
 {
@@ -42,6 +43,7 @@ final class PassCounter
 
 	private final Duration gap;
 	private final double tolerance;
+	private final SharedLine shared;
 	private final Map<Long, Cell> cells = new HashMap<>();
 	private final List<FrequencyLine> lines = new ArrayList<>();
 	/** of the grid, at the latitude of the first point */
@@ -55,11 +57,14 @@ final class PassCounter
 	 *            a longer time without a point starts a new segment
 	 * @param tolerance
 	 *            meters, of the simplification of the lines
+	 * @param shared
+	 *            filled in the first run as well, the lines are moved onto it
 	 */
-	PassCounter(Duration gap, double tolerance)
+	PassCounter(Duration gap, double tolerance, SharedLine shared)
 	{
 		this.gap = gap;
 		this.tolerance = tolerance;
+		this.shared = shared;
 	}
 
 	/** first run: marks the cells of the point and of the piece to it */
@@ -171,6 +176,7 @@ final class PassCounter
 			smoothed[i] = window[window.length / 2];
 		}
 
+		List<TrackPoint> moved = shared.apply(segment);
 		int start = 0;
 		for (int i = 1; i <= size; i++)
 		{
@@ -180,7 +186,7 @@ final class PassCounter
 				int end = Math.min(i, size - 1);
 				if (end > start)
 				{
-					addLine(segment.subList(start, end + 1), smoothed[start]);
+					addLine(segment.subList(start, end + 1), moved.subList(start, end + 1), smoothed[start]);
 				}
 				start = i;
 			}
@@ -188,7 +194,13 @@ final class PassCounter
 		segment = new ArrayList<>();
 	}
 
-	private void addLine(List<TrackPoint> points, int passes)
+	/**
+	 * @param points
+	 *            raw, for the cells
+	 * @param moved
+	 *            the same on the shared line, drawn
+	 */
+	private void addLine(List<TrackPoint> points, List<TrackPoint> moved, int passes)
 	{
 		OffsetDateTime last = points.getLast().ts();
 		for (TrackPoint point : points)
@@ -200,7 +212,7 @@ final class PassCounter
 			}
 		}
 		// the speed doesn't matter here
-		List<TrackPoint> kept = TrackSimplifier.simplify(points, tolerance, Double.POSITIVE_INFINITY);
+		List<TrackPoint> kept = TrackSimplifier.simplify(moved, tolerance, Double.POSITIVE_INFINITY);
 		double[][] coordinates = new double[kept.size()][];
 		for (int i = 0; i < kept.size(); i++)
 		{

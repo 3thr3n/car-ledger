@@ -293,7 +293,9 @@ class TrackResourceTest
 				.body("maxPasses", is(2))
 				.body("lines.passes", everyItem(is(2)))
 				.body("lines[0].last", is("2026-10-20T09:01:40Z"))
-				.body("lines[0].coordinates[0]", contains(10.0f, 50.0f));
+				// on the shared line of both drives: moved sideways only, into the zigzag of
+				// the GPS
+				.body("lines[0].coordinates[0][1]", is(50.0f));
 	}
 
 	@Test

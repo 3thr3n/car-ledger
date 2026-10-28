@@ -185,7 +185,16 @@ dark red and wide the most often). For the frequency the points lie on a grid of
 the ones around, so the drift of the GPS between two drives on the same road doesn't matter. Both directions count,
 and a cell counts again once the car was away from it for more than 5 minutes: standing or a jam doesn't add a pass,
 the way back after a stop does. Roads closer than about 30 m, e.g. the two carriageways of a motorway, may count
-together. It appears for cars with a tracker once a map is set up:
+together.
+
+A street driven more than once shows as one line, in both views: the GPS drifts by a few meters from drive to drive
+and the two directions use different lanes. CarLedger lays the drives of the period on a grid of 8 m and moves each
+point sideways onto the average of the drives around it in about the same direction (both directions count as one, a
+crossing street doesn't pull). The more often a street is driven, the steadier its line; one driven once stays as it
+is. Streets closer than about 10 m may merge. Only the map is changed: the stored points, the trips, the suggestions,
+the places and the backup use the points as the tracker sent them, and so does the track of a single trip.
+
+It appears for cars with a tracker once a map is set up:
 
 | Property                  | Helm value               | Meaning                                                                       |
 |---------------------------|--------------------------|-------------------------------------------------------------------------------|
