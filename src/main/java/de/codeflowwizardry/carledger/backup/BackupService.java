@@ -658,15 +658,21 @@ public class BackupService
 		boolean[] header = {
 				true
 		};
+		// values per line, fewer in the backups before the g-forces
+		int[] columns = {
+				0
+		};
 		try (TrackPointRepository.Bulk bulk = trackPointRepository.bulk(car.getId()))
 		{
 			boolean found = entries.readLines(track.path(), line -> {
 				if (header[0])
 				{
-					if (!BackupFile.TRACK_HEADER.equals(line.strip()))
+					String names = line.strip();
+					if (!BackupFile.TRACK_HEADER.equals(names) && !BackupFile.TRACK_HEADER_V0_9.equals(names))
 					{
 						Utils.requireValid(List.of("The track of a car of the backup cannot be read!"));
 					}
+					columns[0] = names.split(",").length;
 					header[0] = false;
 					return;
 				}
@@ -679,13 +685,16 @@ public class BackupService
 				TrackPointInput point;
 				try
 				{
-					if (values.length != 7)
+					if (values.length != columns[0])
 					{
-						throw new IllegalArgumentException("7 values expected");
+						throw new IllegalArgumentException(columns[0] + " values expected");
 					}
 					device = devices.get(Integer.parseInt(values[0]));
+					boolean g = values.length > 7;
 					point = new TrackPointInput(time(values[1]), Double.valueOf(values[2]),
-							Double.valueOf(values[3]), number(values[4]), number(values[5]), number(values[6]));
+							Double.valueOf(values[3]), number(values[4]), number(values[5]), number(values[6]),
+							g ? number(values[7]) : null, g ? number(values[8]) : null, g ? number(values[9]) : null,
+							g && !values[10].isEmpty() ? values[10] : null);
 				}
 				catch (RuntimeException e)
 				{
@@ -694,7 +703,7 @@ public class BackupService
 				}
 				if (point.isValid(now))
 				{
-					bulk.add(device, point);
+					bulk.add(device, point.plausible());
 				}
 			});
 			if (!found)

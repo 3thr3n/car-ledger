@@ -97,7 +97,7 @@ class BackupTrackTest
 
 		QuarkusTransaction.requiringNew().run(() -> {
 			trackPointRepository.insert(created.device().id(), carId, List.of(
-					new TrackPointInput(START, 50.1, 10.2, 42.5, 250.0, 1.2),
+					new TrackPointInput(START, 50.1, 10.2, 42.5, 250.0, 1.2, 0.123, 0.0, -0.456, "imu"),
 					new TrackPointInput(START.plusSeconds(1), 50.1000123, 10.2000149, null, null, null)));
 			trackPointRepository.insert(old, carId,
 					List.of(new TrackPointInput(START.minusDays(1), -33.9, 151.2, 0.0, -2.5, 0.8)));
@@ -209,10 +209,10 @@ class BackupTrackTest
 		assertTrue(!new String(entries.get("backup.json"), StandardCharsets.UTF_8).contains(token));
 
 		assertEquals("""
-				tracker,ts,lat,lon,speed,alt,hdop
-				1,1792396800,-33.9,151.2,0,-2.5,0.8
-				0,1792483200,50.1,10.2,42.5,250,1.2
-				0,1792483201,50.100012,10.200015,,,
+				tracker,ts,lat,lon,speed,alt,hdop,accel,brake,lateral,gsource
+				1,1792396800,-33.9,151.2,0,-2.5,0.8,,,,
+				0,1792483200,50.1,10.2,42.5,250,1.2,0.12,0,-0.46,imu
+				0,1792483201,50.100012,10.200015,,,,,,,
 				""", track(entries, car));
 	}
 
@@ -309,7 +309,8 @@ class BackupTrackTest
 		JsonNode car = mapper.readTree(entries.get("backup.json")).get("cars").get(0);
 		String path = car.get("track").get("path").asText();
 		entries.put(path,
-				(track(entries, car) + "0,2019-12-31T23:59:59Z,50.0,10.0,,,\n0,2026-10-21T08:00Z,91.0,10.0,,,\n")
+				(track(entries, car)
+						+ "0,2019-12-31T23:59:59Z,50.0,10.0,,,,,,,\n0,2026-10-21T08:00Z,91.0,10.0,,,,,,,\n")
 						.getBytes(StandardCharsets.UTF_8));
 
 		restore(zip(entries)).statusCode(200).body("trackPoints", is(3));
@@ -323,8 +324,9 @@ class BackupTrackTest
 		JsonNode car = mapper.readTree(entries.get("backup.json")).get("cars").get(0);
 		String path = car.get("track").get("path").asText();
 
-		for (String content : List.of("ts,lat\n", track(entries, car) + "5,2026-10-21T08:00Z,50.0,10.0,,,\n",
-				track(entries, car) + "0,yesterday,50.0,10.0,,,\n", track(entries, car) + "0,2026-10-21T08:00Z,50.0\n"))
+		for (String content : List.of("ts,lat\n", track(entries, car) + "5,2026-10-21T08:00Z,50.0,10.0,,,,,,,\n",
+				track(entries, car) + "0,yesterday,50.0,10.0,,,,,,,\n",
+				track(entries, car) + "0,2026-10-21T08:00Z,50.0\n"))
 		{
 			entries.put(path, content.getBytes(StandardCharsets.UTF_8));
 			restore(zip(entries)).statusCode(400);
@@ -334,6 +336,56 @@ class BackupTrackTest
 		entries.remove(path);
 		restore(zip(entries)).statusCode(400);
 		given().when().get("/api/car/my").then().body("size()", is(0));
+	}
+
+	/** accel, brake, lateral and gsource of the restored points, by time */
+	private List<String> gForces(long car)
+	{
+		return QuarkusTransaction.requiringNew().call(() -> em
+				.createNativeQuery("select concat_ws('|', tk_accel, tk_brake, tk_lateral, tk_gsource) from track_point"
+						+ " where tk_car_id = " + car + " order by tk_ts", String.class)
+				.getResultList());
+	}
+
+	@Test
+	void shouldRestoreTheGForces()
+	{
+		byte[] backup = download();
+		deleteCar();
+
+		restore(backup).statusCode(200).body("trackPoints", is(3));
+		assertEquals(List.of("", "0.12|0|-0.46|imu", ""), gForces(restoredCar()));
+	}
+
+	@Test
+	void shouldRestoreABackupBeforeTheGForces() throws IOException
+	{
+		Map<String, byte[]> entries = unzip(download());
+		deleteCar();
+		JsonNode car = mapper.readTree(entries.get("backup.json")).get("cars").get(0);
+		entries.put(car.get("track").get("path").asText(), """
+				tracker,ts,lat,lon,speed,alt,hdop
+				1,1792396800,-33.9,151.2,0,-2.5,0.8
+				0,1792483200,50.1,10.2,42.5,250,1.2
+				""".getBytes(StandardCharsets.UTF_8));
+
+		restore(zip(entries)).statusCode(200).body("trackPoints", is(2));
+		assertEquals(List.of("", ""), gForces(restoredCar()));
+	}
+
+	@Test
+	void shouldLeaveOutImplausibleGForcesOfABackup() throws IOException
+	{
+		Map<String, byte[]> entries = unzip(download());
+		deleteCar();
+		JsonNode car = mapper.readTree(entries.get("backup.json")).get("cars").get(0);
+		entries.put(car.get("track").get("path").asText(), """
+				tracker,ts,lat,lon,speed,alt,hdop,accel,brake,lateral,gsource
+				0,1792483200,50.1,10.2,42.5,250,1.2,2.5,-0.1,-1.9,sonar
+				""".getBytes(StandardCharsets.UTF_8));
+
+		restore(zip(entries)).statusCode(200).body("trackPoints", is(1));
+		assertEquals(List.of("-1.9|unknown"), gForces(restoredCar()));
 	}
 
 	@Test

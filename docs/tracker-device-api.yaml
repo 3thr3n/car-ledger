@@ -93,6 +93,27 @@ components:
         hdop:
           type: number
           exclusiveMinimum: 0
+        accel:
+          type: number
+          minimum: 0
+          maximum: 2
+          description: peak forward acceleration since the point before, g; a value out of range is left out, the point stays
+        brake:
+          type: number
+          minimum: 0
+          maximum: 2
+          description: peak braking since the point before, g, 0 or more; out of range left out like accel
+        lateral:
+          type: number
+          minimum: -2
+          maximum: 2
+          description: peak sideways acceleration since the point before, g, + turning right, - turning left
+        gsource:
+          type: string
+          examples: [imu, gps]
+          description: |
+            where accel, brake and lateral come from: imu (real peaks) or gps (averages over a second). Missing next to
+            values means gps (firmware before the IMU); another value is stored as unknown.
     IngestResult:
       type: object
       required: [accepted, duplicates, rejected]

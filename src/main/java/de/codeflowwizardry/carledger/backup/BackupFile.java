@@ -41,9 +41,12 @@ public record BackupFile(String format, int version, OffsetDateTime createdAt, S
 	public static final String ENTRY = "backup.json";
 	/**
 	 * first line of the CSV of the track points, tracker is the index in
-	 * {@link Car#trackers()}, times in ISO-8601, km/h and meters
+	 * {@link Car#trackers()}, times in epoch seconds, km/h, meters, the g-forces
+	 * in g and their source
 	 */
-	public static final String TRACK_HEADER = "tracker,ts,lat,lon,speed,alt,hdop";
+	public static final String TRACK_HEADER = "tracker,ts,lat,lon,speed,alt,hdop,accel,brake,lateral,gsource";
+	/** of the backups before the g-forces, still restored */
+	public static final String TRACK_HEADER_V0_9 = "tracker,ts,lat,lon,speed,alt,hdop";
 
 	/**
 	 * @param accent
