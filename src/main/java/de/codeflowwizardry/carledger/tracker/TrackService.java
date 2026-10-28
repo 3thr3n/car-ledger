@@ -88,8 +88,8 @@ public class TrackService
 	}
 
 	/**
-	 * How often the car passed the roads of its track: reads the points twice, to
-	 * count (and for the shared line) and then to draw the lines
+	 * How often the car passed the streets of its track: every street once, for
+	 * all drives on it ({@link StreetNetwork})
 	 *
 	 * @param to
 	 *            exclusive
@@ -106,17 +106,11 @@ public class TrackService
 			throw new WrongUserException();
 		}
 
-		SharedLine shared = new SharedLine(GAP);
-		PassCounter counter = new PassCounter(GAP, TOLERANCE, shared);
-		trackPointRepository.forEach(carId, from, to, selection.filter(point -> {
-			counter.count(point);
-			shared.add(point);
-		}, () -> {
-			counter.cut();
-			shared.cut();
-		}));
-		trackPointRepository.forEach(carId, from, to, selection.filter(counter::trace, counter::cut));
-		return counter.frequency();
+		// the network needs all drives at once: a month is some ten thousand points
+		Segments segments = new Segments();
+		trackPointRepository.forEach(carId, from, to, selection.filter(segments::add, segments::finish));
+		segments.finish();
+		return StreetNetwork.frequency(segments.all, GAP, TOLERANCE);
 	}
 
 	/**
@@ -266,6 +260,31 @@ public class TrackService
 			{
 				List<TrackPoint> points = shared == null ? current : shared.apply(current);
 				segments.add(TrackSegment.of(TrackSimplifier.simplify(points, tolerance, SPEED_THRESHOLD)));
+				current = new ArrayList<>();
+			}
+		}
+	}
+
+	/** the points split at the gaps, all of them in memory */
+	private static class Segments
+	{
+		private final List<List<TrackPoint>> all = new ArrayList<>();
+		private List<TrackPoint> current = new ArrayList<>();
+
+		void add(TrackPoint point)
+		{
+			if (!current.isEmpty() && Duration.between(current.getLast().ts(), point.ts()).compareTo(GAP) > 0)
+			{
+				finish();
+			}
+			current.add(point);
+		}
+
+		void finish()
+		{
+			if (!current.isEmpty())
+			{
+				all.add(current);
 				current = new ArrayList<>();
 			}
 		}

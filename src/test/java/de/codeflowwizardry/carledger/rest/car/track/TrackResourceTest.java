@@ -310,7 +310,7 @@ class TrackResourceTest
 		// the same road an hour later
 		drive(0, 101, 50, 3600);
 
-		given()
+		List<Double> lats = given()
 				.pathParam("carId", carId)
 				.queryParam("from", START.toString())
 				.queryParam("to", START.plusHours(2).toString())
@@ -320,10 +320,14 @@ class TrackResourceTest
 				.statusCode(200)
 				.body("maxPasses", is(2))
 				.body("lines.passes", everyItem(is(2)))
+				// the street once, for both drives
+				.body("lines", hasSize(1))
 				.body("lines[0].last", is("2026-10-20T09:01:40Z"))
-				// on the shared line of both drives: moved sideways only, into the zigzag of
-				// the GPS
-				.body("lines[0].coordinates[0][1]", is(50.0f));
+				.extract().jsonPath().getList("lines[0].coordinates.collect { it[1] }", Double.class);
+		// from one end of the 1000 m to the other, within a cell of 8 m
+		assertEquals(50, lats.stream().mapToDouble(Double::doubleValue).min().orElseThrow(), 8 * LAT_PER_METER);
+		assertEquals(50 + 1000 * LAT_PER_METER, lats.stream().mapToDouble(Double::doubleValue).max().orElseThrow(),
+				8 * LAT_PER_METER);
 	}
 
 	@Test
