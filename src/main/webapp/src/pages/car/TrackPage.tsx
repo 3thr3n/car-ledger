@@ -217,6 +217,23 @@ export default function TrackPage({
       to: toApiDate(to!.add(direction * days, 'day')),
     });
 
+  const modeSwitch = (
+    <ToggleButtonGroup
+      size="small"
+      exclusive
+      value={mode}
+      onChange={(_, value: Mode | null) => value && setMode(value)}
+      aria-label={t('track.mode.label')}
+    >
+      <ToggleButton value="speed" sx={{ px: 1.5 }}>
+        {t('track.mode.speed')}
+      </ToggleButton>
+      <ToggleButton value="frequency" sx={{ px: 1.5 }}>
+        {t('track.mode.frequency')}
+      </ToggleButton>
+    </ToggleButtonGroup>
+  );
+
   if (settings && !settings.styleUrl) {
     return (
       <Section>
@@ -240,42 +257,39 @@ export default function TrackPage({
             })
           : t('track.subtitle')
       }
-      action={
-        <ToggleButtonGroup
-          size="small"
-          exclusive
-          value={mode}
-          onChange={(_, value: Mode | null) => value && setMode(value)}
-          aria-label={t('track.mode.label')}
-        >
-          <ToggleButton value="speed" sx={{ px: 1.5 }}>
-            {t('track.mode.speed')}
-          </ToggleButton>
-          <ToggleButton value="frequency" sx={{ px: 1.5 }}>
-            {t('track.mode.frequency')}
-          </ToggleButton>
-        </ToggleButtonGroup>
-      }
+      // the fullscreen covers only the area below: there the switch is in it
+      action={!fullscreen && modeSwitch}
     >
       <Stack
         spacing={2}
         data-testid="track-area"
         sx={fullscreen ? fullscreenSx : undefined}
       >
-        <ToggleButtonGroup
-          size="small"
-          exclusive
-          value={shortcutOf(range) ?? null}
-          onChange={(_, shortcut) => shortcut && setRange(rangeOf(shortcut))}
-          aria-label={t('track.shortcuts.label')}
-          sx={{ flexWrap: 'wrap' }}
+        <Stack
+          direction="row"
+          sx={{
+            flexWrap: 'wrap',
+            gap: 1,
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
         >
-          {SHORTCUTS.map((shortcut) => (
-            <ToggleButton key={shortcut} value={shortcut} sx={{ px: 1.5 }}>
-              {t(`track.shortcuts.${shortcut}`)}
-            </ToggleButton>
-          ))}
-        </ToggleButtonGroup>
+          <ToggleButtonGroup
+            size="small"
+            exclusive
+            value={shortcutOf(range) ?? null}
+            onChange={(_, shortcut) => shortcut && setRange(rangeOf(shortcut))}
+            aria-label={t('track.shortcuts.label')}
+            sx={{ flexWrap: 'wrap' }}
+          >
+            {SHORTCUTS.map((shortcut) => (
+              <ToggleButton key={shortcut} value={shortcut} sx={{ px: 1.5 }}>
+                {t(`track.shortcuts.${shortcut}`)}
+              </ToggleButton>
+            ))}
+          </ToggleButtonGroup>
+          {fullscreen && modeSwitch}
+        </Stack>
         <Stack
           direction="row"
           spacing={1}

@@ -104,6 +104,13 @@ test.describe.serial('GPS track', () => {
     await expect(
       page.getByRole('button', { name: 'Earlier' }),
     ).toBeInViewport();
+    // the view can be switched in the fullscreen as well
+    const modes = page.getByRole('group', { name: 'Color the track by' });
+    await expect(modes).toHaveCount(1);
+    await modes.getByRole('button', { name: 'Frequency' }).click();
+    await expect(page.getByTestId('frequency-legend')).toBeInViewport();
+    await modes.getByRole('button', { name: 'Speed' }).click();
+    await expect(page.getByTestId('speed-legend')).toBeInViewport();
     // no slip that deletes the whole period
     const remove = page.getByRole('button', { name: 'Delete this track' });
     await expect(remove).toHaveCount(0);
