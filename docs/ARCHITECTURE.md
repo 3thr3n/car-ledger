@@ -59,6 +59,7 @@ and refuels. The methods named `Owned` (car limit, backup) are about the owner o
 |---------------------------------------------|-------------------------|--------------------------------------------------------------|
 | `ScheduledPayments`                         | 01:00                   | the payments of the recurring costs that became due          |
 | `notification.ReminderNotifications`        | 07:00 (configurable)    | one notification per account with its reminders due soon     |
+| `notification.inbox.InboxCleanup`           | 03:15 (configurable)    | deletes the notifications of the inboxes after 90 days       |
 | `tracker.TrackRetention`                    | 02:30                   | deletes the track points older than the car keeps them       |
 | `attachment.AttachmentCleanup`              | every minute, and 02:45 | deletes the content of removed files outside the database    |
 | `attachment.AttachmentMover`                | hourly, when configured | moves the existing files into the configured storage         |
@@ -71,7 +72,9 @@ the files with `FOR UPDATE SKIP LOCKED`, a payment is unique per due date, and d
 The services call `notification.Notifications`, which picks the recipients and renders the texts (Qute templates in
 `src/main/resources/templates`) in the transaction; the mails and push messages are sent after the commit, so a failed
 change sends nothing and a failing mail server never fails a request. Push is Web Push with the means of the JDK
-(`notification.push`).
+(`notification.push`). Every notification also goes into the inbox of the account (`notification.inbox`, the page
+*Notifications*), stored with the change in its transaction, also without mail and push; the settings choose what
+comes by mail and push as well.
 
 ## GPS trackers
 

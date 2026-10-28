@@ -26,6 +26,8 @@ import de.codeflowwizardry.carledger.data.CarAccessState;
 import de.codeflowwizardry.carledger.data.CarEntity;
 import de.codeflowwizardry.carledger.data.UnitSystem;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
+import de.codeflowwizardry.carledger.notification.inbox.NotificationEntity;
+import de.codeflowwizardry.carledger.notification.inbox.NotificationRepository;
 import de.codeflowwizardry.carledger.notification.push.OutgoingPushes;
 import de.codeflowwizardry.carledger.notification.push.PushConfig;
 import de.codeflowwizardry.carledger.notification.push.PushMessage;
@@ -47,12 +49,14 @@ import jakarta.inject.Inject;
  * renders the texts in their language while the transaction is still open,
  * the {@link MailSender} and the
  * {@link de.codeflowwizardry.carledger.notification.push.PushSender} send them
- * after the commit. Every recipient gets a mail (if wanted and with an
+ * after the commit. Every recipient gets the notification in the inbox of the
+ * app, always, and for the topics it chose a mail (if wanted and with an
  * address) and a push message on every browser that subscribed.
  * <p>
  * The texts are the templates
  * src/main/resources/templates/{mail,push}/&lt;event&gt;.&lt;language&gt;.txt,
- * their first line is the subject or the title.
+ * their first line is the subject or the title; the inbox keeps the one of the
+ * push message.
  */
 @ApplicationScoped
 public class Notifications
@@ -68,11 +72,12 @@ public class Notifications
 	private final ObjectMapper mapper;
 	private final Event<OutgoingMails> outgoingMails;
 	private final Event<OutgoingPushes> outgoingPushes;
+	private final NotificationRepository inbox;
 
 	@Inject
 	public Notifications(MailConfig mailConfig, PushConfig pushConfig, AccountRepository accountRepository,
 			PushSubscriptionRepository subscriptions, Engine engine, ObjectMapper mapper,
-			Event<OutgoingMails> outgoingMails, Event<OutgoingPushes> outgoingPushes)
+			Event<OutgoingMails> outgoingMails, Event<OutgoingPushes> outgoingPushes, NotificationRepository inbox)
 	{
 		this.mailConfig = mailConfig;
 		this.pushConfig = pushConfig;
@@ -82,6 +87,7 @@ public class Notifications
 		this.mapper = mapper;
 		this.outgoingMails = outgoingMails;
 		this.outgoingPushes = outgoingPushes;
+		this.inbox = inbox;
 	}
 
 	/**
@@ -99,8 +105,8 @@ public class Notifications
 	}
 
 	/**
-	 * The new request for more cars to the administrators who want it, not to the
-	 * one who asked. Sent after the commit.
+	 * The new request for more cars to the administrators, not to the one who
+	 * asked; by mail and push to the ones who want it. Sent after the commit.
 	 *
 	 * @param maxCars
 	 *            the limit of the account when it asked
@@ -108,31 +114,29 @@ public class Notifications
 	public void carRequestCreated(RequestEntity request, int cars, int maxCars)
 	{
 		String account = request.getAccount().getUserId();
-		List<AccountEntity> admins = accountRepository.list(
-				"admin = true and notifyNewRequests = true and userId <> ?1", account);
+		List<AccountEntity> admins = accountRepository.list("admin = true and userId <> ?1", account);
 		Batch batch = new Batch("car-request.created");
 		for (AccountEntity admin : admins)
 		{
-			batch.add(admin, "car-request-created", "/admin", "car-request-" + request.getId(), Map.of(
-					"account", account,
-					"cars", cars,
-					"maxCars", maxCars,
-					"reason", Optional.ofNullable(request.getReason()).orElse("")));
+			batch.add(admin, admin.isNotifyNewRequests(), "car-request-created", "/admin",
+					"car-request-" + request.getId(), Map.of(
+							"account", account,
+							"cars", cars,
+							"maxCars", maxCars,
+							"reason", Optional.ofNullable(request.getReason()).orElse("")));
 		}
 		batch.fire();
 	}
 
 	/**
-	 * The decision on a request for more cars to the user who asked, if wanted.
-	 * Sent after the commit.
+	 * The decision on a request for more cars to the user who asked, by mail and
+	 * push if wanted. The notifications of the request in the inboxes of the
+	 * administrators say who decided it, and count as read. Sent after the commit.
 	 */
 	public void carRequestDecided(RequestEntity request)
 	{
+		closeRequest(request);
 		AccountEntity account = request.getAccount();
-		if (!account.isNotifyRequestDecided())
-		{
-			return;
-		}
 		CarLimitPayload payload = CarLimitPayload.of(request.getPayload());
 		Map<String, Object> data = new HashMap<>();
 		data.put("approved", request.getState() == RequestState.APPROVED);
@@ -140,8 +144,28 @@ public class Notifications
 		data.put("grantedMaxCars", Optional.ofNullable(payload.grantedMaxCars()).orElse(0));
 		data.put("comment", Optional.ofNullable(request.getComment()).orElse(""));
 		Batch batch = new Batch("car-request.decided");
-		batch.add(account, "car-request-decided", "/car", "car-request-" + request.getId(), data);
+		batch.add(account, account.isNotifyRequestDecided(), "car-request-decided", "/car",
+				"car-request-" + request.getId(), data);
 		batch.fire();
+	}
+
+	/**
+	 * The new request in the inboxes of the administrators becomes its decision:
+	 * nothing is left to do
+	 */
+	private void closeRequest(RequestEntity request)
+	{
+		for (NotificationEntity notification : inbox.listByTag("car-request-created",
+				"car-request-" + request.getId()))
+		{
+			Map<String, Object> data = new HashMap<>();
+			data.put("account", request.getAccount().getUserId());
+			data.put("approved", request.getState() == RequestState.APPROVED);
+			data.put("admin", Optional.ofNullable(request.getDecidedBy()).orElse(""));
+			String[] text = render("inbox", notification.getAccount(), "car-request-closed", data);
+			notification.replace("car-request-closed", text[0], text[1], data);
+			notification.markRead();
+		}
 	}
 
 	/**
@@ -168,19 +192,23 @@ public class Notifications
 				? ""
 				: dates.format(day(invitation.getValidUntil().minusNanos(1))));
 		Batch batch = new Batch("car-access.invited");
-		batch.add(account, "car-access-invited", "/car", "car-access-" + invitation.getId(), data);
+		batch.add(account, true, "car-access-invited", "/car", "car-access-" + invitation.getId(), data);
 		batch.fire();
 	}
 
 	/**
 	 * The answer of the invited account to the owner of the car. Sent after the
-	 * commit.
+	 * commit. The invitation in the inbox of the answering account counts as
+	 * read: nothing is left to do.
 	 */
 	public void carAccessAnswered(CarAccessEntity answer)
 	{
+		inbox.listByTag("car-access-invited", "car-access-" + answer.getId())
+				.forEach(NotificationEntity::markRead);
 		CarEntity car = answer.getCar();
 		Batch batch = new Batch("car-access.answered");
-		batch.add(car.getUser(), "car-access-answered", "/car/" + car.getId() + "/edit", "car-access-" + answer.getId(),
+		batch.add(car.getUser(), true, "car-access-answered", "/car/" + car.getId() + "/edit",
+				"car-access-" + answer.getId(),
 				Map.of("account", answer.getAccount().getUserId(), "car", car.getName(), "accepted",
 						answer.getState() == CarAccessState.ACCEPTED));
 		batch.fire();
@@ -197,7 +225,7 @@ public class Notifications
 
 	/**
 	 * The reminders that became due to the owner or an editor of the cars, in one
-	 * mail and one push message. Sent after the commit.
+	 * notification; by mail and push if wanted. Sent after the commit.
 	 */
 	public void reminders(AccountEntity owner, List<Reminder> due)
 	{
@@ -231,7 +259,7 @@ public class Notifications
 		data.put("count", items.size());
 		data.put("unit", miles ? "mi" : "km");
 		Batch batch = new Batch("reminders.due");
-		batch.add(owner, "reminders-due", "/dashboard", "reminders", data);
+		batch.add(owner, owner.isNotifyReminders(), "reminders-due", "/dashboard", "reminders", data);
 		batch.fire();
 	}
 
@@ -305,13 +333,24 @@ public class Notifications
 		}
 
 		/**
+		 * @param send
+		 *            by mail and push as well, the topic is wanted: the inbox gets
+		 *            it anyway
 		 * @param path
 		 *            the page of the app the notification opens
 		 * @param tag
 		 *            a newer push message with the same tag replaces the older one
 		 */
-		void add(AccountEntity recipient, String template, String path, String tag, Map<String, Object> data)
+		void add(AccountEntity recipient, boolean send, String template, String path, String tag,
+				Map<String, Object> data)
 		{
+			String[] inboxText = render("push", recipient, template, data);
+			inbox.persist(new NotificationEntity(recipient, template, tag, inboxText[0], inboxText[1], path,
+					new HashMap<>(data)));
+			if (!send)
+			{
+				return;
+			}
 			if (wantsMail(recipient))
 			{
 				Map<String, Object> all = new HashMap<>(data);

@@ -498,6 +498,28 @@ export type HiLoStats = {
     maintenanceCost?: HiLo;
 };
 
+export type InboxEntry = {
+    id: number;
+    event: string;
+    title: string;
+    text: string;
+    path: string;
+    createdAt: OffsetDateTime;
+    readAt?: OffsetDateTime;
+};
+
+export type InboxPage = {
+    total: number;
+    unread: number;
+    page: number;
+    size: number;
+    data: Array<InboxEntry>;
+};
+
+export type InboxUnread = {
+    count: number;
+};
+
 export enum InspectionResult {
     NO_DEFECTS = 'NO_DEFECTS',
     MINOR_DEFECTS = 'MINOR_DEFECTS',
@@ -3011,6 +3033,107 @@ export type GetCsvFieldsResponses = {
 };
 
 export type GetCsvFieldsResponse = GetCsvFieldsResponses[keyof GetCsvFieldsResponses];
+
+export type GetInboxData = {
+    body?: never;
+    path?: never;
+    query?: {
+        page?: number;
+        size?: number;
+    };
+    url: '/api/inbox';
+};
+
+export type GetInboxResponses = {
+    /**
+     * Notifications found.
+     */
+    200: InboxPage;
+};
+
+export type GetInboxResponse = GetInboxResponses[keyof GetInboxResponses];
+
+export type ReadInboxData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/inbox/read';
+};
+
+export type ReadInboxResponses = {
+    /**
+     * Marked.
+     */
+    204: void;
+};
+
+export type ReadInboxResponse = ReadInboxResponses[keyof ReadInboxResponses];
+
+export type GetInboxUnreadData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/inbox/unread';
+};
+
+export type GetInboxUnreadResponses = {
+    /**
+     * Counted.
+     */
+    200: InboxUnread;
+};
+
+export type GetInboxUnreadResponse = GetInboxUnreadResponses[keyof GetInboxUnreadResponses];
+
+export type DeleteInboxEntryData = {
+    body?: never;
+    path: {
+        id: number;
+    };
+    query?: never;
+    url: '/api/inbox/{id}';
+};
+
+export type DeleteInboxEntryErrors = {
+    /**
+     * Not a notification of the own account.
+     */
+    404: unknown;
+};
+
+export type DeleteInboxEntryResponses = {
+    /**
+     * Deleted.
+     */
+    204: void;
+};
+
+export type DeleteInboxEntryResponse = DeleteInboxEntryResponses[keyof DeleteInboxEntryResponses];
+
+export type ReadInboxEntryData = {
+    body?: never;
+    path: {
+        id: number;
+    };
+    query?: never;
+    url: '/api/inbox/{id}/read';
+};
+
+export type ReadInboxEntryErrors = {
+    /**
+     * Not a notification of the own account.
+     */
+    404: unknown;
+};
+
+export type ReadInboxEntryResponses = {
+    /**
+     * Marked.
+     */
+    204: void;
+};
+
+export type ReadInboxEntryResponse = ReadInboxEntryResponses[keyof ReadInboxEntryResponses];
 
 export type GetInvitationsData = {
     body?: never;

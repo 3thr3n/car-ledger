@@ -100,9 +100,14 @@ export default function NotificationSection() {
   return (
     <Card sx={{ p: 3, mt: 3 }}>
       <Stack spacing={2}>
-        <Typography sx={{ fontWeight: 600 }}>
-          {t('notifications.title')}
-        </Typography>
+        <Box>
+          <Typography sx={{ fontWeight: 600 }}>
+            {t('notifications.title')}
+          </Typography>
+          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+            {t('notifications.inbox')}
+          </Typography>
+        </Box>
 
         <Box>
           <FormControlLabel

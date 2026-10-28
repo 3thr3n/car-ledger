@@ -38,6 +38,7 @@ nav:
   dashboard: "Dashboard"
   garage: "Garage"
   yourCars: "Deine Fahrzeuge"
+  notifications: "Benachrichtigungen"
   settings: "Einstellungen"
   admin: "Verwaltung"
   signedInAs: "Angemeldet als"
@@ -330,13 +331,6 @@ car:
 
 access:
   title: "Zugriff"
-  openCount_one: "{{count}} Einladung zu einem Fahrzeug wartet auf deine Antwort"
-  openCount_other: "{{count}} Einladungen zu Fahrzeugen warten auf deine Antwort"
-  note:
-    one: "{{owner}} lädt dich zum Fahrzeug „{{car}}“ ein, als {{role}}."
-    other: "{{count}} Einladungen zu Fahrzeugen warten auf deine Antwort."
-    answer: "Antworten"
-    later: "Später"
   text: "Teile das Fahrzeug mit anderen Konten. Der Eingeladene nimmt zuerst an; ein Konto, das es noch nicht gibt, bekommt die Einladung mit seiner ersten Anmeldung."
   invite: "Einladen"
   inviteTitle: "Zum Fahrzeug einladen"
@@ -781,6 +775,7 @@ install:
 
 notifications:
   title: "Benachrichtigungen"
+  inbox: "Alle stehen unter Benachrichtigungen im Menü; hier wählst du, welche auch per E-Mail und Push kommen."
   byMail: "Per E-Mail"
   sentTo: "Gesendet an {{email}}, die Adresse deiner Anmeldung."
   noEmail: "Deine Anmeldung hat keine E-Mail-Adresse. Trage eine beim Identitätsanbieter ein und melde dich erneut an."
@@ -1340,3 +1335,17 @@ papers:
     current: "Für eine Kontrolle: die verbauten Teile und die letzte HU"
     history: "Für den Verkauf: mit den ausgebauten Teilen und allen HUs"
   text: "Die ersten Seiten listen die Umbauten mit ihren Genehmigungen und die HUs, danach folgen ihre Dokumente und Prüfberichte. Eine Kopie zur Information, die Originale müssen weiterhin im Auto sein."
+
+inbox:
+  title: "Benachrichtigungen"
+  subtitle: "Alles, worüber CarLedger dich benachrichtigt hat, auch ohne E-Mail und Push. 90 Tage aufbewahrt."
+  unreadCount_one: "{{count}} ungelesene Benachrichtigung"
+  unreadCount_other: "{{count}} ungelesene Benachrichtigungen"
+  unread: "Ungelesen"
+  readAll: "Alle als gelesen markieren"
+  delete: "Löschen"
+  deleteLabel: "„{{title}}“ löschen"
+  deleted: "Benachrichtigung gelöscht"
+  empty: "Keine Benachrichtigungen"
+  emptyText: "Einladungen zu Fahrzeugen, fällige Erinnerungen und die Antworten auf deine Anfragen erscheinen hier."
+  more: "Ältere anzeigen"

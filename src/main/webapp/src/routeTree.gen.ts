@@ -24,6 +24,7 @@ import { Route as CarIdBillBillIdEditRouteImport } from './routes/car/$id/bill/$
 const IndexLazyRouteImport = createFileRoute('/')()
 const AdminLazyRouteImport = createFileRoute('/admin')()
 const ErrorLazyRouteImport = createFileRoute('/error')()
+const NotificationsLazyRouteImport = createFileRoute('/notifications')()
 const SettingsLazyRouteImport = createFileRoute('/settings')()
 const CarIndexLazyRouteImport = createFileRoute('/car/')()
 const CarNewLazyRouteImport = createFileRoute('/car/new')()
@@ -69,6 +70,11 @@ const ErrorLazyRoute = ErrorLazyRouteImport.update({
   path: '/error',
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/error.lazy').then((d) => d.Route))
+const NotificationsLazyRoute = NotificationsLazyRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/notifications.lazy').then((d) => d.Route))
 const RefuelRoute = RefuelRouteImport.update({
   id: '/refuel',
   path: '/refuel',
@@ -218,6 +224,7 @@ export interface FileRoutesByFullPath {
   '/trip': typeof TripRoute
   '/admin': typeof AdminLazyRoute
   '/error': typeof ErrorLazyRoute
+  '/notifications': typeof NotificationsLazyRoute
   '/settings': typeof SettingsLazyRoute
   '/car/$id': typeof CarIdRouteRouteWithChildren
   '/dev/i18n': typeof DevI18nRoute
@@ -247,6 +254,7 @@ export interface FileRoutesByTo {
   '/trip': typeof TripRoute
   '/admin': typeof AdminLazyRoute
   '/error': typeof ErrorLazyRoute
+  '/notifications': typeof NotificationsLazyRoute
   '/settings': typeof SettingsLazyRoute
   '/dev/i18n': typeof DevI18nRoute
   '/car/new': typeof CarNewLazyRoute
@@ -276,6 +284,7 @@ export interface FileRoutesById {
   '/trip': typeof TripRoute
   '/admin': typeof AdminLazyRoute
   '/error': typeof ErrorLazyRoute
+  '/notifications': typeof NotificationsLazyRoute
   '/settings': typeof SettingsLazyRoute
   '/car/$id': typeof CarIdRouteRouteWithChildren
   '/dev/i18n': typeof DevI18nRoute
@@ -307,6 +316,7 @@ export interface FileRouteTypes {
     | '/trip'
     | '/admin'
     | '/error'
+    | '/notifications'
     | '/settings'
     | '/car/$id'
     | '/dev/i18n'
@@ -336,6 +346,7 @@ export interface FileRouteTypes {
     | '/trip'
     | '/admin'
     | '/error'
+    | '/notifications'
     | '/settings'
     | '/dev/i18n'
     | '/car/new'
@@ -364,6 +375,7 @@ export interface FileRouteTypes {
     | '/trip'
     | '/admin'
     | '/error'
+    | '/notifications'
     | '/settings'
     | '/car/$id'
     | '/dev/i18n'
@@ -394,6 +406,7 @@ export interface RootRouteChildren {
   TripRoute: typeof TripRoute
   AdminLazyRoute: typeof AdminLazyRoute
   ErrorLazyRoute: typeof ErrorLazyRoute
+  NotificationsLazyRoute: typeof NotificationsLazyRoute
   SettingsLazyRoute: typeof SettingsLazyRoute
   CarIdRouteRoute: typeof CarIdRouteRouteWithChildren
   DevI18nRoute: typeof DevI18nRoute
@@ -424,6 +437,13 @@ declare module '@tanstack/react-router' {
       path: '/error'
       fullPath: '/error'
       preLoaderRoute: typeof ErrorLazyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/notifications': {
+      id: '/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof NotificationsLazyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/refuel': {
@@ -643,6 +663,7 @@ const rootRouteChildren: RootRouteChildren = {
   TripRoute: TripRoute,
   AdminLazyRoute: AdminLazyRoute,
   ErrorLazyRoute: ErrorLazyRoute,
+  NotificationsLazyRoute: NotificationsLazyRoute,
   SettingsLazyRoute: SettingsLazyRoute,
   CarIdRouteRoute: CarIdRouteRouteWithChildren,
   DevI18nRoute: DevI18nRoute,

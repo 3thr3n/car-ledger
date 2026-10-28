@@ -1313,6 +1313,73 @@
           }
         }
       },
+      "InboxEntry" : {
+        "type" : "object",
+        "required" : [ "id", "event", "title", "text", "path", "createdAt" ],
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "event" : {
+            "type" : "string"
+          },
+          "title" : {
+            "type" : "string"
+          },
+          "text" : {
+            "type" : "string"
+          },
+          "path" : {
+            "type" : "string"
+          },
+          "createdAt" : {
+            "type" : "string",
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          },
+          "readAt" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          }
+        }
+      },
+      "InboxPage" : {
+        "type" : "object",
+        "required" : [ "total", "unread", "page", "size", "data" ],
+        "properties" : {
+          "total" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "unread" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "page" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "data" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/InboxEntry"
+            }
+          }
+        }
+      },
+      "InboxUnread" : {
+        "type" : "object",
+        "required" : [ "count" ],
+        "properties" : {
+          "count" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      },
       "InspectionResult" : {
         "type" : "string",
         "enum" : [ "NO_DEFECTS", "MINOR_DEFECTS", "MAJOR_DEFECTS", "DANGEROUS_DEFECTS", "UNSAFE" ]
@@ -6066,6 +6133,126 @@
         },
         "summary" : "Get Field Definitions",
         "tags" : [ "Import Resource" ]
+      }
+    },
+    "/api/inbox" : {
+      "get" : {
+        "description" : "The notifications of the own account, newest first; pages starting at 1",
+        "operationId" : "getInbox",
+        "parameters" : [ {
+          "name" : "page",
+          "in" : "query",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 1
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Notifications found.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/InboxPage"
+                }
+              }
+            }
+          }
+        },
+        "summary" : "Get Inbox",
+        "tags" : [ "Inbox Resource" ]
+      }
+    },
+    "/api/inbox/read" : {
+      "post" : {
+        "description" : "Marks all notifications of the own account as read",
+        "operationId" : "readInbox",
+        "responses" : {
+          "204" : {
+            "description" : "Marked."
+          }
+        },
+        "summary" : "Read All",
+        "tags" : [ "Inbox Resource" ]
+      }
+    },
+    "/api/inbox/unread" : {
+      "get" : {
+        "description" : "How many notifications of the own account are unread",
+        "operationId" : "getInboxUnread",
+        "responses" : {
+          "200" : {
+            "description" : "Counted.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/InboxUnread"
+                }
+              }
+            }
+          }
+        },
+        "summary" : "Get Unread",
+        "tags" : [ "Inbox Resource" ]
+      }
+    },
+    "/api/inbox/{id}" : {
+      "delete" : {
+        "description" : "Deletes a notification of the own account",
+        "operationId" : "deleteInboxEntry",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "Deleted."
+          },
+          "404" : {
+            "description" : "Not a notification of the own account."
+          }
+        },
+        "summary" : "Delete",
+        "tags" : [ "Inbox Resource" ]
+      }
+    },
+    "/api/inbox/{id}/read" : {
+      "post" : {
+        "description" : "Marks a notification as read, e.g. when its page was opened",
+        "operationId" : "readInboxEntry",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "Marked."
+          },
+          "404" : {
+            "description" : "Not a notification of the own account."
+          }
+        },
+        "summary" : "Read",
+        "tags" : [ "Inbox Resource" ]
       }
     },
     "/api/invitations" : {

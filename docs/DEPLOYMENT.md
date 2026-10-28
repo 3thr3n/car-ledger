@@ -477,6 +477,13 @@ kubectl set env deployment/car-ledger QUARKUS_FLYWAY_IGNORE_FUTURE_MIGRATIONS=tr
   users flash the firmware and the settings of a tracker from Chrome or Edge over USB; the firmware is not part of
   CarLedger. `carLedger.imagePullSecrets` pulls the images of the pod from a private registry, see
   [GPS_TRACKER.md](GPS_TRACKER.md#flashing).
+- **Notifications in the app** (0.10.0): every notification also goes into the inbox of the account, the page
+  *Notifications* with the number of unread ones in the menu, also without e-mail and push (migration 1.36.0, table
+  `notification`). The switches of the settings now choose what comes by e-mail and push as well; the inbox gets all.
+  Due reminders reach the inbox without a mail server or push, too. A notification is deleted after 90 days, read or
+  not (`carledger.notifications.cleanup-cron`, 03:15 every night), and with its account; notifications aren't part of
+  the backup. The badge of the garage and the note on the dashboard for open invitations are gone, the invitation is in
+  the inbox. Nothing to set up.
 - **G-forces of the track points** (0.10.0): a tracker sends the peak acceleration, braking and sideways force per
   point, they are stored with the points (migration 1.34.0) and in the backup, with three more columns in the CSV of
   the track; a restore still reads the backups before. Nothing to set up, see
