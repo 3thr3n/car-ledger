@@ -86,6 +86,46 @@ test.describe.serial('GPS track', () => {
     );
   });
 
+  test('shows the map in fullscreen and returns', async () => {
+    const area = page.getByTestId('track-area');
+    const enter = page.getByRole('button', {
+      name: 'Show the map in fullscreen',
+    });
+    await enter.click();
+
+    // the area with the period and the legend covers the window
+    const viewport = page.viewportSize()!;
+    await expect
+      .poll(async () => (await area.boundingBox())?.height)
+      .toBeGreaterThanOrEqual(viewport.height - 1);
+    const map = await page.getByTestId('track-map').boundingBox();
+    expect(map!.height).toBeGreaterThan(viewport.height / 2);
+    await expect(page.getByTestId('speed-legend')).toBeInViewport();
+    await expect(
+      page.getByRole('button', { name: 'Earlier' }),
+    ).toBeInViewport();
+
+    await page.keyboard.press('Escape');
+    await expect(enter).toBeVisible();
+    await expect
+      .poll(
+        async () => (await page.getByTestId('track-map').boundingBox())?.height,
+      )
+      .toBeLessThan(500);
+
+    await enter.click();
+    await page.getByRole('button', { name: 'Leave the fullscreen' }).click();
+    await expect(enter).toBeVisible();
+    // the canvas stays inside the map on the page, not over the window
+    const back = await page.getByTestId('track-map').boundingBox();
+    const canvas = await page
+      .getByTestId('track-map')
+      .locator('canvas')
+      .boundingBox();
+    expect(canvas!.y).toBeCloseTo(back!.y, 0);
+    expect(canvas!.x).toBeCloseTo(back!.x, 0);
+  });
+
   test('colors the track by how often it was driven', async () => {
     await page.getByRole('button', { name: 'Frequency' }).click();
 

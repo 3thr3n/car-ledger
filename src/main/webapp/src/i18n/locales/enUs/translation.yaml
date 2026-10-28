@@ -472,6 +472,9 @@ track:
     last3: "Last 3 days"
     last7: "Last 7 days"
     month: "This month"
+  fullscreen:
+    enter: "Show the map in fullscreen"
+    leave: "Leave the fullscreen"
   earlier: "Earlier"
   later: "Later"
   empty: "No track in this period."

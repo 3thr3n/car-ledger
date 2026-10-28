@@ -3,6 +3,7 @@ import {
   AttributionControl,
   ExpressionSpecification,
   GeoJSONSource,
+  IControl,
   LngLatBounds,
   Map as MapLibreMap,
   MapLayerMouseEvent,
@@ -37,6 +38,48 @@ export interface TrackMapProps {
   places?: Place[];
   onPlaceClick?: (place: Place) => void;
   height?: number;
+  /** takes the height left in its column instead, e.g. in fullscreen */
+  fill?: boolean;
+  /** with it, a button under the zoom buttons switches to fullscreen */
+  onFullscreen?: () => void;
+  fullscreen?: boolean;
+}
+
+/**
+ * The button for the fullscreen, with the icons of MapLibre like its other
+ * controls
+ */
+class FullscreenToggle implements IControl {
+  private readonly container = document.createElement('div');
+  private readonly button = document.createElement('button');
+
+  constructor(onClick: () => void) {
+    this.container.className = 'maplibregl-ctrl maplibregl-ctrl-group';
+    this.button.type = 'button';
+    const icon = document.createElement('span');
+    icon.className = 'maplibregl-ctrl-icon';
+    icon.setAttribute('aria-hidden', 'true');
+    this.button.append(icon);
+    this.button.addEventListener('click', onClick);
+    this.container.append(this.button);
+  }
+
+  onAdd() {
+    return this.container;
+  }
+
+  onRemove() {
+    this.container.remove();
+  }
+
+  show(fullscreen: boolean, label: string) {
+    this.button.className = fullscreen
+      ? 'maplibregl-ctrl-shrink'
+      : 'maplibregl-ctrl-fullscreen';
+    this.button.title = label;
+    this.button.setAttribute('aria-label', label);
+    this.button.setAttribute('aria-pressed', String(fullscreen));
+  }
 }
 
 const SPEED_LAYERS = ['track-casing', 'track-line', 'track-hit', 'track-ends'];
@@ -167,6 +210,9 @@ export default function TrackMap({
   places,
   onPlaceClick,
   height = 480,
+  fill = false,
+  onFullscreen,
+  fullscreen = false,
 }: TrackMapProps) {
   const { t } = useTranslation();
   const format = useFormat();
@@ -185,6 +231,12 @@ export default function TrackMap({
   const onPlaceClickRef = useRef(onPlaceClick);
   onPlaceClickRef.current = onPlaceClick;
   const markers = useRef<Marker[]>([]);
+  const onFullscreenRef = useRef(onFullscreen);
+  onFullscreenRef.current = onFullscreen;
+  const fullscreenRef = useRef(fullscreen);
+  fullscreenRef.current = fullscreen;
+  /** set when the map has the button for the fullscreen */
+  const fullscreenToggle = useRef<FullscreenToggle>(null);
   /** set when the map is ready, so the markers of the places follow */
   const [ready, setReady] = useState(false);
 
@@ -201,6 +253,20 @@ export default function TrackMap({
       new NavigationControl({ showCompass: false }),
       'top-right',
     );
+    if (onFullscreenRef.current) {
+      fullscreenToggle.current = new FullscreenToggle(() =>
+        onFullscreenRef.current?.(),
+      );
+      instance.addControl(fullscreenToggle.current, 'top-right');
+      fullscreenToggle.current.show(
+        fullscreenRef.current,
+        tRef.current(
+          fullscreenRef.current
+            ? 'track.fullscreen.leave'
+            : 'track.fullscreen.enter',
+        ),
+      );
+    }
     const popup = new Popup({
       closeButton: false,
       closeOnClick: false,
@@ -311,6 +377,7 @@ export default function TrackMap({
       popup.remove();
       instance.remove();
       map.current = null;
+      fullscreenToggle.current = null;
       setReady(false);
     };
   }, [styleUrl]);
@@ -351,15 +418,21 @@ export default function TrackMap({
   }, [track]);
 
   useEffect(() => {
+    fullscreenToggle.current?.show(
+      fullscreen,
+      t(fullscreen ? 'track.fullscreen.leave' : 'track.fullscreen.enter'),
+    );
+  }, [fullscreen, t]);
+
+  useEffect(() => {
     if (map.current) showFrequency(map.current, frequency);
   }, [frequency]);
 
   return (
     <Box
-      ref={container}
       data-testid="track-map"
       sx={{
-        height,
+        ...(fill ? { flex: 1, minHeight: 320 } : { height }),
         borderRadius: 3,
         overflow: 'hidden',
         '& .place-marker': (theme) => ({
@@ -413,6 +486,9 @@ export default function TrackMap({
           px: 1.25,
         }),
       }}
-    />
+    >
+      {/* MapLibre's own classes on it, React would replace them with a new sx */}
+      <div ref={container} style={{ height: '100%' }} />
+    </Box>
   );
 }
