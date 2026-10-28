@@ -302,7 +302,7 @@ class BackupTrackTest
 		restore(zip(entries)).statusCode(200).body("trackPoints", is(2));
 		given().queryParam("from", START.minusHours(3).toString()).queryParam("to", START.toString())
 				.when().get("/api/track/{carId}", restoredCar()).then().body("points", is(1))
-				.body("segments[0][0].ts", is("2026-10-20T06:00:00.5Z"));
+				.body("segments[0].start", is("2026-10-20T06:00:00.5Z"));
 	}
 
 	@Test

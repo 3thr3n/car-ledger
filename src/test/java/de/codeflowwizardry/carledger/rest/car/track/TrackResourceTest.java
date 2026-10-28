@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -131,9 +132,10 @@ class TrackResourceTest
 	}
 
 	@Test
-	void shouldSimplifyTheTrack()
+	void shouldSimplifyTheTrackCompact()
 	{
-		drive(0, 101, 50);
+		// 1 km straight to the north at 36 km/h: its two ends are enough
+		line(0, 0, 1000);
 
 		given()
 				.pathParam("carId", carId)
@@ -145,11 +147,37 @@ class TrackResourceTest
 				.statusCode(200)
 				.body("points", is(101))
 				.body("segments", hasSize(1))
-				.body("segments[0]", hasSize(2))
-				.body("segments[0][0].ts", is("2026-10-20T08:00:00Z"))
-				.body("segments[0][1].ts", is("2026-10-20T08:01:40Z"))
-				.body("segments[0][0].speed", is(50.0f))
-				.body("segments[0][0].lat", is(50.0f));
+				.body("segments[0].start", is("2026-10-20T08:00:00Z"))
+				// lon, lat, seconds since the start, km/h
+				.body("segments[0].points", hasSize(2))
+				.body("segments[0].points[0]", contains(10.0f, 50.0f, 0.0f, 36.0f))
+				.body("segments[0].points[1][2]", is(100.0f));
+	}
+
+	@Test
+	void shouldKeepWhatIsMoreThanAMeterOff()
+	{
+		// the zigzag of 3 m is more than the tolerance of 1 m: the map simplifies by
+		// its zoom
+		drive(0, 101, 50);
+
+		range().when().get().then().body("segments[0].points", hasSize(101));
+	}
+
+	@Test
+	void shouldCompressTheTrack()
+	{
+		drive(0, 101, 50);
+
+		range().header("Accept-Encoding", "gzip").when().get().then()
+				.statusCode(200)
+				.header("Content-Encoding", "gzip");
+		range().header("Accept-Encoding", "gzip").when().get("frequency").then()
+				.header("Content-Encoding", "gzip");
+		// not the other answers, e.g. of a new token
+		given().basePath("/").header("Accept-Encoding", "gzip").when().get("api/tracker/" + carId).then()
+				.statusCode(200)
+				.header("Content-Encoding", nullValue());
 	}
 
 	@Test
@@ -187,9 +215,9 @@ class TrackResourceTest
 				.statusCode(200)
 				.body("points", is(33))
 				.body("segments", hasSize(2))
-				.body("segments[0][0].ts", is("2026-10-20T08:00:00Z"))
-				.body("segments[0][-1].ts", is("2026-10-20T08:05:20Z"))
-				.body("segments[1][0].ts", is("2026-10-20T08:10:21Z"))
+				.body("segments[0].start", is("2026-10-20T08:00:00Z"))
+				.body("segments[0].points[-1][2]", is(320.0f))
+				.body("segments[1].start", is("2026-10-20T08:10:21Z"))
 				// first segment: 2 x 104.4 m and the 3 km during the 5 minutes, second: 104.4
 				// m; not the 3 km of the gap
 				.body("distance", is(3.31f));
@@ -209,8 +237,8 @@ class TrackResourceTest
 				.then()
 				.statusCode(200)
 				.body("points", is(5))
-				.body("segments[0][0].ts", is("2026-10-20T08:00:05Z"))
-				.body("segments[0][-1].ts", is("2026-10-20T08:00:09Z"));
+				.body("segments[0].start", is("2026-10-20T08:00:05Z"))
+				.body("segments[0].points[-1][2]", is(4.0f));
 	}
 
 	@Test
@@ -367,8 +395,8 @@ class TrackResourceTest
 		tripTrack(id)
 				.statusCode(200)
 				.body("points", is(41))
-				.body("segments[0][0].ts", is("2026-10-20T08:00:10Z"))
-				.body("segments[0][-1].ts", is("2026-10-20T08:00:50Z"))
+				.body("segments[0].start", is("2026-10-20T08:00:10Z"))
+				.body("segments[0].points[-1][2]", is(40.0f))
 				.body("distance", is(0.42f));
 	}
 
@@ -646,8 +674,10 @@ class TrackResourceTest
 		range().queryParam("drive", back).when().get().then()
 				.statusCode(200)
 				.body("segments.size()", is(1))
-				.body("segments[0][0].ts", is(back.split("/")[0]))
-				.body("segments[0][-1].ts", is(back.split("/")[1]))
+				.body("segments[0].start", is(back.split("/")[0]))
+				.body("segments[0].points[-1][2]", is((float) Duration
+						.between(OffsetDateTime.parse(back.split("/")[0]), OffsetDateTime.parse(back.split("/")[1]))
+						.toSeconds()))
 				.body("distance", is(0.97f));
 		// both: each a segment of its own
 		range().queryParam("drive", back).queryParam("drive", drive(1)).when().get().then()

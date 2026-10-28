@@ -17,6 +17,7 @@ import de.codeflowwizardry.carledger.tracker.Places;
 import de.codeflowwizardry.carledger.tracker.Selection;
 import de.codeflowwizardry.carledger.tracker.TrackRetention;
 import de.codeflowwizardry.carledger.tracker.TrackService;
+import io.quarkus.vertx.http.Compressed;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -42,8 +43,9 @@ public class TrackResource extends AbstractResource
 	}
 
 	@GET
+	@Compressed
 	@Produces(MediaType.APPLICATION_JSON)
-	@Operation(operationId = "getTrack", description = "GPS track of a car in a time range of at most 31 days, simplified for the map and split into segments at gaps of more than 5 minutes, and between the selected drives.")
+	@Operation(operationId = "getTrack", description = "GPS track of a car in a time range of at most 31 days, on the shared line of repeated drives, simplified with 1 m (the map simplifies further by its zoom), split into segments at gaps of more than 5 minutes and between the selected drives. Compact: each point is [lon, lat, seconds since the start of its segment, speed].")
 	@APIResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = Track.class)))
 	@APIResponse(responseCode = "400", description = "Range missing, empty or too long", content = @Content(schema = @Schema(implementation = List.class)))
 	@APIResponse(responseCode = "404", description = "Car is not for your user.")
@@ -56,6 +58,7 @@ public class TrackResource extends AbstractResource
 	}
 
 	@GET
+	@Compressed
 	@Path("frequency")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "getTrackFrequency", description = "How often the car passed the roads of its GPS track in a time range of at most 31 days, both directions: the track cut into lines where the amount changes, simplified for the map.")

@@ -1,6 +1,7 @@
 package de.codeflowwizardry.carledger.rest.car.trip;
 
 import io.quarkus.security.identity.SecurityIdentity;
+import io.quarkus.vertx.http.Compressed;
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
@@ -113,6 +114,7 @@ public class TripResource extends AbstractResource
 	}
 
 	@GET
+	@Compressed
 	@Path("{id}/track")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "getTripTrack", description = "GPS track during the trip (until now while it is open), also of a deleted trip. Only a hint next to the odometers, without points the segments are empty.")

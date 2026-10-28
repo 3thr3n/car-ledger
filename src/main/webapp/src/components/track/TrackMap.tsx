@@ -16,11 +16,12 @@ import type { FeatureCollection } from 'geojson';
 import 'maplibre-gl/dist/maplibre-gl.css';
 // the worker as a file of this origin: the CSP allows no workers from blob:
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Place, Track, TrackFrequency } from '@/generated';
 import { useFormat } from '@/utils/format';
-import { speedColor, trackEnds, trackPieces } from './speedScale';
+import { speedColor, trackBands, trackEnds } from './speedScale';
+import { decodeTrack, MapPoint, nearestPoint } from './trackData';
 import {
   frequencyColor,
   frequencyLines,
@@ -99,15 +100,11 @@ const EMPTY: FeatureCollection = {
 };
 
 /** draws the track and zooms to it */
-function showTrack(map: MapLibreMap, track: Track) {
-  (map.getSource('track') as GeoJSONSource).setData(
-    trackPieces(track.segments),
-  );
-  (map.getSource('ends') as GeoJSONSource).setData(trackEnds(track.segments));
+function showTrack(map: MapLibreMap, segments: MapPoint[][]) {
+  (map.getSource('track') as GeoJSONSource).setData(trackBands(segments));
+  (map.getSource('ends') as GeoJSONSource).setData(trackEnds(segments));
   const bounds = new LngLatBounds();
-  track.segments
-    .flat()
-    .forEach((point) => bounds.extend([point.lon, point.lat]));
+  segments.flat().forEach((point) => bounds.extend([point.lon, point.lat]));
   if (!bounds.isEmpty()) {
     map.fitBounds(bounds, { padding: 40, maxZoom: 16, duration: 0 });
   }
@@ -115,7 +112,7 @@ function showTrack(map: MapLibreMap, track: Track) {
 
 /** the points of the track from start to end, as lines */
 function highlightLines(
-  track: Track,
+  segments: MapPoint[][],
   highlight?: { start: string; end: string },
 ): FeatureCollection {
   if (!highlight) return EMPTY;
@@ -123,7 +120,7 @@ function highlightLines(
   const end = Date.parse(highlight.end);
   return {
     type: 'FeatureCollection',
-    features: track.segments
+    features: segments
       .map((segment) =>
         segment.filter((point) => {
           const ts = Date.parse(point.ts);
@@ -254,8 +251,10 @@ export default function TrackMap({
   const container = useRef<HTMLDivElement>(null);
   /** set once the style and the layers are loaded */
   const map = useRef<MapLibreMap>(null);
-  const trackRef = useRef(track);
-  trackRef.current = track;
+  // the server sends it compact
+  const segments = useMemo(() => decodeTrack(track), [track]);
+  const segmentsRef = useRef(segments);
+  segmentsRef.current = segments;
   const frequencyRef = useRef(frequency);
   frequencyRef.current = frequency;
   // the handlers of the map are registered once, they read the current format
@@ -360,21 +359,48 @@ export default function TrackMap({
         frequencyWidth(0),
       );
       map.current = instance;
-      showTrack(instance, trackRef.current);
+      showTrack(instance, segmentsRef.current);
       showFrequency(instance, frequencyRef.current);
       (instance.getSource('highlight') as GeoJSONSource).setData(
-        highlightLines(trackRef.current, highlightRef.current),
+        highlightLines(segmentsRef.current, highlightRef.current),
       );
       setReady(true);
     });
 
-    const show = (event: MapLayerMouseEvent) => {
+    /**
+     * The point under the pointer: a line of the track has many, an end is
+     * one
+     */
+    const pointAt = (event: MapLayerMouseEvent) => {
       const feature = event.features?.[0];
-      if (!feature) return;
-      const { ts, speed } = feature.properties as {
-        ts: string;
-        speed: number | null;
+      if (!feature) return undefined;
+      const properties = feature.properties as {
+        seg?: number;
+        from?: number;
+        to?: number;
+        ts?: string;
+        speed?: number | null;
       };
+      if (properties.seg === undefined) {
+        return properties.ts
+          ? { ts: properties.ts, speed: properties.speed ?? null }
+          : undefined;
+      }
+      const segment = segmentsRef.current[properties.seg];
+      return segment
+        ? nearestPoint(
+            segment,
+            properties.from ?? 0,
+            properties.to ?? segment.length - 1,
+            event.lngLat.lng,
+            event.lngLat.lat,
+          )
+        : undefined;
+    };
+    const show = (event: MapLayerMouseEvent) => {
+      const point = pointAt(event);
+      if (!point) return;
+      const { ts, speed } = point;
       const { units } = formatRef.current;
       const speedText =
         typeof speed === 'number'
@@ -423,8 +449,8 @@ export default function TrackMap({
     }
     // picks the drive of the line
     instance.on('click', 'track-hit', (event) => {
-      const ts = event.features?.[0]?.properties.ts as string | undefined;
-      if (ts) onTrackClickRef.current?.(ts);
+      const point = pointAt(event);
+      if (point) onTrackClickRef.current?.(point.ts);
     });
     instance.on('click', (event) => {
       const hit = instance.queryRenderedFeatures(event.point, {
@@ -474,8 +500,8 @@ export default function TrackMap({
   }, [ready, places, t, format]);
 
   useEffect(() => {
-    if (map.current) showTrack(map.current, track);
-  }, [track]);
+    if (map.current) showTrack(map.current, segments);
+  }, [segments]);
 
   useEffect(() => {
     fullscreenToggle.current?.show(
@@ -490,9 +516,9 @@ export default function TrackMap({
 
   useEffect(() => {
     (map.current?.getSource('highlight') as GeoJSONSource | undefined)?.setData(
-      highlightLines(track, highlight),
+      highlightLines(segments, highlight),
     );
-  }, [track, highlight]);
+  }, [segments, highlight]);
 
   return (
     <Box

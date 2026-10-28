@@ -2181,10 +2181,7 @@
           "segments" : {
             "type" : "array",
             "items" : {
-              "type" : "array",
-              "items" : {
-                "$ref" : "#/components/schemas/TrackPoint"
-              }
+              "$ref" : "#/components/schemas/TrackSegment"
             }
           },
           "distance" : {
@@ -2237,34 +2234,32 @@
           }
         }
       },
-      "TrackPoint" : {
-        "type" : "object",
-        "required" : [ "ts", "lat", "lon" ],
-        "properties" : {
-          "ts" : {
-            "type" : "string",
-            "$ref" : "#/components/schemas/OffsetDateTime"
-          },
-          "lat" : {
-            "type" : "number",
-            "format" : "double"
-          },
-          "lon" : {
-            "type" : "number",
-            "format" : "double"
-          },
-          "speed" : {
-            "type" : "number",
-            "format" : "double"
-          }
-        }
-      },
       "TrackRetentionInput" : {
         "type" : "object",
         "properties" : {
           "days" : {
             "type" : "integer",
             "format" : "int32"
+          }
+        }
+      },
+      "TrackSegment" : {
+        "type" : "object",
+        "required" : [ "start", "points" ],
+        "properties" : {
+          "start" : {
+            "type" : "string",
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          },
+          "points" : {
+            "type" : "array",
+            "items" : {
+              "type" : "array",
+              "items" : {
+                "type" : "number",
+                "format" : "double"
+              }
+            }
           }
         }
       },
@@ -6885,7 +6880,7 @@
     },
     "/api/track/{carId}" : {
       "get" : {
-        "description" : "GPS track of a car in a time range of at most 31 days, simplified for the map and split into segments at gaps of more than 5 minutes, and between the selected drives.",
+        "description" : "GPS track of a car in a time range of at most 31 days, on the shared line of repeated drives, simplified with 1 m (the map simplifies further by its zoom), split into segments at gaps of more than 5 minutes and between the selected drives. Compact: each point is [lon, lat, seconds since the start of its segment, speed].",
         "operationId" : "getTrack",
         "parameters" : [ {
           "name" : "carId",

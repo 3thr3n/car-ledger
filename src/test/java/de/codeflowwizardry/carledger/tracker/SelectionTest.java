@@ -45,7 +45,6 @@ class SelectionTest
 		assertSame(Selection.ALL, Selection.of(null));
 		assertSame(Selection.ALL, Selection.of(List.of()));
 		assertEquals(List.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), run(Selection.ALL));
-		assertEquals(Duration.ofDays(3), Selection.ALL.span(Duration.ofDays(3)));
 	}
 
 	@Test
@@ -55,7 +54,6 @@ class SelectionTest
 		Selection selection = Selection.of(List.of(drive(6, 8), drive(1, 2), drive(3, 4)));
 
 		assertEquals(List.of(1, 2, -1, 3, 4, -1, 6, 7, 8), run(selection));
-		assertEquals(Duration.ofSeconds(7), selection.span(Duration.ofDays(3)));
 	}
 
 	@Test
@@ -66,6 +64,6 @@ class SelectionTest
 		assertThrows(BadRequestException.class, () -> Selection.of(List.of(drive(5, 4))));
 		assertThrows(BadRequestException.class,
 				() -> Selection.of(Collections.nCopies(Selection.MAX + 1, drive(0, 1))));
-		assertTrue(Selection.of(Collections.nCopies(Selection.MAX, drive(0, 1))).span(Duration.ZERO).isPositive());
+		assertTrue(!Selection.of(Collections.nCopies(Selection.MAX, drive(0, 1))).isAll());
 	}
 }

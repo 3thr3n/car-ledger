@@ -1,6 +1,5 @@
 package de.codeflowwizardry.carledger.tracker;
 
-import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
@@ -80,20 +79,6 @@ public final class Selection
 	public boolean isAll()
 	{
 		return ranges.isEmpty();
-	}
-
-	/**
-	 * @return from the start of the first drive to the end of the last, the whole
-	 *         range for all points
-	 */
-	Duration span(Duration whole)
-	{
-		if (isAll())
-		{
-			return whole;
-		}
-		OffsetDateTime end = ranges.stream().map(Range::end).max(Comparator.naturalOrder()).orElseThrow();
-		return Duration.between(ranges.getFirst().start(), end);
 	}
 
 	/**
