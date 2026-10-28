@@ -65,19 +65,23 @@ test.describe.serial('car access', () => {
 
   test('bob sees the invitation in his notifications', async () => {
     await bob.goto('/dashboard');
-    const badge = bob.getByLabel('1 unread notification');
-    await expect(badge.first()).toBeVisible();
+    // other tests invited bob before: his inbox isn't empty
+    await expect(
+      bob.getByLabel(/unread notifications?$/).first(),
+    ).toBeVisible();
 
     await bob.getByRole('link', { name: /^Notifications/ }).click();
-    const entry = bob.getByTestId('inbox-entry');
+    const entry = bob
+      .getByTestId('inbox-entry')
+      .filter({ hasText: 'alice shares the car "E2E Up" with you' });
     await expect(entry).toHaveCount(1);
-    await expect(entry).toContainText('alice shares the car "E2E Up" with you');
     await expect(entry).toHaveAttribute('data-unread', 'true');
 
     // opens the garage to answer, and is read
     await entry.getByRole('button').first().click();
     await expect(bob).toHaveURL(/\/car$/);
-    await expect(bob.getByLabel('1 unread notification')).toHaveCount(0);
+    await bob.goBack();
+    await expect(entry).toHaveAttribute('data-unread', 'false');
   });
 
   test('bob sees the car only after accepting', async () => {
