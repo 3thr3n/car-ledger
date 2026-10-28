@@ -1,5 +1,6 @@
 import {
   Alert,
+  Box,
   Button,
   FormControlLabel,
   IconButton,
@@ -23,6 +24,7 @@ import {
   deleteTracksMutation,
   getMapSettingsOptions,
   getPlacesOptions,
+  getTrackDrivesOptions,
   getTrackFrequencyOptions,
   getTrackOptions,
 } from '@/generated/@tanstack/react-query.gen';
@@ -45,22 +47,58 @@ import {
   shortcutOf,
 } from '@/components/track/periods';
 import useFullscreen, { fullscreenSx } from '@/components/track/useFullscreen';
-import { Place } from '@/generated';
+import DriveList from '@/components/track/DriveList';
+import { deleteRange, driveAt, interval } from '@/components/track/drives';
+import { Place, TrackDrive } from '@/generated';
 
 /** the server returns at most this many days */
 export const MAX_DAYS = 31;
 
 type Mode = 'speed' | 'frequency';
 
+/** in the URL, so a reload or a shared link shows the same */
+export interface TrackSearch {
+  /** yyyy-MM-dd, both or the last days */
+  from?: string;
+  to?: string;
+  /** the starts of the selected drives, all without */
+  drives?: string[];
+}
+
 /**
  * The GPS tracks of the car on a day or in a period, in the local time zone
- * of the device
+ * of the device, all of them or the drives picked from the list
  */
-export default function TrackPage({ carId }: { carId: number }) {
+export default function TrackPage({
+  carId,
+  search,
+  onSearchChange,
+}: {
+  carId: number;
+  search: TrackSearch;
+  onSearchChange: (search: TrackSearch) => void;
+}) {
   const { t } = useTranslation();
   const format = useFormat();
   // the last days by default: a drive yesterday evening still shows
-  const [range, setRange] = useState<Range>(() => rangeOf('last3'));
+  const [range, setRangeState] = useState<Range>(() =>
+    search.from && search.to
+      ? { from: search.from, to: search.to }
+      : rangeOf('last3'),
+  );
+  const selected = search.drives ?? [];
+  /** another period, the selection of the old one is gone */
+  const setRange = (next: Range) => {
+    setRangeState(next);
+    // while one of the fields is being typed, the URL keeps the last period
+    if (next.from && next.to) onSearchChange({ from: next.from, to: next.to });
+  };
+  const select = (drives: string[]) =>
+    onSearchChange({
+      from: range.from,
+      to: range.to,
+      drives: drives.length ? drives : undefined,
+    });
 
   const { data: settings } = useQuery(
     getMapSettingsOptions({ client: localClient }),
@@ -82,14 +120,35 @@ export default function TrackPage({ carId }: { carId: number }) {
   const [mode, setMode] = useState<Mode>('speed');
   const [showPlaces, setShowPlaces] = useState(false);
   const [toName, setToName] = useState<Place>();
+  const [hovered, setHovered] = useState<TrackDrive>();
+  const [toDelete, setToDelete] = useState<TrackDrive>();
 
-  const { data: track, isPlaceholderData } = useQuery({
-    ...getTrackOptions({
+  const { data: drives } = useQuery({
+    ...getTrackDrivesOptions({
       client: localClient,
       path: { carId },
       query: period,
     }),
     enabled: valid && !!settings?.styleUrl,
+  });
+  // drives of a link that aren't there anymore, e.g. deleted, don't count
+  const selectedDrives = (drives ?? []).filter((drive) =>
+    selected.includes(drive.start),
+  );
+  const selection = {
+    ...period,
+    drive: selectedDrives.length ? selectedDrives.map(interval) : undefined,
+  };
+  // the selection needs the ends of its drives
+  const ready = valid && !!settings?.styleUrl && (!selected.length || !!drives);
+
+  const { data: track, isPlaceholderData } = useQuery({
+    ...getTrackOptions({
+      client: localClient,
+      path: { carId },
+      query: selection,
+    }),
+    enabled: ready,
     // the old track stays on the map while the next one loads
     placeholderData: keepPreviousData,
   });
@@ -98,9 +157,9 @@ export default function TrackPage({ carId }: { carId: number }) {
     ...getTrackFrequencyOptions({
       client: localClient,
       path: { carId },
-      query: period,
+      query: selection,
     }),
-    enabled: mode === 'frequency' && valid && !!settings?.styleUrl,
+    enabled: mode === 'frequency' && ready,
     placeholderData: keepPreviousData,
   });
 
@@ -122,6 +181,29 @@ export default function TrackPage({ carId }: { carId: number }) {
     },
     onError: (e) => toast.error(errorMessage(e, t('errors.backend'))),
   });
+
+  const removeDrive = useMutation({
+    ...deleteTracksMutation({ client: localClient }),
+    onSuccess: async ({ points }, { query }) => {
+      toast.success(t('track.drives.deleted', { count: points }));
+      select(selected.filter((start) => start !== query?.from));
+      await invalidateCar(carId);
+    },
+    onError: (e) => toast.error(errorMessage(e, t('errors.backend'))),
+  });
+
+  const toggleDrive = (drive: TrackDrive) =>
+    select(
+      selected.includes(drive.start)
+        ? selected.filter((start) => start !== drive.start)
+        : [...selected, drive.start],
+    );
+
+  /** a click on the track picks its drive */
+  const pick = (ts: string) => {
+    const drive = driveAt(drives ?? [], ts);
+    if (drive && !selected.includes(drive.start)) toggleDrive(drive);
+  };
 
   const shown =
     days === 1
@@ -249,6 +331,8 @@ export default function TrackPage({ carId }: { carId: number }) {
             }
             places={showPlaces ? places : undefined}
             onPlaceClick={role('WRITE') ? setToName : undefined}
+            highlight={hovered}
+            onTrackClick={pick}
             fill={fullscreen}
             fullscreen={fullscreen}
             onFullscreen={toggle}
@@ -305,6 +389,18 @@ export default function TrackPage({ carId }: { carId: number }) {
             )}
         </Stack>
       </Stack>
+      {drives && valid && (
+        <Box sx={{ mt: 3 }}>
+          <DriveList
+            drives={drives}
+            selected={selectedDrives.map((drive) => drive.start)}
+            onToggle={toggleDrive}
+            onShowAll={() => select([])}
+            onHover={setHovered}
+            onDelete={role('MANAGE') ? setToDelete : undefined}
+          />
+        </Box>
+      )}
       <PlaceDialog
         carId={carId}
         place={toName}
@@ -317,6 +413,26 @@ export default function TrackPage({ carId }: { carId: number }) {
         confirmLabel={t('track.deletePeriod')}
         onClose={() => setDeleting(false)}
         onConfirm={() => remove.mutate({ path: { carId }, query: period })}
+      />
+      <ConfirmDialog
+        open={!!toDelete}
+        title={t('track.drives.deleteTitle', {
+          drive: toDelete
+            ? `${format.date(toDelete.start)}, ${format.time(toDelete.start)} – ${format.time(toDelete.end)}`
+            : '',
+        })}
+        text={t('track.drives.deleteText', {
+          distance: format.distance(toDelete?.distance, 1),
+        })}
+        confirmLabel={t('track.drives.delete')}
+        onClose={() => setToDelete(undefined)}
+        onConfirm={() =>
+          toDelete &&
+          removeDrive.mutate({
+            path: { carId },
+            query: deleteRange(drives ?? [], toDelete, period.to),
+          })
+        }
       />
     </Section>
   );

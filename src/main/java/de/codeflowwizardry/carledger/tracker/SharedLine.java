@@ -74,7 +74,7 @@ final class SharedLine
 	/** first run: sums the samples of the piece to the point */
 	void add(TrackPoint point)
 	{
-		if (previous == null)
+		if (cosLat == 0)
 		{
 			lat0 = point.lat();
 			lon0 = point.lon();
@@ -97,6 +97,12 @@ final class SharedLine
 			}
 		}
 		previous = point;
+	}
+
+	/** the next point isn't connected to the one before, e.g. another drive */
+	void cut()
+	{
+		previous = null;
 	}
 
 	/**

@@ -342,3 +342,106 @@ test.describe.serial('GPS track', () => {
     await expect(page.getByText('No track in this period.')).toHaveCount(0);
   });
 });
+
+test.describe.serial('Drives of the GPS track', () => {
+  let page: Page;
+  let carId: number;
+
+  /** 80 points, 10 m per second to the north or back */
+  const drive = (start: number, north: boolean) =>
+    Array.from({ length: 80 }, (_, i) => ({
+      ts: new Date(start + i * 1000).toISOString(),
+      lat: 50 + (north ? i : 79 - i) * 10 * LAT_PER_METER,
+      lon: 10,
+      speed: 36,
+    }));
+
+  test.beforeAll(async ({ browser }) => {
+    await deleteAllCars();
+    const api = await aliceApi();
+    await api.put('/api/car/my', {
+      data: { name: 'E2E Golf', year: 2021, odometer: 1000 },
+    });
+    carId = (
+      (await (await api.get('/api/car/my')).json()) as { id: number }[]
+    )[0].id;
+    const tracker = await api.put(`/api/tracker/${carId}`, {
+      data: { name: 'ESP32' },
+    });
+    const { token } = (await tracker.json()) as { token: string };
+    await api.dispose();
+
+    // there and back an hour later, the tracker off in between
+    const device = await request.newContext({ baseURL: API_URL });
+    const sent = await device.post('/api/device/points', {
+      headers: { Authorization: `Bearer ${token}` },
+      data: [
+        ...drive(Date.now() - 2 * 3600_000, true),
+        ...drive(Date.now() - 3600_000, false),
+      ],
+    });
+    expect(sent.status()).toBe(200);
+    await device.dispose();
+    page = await browser.newPage();
+  });
+
+  test.afterAll(async () => {
+    await page.close();
+    await deleteAllCars();
+  });
+
+  test('lists the drives and shows only the selected ones', async () => {
+    await page.goto(`/car/${carId}/track`);
+    const list = page.getByTestId('track-drives');
+    await expect(list).toContainText('2 drives');
+    await expect(
+      page.getByText('1.6 km GPS distance in 2 sections'),
+    ).toBeVisible();
+
+    // the newest first
+    const drives = list.getByTestId('track-drive');
+    await expect(drives).toHaveCount(2);
+    await drives.first().getByRole('checkbox').click();
+
+    await expect(list).toContainText('1 of 2 drives shown');
+    await expect(
+      page.getByText('0.7 km GPS distance in 1 section'),
+    ).toBeVisible();
+    await expect(page).toHaveURL(/drives=/);
+    await expect(drives.first().getByRole('checkbox')).toBeChecked();
+  });
+
+  test('keeps the selection on a reload', async () => {
+    await page.reload();
+
+    const list = page.getByTestId('track-drives');
+    await expect(list).toContainText('1 of 2 drives shown');
+    await expect(
+      page.getByText('0.7 km GPS distance in 1 section'),
+    ).toBeVisible();
+
+    await list.getByRole('button', { name: 'Show all' }).click();
+    await expect(list).toContainText('2 drives');
+    await expect(page).not.toHaveURL(/drives=/);
+    await expect(
+      page.getByText('1.6 km GPS distance in 2 sections'),
+    ).toBeVisible();
+  });
+
+  test('deletes a single drive', async () => {
+    const list = page.getByTestId('track-drives');
+    await list
+      .getByTestId('track-drive')
+      .last()
+      .getByRole('button', { name: /^Delete the drive/ })
+      .click();
+
+    const dialog = page.getByRole('dialog', { name: /^Delete the drive of/ });
+    await expect(dialog).toContainText('0.7 km');
+    await dialog.getByRole('button', { name: 'Delete drive' }).click();
+
+    await expect(page.getByText(/points deleted/)).toBeVisible();
+    await expect(list).toContainText('1 drive');
+    await expect(list.getByTestId('track-drive')).toHaveCount(1);
+  });
+});

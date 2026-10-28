@@ -2191,6 +2191,30 @@
           }
         }
       },
+      "TrackDrive" : {
+        "type" : "object",
+        "required" : [ "start", "end", "distance" ],
+        "properties" : {
+          "start" : {
+            "type" : "string",
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          },
+          "end" : {
+            "type" : "string",
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          },
+          "distance" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "from" : {
+            "type" : "string"
+          },
+          "to" : {
+            "type" : "string"
+          }
+        }
+      },
       "TrackFrequency" : {
         "type" : "object",
         "required" : [ "lines", "maxPasses" ],
@@ -6806,7 +6830,7 @@
     },
     "/api/track/{carId}" : {
       "get" : {
-        "description" : "GPS track of a car in a time range of at most 31 days, simplified for the map and split into segments at gaps of more than 5 minutes.",
+        "description" : "GPS track of a car in a time range of at most 31 days, simplified for the map and split into segments at gaps of more than 5 minutes, and between the selected drives.",
         "operationId" : "getTrack",
         "parameters" : [ {
           "name" : "carId",
@@ -6815,6 +6839,16 @@
           "schema" : {
             "type" : "integer",
             "format" : "int64"
+          }
+        }, {
+          "description" : "Only these drives, each start/end (ISO-8601, both inclusive) as listed by the drives; all without",
+          "name" : "drive",
+          "in" : "query",
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
           }
         }, {
           "description" : "Start of the range, inclusive",
@@ -6918,6 +6952,68 @@
         "tags" : [ "Track Resource" ]
       }
     },
+    "/api/track/{carId}/drives" : {
+      "get" : {
+        "description" : "The drives of the GPS track in a time range of at most 31 days, newest first: a drive ends where the car stood for more than 5 minutes, also with the tracker on. With the names of the named places at its start and end.",
+        "operationId" : "getTrackDrives",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "description" : "Start of the range, inclusive",
+          "required" : true,
+          "name" : "from",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          }
+        }, {
+          "description" : "End of the range, exclusive",
+          "required" : true,
+          "name" : "to",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Drives found.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/TrackDrive"
+                  }
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Range missing, empty or too long",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Car is not for your user."
+          }
+        },
+        "summary" : "Get Track Drives",
+        "tags" : [ "Track Resource" ]
+      }
+    },
     "/api/track/{carId}/frequency" : {
       "get" : {
         "description" : "How often the car passed the roads of its GPS track in a time range of at most 31 days, both directions: the track cut into lines where the amount changes, simplified for the map.",
@@ -6929,6 +7025,16 @@
           "schema" : {
             "type" : "integer",
             "format" : "int64"
+          }
+        }, {
+          "description" : "Only these drives, each start/end (ISO-8601, both inclusive) as listed by the drives; all without",
+          "name" : "drive",
+          "in" : "query",
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
           }
         }, {
           "description" : "Start of the range, inclusive",
