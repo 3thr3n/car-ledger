@@ -55,7 +55,8 @@ final class DriveDetector
 	/**
 	 * @param from
 	 *            the points start at this time; no point for a stop before the
-	 *            first one is a stop as well
+	 *            first one is a stop as well. <code>null</code> to count a drive
+	 *            already on the road at the first point, from there.
 	 */
 	DriveDetector(Duration stop, double minMeters, Duration minDuration, OffsetDateTime from)
 	{
@@ -70,7 +71,7 @@ final class DriveDetector
 		if (anchor == null)
 		{
 			anchor = point;
-			stopped = longerThanStop(from, point.ts());
+			stopped = from == null || longerThanStop(from, point.ts());
 		} else if (longerThanStop(previous.ts(), point.ts()))
 		{
 			// the tracker was off, the car parked

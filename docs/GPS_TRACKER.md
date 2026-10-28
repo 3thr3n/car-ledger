@@ -236,6 +236,26 @@ within 75 m of a named one renames that one. The named places are part of the ba
 | `PUT /api/track/{carId}/places/{id}` `{"name"}`        | 204, renames it                                                               |
 | `DELETE /api/track/{carId}/places/{id}`                | 204, removes the name                                                         |
 
+## Drives
+
+Below the map, the drives of the period are listed by day, newest first, with their times, duration, distance and the
+named places at both ends. A drive is found like a visit of a [place](#places): from a stop to the next (longer than
+`carledger.tracker.stop`, also with the tracker on), at least 200 m and 1 minute; one already on the road at the start
+of the period starts there. Picking drives shows only them on the map and zooms to them, the speeds and the frequency
+included; *Show all* goes back. Hovering a drive in the list highlights it on the map, a click on the track picks its
+drive. The period and the picked drives are part of the URL, so a reload or a link shows the same.
+
+The owner deletes a single drive, e.g. a broken one: its points and those of the stop after it, up to the start of the
+next drive (or the end of the period). Only the points of the drive would leave the stops before and after it, minutes
+apart after a short drive, and the map would join them with a straight line, a drive again. The other drives, the
+places and the trips stay.
+
+| Request                                                      | Answer                                                           |
+|--------------------------------------------------------------|------------------------------------------------------------------|
+| `GET /api/track/{carId}/drives?from=…&to=…`                  | the drives with `start`, `end`, `distance` (km), `from` and `to` |
+| `GET /api/track/{carId}?from=…&to=…&drive=start/end&drive=…` | the track of only these drives, each a segment of its own        |
+| `GET /api/track/{carId}/frequency?…&drive=start/end`         | the passes of only these drives                                  |
+
 ## Not in the OpenAPI spec
 
 `/api/device/**` isn't part of `openapi.json` and the generated client of the frontend: the package

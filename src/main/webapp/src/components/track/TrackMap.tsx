@@ -37,6 +37,10 @@ export interface TrackMapProps {
   /** the places the car stops at often, as markers */
   places?: Place[];
   onPlaceClick?: (place: Place) => void;
+  /** a drive of the track drawn wider underneath, e.g. hovered in the list */
+  highlight?: { start: string; end: string };
+  /** a click on the track, with the time of the point there */
+  onTrackClick?: (ts: string) => void;
   height?: number;
   /** takes the height left in its column instead, e.g. in fullscreen */
   fill?: boolean;
@@ -107,6 +111,35 @@ function showTrack(map: MapLibreMap, track: Track) {
   if (!bounds.isEmpty()) {
     map.fitBounds(bounds, { padding: 40, maxZoom: 16, duration: 0 });
   }
+}
+
+/** the points of the track from start to end, as lines */
+function highlightLines(
+  track: Track,
+  highlight?: { start: string; end: string },
+): FeatureCollection {
+  if (!highlight) return EMPTY;
+  const start = Date.parse(highlight.start);
+  const end = Date.parse(highlight.end);
+  return {
+    type: 'FeatureCollection',
+    features: track.segments
+      .map((segment) =>
+        segment.filter((point) => {
+          const ts = Date.parse(point.ts);
+          return ts >= start && ts <= end;
+        }),
+      )
+      .filter((points) => points.length > 1)
+      .map((points) => ({
+        type: 'Feature',
+        properties: {},
+        geometry: {
+          type: 'LineString',
+          coordinates: points.map((point) => [point.lon, point.lat]),
+        },
+      })),
+  };
 }
 
 /** of the white outline under a line, wider on each side */
@@ -209,6 +242,8 @@ export default function TrackMap({
   frequency,
   places,
   onPlaceClick,
+  highlight,
+  onTrackClick,
   height = 480,
   fill = false,
   onFullscreen,
@@ -230,6 +265,10 @@ export default function TrackMap({
   tRef.current = t;
   const onPlaceClickRef = useRef(onPlaceClick);
   onPlaceClickRef.current = onPlaceClick;
+  const onTrackClickRef = useRef(onTrackClick);
+  onTrackClickRef.current = onTrackClick;
+  const highlightRef = useRef(highlight);
+  highlightRef.current = highlight;
   const markers = useRef<Marker[]>([]);
   const onFullscreenRef = useRef(onFullscreen);
   onFullscreenRef.current = onFullscreen;
@@ -277,6 +316,19 @@ export default function TrackMap({
       instance.addSource('track', { type: 'geojson', data: EMPTY });
       instance.addSource('ends', { type: 'geojson', data: EMPTY });
       instance.addSource('frequency', { type: 'geojson', data: EMPTY });
+      instance.addSource('highlight', { type: 'geojson', data: EMPTY });
+      // underneath the speeds and the frequency
+      instance.addLayer({
+        id: 'highlight-line',
+        type: 'line',
+        source: 'highlight',
+        layout: { 'line-cap': 'round', 'line-join': 'round' },
+        paint: {
+          'line-color': '#22d3ee',
+          'line-width': 16,
+          'line-opacity': 0.7,
+        },
+      });
       addLineLayers(instance, 'track', speedColor, 4);
       instance.addLayer({
         id: 'track-ends',
@@ -310,6 +362,9 @@ export default function TrackMap({
       map.current = instance;
       showTrack(instance, trackRef.current);
       showFrequency(instance, frequencyRef.current);
+      (instance.getSource('highlight') as GeoJSONSource).setData(
+        highlightLines(trackRef.current, highlightRef.current),
+      );
       setReady(true);
     });
 
@@ -366,6 +421,11 @@ export default function TrackMap({
       // touch: tap the track, tap elsewhere to close
       instance.on('click', layer, handler);
     }
+    // picks the drive of the line
+    instance.on('click', 'track-hit', (event) => {
+      const ts = event.features?.[0]?.properties.ts as string | undefined;
+      if (ts) onTrackClickRef.current?.(ts);
+    });
     instance.on('click', (event) => {
       const hit = instance.queryRenderedFeatures(event.point, {
         layers: ['track-hit', 'track-ends', 'frequency-hit'],
@@ -427,6 +487,12 @@ export default function TrackMap({
   useEffect(() => {
     if (map.current) showFrequency(map.current, frequency);
   }, [frequency]);
+
+  useEffect(() => {
+    (map.current?.getSource('highlight') as GeoJSONSource | undefined)?.setData(
+      highlightLines(track, highlight),
+    );
+  }, [track, highlight]);
 
   return (
     <Box

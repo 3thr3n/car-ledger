@@ -67,10 +67,23 @@ final class PassCounter
 		this.shared = shared;
 	}
 
+	/**
+	 * In either run: the next point isn't connected to the one before, e.g.
+	 * another drive
+	 */
+	void cut()
+	{
+		previous = null;
+		if (!segment.isEmpty())
+		{
+			finishSegment();
+		}
+	}
+
 	/** first run: marks the cells of the point and of the piece to it */
 	void count(TrackPoint point)
 	{
-		if (previous == null)
+		if (cosLat == 0)
 		{
 			cosLat = Math.cos(Math.toRadians(point.lat()));
 		}

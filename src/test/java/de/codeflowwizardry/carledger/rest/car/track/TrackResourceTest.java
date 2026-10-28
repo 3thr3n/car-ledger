@@ -527,4 +527,171 @@ class TrackResourceTest
 				.queryParam("to", START.plusHours(1).toString())
 				.when().delete().then().statusCode(404);
 	}
+
+	/** a point every second, 10 m per second to the north or the south */
+	private void line(int start, double fromNorth, double toNorth)
+	{
+		List<TrackPointInput> points = new ArrayList<>();
+		double step = fromNorth < toNorth ? 10 : -10;
+		int second = start;
+		for (double north = fromNorth; step > 0 ? north <= toNorth : north >= toNorth; north += step)
+		{
+			points.add(new TrackPointInput(START.plusSeconds(second++), 50 + north * LAT_PER_METER, 10.0, 36.0,
+					null, null));
+		}
+		QuarkusTransaction.requiringNew().run(() -> trackPointRepository.insert(deviceId, carId, points));
+	}
+
+	/** parked with the tracker on: a point every 10 seconds */
+	private void stand(int start, int seconds, double north)
+	{
+		List<TrackPointInput> points = new ArrayList<>();
+		for (int second = start; second < start + seconds; second += 10)
+		{
+			points.add(new TrackPointInput(START.plusSeconds(second), 50 + north * LAT_PER_METER, 10.0, 0.0, null,
+					null));
+		}
+		QuarkusTransaction.requiringNew().run(() -> trackPointRepository.insert(deviceId, carId, points));
+	}
+
+	/** from home to work, 7 minutes there with the tracker on, and back */
+	private void commute()
+	{
+		line(0, 0, 1000);
+		stand(101, 420, 1000);
+		line(530, 1000, 0);
+		stand(631, 420, 0);
+	}
+
+	private RequestSpecification range()
+	{
+		return given().pathParam("carId", carId)
+				.queryParam("from", START.toString())
+				.queryParam("to", START.plusHours(1).toString());
+	}
+
+	/** start/end of the drive of the list, newest first */
+	private String drive(int index)
+	{
+		Map<String, String> drive = range().when().get("drives").then().extract().jsonPath()
+				.getMap("[" + index + "]");
+		return drive.get("start") + "/" + drive.get("end");
+	}
+
+	@Test
+	void shouldListTheDrivesWithTheNamedPlaces()
+	{
+		commute();
+		for (Object[] place : new Object[][] {
+				{
+						0, "Home"
+				}, {
+						1000, "Work"
+				}
+		})
+		{
+			given().pathParam("carId", carId).contentType(ContentType.JSON)
+					.body(Map.of("lat", 50 + (int) place[0] * LAT_PER_METER, "lon", 10.0, "name", place[1]))
+					.when().put("places").then().statusCode(204);
+		}
+
+		range().when().get("drives").then()
+				.statusCode(200)
+				.body("size()", is(2))
+				// the newest first, the standing at work in between isn't part of a drive
+				.body("[0].from", is("Work"))
+				.body("[0].to", is("Home"))
+				.body("[0].end", is("2026-10-20T08:10:30Z"))
+				.body("[1].from", is("Home"))
+				.body("[1].to", is("Work"))
+				// from the last point within the drift of the GPS
+				.body("[1].start", is("2026-10-20T08:00:03Z"))
+				.body("[1].end", is("2026-10-20T08:01:40Z"))
+				.body("[1].distance", is(0.97f));
+	}
+
+	@Test
+	void shouldListDrivesWithoutNamesAndAtTheEndsOfTheRange()
+	{
+		// already on the road at the start of the range, still on the road at its end
+		line(0, 0, 1000);
+
+		given().pathParam("carId", carId)
+				.queryParam("from", START.plusSeconds(10).toString())
+				.queryParam("to", START.plusSeconds(90).toString())
+				.when().get("drives").then()
+				.statusCode(200)
+				.body("size()", is(1))
+				.body("[0].start", is("2026-10-20T08:00:13Z"))
+				.body("[0].end", is("2026-10-20T08:01:26Z"))
+				.body("[0].from", nullValue());
+	}
+
+	@Test
+	void shouldValidateTheRangeOfTheDrives()
+	{
+		given().pathParam("carId", carId).queryParam("from", START.toString())
+				.when().get("drives").then().statusCode(400);
+		given().pathParam("carId", otherCarId).queryParam("from", START.toString())
+				.queryParam("to", START.plusHours(1).toString())
+				.when().get("drives").then().statusCode(404);
+	}
+
+	@Test
+	void shouldShowOnlyTheSelectedDrives()
+	{
+		commute();
+		String back = drive(0);
+
+		range().queryParam("drive", back).when().get().then()
+				.statusCode(200)
+				.body("segments.size()", is(1))
+				.body("segments[0][0].ts", is(back.split("/")[0]))
+				.body("segments[0][-1].ts", is(back.split("/")[1]))
+				.body("distance", is(0.97f));
+		// both: each a segment of its own
+		range().queryParam("drive", back).queryParam("drive", drive(1)).when().get().then()
+				.body("segments.size()", is(2))
+				.body("distance", is(1.94f));
+	}
+
+	@Test
+	void shouldCountThePassesOfTheSelectedDrives()
+	{
+		commute();
+
+		range().when().get("frequency").then().body("maxPasses", is(2));
+		range().queryParam("drive", drive(1)).when().get("frequency").then().body("maxPasses", is(1));
+	}
+
+	@Test
+	void shouldRejectAnInvalidSelection()
+	{
+		range().queryParam("drive", "yesterday").when().get().then()
+				.statusCode(400)
+				.body("", contains("A drive is start/end, ISO-8601: yesterday"));
+		range().queryParam("drive", START.plusMinutes(1) + "/" + START).when().get("frequency").then()
+				.statusCode(400);
+	}
+
+	@Test
+	void shouldDeleteOnlyTheSelectedDrive()
+	{
+		commute();
+		String[] there = drive(1).split("/");
+		String[] back = drive(0).split("/");
+
+		// as the map deletes a drive: up to the start of the next one, with the stop
+		// after it, else the stops around it would be joined by a straight line
+		given().pathParam("carId", carId)
+				.queryParam("from", there[0])
+				.queryParam("to", back[0])
+				.when().delete().then().statusCode(200);
+
+		// the way back stays; it starts a few seconds later, its stop before is gone
+		range().when().get("drives").then()
+				.body("size()", is(1))
+				.body("[0].start", startsWith("2026-10-20T08:08:5"))
+				.body("[0].end", startsWith("2026-10-20T08:10:"));
+	}
 }

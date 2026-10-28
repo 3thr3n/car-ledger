@@ -841,6 +841,14 @@ export type Track = {
     points: number;
 };
 
+export type TrackDrive = {
+    start: OffsetDateTime;
+    end: OffsetDateTime;
+    distance: number;
+    from?: string;
+    to?: string;
+};
+
 export type TrackFrequency = {
     lines: Array<FrequencyLine>;
     maxPasses: number;
@@ -3531,6 +3539,10 @@ export type GetTrackData = {
     };
     query: {
         /**
+         * Only these drives, each start/end (ISO-8601, both inclusive) as listed by the drives; all without
+         */
+        drive?: Array<string>;
+        /**
          * Start of the range, inclusive
          */
         from: OffsetDateTime;
@@ -3564,12 +3576,56 @@ export type GetTrackResponses = {
 
 export type GetTrackResponse = GetTrackResponses[keyof GetTrackResponses];
 
+export type GetTrackDrivesData = {
+    body?: never;
+    path: {
+        carId: number;
+    };
+    query: {
+        /**
+         * Start of the range, inclusive
+         */
+        from: OffsetDateTime;
+        /**
+         * End of the range, exclusive
+         */
+        to: OffsetDateTime;
+    };
+    url: '/api/track/{carId}/drives';
+};
+
+export type GetTrackDrivesErrors = {
+    /**
+     * Range missing, empty or too long
+     */
+    400: Array<unknown>;
+    /**
+     * Car is not for your user.
+     */
+    404: unknown;
+};
+
+export type GetTrackDrivesError = GetTrackDrivesErrors[keyof GetTrackDrivesErrors];
+
+export type GetTrackDrivesResponses = {
+    /**
+     * Drives found.
+     */
+    200: Array<TrackDrive>;
+};
+
+export type GetTrackDrivesResponse = GetTrackDrivesResponses[keyof GetTrackDrivesResponses];
+
 export type GetTrackFrequencyData = {
     body?: never;
     path: {
         carId: number;
     };
     query: {
+        /**
+         * Only these drives, each start/end (ISO-8601, both inclusive) as listed by the drives; all without
+         */
+        drive?: Array<string>;
         /**
          * Start of the range, inclusive
          */

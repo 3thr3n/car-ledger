@@ -14,6 +14,7 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.rest.AbstractResource;
 import de.codeflowwizardry.carledger.tracker.Places;
+import de.codeflowwizardry.carledger.tracker.Selection;
 import de.codeflowwizardry.carledger.tracker.TrackRetention;
 import de.codeflowwizardry.carledger.tracker.TrackService;
 import jakarta.inject.Inject;
@@ -42,15 +43,16 @@ public class TrackResource extends AbstractResource
 
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
-	@Operation(operationId = "getTrack", description = "GPS track of a car in a time range of at most 31 days, simplified for the map and split into segments at gaps of more than 5 minutes.")
+	@Operation(operationId = "getTrack", description = "GPS track of a car in a time range of at most 31 days, simplified for the map and split into segments at gaps of more than 5 minutes, and between the selected drives.")
 	@APIResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = Track.class)))
 	@APIResponse(responseCode = "400", description = "Range missing, empty or too long", content = @Content(schema = @Schema(implementation = List.class)))
 	@APIResponse(responseCode = "404", description = "Car is not for your user.")
 	public Track getTrack(@PathParam("carId") long carId,
 			@Parameter(description = "Start of the range, inclusive", required = true) @QueryParam("from") OffsetDateTime from,
-			@Parameter(description = "End of the range, exclusive", required = true) @QueryParam("to") OffsetDateTime to)
+			@Parameter(description = "End of the range, exclusive", required = true) @QueryParam("to") OffsetDateTime to,
+			@Parameter(description = "Only these drives, each start/end (ISO-8601, both inclusive) as listed by the drives; all without") @QueryParam("drive") List<String> drives)
 	{
-		return trackService.track(carId, from, to, context.getName());
+		return trackService.track(carId, from, to, Selection.of(drives), context.getName());
 	}
 
 	@GET
@@ -62,9 +64,24 @@ public class TrackResource extends AbstractResource
 	@APIResponse(responseCode = "404", description = "Car is not for your user.")
 	public TrackFrequency getTrackFrequency(@PathParam("carId") long carId,
 			@Parameter(description = "Start of the range, inclusive", required = true) @QueryParam("from") OffsetDateTime from,
+			@Parameter(description = "End of the range, exclusive", required = true) @QueryParam("to") OffsetDateTime to,
+			@Parameter(description = "Only these drives, each start/end (ISO-8601, both inclusive) as listed by the drives; all without") @QueryParam("drive") List<String> drives)
+	{
+		return trackService.frequency(carId, from, to, Selection.of(drives), context.getName());
+	}
+
+	@GET
+	@Path("drives")
+	@Produces(MediaType.APPLICATION_JSON)
+	@Operation(operationId = "getTrackDrives", description = "The drives of the GPS track in a time range of at most 31 days, newest first: a drive ends where the car stood for more than 5 minutes, also with the tracker on. With the names of the named places at its start and end.")
+	@APIResponse(responseCode = "200", description = "Drives found.")
+	@APIResponse(responseCode = "400", description = "Range missing, empty or too long", content = @Content(schema = @Schema(implementation = List.class)))
+	@APIResponse(responseCode = "404", description = "Car is not for your user.")
+	public List<TrackDrive> getTrackDrives(@PathParam("carId") long carId,
+			@Parameter(description = "Start of the range, inclusive", required = true) @QueryParam("from") OffsetDateTime from,
 			@Parameter(description = "End of the range, exclusive", required = true) @QueryParam("to") OffsetDateTime to)
 	{
-		return trackService.frequency(carId, from, to, context.getName());
+		return trackService.drives(carId, from, to, context.getName());
 	}
 
 	@GET
