@@ -141,6 +141,60 @@ export function initialSettings(
   };
 }
 
+/** the value of the form for what the tracker stored, else the default */
+function storedValue(field: ScalarField, stored: unknown): Value {
+  if (field.type === 'boolean') {
+    return typeof stored === 'boolean' ? stored : initialValue(field);
+  }
+  if (typeof stored === 'string' || typeof stored === 'number') {
+    return String(stored);
+  }
+  // left out: empty, e.g. the password of an open network
+  return '';
+}
+
+/**
+ * The settings read back from the tracker (capability read-settings) as the
+ * form: the fields of the schema, anything else is left out
+ *
+ * @param token the token of a tracker just created wins over the stored one
+ */
+export function storedSettings(
+  schema: SettingsSchema,
+  stored: Record<string, unknown>,
+  current: TrackerSettings,
+  token?: string,
+): TrackerSettings {
+  const values = Object.fromEntries(
+    fields(schema).map(([name, field]) => {
+      const value = stored[name];
+      if (!isList(field)) return [name, storedValue(field, value)];
+      const items = Array.isArray(value)
+        ? value
+            .filter((item) => item && typeof item === 'object')
+            .map((item: Record<string, unknown>) =>
+              Object.fromEntries(
+                Object.entries(field.items.properties).map(
+                  ([itemName, itemField]) => [
+                    itemName,
+                    storedValue(itemField, item[itemName]),
+                  ],
+                ),
+              ),
+            )
+        : [];
+      return [name, items.length ? items : current.values[name]];
+    }),
+  );
+  return {
+    url: typeof stored.url === 'string' ? stored.url : current.url,
+    token:
+      token ??
+      (typeof stored.token === 'string' ? stored.token : current.token),
+    values,
+  };
+}
+
 /** one certificate with \n line ends and a final \n, empty for none */
 function normalizePem(ca: string): string {
   const trimmed = ca.replace(/\r\n?/g, '\n').trim();

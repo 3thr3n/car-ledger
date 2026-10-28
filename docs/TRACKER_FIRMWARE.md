@@ -73,11 +73,19 @@ is the release the tests use.
 |-------------------|-------------------------------------------------------------------------------------------|
 | `install`         | *Install firmware*: writes the parts of the build and the settings                        |
 | `settings`        | *Update settings only*: writes only the config partition, e.g. a new WLAN or token        |
-| `update-firmware` | *Update firmware only*, keeping the settings, when `layout` matches the installed one ([#467](https://github.com/3thr3n/car-ledger/issues/467), not yet) |
-| `read-settings`   | reads the settings back from the tracker to prefill the form ([#467](https://github.com/3thr3n/car-ledger/issues/467), not yet) |
+| `update-firmware` | *Update firmware only*: writes the parts of the build, never the config partition, so the settings stay; see [the layout](#the-layout) |
+| `read-settings`   | *Read settings*: reads the config partition back (format `json-nul`, `version` of the manifest) to fill the form, e.g. to change only the WLAN |
 | `status`          | the tracker reports its status (`POST /api/device/status`), incl. its firmware and spec version, shown on the tracker |
 
 None of them erases the whole flash: the points the tracker hasn't sent yet stay.
+
+### The layout
+
+Before *Update firmware only*, CarLedger reads the partition table on the tracker (at `0x8000`, where the ESP32
+bootloader reads it) and compares it byte by byte with the part of the build written there (`partitions.bin`). The
+same table means the config and data partitions stay where the new firmware looks for them. Another table, or none
+that can be read or found in the build, asks the user first: the update is still possible, a full install is safer. A
+firmware that moves its partitions raises `layout` and changes `partitions.bin` with it.
 
 ## Settings
 

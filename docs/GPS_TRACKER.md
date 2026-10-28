@@ -142,9 +142,14 @@ manifest. The actions, as far as the manifest declares them in its
 [capabilities](TRACKER_FIRMWARE.md#capabilities):
 
 - **Install firmware** (`install`): writes the parts of the manifest and the settings.
+- **Update firmware only** (`update-firmware`): writes the parts of the manifest and keeps the settings on the
+  tracker, no form needed. With other partitions on the tracker than the ones of the release, it asks first, see
+  [the layout](TRACKER_FIRMWARE.md#the-layout).
 - **Update settings only** (`settings`): writes only the settings, e.g. a new WLAN or token.
+- **Read settings** (`read-settings`): fills the form with the settings on the tracker, also its token, so only the
+  changes need to be entered. The token of a tracker just created stays.
 
-Neither erases the whole flash: the points the tracker hasn't sent yet stay. The tracker restarts afterwards, the
+None of them erases the whole flash: the points the tracker hasn't sent yet stay. The tracker restarts afterwards, the
 dialog shows its boot output, e.g. `Config: 1 WLAN(s), url=…, CA=bundle`.
 
 | Request                                   | Answer                                                   |
