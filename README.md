@@ -61,7 +61,8 @@ authentik or any other provider).
   by speed or by how often a road was driven and the track of a trip, names the places the car stops at often and
   suggests forgotten trips from the drives; the owner chooses how long the points are kept, see
   [docs/GPS_TRACKER.md](docs/GPS_TRACKER.md).
-- **Reminders and notifications:** due reminders by e-mail and push message, once a day; each can be turned off.
+- **Reminders and notifications:** due reminders, invitations to cars and the answers to requests in the inbox of the
+  app (*Notifications*, kept for 90 days), and by e-mail and push message for the topics you choose.
 
 **Data and integration**
 

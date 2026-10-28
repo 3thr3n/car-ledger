@@ -41,6 +41,8 @@ import de.codeflowwizardry.carledger.data.AccountEntity;
 import de.codeflowwizardry.carledger.data.CarEntity;
 import de.codeflowwizardry.carledger.data.ReminderEntity;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
+import de.codeflowwizardry.carledger.notification.inbox.NotificationEntity;
+import de.codeflowwizardry.carledger.notification.inbox.NotificationRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import de.codeflowwizardry.carledger.data.repository.ReminderRepository;
 import de.codeflowwizardry.carledger.notification.ReminderNotificationsAccess;
@@ -320,14 +322,25 @@ class PushNotificationsTest
 	}
 
 	@Test
-	void shouldPushTheRemindersWithoutAnAddress() throws Exception
+	void shouldPutTheRemindersInTheInboxWithoutAnAddressOrBrowser() throws Exception
 	{
-		// peter has no address and no browser: the reminder waits for a channel
+		// peter has no address and no browser: the reminder is in his inbox only
 		reminders.send(LocalDate.now());
 		Thread.sleep(200);
 		assertTrue(receiver.received.isEmpty());
-		assertNull(notifiedFor("TÜV"));
+		assertNotNull(notifiedFor("TÜV"));
+		assertEquals(List.of("Reminder due: TÜV (Golf)"), inboxTitles("peter"));
 
+		// a browser added later doesn't get it again
+		addPeterPhone();
+		reminders.send(LocalDate.now());
+		Thread.sleep(200);
+		assertTrue(receiver.received.isEmpty());
+	}
+
+	@Test
+	void shouldPushTheRemindersToABrowser() throws Exception
+	{
 		addPeterPhone();
 		reminders.send(LocalDate.now());
 
@@ -338,10 +351,20 @@ class PushNotificationsTest
 	}
 
 	@Transactional
+	List<String> inboxTitles(String user)
+	{
+		return inbox.list("account", accountRepository.findByIdentifier(user)).stream()
+				.map(NotificationEntity::getTitle).toList();
+	}
+
+	@Transactional
 	void addPeterPhone()
 	{
 		subscribe(accountRepository.findByIdentifier("peter"), "peter", peterPhone);
 	}
+
+	@Inject
+	NotificationRepository inbox;
 
 	@Transactional
 	String notifiedFor(String title)

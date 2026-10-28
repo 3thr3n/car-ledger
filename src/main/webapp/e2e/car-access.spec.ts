@@ -63,17 +63,21 @@ test.describe.serial('car access', () => {
     await expect(bobsRow()).toContainText('Without an end');
   });
 
-  test('bob sees the invitation on the dashboard and the garage', async () => {
+  test('bob sees the invitation in his notifications', async () => {
     await bob.goto('/dashboard');
-    const note = bob.getByTestId('invitation-note');
-    await expect(note).toContainText(
-      'alice invites you to the car "E2E Up" as Viewer.',
-    );
-    const badge = bob.getByLabel('1 invitation to a car waits for your answer');
-    await expect(badge).toBeVisible();
+    const badge = bob.getByLabel('1 unread notification');
+    await expect(badge.first()).toBeVisible();
 
-    await note.getByRole('link', { name: 'Answer' }).click();
+    await bob.getByRole('link', { name: /^Notifications/ }).click();
+    const entry = bob.getByTestId('inbox-entry');
+    await expect(entry).toHaveCount(1);
+    await expect(entry).toContainText('alice shares the car "E2E Up" with you');
+    await expect(entry).toHaveAttribute('data-unread', 'true');
+
+    // opens the garage to answer, and is read
+    await entry.getByRole('button').first().click();
     await expect(bob).toHaveURL(/\/car$/);
+    await expect(bob.getByLabel('1 unread notification')).toHaveCount(0);
   });
 
   test('bob sees the car only after accepting', async () => {
@@ -88,9 +92,6 @@ test.describe.serial('car access', () => {
 
     await expect(bob.getByTestId('invitation')).toHaveCount(0);
     await expect(sharedCar('Viewer')).toBeVisible();
-    await expect(
-      bob.getByLabel('1 invitation to a car waits for your answer'),
-    ).toHaveCount(0);
 
     await alice.reload();
     await expect(bobsRow()).toContainText('Viewer');

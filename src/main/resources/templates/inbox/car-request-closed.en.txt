@@ -1,0 +1,2 @@
+Car request of {account} {#if approved}approved{#else}declined{/if}
+{#if admin}{admin} {#if approved}approved{#else}declined{/if} it.{#else}It was decided.{/if}

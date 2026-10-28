@@ -17,6 +17,7 @@ import {
 } from '@mui/material';
 import SpaceDashboardRounded from '@mui/icons-material/SpaceDashboardRounded';
 import GarageRounded from '@mui/icons-material/GarageRounded';
+import NotificationsRounded from '@mui/icons-material/NotificationsRounded';
 import AddRounded from '@mui/icons-material/AddRounded';
 import LogoutRounded from '@mui/icons-material/LogoutRounded';
 import SettingsRounded from '@mui/icons-material/SettingsRounded';
@@ -30,7 +31,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useLocation } from '@tanstack/react-router';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import useOpenInvitations from '@/hooks/useOpenInvitations';
+import useUnreadNotifications from '@/hooks/useUnreadNotifications';
 import { isShared, ownCars } from '@/utils/carRole';
 import { getMyCarsOptions } from '@/generated/@tanstack/react-query.gen';
 import { baseUrl, localClient } from '@/utils/QueryClient';
@@ -65,7 +66,7 @@ export default function Sidebar({
   const { account, loggedIn, maxCars, isAdmin } = useMe();
   const settings = useSaveSettings();
   const openRequests = useOpenCarRequests();
-  const invitations = useOpenInvitations().length;
+  const unread = useUnreadNotifications();
   const version = useVersion();
 
   // the language of the settings wins over the one of the browser
@@ -178,15 +179,24 @@ export default function Sidebar({
                   <GarageRounded fontSize="small" />
                 </ListItemIcon>
                 <ListItemText primary={t('nav.garage')} />
-                {invitations > 0 && (
-                  <Tooltip
-                    title={t('access.openCount', { count: invitations })}
-                  >
+              </RouterListItemButton>
+              <RouterListItemButton
+                to="/notifications"
+                selected={pathname.startsWith('/notifications')}
+                onClick={onNavigate}
+                sx={{ borderRadius: 2, mt: 0.5 }}
+              >
+                <ListItemIcon sx={{ minWidth: 36 }}>
+                  <NotificationsRounded fontSize="small" />
+                </ListItemIcon>
+                <ListItemText primary={t('nav.notifications')} />
+                {unread > 0 && (
+                  <Tooltip title={t('inbox.unreadCount', { count: unread })}>
                     <Chip
                       size="small"
                       color="primary"
-                      label={invitations}
-                      aria-label={t('access.openCount', { count: invitations })}
+                      label={unread}
+                      aria-label={t('inbox.unreadCount', { count: unread })}
                       sx={{ height: 20, fontWeight: 600 }}
                     />
                   </Tooltip>

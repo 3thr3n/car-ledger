@@ -38,6 +38,7 @@ nav:
   dashboard: "Dashboard"
   garage: "Garage"
   yourCars: "Your cars"
+  notifications: "Notifications"
   settings: "Settings"
   admin: "Administration"
   signedInAs: "Signed in as"
@@ -330,13 +331,6 @@ car:
 
 access:
   title: "Access"
-  openCount_one: "{{count}} invitation to a car waits for your answer"
-  openCount_other: "{{count}} invitations to cars wait for your answer"
-  note:
-    one: "{{owner}} invites you to the car \"{{car}}\" as {{role}}."
-    other: "{{count}} invitations to cars wait for your answer."
-    answer: "Answer"
-    later: "Later"
   text: "Share the car with other accounts. The invited one accepts first; an account that doesn't exist yet gets the invitation with its first login."
   invite: "Invite"
   inviteTitle: "Invite to the car"
@@ -781,6 +775,7 @@ install:
 
 notifications:
   title: "Notifications"
+  inbox: "All of them are in Notifications in the menu; here you choose which also come by e-mail and push."
   byMail: "By e-mail"
   sentTo: "Sent to {{email}}, the address of your login."
   noEmail: "Your login has no e-mail address. Add one at your identity provider and log in again."
@@ -1340,3 +1335,17 @@ papers:
     current: "For a check: the installed parts and the latest HU"
     history: "For selling: with the removed parts and all HUs"
   text: "The cover pages list the modifications with their approvals and the HUs, then their documents and reports follow. A copy for information, the originals still have to be in the car."
+
+inbox:
+  title: "Notifications"
+  subtitle: "Everything CarLedger notified you about, also without e-mail and push. Kept for 90 days."
+  unreadCount_one: "{{count}} unread notification"
+  unreadCount_other: "{{count}} unread notifications"
+  unread: "Unread"
+  readAll: "Mark all as read"
+  delete: "Delete"
+  deleteLabel: "Delete \"{{title}}\""
+  deleted: "Notification deleted"
+  empty: "No notifications"
+  emptyText: "Invitations to cars, due reminders and the answers to your requests show up here."
+  more: "Show older ones"
