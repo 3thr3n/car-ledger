@@ -694,4 +694,32 @@ class TrackResourceTest
 				.body("[0].start", startsWith("2026-10-20T08:08:5"))
 				.body("[0].end", startsWith("2026-10-20T08:10:"));
 	}
+
+	@Test
+	void shouldShowTheDetailOfAViewport()
+	{
+		// 1 km to the north, simplified with 5 m for the hour
+		drive(0, 101, 50);
+		range().when().get().then().body("tolerance", is(5.0f)).body("segments[0].size()", is(2));
+
+		// the first 500 m at zoom 16: the zigzag of 3 m is more than a pixel
+		String bbox = "9.99,49.999," + "10.01," + (50 + 500 * LAT_PER_METER);
+		range().queryParam("bbox", bbox).queryParam("zoom", 16).when().get().then()
+				.statusCode(200)
+				.body("tolerance", is(1.0f))
+				.body("points", is(51))
+				.body("segments.size()", is(1))
+				.body("segments[0].size()", is(51));
+		range().queryParam("bbox", bbox).queryParam("zoom", 16).when().get("frequency").then()
+				.statusCode(200)
+				.body("tolerance", is(1.0f))
+				.body("maxPasses", is(1));
+	}
+
+	@Test
+	void shouldRejectAnInvalidViewport()
+	{
+		range().queryParam("bbox", "10,50,9,51").queryParam("zoom", 14).when().get().then().statusCode(400);
+		range().queryParam("zoom", 14).when().get("frequency").then().statusCode(400);
+	}
 }

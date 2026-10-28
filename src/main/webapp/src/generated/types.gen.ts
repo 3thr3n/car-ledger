@@ -841,6 +841,7 @@ export type Track = {
     segments: Array<Array<TrackPoint>>;
     distance: number;
     points: number;
+    tolerance: number;
 };
 
 export type TrackDrive = {
@@ -854,6 +855,7 @@ export type TrackDrive = {
 export type TrackFrequency = {
     lines: Array<FrequencyLine>;
     maxPasses: number;
+    tolerance: number;
 };
 
 export type TrackPoint = {
@@ -3556,6 +3558,10 @@ export type GetTrackData = {
     };
     query: {
         /**
+         * With zoom: only the points in this part of the map, west,south,east,north in degrees, simplified to about a pixel of the zoom
+         */
+        bbox?: string;
+        /**
          * Only these drives, each start/end (ISO-8601, both inclusive) as listed by the drives; all without
          */
         drive?: Array<string>;
@@ -3567,6 +3573,10 @@ export type GetTrackData = {
          * End of the range, exclusive
          */
         to: OffsetDateTime;
+        /**
+         * Zoom of the map (tiles of 512 pixels), with bbox
+         */
+        zoom?: number;
     };
     url: '/api/track/{carId}';
 };
@@ -3640,6 +3650,10 @@ export type GetTrackFrequencyData = {
     };
     query: {
         /**
+         * With zoom: only the points in this part of the map, west,south,east,north in degrees, simplified to about a pixel of the zoom
+         */
+        bbox?: string;
+        /**
          * Only these drives, each start/end (ISO-8601, both inclusive) as listed by the drives; all without
          */
         drive?: Array<string>;
@@ -3651,6 +3665,10 @@ export type GetTrackFrequencyData = {
          * End of the range, exclusive
          */
         to: OffsetDateTime;
+        /**
+         * Zoom of the map (tiles of 512 pixels), with bbox
+         */
+        zoom?: number;
     };
     url: '/api/track/{carId}/frequency';
 };

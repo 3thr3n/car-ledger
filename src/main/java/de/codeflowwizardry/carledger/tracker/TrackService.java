@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 import de.codeflowwizardry.carledger.Utils;
 import de.codeflowwizardry.carledger.data.repository.CarAccess.Action;
@@ -42,6 +43,8 @@ public class TrackService
 	/** tolerance of the simplification per day of the range, meters */
 	static final double TOLERANCE_PER_DAY = 5;
 	static final double MAX_TOLERANCE = 50;
+	/** meters, of the detail of a viewport: about a pixel, but not finer */
+	static final double MIN_TOLERANCE = 1;
 
 	private final CarRepository carRepository;
 	private final TrackPointRepository trackPointRepository;
@@ -69,9 +72,14 @@ public class TrackService
 	 *            exclusive
 	 * @param selection
 	 *            the drives to show, each a segment of its own
+	 * @param view
+	 *            only the points within it, simplified to about a pixel of its
+	 *            zoom; <code>null</code> for all, simplified by the length of the
+	 *            range
 	 */
 	@Transactional
-	public Track track(long carId, OffsetDateTime from, OffsetDateTime to, Selection selection, String username)
+	public Track track(long carId, OffsetDateTime from, OffsetDateTime to, Selection selection, Viewport view,
+			String username)
 	{
 		Utils.requireValid(validate(from, to));
 		if (carRepository.findById(carId, username, Action.READ) == null)
@@ -80,8 +88,8 @@ public class TrackService
 		}
 
 		SharedLine shared = new SharedLine(GAP);
-		trackPointRepository.forEach(carId, from, to, selection.filter(shared::add, shared::cut));
-		return collect(carId, from, to, selection, shared);
+		trackPointRepository.forEach(carId, from, to, filter(selection, view, shared::add, shared::cut));
+		return collect(carId, from, to, selection, view, shared);
 	}
 
 	/**
@@ -92,10 +100,12 @@ public class TrackService
 	 *            exclusive
 	 * @param selection
 	 *            the drives to count, the others don't add passes
+	 * @param view
+	 *            only the lines within it, see {@link #track}
 	 */
 	@Transactional
 	public TrackFrequency frequency(long carId, OffsetDateTime from, OffsetDateTime to, Selection selection,
-			String username)
+			Viewport view, String username)
 	{
 		Utils.requireValid(validate(from, to));
 		if (carRepository.findById(carId, username, Action.READ) == null)
@@ -104,15 +114,16 @@ public class TrackService
 		}
 
 		SharedLine shared = new SharedLine(GAP);
-		PassCounter counter = new PassCounter(GAP, tolerance(selection.span(Duration.between(from, to))), shared);
-		trackPointRepository.forEach(carId, from, to, selection.filter(point -> {
+		PassCounter counter = new PassCounter(GAP, tolerance(selection.span(Duration.between(from, to)), view),
+				shared);
+		trackPointRepository.forEach(carId, from, to, filter(selection, view, point -> {
 			counter.count(point);
 			shared.add(point);
 		}, () -> {
 			counter.cut();
 			shared.cut();
 		}));
-		trackPointRepository.forEach(carId, from, to, selection.filter(counter::trace, counter::cut));
+		trackPointRepository.forEach(carId, from, to, filter(selection, view, counter::trace, counter::cut));
 		return counter.frequency();
 	}
 
@@ -188,7 +199,7 @@ public class TrackService
 		{
 			to = from.plus(MAX_RANGE);
 		}
-		return collect(carId, from, to, Selection.ALL, null);
+		return collect(carId, from, to, Selection.ALL, null, null);
 	}
 
 	/**
@@ -196,13 +207,21 @@ public class TrackService
 	 *            of the points of the range, <code>null</code> for the raw
 	 *            points
 	 */
-	private Track collect(long carId, OffsetDateTime from, OffsetDateTime to, Selection selection,
+	private Track collect(long carId, OffsetDateTime from, OffsetDateTime to, Selection selection, Viewport view,
 			SharedLine shared)
 	{
-		Collector collector = new Collector(tolerance(selection.span(Duration.between(from, to))), shared);
-		trackPointRepository.forEach(carId, from, to, selection.filter(collector::add, collector::finish));
+		double tolerance = tolerance(selection.span(Duration.between(from, to)), view);
+		Collector collector = new Collector(tolerance, shared);
+		trackPointRepository.forEach(carId, from, to, filter(selection, view, collector::add, collector::finish));
 		collector.finish();
-		return new Track(collector.segments, Math.round(collector.meters / 10) / 100.0, collector.count);
+		return new Track(collector.segments, Math.round(collector.meters / 10) / 100.0, collector.count, tolerance);
+	}
+
+	/** the selected drives, within the viewport */
+	private static Consumer<TrackPoint> filter(Selection selection, Viewport view, Consumer<TrackPoint> next,
+			Runnable cut)
+	{
+		return selection.filter(view == null ? next : view.filter(next, cut), cut);
 	}
 
 	static List<String> validate(OffsetDateTime from, OffsetDateTime to)
@@ -219,6 +238,16 @@ public class TrackService
 			errors.add("The range must not be longer than " + MAX_RANGE.toDays() + " days!");
 		}
 		return errors;
+	}
+
+	/**
+	 * @return meters: about a pixel of the viewport, but not more than for the
+	 *         whole range
+	 */
+	static double tolerance(Duration range, Viewport view)
+	{
+		double whole = tolerance(range);
+		return view == null ? whole : Math.clamp(view.metersPerPixel(), MIN_TOLERANCE, whole);
 	}
 
 	/**

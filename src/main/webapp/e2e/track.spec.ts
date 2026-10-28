@@ -394,6 +394,24 @@ test.describe.serial('Drives of the GPS track', () => {
     await deleteAllCars();
   });
 
+  test('fetches the detail of the shown part when zoomed in', async () => {
+    const detail = page.waitForResponse(
+      (response) =>
+        /\/api\/track\/\d+\?.*bbox=.*zoom=/.test(response.url()) &&
+        response.ok(),
+    );
+    await page.goto(`/car/${carId}/track`);
+
+    // the drives fill the map: the lines of 3 days (15 m) would be off
+    const response = await detail;
+    const body = (await response.json()) as { tolerance: number };
+    expect(body.tolerance).toBeLessThan(15);
+    // the summary stays the one of the whole period
+    await expect(
+      page.getByText('1.6 km GPS distance in 2 sections'),
+    ).toBeVisible();
+  });
+
   test('lists the drives and shows only the selected ones', async () => {
     await page.goto(`/car/${carId}/track`);
     const list = page.getByTestId('track-drives');

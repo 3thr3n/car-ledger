@@ -17,6 +17,7 @@ import de.codeflowwizardry.carledger.tracker.Places;
 import de.codeflowwizardry.carledger.tracker.Selection;
 import de.codeflowwizardry.carledger.tracker.TrackRetention;
 import de.codeflowwizardry.carledger.tracker.TrackService;
+import de.codeflowwizardry.carledger.tracker.Viewport;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -50,9 +51,12 @@ public class TrackResource extends AbstractResource
 	public Track getTrack(@PathParam("carId") long carId,
 			@Parameter(description = "Start of the range, inclusive", required = true) @QueryParam("from") OffsetDateTime from,
 			@Parameter(description = "End of the range, exclusive", required = true) @QueryParam("to") OffsetDateTime to,
-			@Parameter(description = "Only these drives, each start/end (ISO-8601, both inclusive) as listed by the drives; all without") @QueryParam("drive") List<String> drives)
+			@Parameter(description = "Only these drives, each start/end (ISO-8601, both inclusive) as listed by the drives; all without") @QueryParam("drive") List<String> drives,
+			@Parameter(description = "With zoom: only the points in this part of the map, west,south,east,north in degrees, simplified to about a pixel of the zoom") @QueryParam("bbox") String bbox,
+			@Parameter(description = "Zoom of the map (tiles of 512 pixels), with bbox") @QueryParam("zoom") Double zoom)
 	{
-		return trackService.track(carId, from, to, Selection.of(drives), context.getName());
+		return trackService.track(carId, from, to, Selection.of(drives), Viewport.of(bbox, zoom),
+				context.getName());
 	}
 
 	@GET
@@ -65,9 +69,12 @@ public class TrackResource extends AbstractResource
 	public TrackFrequency getTrackFrequency(@PathParam("carId") long carId,
 			@Parameter(description = "Start of the range, inclusive", required = true) @QueryParam("from") OffsetDateTime from,
 			@Parameter(description = "End of the range, exclusive", required = true) @QueryParam("to") OffsetDateTime to,
-			@Parameter(description = "Only these drives, each start/end (ISO-8601, both inclusive) as listed by the drives; all without") @QueryParam("drive") List<String> drives)
+			@Parameter(description = "Only these drives, each start/end (ISO-8601, both inclusive) as listed by the drives; all without") @QueryParam("drive") List<String> drives,
+			@Parameter(description = "With zoom: only the points in this part of the map, west,south,east,north in degrees, simplified to about a pixel of the zoom") @QueryParam("bbox") String bbox,
+			@Parameter(description = "Zoom of the map (tiles of 512 pixels), with bbox") @QueryParam("zoom") Double zoom)
 	{
-		return trackService.frequency(carId, from, to, Selection.of(drives), context.getName());
+		return trackService.frequency(carId, from, to, Selection.of(drives), Viewport.of(bbox, zoom),
+				context.getName());
 	}
 
 	@GET

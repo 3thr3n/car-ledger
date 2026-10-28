@@ -2176,7 +2176,7 @@
       },
       "Track" : {
         "type" : "object",
-        "required" : [ "segments", "distance", "points" ],
+        "required" : [ "segments", "distance", "points", "tolerance" ],
         "properties" : {
           "segments" : {
             "type" : "array",
@@ -2194,6 +2194,10 @@
           "points" : {
             "type" : "integer",
             "format" : "int32"
+          },
+          "tolerance" : {
+            "type" : "number",
+            "format" : "double"
           }
         }
       },
@@ -2223,7 +2227,7 @@
       },
       "TrackFrequency" : {
         "type" : "object",
-        "required" : [ "lines", "maxPasses" ],
+        "required" : [ "lines", "maxPasses", "tolerance" ],
         "properties" : {
           "lines" : {
             "type" : "array",
@@ -2234,6 +2238,10 @@
           "maxPasses" : {
             "type" : "integer",
             "format" : "int32"
+          },
+          "tolerance" : {
+            "type" : "number",
+            "format" : "double"
           }
         }
       },
@@ -6896,6 +6904,13 @@
             "format" : "int64"
           }
         }, {
+          "description" : "With zoom: only the points in this part of the map, west,south,east,north in degrees, simplified to about a pixel of the zoom",
+          "name" : "bbox",
+          "in" : "query",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
           "description" : "Only these drives, each start/end (ISO-8601, both inclusive) as listed by the drives; all without",
           "name" : "drive",
           "in" : "query",
@@ -6920,6 +6935,14 @@
           "in" : "query",
           "schema" : {
             "$ref" : "#/components/schemas/OffsetDateTime"
+          }
+        }, {
+          "description" : "Zoom of the map (tiles of 512 pixels), with bbox",
+          "name" : "zoom",
+          "in" : "query",
+          "schema" : {
+            "type" : "number",
+            "format" : "double"
           }
         } ],
         "responses" : {
@@ -7082,6 +7105,13 @@
             "format" : "int64"
           }
         }, {
+          "description" : "With zoom: only the points in this part of the map, west,south,east,north in degrees, simplified to about a pixel of the zoom",
+          "name" : "bbox",
+          "in" : "query",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
           "description" : "Only these drives, each start/end (ISO-8601, both inclusive) as listed by the drives; all without",
           "name" : "drive",
           "in" : "query",
@@ -7106,6 +7136,14 @@
           "in" : "query",
           "schema" : {
             "$ref" : "#/components/schemas/OffsetDateTime"
+          }
+        }, {
+          "description" : "Zoom of the map (tiles of 512 pixels), with bbox",
+          "name" : "zoom",
+          "in" : "query",
+          "schema" : {
+            "type" : "number",
+            "format" : "double"
           }
         } ],
         "responses" : {

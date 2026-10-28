@@ -29,9 +29,26 @@ import {
 
 setWorkerUrl(workerUrl);
 
+/** the part of the map that is shown, e.g. for the detail of the track */
+export interface MapView {
+  zoom: number;
+  west: number;
+  south: number;
+  east: number;
+  north: number;
+}
+
 export interface TrackMapProps {
   styleUrl: string;
+  /** the map zooms to it when it changes */
   track: Track;
+  /**
+   * drawn instead of the track, e.g. the detail of the shown part; the map
+   * doesn't move for it
+   */
+  detail?: Track;
+  /** after each move or zoom, and once loaded */
+  onView?: (view: MapView) => void;
   /** shown instead of the speeds of the track */
   frequency?: TrackFrequency;
   /** the places the car stops at often, as markers */
@@ -98,12 +115,16 @@ const EMPTY: FeatureCollection = {
   features: [],
 };
 
-/** draws the track and zooms to it */
-function showTrack(map: MapLibreMap, track: Track) {
+/** draws the track */
+function drawTrack(map: MapLibreMap, track: Track) {
   (map.getSource('track') as GeoJSONSource).setData(
     trackPieces(track.segments),
   );
   (map.getSource('ends') as GeoJSONSource).setData(trackEnds(track.segments));
+}
+
+/** zooms to the track */
+function fitTrack(map: MapLibreMap, track: Track) {
   const bounds = new LngLatBounds();
   track.segments
     .flat()
@@ -239,6 +260,8 @@ function placeElement(place: Place, label: string, onClick: () => void) {
 export default function TrackMap({
   styleUrl,
   track,
+  detail,
+  onView,
   frequency,
   places,
   onPlaceClick,
@@ -254,8 +277,13 @@ export default function TrackMap({
   const container = useRef<HTMLDivElement>(null);
   /** set once the style and the layers are loaded */
   const map = useRef<MapLibreMap>(null);
+  const shown = detail ?? track;
   const trackRef = useRef(track);
   trackRef.current = track;
+  const shownRef = useRef(shown);
+  shownRef.current = shown;
+  const onViewRef = useRef(onView);
+  onViewRef.current = onView;
   const frequencyRef = useRef(frequency);
   frequencyRef.current = frequency;
   // the handlers of the map are registered once, they read the current format
@@ -360,10 +388,11 @@ export default function TrackMap({
         frequencyWidth(0),
       );
       map.current = instance;
-      showTrack(instance, trackRef.current);
+      drawTrack(instance, shownRef.current);
+      fitTrack(instance, trackRef.current);
       showFrequency(instance, frequencyRef.current);
       (instance.getSource('highlight') as GeoJSONSource).setData(
-        highlightLines(trackRef.current, highlightRef.current),
+        highlightLines(shownRef.current, highlightRef.current),
       );
       setReady(true);
     });
@@ -421,6 +450,19 @@ export default function TrackMap({
       // touch: tap the track, tap elsewhere to close
       instance.on('click', layer, handler);
     }
+    const view = () => {
+      const bounds = instance.getBounds();
+      onViewRef.current?.({
+        zoom: instance.getZoom(),
+        west: bounds.getWest(),
+        south: bounds.getSouth(),
+        east: bounds.getEast(),
+        north: bounds.getNorth(),
+      });
+    };
+    // also the zoom to the track when it is loaded
+    instance.on('moveend', view);
+
     // picks the drive of the line
     instance.on('click', 'track-hit', (event) => {
       const ts = event.features?.[0]?.properties.ts as string | undefined;
@@ -474,8 +516,12 @@ export default function TrackMap({
   }, [ready, places, t, format]);
 
   useEffect(() => {
-    if (map.current) showTrack(map.current, track);
+    if (map.current) fitTrack(map.current, track);
   }, [track]);
+
+  useEffect(() => {
+    if (map.current) drawTrack(map.current, shown);
+  }, [shown]);
 
   useEffect(() => {
     fullscreenToggle.current?.show(
@@ -490,9 +536,9 @@ export default function TrackMap({
 
   useEffect(() => {
     (map.current?.getSource('highlight') as GeoJSONSource | undefined)?.setData(
-      highlightLines(track, highlight),
+      highlightLines(shown, highlight),
     );
-  }, [track, highlight]);
+  }, [shown, highlight]);
 
   return (
     <Box

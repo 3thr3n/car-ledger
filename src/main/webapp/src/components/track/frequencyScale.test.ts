@@ -9,6 +9,7 @@ describe('frequencyLines', () => {
   it('keeps the passes and the order of the lines', () => {
     const lines = frequencyLines({
       maxPasses: 3,
+      tolerance: 5,
       lines: [
         {
           passes: 1,

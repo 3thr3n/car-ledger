@@ -120,7 +120,7 @@ final class PassCounter
 	{
 		finishSegment();
 		lines.sort(Comparator.comparingInt(FrequencyLine::passes));
-		return new TrackFrequency(lines, lines.isEmpty() ? 0 : lines.getLast().passes());
+		return new TrackFrequency(lines, lines.isEmpty() ? 0 : lines.getLast().passes(), tolerance);
 	}
 
 	private boolean longerThanGap(OffsetDateTime earlier, OffsetDateTime later)

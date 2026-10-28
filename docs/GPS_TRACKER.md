@@ -223,7 +223,12 @@ A street driven more than once shows as one line, in both views: the GPS drifts 
 and the two directions use different lanes. CarLedger lays the drives of the period on a grid of 8 m and moves each
 point sideways onto the average of the drives around it in about the same direction (both directions count as one, a
 crossing street doesn't pull). The more often a street is driven, the steadier its line; one driven once stays as it
-is. Streets closer than about 10 m may merge. Only the map is changed: the stored points, the trips, the suggestions,
+is. Streets closer than about 10 m may merge.
+
+The track of the whole period is simplified for the map: its lines may be off by 5 m per day of the period, up to
+50 m, and two drives of a street may be that far apart again. Zoomed in further than that shows (more than 2 pixels),
+the map fetches the detail of the shown part (and half of it around), simplified to about a pixel of the zoom, and
+draws it instead; the summary, the zoom to the track and the scale of the frequency stay the ones of the whole period. Only the map is changed: the stored points, the trips, the suggestions,
 the places and the backup use the points as the tracker sent them, and so does the track of a single trip.
 
 It appears for cars with a tracker once a map is set up:
@@ -287,6 +292,7 @@ places and the trips stay.
 | `GET /api/track/{carId}/drives?from=…&to=…`                  | the drives with `start`, `end`, `distance` (km), `from` and `to` |
 | `GET /api/track/{carId}?from=…&to=…&drive=start/end&drive=…` | the track of only these drives, each a segment of its own        |
 | `GET /api/track/{carId}/frequency?…&drive=start/end`         | the passes of only these drives                                  |
+| `GET /api/track/{carId}?…&bbox=w,s,e,n&zoom=15`              | only the points of that part, simplified to a pixel of the zoom  |
 
 ## Not in the OpenAPI spec
 

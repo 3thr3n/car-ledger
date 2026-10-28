@@ -12,9 +12,12 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
  *            frequent last: drawn on top
  * @param maxPasses
  *            of the lines, 0 without one
+ * @param tolerance
+ *            meters the simplified lines may be off the points
  */
 public record TrackFrequency(
 		@Schema(required = true) List<FrequencyLine> lines,
-		@Schema(required = true) int maxPasses)
+		@Schema(required = true) int maxPasses,
+		@Schema(required = true) double tolerance)
 {
 }

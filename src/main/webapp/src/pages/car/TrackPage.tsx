@@ -49,12 +49,52 @@ import {
 import useFullscreen, { fullscreenSx } from '@/components/track/useFullscreen';
 import DriveList from '@/components/track/DriveList';
 import { deleteRange, driveAt, interval } from '@/components/track/drives';
-import { Place, TrackDrive } from '@/generated';
+import { Place, Track, TrackDrive, TrackFrequency } from '@/generated';
+import type { MapView } from '@/components/track/TrackMap';
+import { detailQuery, needsDetail } from '@/components/track/detail';
 
 /** the server returns at most this many days */
 export const MAX_DAYS = 31;
 
 type Mode = 'speed' | 'frequency';
+
+/**
+ * Whether a query was of the same period and drives: the detail of the part
+ * shown before stays while the next one loads, not the one of another period
+ */
+function samePeriod(
+  key: readonly unknown[] | undefined,
+  selection: { from: string; to: string; drive?: string[] },
+): boolean {
+  const query = (key?.[0] as { query?: typeof selection } | undefined)?.query;
+  return (
+    query?.from === selection.from &&
+    query.to === selection.to &&
+    (query.drive ?? []).join() === (selection.drive ?? []).join()
+  );
+}
+
+const EMPTY_TRACK: Track = {
+  segments: [],
+  distance: 0,
+  points: 0,
+  tolerance: 0,
+};
+
+/**
+ * The lines to draw, colored by the passes of the whole period: the legend
+ * stays the same while the detail of a part is shown
+ */
+function withScale(
+  lines: TrackFrequency | undefined,
+  whole: TrackFrequency | undefined,
+): TrackFrequency {
+  return {
+    lines: lines?.lines ?? [],
+    maxPasses: whole?.maxPasses ?? lines?.maxPasses ?? 0,
+    tolerance: lines?.tolerance ?? 0,
+  };
+}
 
 /** in the URL, so a reload or a shared link shows the same */
 export interface TrackSearch {
@@ -161,6 +201,35 @@ export default function TrackPage({
     }),
     enabled: mode === 'frequency' && ready,
     placeholderData: keepPreviousData,
+  });
+
+  // zoomed in, the lines of the whole period are off by more than a pixel or
+  // two (repeated drives of a street apart): the detail of the shown part
+  const [view, setView] = useState<MapView>();
+  const detailWanted =
+    mode === 'speed'
+      ? needsDetail(track?.tolerance, view)
+      : needsDetail(frequency?.tolerance, view);
+  const detailRange = view && detailWanted ? detailQuery(view) : undefined;
+  const { data: trackDetail } = useQuery({
+    ...getTrackOptions({
+      client: localClient,
+      path: { carId },
+      query: { ...selection, ...detailRange },
+    }),
+    enabled: ready && mode === 'speed' && !!detailRange,
+    placeholderData: (previous, query) =>
+      samePeriod(query?.queryKey, selection) ? previous : undefined,
+  });
+  const { data: frequencyDetail } = useQuery({
+    ...getTrackFrequencyOptions({
+      client: localClient,
+      path: { carId },
+      query: { ...selection, ...detailRange },
+    }),
+    enabled: ready && mode === 'frequency' && !!detailRange,
+    placeholderData: (previous, query) =>
+      samePeriod(query?.queryKey, selection) ? previous : undefined,
   });
 
   const { data: places } = useQuery({
@@ -323,10 +392,15 @@ export default function TrackPage({
         {settings?.styleUrl && (
           <LazyTrackMap
             styleUrl={settings.styleUrl}
-            track={track ?? { segments: [], distance: 0, points: 0 }}
+            track={track ?? EMPTY_TRACK}
+            detail={detailRange && mode === 'speed' ? trackDetail : undefined}
+            onView={setView}
             frequency={
               mode === 'frequency'
-                ? (frequency ?? { lines: [], maxPasses: 0 })
+                ? withScale(
+                    (detailRange && frequencyDetail) || frequency,
+                    frequency,
+                  )
                 : undefined
             }
             places={showPlaces ? places : undefined}
