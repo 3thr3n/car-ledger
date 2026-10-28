@@ -4,6 +4,7 @@ import {
   configImage,
   hasErrors,
   initialSettings,
+  storedSettings,
   SettingsSchema,
   TrackerSettings,
   validateSettings,
@@ -289,5 +290,51 @@ describe('validateSettings', () => {
     expect(
       validateSettings(settings(), { ...CONFIG, maxLength: fitting - 1 }).size,
     ).toEqual({ key: 'tooLarge', values: { max: fitting - 1 } });
+  });
+});
+
+describe('storedSettings', () => {
+  const current = initialSettings(SCHEMA, SERVER, '');
+
+  it('takes over the settings of the tracker', () => {
+    const stored = storedSettings(
+      SCHEMA,
+      {
+        version: 1,
+        wifi: [{ ssid: 'Home', pass: 'secret-password' }, { ssid: 'Open' }],
+        url: 'https://other.example.com/api/device/points',
+        token: TOKEN,
+        ca: PEM,
+        unknown: 'left out',
+      },
+      current,
+    );
+
+    expect(stored).toEqual({
+      url: 'https://other.example.com/api/device/points',
+      token: TOKEN,
+      values: {
+        wifi: [
+          { ssid: 'Home', pass: 'secret-password' },
+          { ssid: 'Open', pass: '' },
+        ],
+        ca: PEM,
+      },
+    });
+  });
+
+  it('keeps the token of a new tracker and the form without values', () => {
+    const fresh = 'cl_' + 'b'.repeat(43);
+    const stored = storedSettings(
+      SCHEMA,
+      { version: 1, token: TOKEN, wifi: 'not a list' },
+      current,
+      fresh,
+    );
+
+    expect(stored.token).toBe(fresh);
+    expect(stored.url).toBe(SERVER);
+    expect(stored.values.wifi).toEqual(current.values.wifi);
+    expect(stored.values.ca).toBe('');
   });
 });

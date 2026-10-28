@@ -15,6 +15,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
+import DownloadRounded from '@mui/icons-material/DownloadRounded';
 import ExpandMoreRounded from '@mui/icons-material/ExpandMoreRounded';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useEffect, useRef, useState } from 'react';
@@ -35,10 +36,19 @@ import {
   RESERVED,
   settingsSchema,
   SettingsErrors,
+  storedSettings,
   TrackerSettings,
   validateSettings,
 } from './configImage';
-import { FlashError, flashTracker, FlashStep, Monitor } from './flasher';
+import {
+  FlashError,
+  FlashMode,
+  flashTracker,
+  FlashStep,
+  LayoutProblem,
+  Monitor,
+  readSettings,
+} from './flasher';
 import { SettingsField } from './SettingsFields';
 import { useErrorText } from './useSettingsTexts';
 
@@ -72,11 +82,21 @@ export default function TrackerFlashDialog({
 type State =
   | { phase: 'form' }
   | { phase: 'flashing'; step: FlashStep; percent: number }
-  | { phase: 'done' }
+  | { phase: 'done'; mode: FlashMode }
   | { phase: 'error'; message: string };
 
-/** what the dialog offers, by the capabilities of the manifest */
-type Action = 'install' | 'settings';
+/** what the dialog offers, by the capability of the manifest */
+const ACTIONS: [string, FlashMode][] = [
+  ['install', 'install'],
+  ['update-firmware', 'firmware'],
+  ['settings', 'settings'],
+];
+
+/** a layout to confirm before the firmware only is written */
+interface LayoutQuestion {
+  problem: LayoutProblem;
+  answer: (write: boolean) => void;
+}
 
 const origin = () =>
   typeof window === 'undefined' ? '' : window.location.origin;
@@ -133,6 +153,7 @@ function Flasher({
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [renewing, setRenewing] = useState(false);
   const [state, setState] = useState<State>({ phase: 'form' });
+  const [layout, setLayout] = useState<LayoutQuestion>();
   const [output, setOutput] = useState('');
   const monitor = useRef<Monitor>(undefined);
   const outputBox = useRef<HTMLPreElement>(null);
@@ -158,18 +179,70 @@ function Flasher({
   const shown = touched ? errors : undefined;
   const errorText = useErrorText(shown);
   const busy = state.phase === 'flashing';
-  const actions = (['install', 'settings'] as Action[]).filter((action) =>
-    manifest.capabilities.includes(action),
-  );
+  const actions = ACTIONS.filter(([capability]) =>
+    manifest.capabilities.includes(capability),
+  ).map(([, mode]) => mode);
+  const canRead = manifest.capabilities.includes('read-settings');
   const required = new Set(schema.required ?? []);
   const fields = Object.entries(schema.properties);
   const advanced = fields.filter(
     ([name, field]) => !RESERVED.includes(name) && field.advanced,
   );
 
-  const start = async (action: Action) => {
-    setTouched(true);
-    if (hasErrors(errors)) {
+  const onStep = (step: FlashStep) =>
+    setState((s) => ({
+      phase: 'flashing',
+      step,
+      percent: s.phase === 'flashing' ? s.percent : 0,
+    }));
+  const onOutput = (text: string) =>
+    setOutput((o) => (o + text).slice(-20_000));
+  const failed = (e: unknown) => {
+    if (e instanceof FlashError && e.code === 'cancelled') {
+      // the tracker runs as before, the form stays for another try
+      setState({ phase: 'form' });
+      toast.info(t('tracker.flash.cancelled'));
+      return;
+    }
+    setState({
+      phase: 'error',
+      message:
+        e instanceof FlashError
+          ? t(`tracker.flash.errors.${e.code}`, { detail: e.detail })
+          : t('tracker.flash.errors.write', { detail: String(e) }),
+    });
+  };
+
+  /** fills the form with the settings on the tracker */
+  const read = async () => {
+    let port: SerialPort;
+    try {
+      port = await navigator.serial.requestPort();
+    } catch {
+      return;
+    }
+    setOutput('');
+    setState({ phase: 'flashing', step: 'connecting', percent: 0 });
+    try {
+      const stored = await readSettings(port, manifest, { onStep, onOutput });
+      setState({ phase: 'form' });
+      if (stored) {
+        setSettings((current) =>
+          storedSettings(schema, stored, current, createdToken),
+        );
+        toast.success(t('tracker.flash.readDone'));
+      } else {
+        toast.info(t('tracker.flash.readNone'));
+      }
+    } catch (e) {
+      failed(e);
+    }
+  };
+
+  const start = async (mode: FlashMode) => {
+    // the firmware only keeps the settings on the tracker, no form needed
+    setTouched(mode !== 'firmware');
+    if (mode !== 'firmware' && hasErrors(errors)) {
       // show the errors folded away as well
       if (advanced.some(([name]) => hasErrorAt(errors, name))) {
         setAdvancedOpen(true);
@@ -191,8 +264,13 @@ function Flasher({
     try {
       monitor.current = await flashTracker(port, {
         manifest,
-        install: action === 'install',
-        config: configImage(settings, manifest.config),
+        mode,
+        config:
+          mode === 'firmware'
+            ? undefined
+            : configImage(settings, manifest.config),
+        confirmLayout: (problem) =>
+          new Promise((answer) => setLayout({ problem, answer })),
         download: async (path) => {
           const { data } = await getFirmwareFile({
             client: localClient,
@@ -201,26 +279,20 @@ function Flasher({
           });
           return new Uint8Array(await (data as Blob).arrayBuffer());
         },
-        onStep: (step) =>
-          setState((s) => ({
-            phase: 'flashing',
-            step,
-            percent: s.phase === 'flashing' ? s.percent : 0,
-          })),
+        onStep,
         onProgress: (percent) =>
           setState((s) => (s.phase === 'flashing' ? { ...s, percent } : s)),
-        onOutput: (text) => setOutput((o) => (o + text).slice(-20_000)),
+        onOutput,
       });
-      setState({ phase: 'done' });
+      setState({ phase: 'done', mode });
     } catch (e) {
-      setState({
-        phase: 'error',
-        message:
-          e instanceof FlashError
-            ? t(`tracker.flash.errors.${e.code}`, { detail: e.detail })
-            : t('tracker.flash.errors.write', { detail: String(e) }),
-      });
+      failed(e);
     }
+  };
+
+  const answerLayout = (write: boolean) => {
+    layout?.answer(write);
+    setLayout(undefined);
   };
 
   const close = async () => {
@@ -323,6 +395,29 @@ function Flasher({
           {actions.length === 0 && (
             <Alert severity="warning">{t('tracker.flash.noActions')}</Alert>
           )}
+          {canRead && state.phase === 'form' && (
+            <Stack
+              direction={{ xs: 'column', sm: 'row' }}
+              spacing={1}
+              sx={{ alignItems: { sm: 'center' } }}
+            >
+              <Typography
+                variant="body2"
+                sx={{ color: 'text.secondary', flexGrow: 1 }}
+              >
+                {t('tracker.flash.readHint')}
+              </Typography>
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<DownloadRounded />}
+                onClick={read}
+                sx={{ flexShrink: 0, alignSelf: { xs: 'flex-start' } }}
+              >
+                {t('tracker.flash.read')}
+              </Button>
+            </Stack>
+          )}
 
           {(state.phase === 'form' || state.phase === 'error') && (
             <>
@@ -373,7 +468,13 @@ function Flasher({
             </Box>
           )}
           {state.phase === 'done' && (
-            <Alert severity="success">{t('tracker.flash.done')}</Alert>
+            <Alert severity="success">
+              {t(
+                state.mode === 'firmware'
+                  ? 'tracker.flash.doneFirmware'
+                  : 'tracker.flash.done',
+              )}
+            </Alert>
           )}
           {state.phase === 'error' && (
             <Alert severity="error" data-testid="flash-error">
@@ -427,6 +528,15 @@ function Flasher({
                 {t('tracker.flash.settingsOnly')}
               </Button>
             )}
+            {actions.includes('firmware') && (
+              <Button
+                variant="outlined"
+                onClick={() => start('firmware')}
+                disabled={busy}
+              >
+                {t('tracker.flash.firmwareOnly', { version: manifest.version })}
+              </Button>
+            )}
             {actions.includes('install') && (
               <Button
                 variant="contained"
@@ -446,6 +556,15 @@ function Flasher({
         confirmLabel={t('tracker.flash.renew')}
         onClose={() => setRenewing(false)}
         onConfirm={() => renew.mutate({ path: { carId, id: tracker.id } })}
+      />
+      <ConfirmDialog
+        open={!!layout}
+        title={t('tracker.flash.layoutTitle')}
+        text={t(`tracker.flash.layout.${layout?.problem ?? 'unknown'}`)}
+        confirmLabel={t('tracker.flash.layoutConfirm')}
+        // the dialog closes before it confirms: the first answer counts
+        onClose={() => queueMicrotask(() => answerLayout(false))}
+        onConfirm={() => answerLayout(true)}
       />
     </>
   );

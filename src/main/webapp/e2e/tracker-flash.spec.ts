@@ -206,6 +206,61 @@ test.describe.serial('Setting up GPS trackers over USB', () => {
     await expect(
       dialog.getByRole('button', { name: /^Install firmware/ }),
     ).toHaveCount(0);
+    await expect(
+      dialog.getByRole('button', { name: 'Read settings' }),
+    ).toHaveCount(0);
+  });
+
+  test('updates only the firmware without the settings', async () => {
+    await withFirmware(page, {
+      ...MANIFEST,
+      capabilities: ['install', 'update-firmware', 'settings', 'read-settings'],
+    });
+    await withSerialPort(page);
+    await page.goto(`/car/${carId}/edit`);
+
+    await page
+      .getByTestId('tracker')
+      .filter({ hasText: 'Glovebox' })
+      .getByRole('button', { name: 'Set up over USB' })
+      .click();
+    const dialog = page.getByRole('dialog', { name: 'Set up Glovebox' });
+
+    // nothing entered: the settings on the tracker stay
+    await dialog
+      .getByRole('button', { name: 'Update firmware only v1.0.0' })
+      .click();
+    expect(await page.evaluate(() => 'portRequested' in window)).toBe(true);
+    await expect(dialog.getByTestId('flash-error')).toContainText(
+      'No connection to the tracker',
+    );
+    await expect(dialog).not.toContainText('Required');
+  });
+
+  test('reads the settings of the tracker', async () => {
+    await withFirmware(page, {
+      ...MANIFEST,
+      capabilities: ['install', 'settings', 'read-settings'],
+    });
+    await withSerialPort(page);
+    await page.goto(`/car/${carId}/edit`);
+
+    await page
+      .getByTestId('tracker')
+      .filter({ hasText: 'Glovebox' })
+      .getByRole('button', { name: 'Set up over USB' })
+      .click();
+    const dialog = page.getByRole('dialog', { name: 'Set up Glovebox' });
+    // without the capability, no update of the firmware only
+    await expect(
+      dialog.getByRole('button', { name: /^Update firmware only/ }),
+    ).toHaveCount(0);
+
+    await dialog.getByRole('button', { name: 'Read settings' }).click();
+    expect(await page.evaluate(() => 'portRequested' in window)).toBe(true);
+    await expect(dialog.getByTestId('flash-error')).toContainText(
+      'No connection to the tracker',
+    );
   });
 
   test('issues a new token for an existing tracker', async () => {
