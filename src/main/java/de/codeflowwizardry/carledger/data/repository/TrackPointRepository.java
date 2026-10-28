@@ -33,8 +33,9 @@ import jakarta.persistence.PersistenceException;
 public class TrackPointRepository
 {
 	private static final String INSERT = """
-			INSERT INTO track_point (tk_device_id, tk_car_id, tk_ts, tk_lat, tk_lon, tk_speed, tk_alt, tk_hdop)
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+			INSERT INTO track_point (tk_device_id, tk_car_id, tk_ts, tk_lat, tk_lon, tk_speed, tk_alt, tk_hdop,
+				tk_accel, tk_brake, tk_lateral, tk_gsource)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 			ON CONFLICT (tk_device_id, tk_ts) DO NOTHING""";
 
 	private static final String SELECT = """
@@ -74,6 +75,10 @@ public class TrackPointRepository
 				statement.setObject(6, point.speed(), Types.DOUBLE);
 				statement.setObject(7, point.alt(), Types.DOUBLE);
 				statement.setObject(8, point.hdop(), Types.DOUBLE);
+				statement.setObject(9, point.accel(), Types.DOUBLE);
+				statement.setObject(10, point.brake(), Types.DOUBLE);
+				statement.setObject(11, point.lateral(), Types.DOUBLE);
+				statement.setString(12, point.gsource());
 				statement.addBatch();
 			}
 
@@ -146,7 +151,8 @@ public class TrackPointRepository
 	 * Writes the points of the car as CSV, the oldest first: the index of the
 	 * tracker, the time in epoch seconds, latitude and longitude with 6 decimals
 	 * (about 0.1 m), speed, altitude and hdop with 1, an empty field for a missing
-	 * value. Straight from the database, e.g. for the backup.
+	 * value; then accel, brake and lateral with 2 decimals and the source of
+	 * them. Straight from the database, e.g. for the backup.
 	 *
 	 * @param trackers
 	 *            the index of each tracker of the car, by its id
@@ -165,7 +171,8 @@ public class TrackPointRepository
 		String sql = "COPY (SELECT " + index + ", trim_scale(extract(epoch FROM tk_ts)),"
 				+ " trim_scale(round(tk_lat::numeric, 6)), trim_scale(round(tk_lon::numeric, 6)),"
 				+ " trim_scale(round(tk_speed::numeric, 1)), trim_scale(round(tk_alt::numeric, 1)),"
-				+ " trim_scale(round(tk_hdop::numeric, 1))"
+				+ " trim_scale(round(tk_hdop::numeric, 1)), trim_scale(round(tk_accel::numeric, 2)),"
+				+ " trim_scale(round(tk_brake::numeric, 2)), trim_scale(round(tk_lateral::numeric, 2)), tk_gsource"
 				+ " FROM track_point WHERE tk_car_id = " + carId + " ORDER BY tk_ts, id) TO STDOUT WITH (FORMAT csv)";
 		try (Connection connection = dataSource.getConnection())
 		{
@@ -205,8 +212,9 @@ public class TrackPointRepository
 					// one per connection, emptied for each car
 					statement.execute("CREATE TEMP TABLE IF NOT EXISTS bulk_track_point (tk_device_id BIGINT,"
 							+ " tk_ts TIMESTAMP WITH TIME ZONE, tk_lat DOUBLE PRECISION, tk_lon DOUBLE PRECISION,"
-							+ " tk_speed DOUBLE PRECISION, tk_alt DOUBLE PRECISION, tk_hdop DOUBLE PRECISION)"
-							+ " ON COMMIT DROP");
+							+ " tk_speed DOUBLE PRECISION, tk_alt DOUBLE PRECISION, tk_hdop DOUBLE PRECISION,"
+							+ " tk_accel DOUBLE PRECISION, tk_brake DOUBLE PRECISION, tk_lateral DOUBLE PRECISION,"
+							+ " tk_gsource VARCHAR(10)) ON COMMIT DROP");
 					statement.execute("TRUNCATE bulk_track_point");
 				}
 				copy = connection.unwrap(PGConnection.class).getCopyAPI()
@@ -222,7 +230,11 @@ public class TrackPointRepository
 		{
 			rows.append(deviceId).append(',').append(point.ts()).append(',').append(point.lat()).append(',')
 					.append(point.lon()).append(',').append(value(point.speed())).append(',')
-					.append(value(point.alt())).append(',').append(value(point.hdop())).append('\n');
+					.append(value(point.alt())).append(',').append(value(point.hdop())).append(',')
+					.append(value(point.accel())).append(',').append(value(point.brake())).append(',')
+					.append(value(point.lateral())).append(',')
+					// only imu, gps or unknown, nothing to quote
+					.append(point.gsource() == null ? "" : point.gsource()).append('\n');
 			if (rows.length() > 64 * 1024)
 			{
 				flush();
@@ -241,8 +253,9 @@ public class TrackPointRepository
 				try (Statement statement = connection.createStatement())
 				{
 					return statement.executeUpdate("INSERT INTO track_point (tk_device_id, tk_car_id, tk_ts, tk_lat,"
-							+ " tk_lon, tk_speed, tk_alt, tk_hdop) SELECT tk_device_id, " + carId + ", tk_ts, tk_lat,"
-							+ " tk_lon, tk_speed, tk_alt, tk_hdop FROM bulk_track_point ORDER BY tk_ts"
+							+ " tk_lon, tk_speed, tk_alt, tk_hdop, tk_accel, tk_brake, tk_lateral, tk_gsource)"
+							+ " SELECT tk_device_id, " + carId + ", tk_ts, tk_lat, tk_lon, tk_speed, tk_alt, tk_hdop,"
+							+ " tk_accel, tk_brake, tk_lateral, tk_gsource FROM bulk_track_point ORDER BY tk_ts"
 							+ " ON CONFLICT (tk_device_id, tk_ts) DO NOTHING");
 				}
 			}

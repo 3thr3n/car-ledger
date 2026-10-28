@@ -168,6 +168,28 @@ class DeviceResourceTest
 	}
 
 	@Test
+	void shouldStoreTheGForcesAndLeaveOutImplausibleOnes()
+	{
+		Map<String, Object> imu = point(now.minusSeconds(3));
+		imu.putAll(Map.of("accel", 0.31, "brake", 0, "lateral", -0.42, "gsource", "imu"));
+		// a performance car, without a source: a firmware before the IMU, from the GPS
+		Map<String, Object> gps = point(now.minusSeconds(2));
+		gps.putAll(Map.of("accel", 1.95, "lateral", 2.0));
+		// only the implausible values are left out, the point stays
+		Map<String, Object> odd = point(now.minusSeconds(1));
+		odd.putAll(Map.of("accel", -0.1, "brake", 2.1, "lateral", -0.8, "gsource", "Laser"));
+
+		send(device.token(), List.of(imu, gps, odd, point(now))).statusCode(200).body("accepted", is(4))
+				.body("rejected", is(0));
+
+		assertEquals(List.of("0.31|0|-0.42|imu", "1.95|2|gps", "-0.8|unknown", ""),
+				QuarkusTransaction.requiringNew().call(() -> entityManager.createNativeQuery(
+						"select concat_ws('|', tk_accel, tk_brake, tk_lateral, tk_gsource) from track_point"
+								+ " where tk_car_id = ?1 order by tk_ts",
+						String.class).setParameter(1, carId).getResultList()));
+	}
+
+	@Test
 	void shouldDropPointsSentAgain()
 	{
 		List<Map<String, Object>> points = List.of(point(now.minusSeconds(2)), point(now.minusSeconds(1)));

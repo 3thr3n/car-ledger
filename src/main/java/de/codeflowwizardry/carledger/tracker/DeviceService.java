@@ -128,13 +128,15 @@ public class DeviceService
 
 	/**
 	 * Stores the valid points for the car of the tracker, invalid ones are skipped
-	 * and points it sent before are dropped.
+	 * and points it sent before are dropped. Implausible g-forces are left out,
+	 * their point stays.
 	 */
 	@Transactional
 	public IngestResult ingest(AuthenticatedDevice device, List<TrackPointInput> points)
 	{
 		OffsetDateTime now = OffsetDateTime.now();
-		List<TrackPointInput> valid = points.stream().filter(point -> point != null && point.isValid(now)).toList();
+		List<TrackPointInput> valid = points.stream().filter(point -> point != null && point.isValid(now))
+				.map(TrackPointInput::plausible).toList();
 		int accepted = valid.isEmpty() ? 0 : trackPointRepository.insert(device.deviceId(), device.carId(), valid);
 		return new IngestResult(accepted, valid.size() - accepted, points.size() - valid.size());
 	}

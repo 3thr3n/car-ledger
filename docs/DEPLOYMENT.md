@@ -477,6 +477,10 @@ kubectl set env deployment/car-ledger QUARKUS_FLYWAY_IGNORE_FUTURE_MIGRATIONS=tr
   users flash the firmware and the settings of a tracker from Chrome or Edge over USB; the firmware is not part of
   CarLedger. `carLedger.imagePullSecrets` pulls the images of the pod from a private registry, see
   [GPS_TRACKER.md](GPS_TRACKER.md#flashing).
+- **G-forces of the track points** (0.10.0): a tracker sends the peak acceleration, braking and sideways force per
+  point, they are stored with the points (migration 1.34.0) and in the backup, with three more columns in the CSV of
+  the track; a restore still reads the backups before. Nothing to set up, see
+  [GPS_TRACKER.md](GPS_TRACKER.md#sending-points).
 - **Firmware interface spec** (0.10.0): the `manifest.json` of the tracker firmware has to follow
   [spec 1](TRACKER_FIRMWARE.md) (`spec`, `capabilities`, `layout`, the settings as `config.schema`). A release with an
   older manifest turns flashing off with a warning in the log; put a release of the firmware that follows the spec into

@@ -28,15 +28,22 @@ POST /api/device/points
 Authorization: Bearer cl_…
 Content-Type: application/json
 
-[{"ts":"2026-10-20T20:15:03Z","lat":51.1,"lon":10.2,"speed":42.3,"alt":250.5,"hdop":1.2}]
+[{"ts":"2026-10-20T20:15:03Z","lat":51.1,"lon":10.2,"speed":42.3,"alt":250.5,"hdop":1.2,
+  "accel":0.12,"brake":0,"lateral":-0.31,"gsource":"imu"}]
 ```
 
 - `ts`: GPS time, ISO-8601 UTC; `lat`, `lon`: degrees; `speed`: km/h; `alt`: meters. `ts`, `lat` and `lon` are
   required, the others may be missing.
+- The g-forces since the point before, in g with 2 decimals: `accel` the peak forward acceleration and `brake` the peak
+  braking, both 0 or more; `lateral` the peak sideways acceleration, + turning right, - turning left. `gsource` says
+  where they come from: `imu` (real peaks) or `gps` (averages over a second, noticeably lower for the same drive);
+  without it, values come from the GPS (firmware before the IMU), another source is stored as `unknown`. A firmware
+  before the g-forces sends none of them. They are only stored for now, the map doesn't show them yet.
 - At most 500 points per request (the firmware sends 200).
 - A point sent again (same tracker and `ts`) is stored once, so a batch can be sent again safely.
 - Invalid points are skipped, not rejected: a time more than 5 minutes in the future or before 2020, a position outside
-  of -90..90 / -180..180, a speed outside of 0..400 or an hdop of 0 or less.
+  of -90..90 / -180..180, a speed outside of 0..400 or an hdop of 0 or less. An implausible g-force only leaves out
+  that value, the point is stored: `accel` or `brake` below 0 or above 2 g, `lateral` beyond ±2 g.
 
 | Status | Meaning                                                    | Tracker                         |
 |--------|------------------------------------------------------------|---------------------------------|
@@ -146,10 +153,11 @@ Deleting a car deletes its trackers and points as well.
 The backup of a user contains the trackers of each car, with the SHA-256 of their tokens, never the tokens: after a
 restore on another server the trackers keep sending. A tracker whose hash is taken on the server already gets a new
 one, set it up again with a new token. The points are in the backup only for cars that keep them forever, as a CSV per
-car (`tracker,ts,lat,lon,speed,alt,hdop`: the time in epoch seconds, latitude and longitude with 6 decimals, about
-0.1 m, speed, altitude and hdop with 1); a car that keeps them for a while is backed up without its points, so a
+car (`tracker,ts,lat,lon,speed,alt,hdop,accel,brake,lateral,gsource`: the time in epoch seconds, latitude and
+longitude with 6 decimals, about 0.1 m, speed, altitude and hdop with 1, the g-forces with 2); a car that keeps them for a while is backed up without its points, so a
 backup kept for longer doesn't keep them either. A restore takes the points that are in the file and skips invalid
-ones like the ingest; it also reads the ISO times of the backups of the dev builds before 0.7.0.
+ones like the ingest; it also reads the ISO times of the backups of the dev builds before 0.7.0 and the points without
+g-forces of the backups before 0.10.0 (`tracker,ts,lat,lon,speed,alt,hdop`).
 
 A point takes about 6 bytes in the ZIP, a year of commuting at one point per second (2.3 million points) 14 MB: above
 the upload limit of 12 MB (`carLedger.attachments.maxRequestSize`), raise it to restore such a backup, see
