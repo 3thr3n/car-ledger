@@ -406,6 +406,8 @@ export type Device = {
     createdAt: OffsetDateTime;
     lastSeenAt?: OffsetDateTime;
     revokedAt?: OffsetDateTime;
+    status?: TrackerStatus;
+    statusAt?: OffsetDateTime;
 };
 
 export type DeviceCreated = {
@@ -863,6 +865,21 @@ export type TrackPoint = {
 
 export type TrackRetentionInput = {
     days?: number;
+};
+
+export type TrackerStatus = {
+    spec?: number;
+    firmware?: string;
+    storageUsed?: number;
+    storageTotal?: number;
+    storageError?: boolean;
+    resetReason?: string;
+    uploadResult?: string;
+    uploadStatus?: number;
+    configOk?: boolean;
+    ssid?: string;
+    rssi?: number;
+    parts?: Array<string>;
 };
 
 export type TracksDeleted = {

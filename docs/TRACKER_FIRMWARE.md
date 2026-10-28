@@ -75,7 +75,7 @@ is the release the tests use.
 | `settings`        | *Update settings only*: writes only the config partition, e.g. a new WLAN or token        |
 | `update-firmware` | *Update firmware only*, keeping the settings, when `layout` matches the installed one ([#467](https://github.com/3thr3n/car-ledger/issues/467), not yet) |
 | `read-settings`   | reads the settings back from the tracker to prefill the form ([#467](https://github.com/3thr3n/car-ledger/issues/467), not yet) |
-| `status`          | the tracker reports its status, incl. its firmware and spec version ([#466](https://github.com/3thr3n/car-ledger/issues/466), not yet) |
+| `status`          | the tracker reports its status (`POST /api/device/status`), incl. its firmware and spec version, shown on the tracker |
 
 None of them erases the whole flash: the points the tracker hasn't sent yet stay.
 
@@ -156,6 +156,7 @@ Other keywords are ignored. A list holds only scalars, no nested objects or list
 ## Device API
 
 What the tracker sends is described in [`tracker-device-api.yaml`](tracker-device-api.yaml) (OpenAPI 3.1): the points,
-`POST /api/device/points` with the token of the tracker. It isn't part of the `openapi.json` of the app. The status
-(`POST /api/device/status`, capability `status`) follows with [#466](https://github.com/3thr3n/car-ledger/issues/466),
-it reports the firmware and spec version of the tracker.
+`POST /api/device/points` with the token of the tracker, and the status, `POST /api/device/status` (capability
+`status`), whenever its WLAN connects, also without points. It isn't part of the `openapi.json` of the app. The status
+carries the `spec` version the firmware implements; an older CarLedger answers 404 to it, which the firmware ignores,
+and a failed status never holds up the points.

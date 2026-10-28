@@ -1090,6 +1090,12 @@
           },
           "revokedAt" : {
             "$ref" : "#/components/schemas/OffsetDateTime"
+          },
+          "status" : {
+            "$ref" : "#/components/schemas/TrackerStatus"
+          },
+          "statusAt" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
           }
         }
       },
@@ -2259,6 +2265,55 @@
           "days" : {
             "type" : "integer",
             "format" : "int32"
+          }
+        }
+      },
+      "TrackerStatus" : {
+        "type" : "object",
+        "properties" : {
+          "spec" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "firmware" : {
+            "type" : "string"
+          },
+          "storageUsed" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "storageTotal" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "storageError" : {
+            "type" : "boolean"
+          },
+          "resetReason" : {
+            "type" : "string"
+          },
+          "uploadResult" : {
+            "type" : "string"
+          },
+          "uploadStatus" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "configOk" : {
+            "type" : "boolean"
+          },
+          "ssid" : {
+            "type" : "string"
+          },
+          "rssi" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "parts" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
           }
         }
       },

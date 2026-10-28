@@ -329,7 +329,7 @@ public class BackupService
 		{
 			indexes.put(device.getId(), trackers.size());
 			trackers.add(new BackupFile.Tracker(device.getName(), device.getTokenHash(), device.getCreatedAt(),
-					device.getLastSeenAt(), device.getRevokedAt()));
+					device.getLastSeenAt(), device.getRevokedAt(), device.getStatus(), device.getStatusAt()));
 		}
 		// points kept for a while are left out, a backup kept for longer would keep
 		// them
@@ -638,6 +638,10 @@ public class BackupService
 		}
 		DeviceEntity device = new DeviceEntity(car, backup.name().strip(), hash, backup.createdAt(),
 				backup.lastSeenAt(), backup.revokedAt());
+		if (backup.status() != null)
+		{
+			device.setStatus(backup.status().plausible(), backup.statusAt());
+		}
 		deviceRepository.persist(device);
 		return device.getId();
 	}

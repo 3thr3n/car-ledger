@@ -140,4 +140,15 @@ public class DeviceService
 		int accepted = valid.isEmpty() ? 0 : trackPointRepository.insert(device.deviceId(), device.carId(), valid);
 		return new IngestResult(accepted, valid.size() - accepted, points.size() - valid.size());
 	}
+
+	/**
+	 * Keeps the status as the latest of the tracker, without the fields out of
+	 * their range. The request has updated its last contact already.
+	 */
+	@Transactional
+	public void status(AuthenticatedDevice device, TrackerStatus status)
+	{
+		DeviceEntity entity = deviceRepository.findById(device.deviceId());
+		entity.setStatus(status.plausible(), OffsetDateTime.now());
+	}
 }

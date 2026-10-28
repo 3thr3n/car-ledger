@@ -46,6 +46,30 @@ paths:
           $ref: "#/components/responses/TooManyRequests"
         "5XX":
           description: Error of the server. The tracker keeps the batch and sends it later.
+  /device/status:
+    post:
+      operationId: reportStatus
+      summary: Keeps the status of the tracker
+      description: |
+        Sent whenever the WLAN of the tracker connects, also without points (capability `status`). CarLedger keeps
+        only the latest one and shows it on the tracker. All fields are optional; a field out of its range is left
+        out, unknown ones are ignored. Updates the last contact of the tracker, like the points. A firmware ignores a
+        404 of an older CarLedger, and a failed status never holds up the points.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Status"
+      responses:
+        "204":
+          description: Kept.
+        "400":
+          description: Not a JSON object.
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
 components:
   securitySchemes:
     tracker:
@@ -114,6 +138,64 @@ components:
           description: |
             where accel, brake and lateral come from: imu (real peaks) or gps (averages over a second). Missing next to
             values means gps (firmware before the IMU); another value is stored as unknown.
+    Status:
+      type: object
+      properties:
+        spec:
+          type: integer
+          minimum: 1
+          description: version of the spec the firmware implements
+        firmware:
+          type: string
+          maxLength: 40
+          examples: ["v1.1.0"]
+          description: version of the firmware; CarLedger shows "Different firmware" when it isn't the one it offers
+        storageUsed:
+          type: integer
+          minimum: 0
+          description: bytes of the storage for the points
+        storageTotal:
+          type: integer
+          minimum: 1
+          description: bytes
+        storageError:
+          type: boolean
+          description: the storage can't be written; shown as a warning
+        resetReason:
+          type: string
+          maxLength: 40
+          examples: [poweron, watchdog, brownout, panic]
+          description: of the last start
+        uploadResult:
+          type: string
+          maxLength: 40
+          examples: [ok, timeout, http]
+          description: of the last upload of points
+        uploadStatus:
+          type: integer
+          minimum: 100
+          maximum: 599
+          description: HTTP status of the last upload, missing without an answer
+        configOk:
+          type: boolean
+          description: whether the settings are valid; false is shown as a warning
+        ssid:
+          type: string
+          maxLength: 32
+          description: of the WLAN it is connected to
+        rssi:
+          type: integer
+          minimum: -127
+          maximum: 0
+          description: dBm
+        parts:
+          type: array
+          maxItems: 10
+          items:
+            type: string
+            pattern: "^[a-z0-9][a-z0-9_-]{0,19}$"
+          examples: [[sd, oled, imu]]
+          description: what is installed, e.g. sd (SD card), oled, imu (g-sensor); stored in lower case
     IngestResult:
       type: object
       required: [accepted, duplicates, rejected]

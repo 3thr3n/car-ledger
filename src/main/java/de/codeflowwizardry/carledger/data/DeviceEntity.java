@@ -3,6 +3,10 @@ package de.codeflowwizardry.carledger.data;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
+import de.codeflowwizardry.carledger.tracker.TrackerStatus;
 import jakarta.persistence.*;
 
 /**
@@ -35,6 +39,14 @@ public class DeviceEntity
 
 	@Column(name = "dv_revoked_at")
 	private OffsetDateTime revokedAt;
+
+	/** the latest one the tracker reported */
+	@JdbcTypeCode(SqlTypes.JSON)
+	@Column(name = "dv_status")
+	private TrackerStatus status;
+
+	@Column(name = "dv_status_at")
+	private OffsetDateTime statusAt;
 
 	protected DeviceEntity()
 	{
@@ -109,5 +121,25 @@ public class DeviceEntity
 			// as precise as stored, the answer of the revoke shows the time of the list
 			revokedAt = OffsetDateTime.now().truncatedTo(ChronoUnit.MICROS);
 		}
+	}
+
+	public TrackerStatus getStatus()
+	{
+		return status;
+	}
+
+	public OffsetDateTime getStatusAt()
+	{
+		return statusAt;
+	}
+
+	/**
+	 * @param at
+	 *            when it was reported
+	 */
+	public void setStatus(TrackerStatus status, OffsetDateTime at)
+	{
+		this.status = status;
+		this.statusAt = at;
 	}
 }

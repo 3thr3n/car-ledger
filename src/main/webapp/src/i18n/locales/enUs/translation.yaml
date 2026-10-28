@@ -411,6 +411,18 @@ tracker:
   revokeTitle: "Revoke {{name}}?"
   revokeText: "Its token stops working at once. The points it sent stay."
   revoked: "Tracker revoked"
+  status:
+    firmware: "Firmware {{version}}"
+    storage: "Storage {{percent}} % of {{total}} used"
+    upload: "last upload: {{result}}"
+    reset: "last start: {{reason}}"
+    wifi: "WLAN {{ssid}}{{rssi}}"
+    parts: "with {{parts}}"
+    reported: "reported {{date}}"
+    warnings:
+      storageError: "The storage of the tracker can't be written, it can't keep points that aren't sent yet."
+      config: "The settings of the tracker are invalid: it logs points, but doesn't upload them. Set it up again over USB."
+      firmware: "Different firmware: the tracker runs {{version}}, CarLedger offers {{offered}}."
   flash:
     open: "Set up over USB"
     title: "Set up {{name}}"
