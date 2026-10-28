@@ -1,22 +1,36 @@
 package de.codeflowwizardry.carledger.tracker;
 
 import java.util.List;
-import java.util.regex.Pattern;
+import java.util.Map;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 /**
- * The manifest.json of a release of the tracker firmware: the builds follow the
- * manifest of ESP Web Tools, the config partition is our extension
+ * The manifest.json of a release of the tracker firmware, as in
+ * docs/TRACKER_FIRMWARE.md: the builds follow the manifest of ESP Web Tools,
+ * the rest is the spec of CarLedger
+ *
+ * @param spec
+ *            version of the spec the firmware implements
+ * @param capabilities
+ *            what of the spec it implements, e.g. install, settings; unknown
+ *            ones are passed on and ignored by the app
+ * @param layout
+ *            version of the flash layout
  */
 public record FirmwareManifest(
 		@Schema(required = true) String name,
 		@Schema(required = true) String version,
+		@Schema(required = true) int spec,
 		@Schema(required = true) List<Build> builds,
+		@Schema(required = true) List<String> capabilities,
+		@Schema(required = true) int layout,
 		@Schema(required = true) ConfigPartition config)
 {
-	/** a file name next to the manifest, no directories */
-	private static final Pattern FILE = Pattern.compile("[A-Za-z0-9_-][A-Za-z0-9._-]*");
+	/** the current version of the spec, the previous one is supported as well */
+	public static final int SPEC = 1;
 
 	/**
 	 * @param chipFamily
@@ -37,37 +51,45 @@ public record FirmwareManifest(
 	}
 
 	/**
-	 * The partition with the settings of the tracker (JSON)
+	 * The partition with the settings of the tracker
 	 *
 	 * @param maxLength
-	 *            bytes of the JSON including its NUL
+	 *            bytes of the encoded settings
+	 * @param format
+	 *            encoding of the settings, json-nul
 	 * @param version
 	 *            of the settings the firmware reads
+	 * @param schema
+	 *            JSON Schema of the settings, the form is rendered from it
 	 */
 	public record ConfigPartition(
 			@Schema(required = true) long offset,
 			@Schema(required = true) int size,
 			@Schema(required = true) int maxLength,
-			@Schema(required = true) int version)
+			@Schema(required = true) String format,
+			@Schema(required = true) int version,
+			@Schema(required = true) Map<String, Object> schema)
 	{
 	}
 
 	/**
-	 * @return whether the manifest is complete and lists only files next to it
+	 * @return whether the app supports the spec of the manifest: the current and
+	 *         the previous version
 	 */
-	public boolean isValid()
+	@JsonIgnore
+	public boolean isSupported()
 	{
-		return name != null && !name.isBlank() && version != null && !version.isBlank()
-				&& builds != null && !builds.isEmpty() && builds.stream().allMatch(FirmwareManifest::isValid)
-				&& config != null && config.offset() >= 0 && config.size() > 0 && config.maxLength() > 0
-				&& config.maxLength() <= config.size();
+		return spec >= Math.max(1, SPEC - 1) && spec <= SPEC;
 	}
 
-	private static boolean isValid(Build build)
+	/**
+	 * @return what the schema of the manifest can't check: the settings fit into
+	 *         their partition
+	 */
+	@JsonIgnore
+	public boolean isValid()
 	{
-		return build != null && build.chipFamily() != null && build.parts() != null && !build.parts().isEmpty()
-				&& build.parts().stream().allMatch(part -> part != null && part.offset() >= 0
-						&& part.path() != null && FILE.matcher(part.path()).matches());
+		return config.maxLength() <= config.size();
 	}
 
 	/**

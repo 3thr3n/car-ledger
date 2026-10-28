@@ -477,6 +477,10 @@ kubectl set env deployment/car-ledger QUARKUS_FLYWAY_IGNORE_FUTURE_MIGRATIONS=tr
   users flash the firmware and the settings of a tracker from Chrome or Edge over USB; the firmware is not part of
   CarLedger. `carLedger.imagePullSecrets` pulls the images of the pod from a private registry, see
   [GPS_TRACKER.md](GPS_TRACKER.md#flashing).
+- **Firmware interface spec** (0.10.0): the `manifest.json` of the tracker firmware has to follow
+  [spec 1](TRACKER_FIRMWARE.md) (`spec`, `capabilities`, `layout`, the settings as `config.schema`). A release with an
+  older manifest turns flashing off with a warning in the log; put a release of the firmware that follows the spec into
+  the firmware volume. Trackers that are set up keep sending their points.
 - **Security contexts** (0.10.0; keycloak chart 0.5.2, authentik chart 0.4.1): the pods run with `seccompProfile:
   RuntimeDefault`, without privilege escalation and capabilities. The app has a read-only root filesystem and writes
   only to `/tmp`, an `emptyDir` (uploads, the ZIP of a restore, the truststore of `carLedger.trust`); a value

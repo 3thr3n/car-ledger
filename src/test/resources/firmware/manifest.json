@@ -1,6 +1,7 @@
 {
   "name": "CarLedger GPS tracker",
   "version": "v1.0.0",
+  "spec": 1,
   "builds": [
     {
       "chipFamily": "ESP32",
@@ -11,5 +12,60 @@
       ]
     }
   ],
-  "config": { "offset": 4128768, "size": 8192, "maxLength": 8192, "version": 1 }
+  "capabilities": ["install", "settings"],
+  "layout": 1,
+  "config": {
+    "offset": 4128768,
+    "size": 8192,
+    "maxLength": 8192,
+    "format": "json-nul",
+    "version": 1,
+    "schema": {
+      "type": "object",
+      "required": ["wifi", "url", "token"],
+      "properties": {
+        "wifi": {
+          "type": "array",
+          "title": "WLAN networks",
+          "description": "2.4 GHz only, tried in this order",
+          "translations": { "de": { "title": "WLAN-Netze", "description": "Nur 2,4 GHz, in dieser Reihenfolge versucht" } },
+          "minItems": 1,
+          "maxItems": 8,
+          "items": {
+            "type": "object",
+            "title": "Network",
+            "translations": { "de": { "title": "Netz" } },
+            "required": ["ssid"],
+            "properties": {
+              "ssid": { "type": "string", "title": "SSID", "minBytes": 1, "maxBytes": 32 },
+              "pass": {
+                "type": "string",
+                "title": "Password",
+                "description": "Empty for an open network",
+                "translations": { "de": { "title": "Passwort", "description": "Leer für ein offenes Netz" } },
+                "format": "password",
+                "minBytes": 8,
+                "maxBytes": 63
+              }
+            }
+          }
+        },
+        "url": { "type": "string" },
+        "token": { "type": "string" },
+        "ca": {
+          "type": "string",
+          "title": "Root certificate (PEM)",
+          "description": "Only for a private or self-signed CA; without one the tracker trusts the public CAs, e.g. Let's Encrypt",
+          "translations": {
+            "de": {
+              "title": "Root-Zertifikat (PEM)",
+              "description": "Nur für eine private oder selbstsignierte CA; ohne vertraut der Tracker den öffentlichen CAs, z. B. Let's Encrypt"
+            }
+          },
+          "format": "pem",
+          "advanced": true
+        }
+      }
+    }
+  }
 }

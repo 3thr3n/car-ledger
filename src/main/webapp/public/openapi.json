@@ -981,7 +981,7 @@
       },
       "ConfigPartition" : {
         "type" : "object",
-        "required" : [ "offset", "size", "maxLength", "version" ],
+        "required" : [ "offset", "size", "maxLength", "format", "version", "schema" ],
         "properties" : {
           "offset" : {
             "type" : "integer",
@@ -995,9 +995,16 @@
             "type" : "integer",
             "format" : "int32"
           },
+          "format" : {
+            "type" : "string"
+          },
           "version" : {
             "type" : "integer",
             "format" : "int32"
+          },
+          "schema" : {
+            "type" : "object",
+            "additionalProperties" : { }
           }
         }
       },
@@ -1116,7 +1123,7 @@
       },
       "FirmwareManifest" : {
         "type" : "object",
-        "required" : [ "name", "version", "builds", "config" ],
+        "required" : [ "name", "version", "spec", "builds", "capabilities", "layout", "config" ],
         "properties" : {
           "name" : {
             "type" : "string"
@@ -1124,17 +1131,28 @@
           "version" : {
             "type" : "string"
           },
+          "spec" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
           "builds" : {
             "type" : "array",
             "items" : {
               "$ref" : "#/components/schemas/Build"
             }
           },
+          "capabilities" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "layout" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
           "config" : {
             "$ref" : "#/components/schemas/ConfigPartition"
-          },
-          "valid" : {
-            "type" : "boolean"
           }
         }
       },
