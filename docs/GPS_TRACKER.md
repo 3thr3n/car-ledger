@@ -67,14 +67,16 @@ defaults.
 
 ## Flashing
 
-CarLedger can flash the tracker firmware onto an ESP32 and write its settings (WLAN, server URL, token) from the
+CarLedger can flash the tracker firmware onto an ESP32 and write its settings (e.g. WLAN, server URL, token) from the
 browser, over USB with Web Serial: no PlatformIO, no settings compiled into the firmware. It needs Chrome or Edge on a
-desktop and HTTPS (or `localhost`); other browsers see a hint instead.
+desktop and HTTPS (or `localhost`); other browsers see a hint instead. The firmware has to follow the
+[firmware interface spec](TRACKER_FIRMWARE.md): its manifest declares what CarLedger offers and which settings it
+asks for.
 
 The firmware isn't public and not part of CarLedger or its image. An admin puts a release into a directory and sets
 `carledger.tracker.firmware-dir`; CarLedger serves it only to logged-in users, and only the files its `manifest.json`
-lists. Without the directory, flashing is hidden. The directory is read on every request, a new release needs no
-restart.
+lists. Without the directory, or with a manifest that doesn't follow a supported version of the spec, flashing is
+hidden (with a warning in the log). The directory is read on every request, a new release needs no restart.
 
 ```text
 firmware/
@@ -104,10 +106,12 @@ carLedger:
 ```
 
 In *Edit car* → *GPS trackers*, *Set up over USB* opens the flashing, also right after creating a tracker, with its
-token. For an existing tracker, paste its token or issue a new one there. The two actions:
+token. For an existing tracker, paste its token or issue a new one there. The form of the settings comes from the
+manifest. The actions, as far as the manifest declares them in its
+[capabilities](TRACKER_FIRMWARE.md#capabilities):
 
-- **Install firmware**: writes the parts of the manifest and the settings.
-- **Update settings only**: writes only the settings, e.g. a new WLAN or token.
+- **Install firmware** (`install`): writes the parts of the manifest and the settings.
+- **Update settings only** (`settings`): writes only the settings, e.g. a new WLAN or token.
 
 Neither erases the whole flash: the points the tracker hasn't sent yet stay. The tracker restarts afterwards, the
 dialog shows its boot output, e.g. `Config: 1 WLAN(s), url=…, CA=bundle`.
@@ -118,54 +122,11 @@ dialog shows its boot output, e.g. `Config: 1 WLAN(s), url=…, CA=bundle`.
 | `GET /api/tracker/firmware/manifest.json` | the manifest, 404 when flashing isn't set up             |
 | `GET /api/tracker/firmware/{file}`        | a file of the manifest, 404 for any other                |
 
-### `manifest.json`
+### `manifest.json` and the settings
 
-```json
-{
-  "name": "CarLedger GPS tracker",
-  "version": "v1.0.0",
-  "builds": [
-    {
-      "chipFamily": "ESP32",
-      "parts": [
-        { "path": "bootloader.bin", "offset": 4096 },
-        { "path": "partitions.bin", "offset": 32768 },
-        { "path": "firmware.bin", "offset": 65536 }
-      ]
-    }
-  ],
-  "config": { "offset": 4128768, "size": 8192, "maxLength": 8192, "version": 1 }
-}
-```
-
-`builds` follows the manifest of [ESP Web Tools](https://esphome.github.io/esp-web-tools/), the build of the detected
-chip is written. `config` is the partition with the settings. A path is a file name next to the manifest; a manifest
-with another path, or missing fields, turns flashing off with a warning in the log.
-
-### Settings
-
-The settings are JSON followed by one NUL byte, padded with `0xFF` to a multiple of 4 bytes, at most
-`config.maxLength` bytes with the NUL:
-
-```json
-{
-  "version": 1,
-  "wifi": [{ "ssid": "Home", "pass": "secret-password" }],
-  "url": "https://carledger.example.com/api/device/points",
-  "token": "cl_…",
-  "ca": "-----BEGIN CERTIFICATE-----\n…\n-----END CERTIFICATE-----\n"
-}
-```
-
-| Field   | Rules                                                                                            |
-|---------|--------------------------------------------------------------------------------------------------|
-| `wifi`  | at least one network, 2.4 GHz only; `ssid` 1–32 bytes, `pass` empty (open network) or 8–63 bytes |
-| `url`   | `https://`, `http://` only for local tests                                                       |
-| `token` | the token of the tracker                                                                         |
-| `ca`    | optional PEM root certificate for a private or self-signed CA, else the built-in CA bundle       |
-
-Without valid settings the tracker keeps logging points but doesn't upload, its ERR LED blinks at 1 Hz and it prints
-the reason on boot, e.g. `Config: no token`.
+Described in the [firmware interface spec](TRACKER_FIRMWARE.md): the [manifest](TRACKER_FIRMWARE.md#manifest), its
+[JSON Schema](../src/main/resources/tracker/manifest.schema.json) and how the [settings](TRACKER_FIRMWARE.md#settings)
+are encoded and described.
 
 ## Retention and deletion
 
@@ -270,4 +231,5 @@ within 75 m of a named one renames that one. The named places are part of the ba
 
 `/api/device/**` isn't part of `openapi.json` and the generated client of the frontend: the package
 `de.codeflowwizardry.carledger.rest.device` is excluded with `mp.openapi.scan.exclude.packages` in
-`application.properties`. This page describes it instead.
+`application.properties`. This page and its own OpenAPI file, [`tracker-device-api.yaml`](tracker-device-api.yaml),
+describe it instead.

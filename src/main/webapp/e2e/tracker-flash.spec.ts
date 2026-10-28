@@ -1,24 +1,21 @@
+import { readFileSync } from 'node:fs';
 import { expect, Page, request, Route, test } from '@playwright/test';
 import { ALICE, API_URL } from '../playwright.config';
 import { aliceApi, deleteAllCars } from './helpers';
 
-const MANIFEST = {
-  name: 'CarLedger GPS tracker',
-  version: 'v1.0.0',
-  builds: [
-    {
-      chipFamily: 'ESP32',
-      parts: [{ path: 'firmware.bin', offset: 65536 }],
-    },
-  ],
-  config: { offset: 4128768, size: 8192, maxLength: 8192, version: 1 },
-};
+/** the release of the tests of the backend, spec 1 */
+const MANIFEST = JSON.parse(
+  readFileSync(
+    new URL('../../../test/resources/firmware/manifest.json', import.meta.url),
+    'utf8',
+  ),
+) as { version: string; capabilities: string[] };
 
 /**
  * The server of the dev mode has no firmware, the tests answer for it. The app
  * calls the API on another origin in dev mode, so the answer needs CORS.
  */
-async function withFirmware(page: Page) {
+async function withFirmware(page: Page, manifest: object = MANIFEST) {
   const answer = (json: unknown) => (route: Route) =>
     route.fulfill({
       json,
@@ -31,7 +28,7 @@ async function withFirmware(page: Page) {
     '**/api/tracker/firmware',
     answer({ version: MANIFEST.version }),
   );
-  await page.route('**/api/tracker/firmware/manifest.json', answer(MANIFEST));
+  await page.route('**/api/tracker/firmware/manifest.json', answer(manifest));
 }
 
 /**
@@ -157,26 +154,24 @@ test.describe.serial('Setting up GPS trackers over USB', () => {
       name: 'Install firmware v1.0.0',
     });
     await install.click();
-    await expect(dialog).toContainText('1 to 32 bytes');
+    const networks = dialog.getByTestId('flash-item');
+    await expect(
+      networks.nth(0).getByRole('textbox', { name: /^SSID/ }),
+    ).toHaveAccessibleDescription('Required');
     expect(await page.evaluate(() => 'portRequested' in window)).toBe(false);
 
-    await dialog.getByRole('button', { name: 'Add network' }).click();
-    const networks = dialog.getByTestId('flash-network');
+    // the form of the settings comes from the schema of the manifest
+    await expect(dialog).toContainText('WLAN networks');
+    await dialog.getByRole('button', { name: 'Add Network' }).click();
     await expect(networks).toHaveCount(2);
-    await networks
-      .nth(0)
-      .getByRole('textbox', { name: /^Network 1/ })
-      .fill('Home');
+    await networks.nth(0).getByRole('textbox', { name: /^SSID/ }).fill('Home');
     await networks
       .nth(0)
       .getByLabel(/^Password/)
       .fill('short');
-    await networks
-      .nth(1)
-      .getByRole('button', { name: 'Remove network' })
-      .click();
+    await dialog.getByRole('button', { name: 'Remove Network 2' }).click();
     await expect(networks).toHaveCount(1);
-    await expect(dialog).toContainText('Empty or 8 to 63 bytes');
+    await expect(dialog).toContainText('8 to 63 bytes');
 
     await networks
       .nth(0)
@@ -190,8 +185,27 @@ test.describe.serial('Setting up GPS trackers over USB', () => {
     expect(await page.evaluate(() => 'portRequested' in window)).toBe(true);
     // the form stays for another try
     await expect(
-      networks.nth(0).getByRole('textbox', { name: /^Network 1/ }),
+      networks.nth(0).getByRole('textbox', { name: /^SSID/ }),
     ).toHaveValue('Home');
+  });
+
+  test('offers only what the firmware declares', async () => {
+    await withFirmware(page, { ...MANIFEST, capabilities: ['settings'] });
+    await withSerialPort(page);
+    await page.goto(`/car/${carId}/edit`);
+
+    await page
+      .getByTestId('tracker')
+      .filter({ hasText: 'Glovebox' })
+      .getByRole('button', { name: 'Set up over USB' })
+      .click();
+    const dialog = page.getByRole('dialog', { name: 'Set up Glovebox' });
+    await expect(
+      dialog.getByRole('button', { name: 'Update settings only' }),
+    ).toBeVisible();
+    await expect(
+      dialog.getByRole('button', { name: /^Install firmware/ }),
+    ).toHaveCount(0);
   });
 
   test('issues a new token for an existing tracker', async () => {

@@ -1,0 +1,108 @@
+openapi: 3.1.0
+info:
+  title: CarLedger device API
+  version: "1"
+  description: |
+    The API of the GPS trackers, spec 1 (see TRACKER_FIRMWARE.md). It is not part of the openapi.json of the app.
+    Unknown fields in a request are ignored, so a newer firmware keeps working with an older CarLedger.
+  license:
+    name: AGPL-3.0-only
+servers:
+  - url: https://carledger.example.com/api
+security:
+  - tracker: []
+paths:
+  /device/points:
+    post:
+      operationId: addPoints
+      summary: Stores a batch of points
+      description: |
+        Invalid points are skipped, not rejected: a time more than 5 minutes in the future or before 2020, a position
+        outside of -90..90 / -180..180, a speed outside of 0..400 or an hdop of 0 or less. A point sent again (same
+        tracker and `ts`) is stored once, so a batch can be sent again safely. Updates the last contact of the tracker,
+        at most once per minute.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              maxItems: 500
+              description: at most `carledger.tracker.max-batch` points, 500 by default; the firmware sends 200
+              items:
+                $ref: "#/components/schemas/Point"
+      responses:
+        "200":
+          description: The batch is stored, the tracker drops it.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IngestResult"
+        "400":
+          description: Not JSON, not an array of points, or too many points. The tracker drops the batch.
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "5XX":
+          description: Error of the server. The tracker keeps the batch and sends it later.
+components:
+  securitySchemes:
+    tracker:
+      type: http
+      scheme: bearer
+      description: The token of the tracker, `cl_` and 43 characters. Works only for `/api/device/**`.
+  responses:
+    Unauthorized:
+      description: Missing, unknown or revoked token. The tracker keeps its data and sends it later.
+    TooManyRequests:
+      description: More than `carledger.tracker.rate-limit` requests per minute, 60 by default. The tracker keeps its data.
+      headers:
+        Retry-After:
+          description: seconds until the next request is accepted
+          schema:
+            type: integer
+  schemas:
+    Point:
+      type: object
+      required: [ts, lat, lon]
+      properties:
+        ts:
+          type: string
+          format: date-time
+          description: GPS time, UTC
+          examples: ["2026-10-20T20:15:03Z"]
+        lat:
+          type: number
+          minimum: -90
+          maximum: 90
+          description: degrees
+        lon:
+          type: number
+          minimum: -180
+          maximum: 180
+          description: degrees
+        speed:
+          type: number
+          minimum: 0
+          maximum: 400
+          description: km/h
+        alt:
+          type: number
+          description: meters
+        hdop:
+          type: number
+          exclusiveMinimum: 0
+    IngestResult:
+      type: object
+      required: [accepted, duplicates, rejected]
+      properties:
+        accepted:
+          type: integer
+          description: points stored
+        duplicates:
+          type: integer
+          description: points already stored before
+        rejected:
+          type: integer
+          description: invalid points, skipped

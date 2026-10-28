@@ -374,7 +374,11 @@ export type ConfigPartition = {
     offset: number;
     size: number;
     maxLength: number;
+    format: string;
     version: number;
+    schema: {
+        [key: string]: unknown;
+    };
 };
 
 export type CsvFields = {
@@ -432,9 +436,11 @@ export enum EnergyType {
 export type FirmwareManifest = {
     name: string;
     version: string;
+    spec: number;
     builds: Array<Build>;
+    capabilities: Array<string>;
+    layout: number;
     config: ConfigPartition;
-    valid?: boolean;
 };
 
 export type FirmwareSettings = {
