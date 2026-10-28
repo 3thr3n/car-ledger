@@ -9,15 +9,19 @@
  * {@link de.codeflowwizardry.carledger.tracker.DeviceService} stores.
  * <p>
  * Evaluation, each over the points of a car in the order of time:
- * {@link de.codeflowwizardry.carledger.tracker.TrackService} simplifies them
+ * {@link de.codeflowwizardry.carledger.tracker.TrackService} moves the drives
+ * of a street onto one line
+ * ({@link de.codeflowwizardry.carledger.tracker.SharedLine}) and simplifies
+ * them
  * for the map ({@link de.codeflowwizardry.carledger.tracker.TrackSimplifier}),
  * {@link de.codeflowwizardry.carledger.tracker.DriveDetector} finds the drives,
  * which {@link de.codeflowwizardry.carledger.tracker.TripSuggestions} offers as
  * forgotten trips and {@link de.codeflowwizardry.carledger.tracker.Places}
  * groups by where they end
  * ({@link de.codeflowwizardry.carledger.tracker.PlaceFinder}),
- * {@link de.codeflowwizardry.carledger.tracker.PassCounter} counts how often
- * the car drove a road. GPS never writes a trip itself.
+ * {@link de.codeflowwizardry.carledger.tracker.StreetNetwork} draws every
+ * street once and counts how often the car drove it. GPS never writes a trip
+ * itself.
  * <p>
  * {@link de.codeflowwizardry.carledger.tracker.TrackRetention} deletes the
  * points older than the car keeps them every night;
