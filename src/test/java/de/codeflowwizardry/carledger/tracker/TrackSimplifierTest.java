@@ -83,9 +83,36 @@ class TrackSimplifierTest
 		assertEquals(points.getFirst(), kept.getFirst());
 		assertEquals(points.getLast(), kept.getLast());
 		// each kept point is more than 10 km/h from the one before: 38 and 26 braking,
-		// 38 and 50 accelerating
-		assertEquals(List.of(50.0, 38.0, 26.0, 38.0, 50.0, 50.0),
+		// 38 and 50 accelerating, and the 20 km/h at the slowest point
+		assertEquals(List.of(50.0, 38.0, 26.0, 20.0, 38.0, 50.0, 50.0),
 				kept.stream().map(TrackPoint::speed).toList());
+	}
+
+	@Test
+	void shouldKeepTheHighestSpeed()
+	{
+		List<TrackPoint> points = straight(100);
+		// accelerating from 50 to 65 km/h and braking again
+		for (int i = 40; i < 50; i++)
+		{
+			points.set(i, point(i, i * 10, 0, i < 45 ? 50.0 + (i - 39) * 3 : 65.0 - (i - 44) * 3));
+		}
+
+		List<TrackPoint> kept = TrackSimplifier.simplify(points, 5, 10);
+
+		assertEquals(List.of(50.0, 62.0, 65.0, 50.0, 50.0), kept.stream().map(TrackPoint::speed).toList());
+	}
+
+	@Test
+	void shouldNotKeepTheNoiseOfAConstantSpeed()
+	{
+		List<TrackPoint> points = new ArrayList<>();
+		for (int i = 0; i < 100; i++)
+		{
+			points.add(point(i, i * 10, 0, 50.0 + (i % 3 - 1) * 4));
+		}
+
+		assertEquals(2, TrackSimplifier.simplify(points, 5, 10).size());
 	}
 
 	@Test
