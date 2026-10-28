@@ -44,6 +44,7 @@ import {
   SHORTCUTS,
   shortcutOf,
 } from '@/components/track/periods';
+import useFullscreen, { fullscreenSx } from '@/components/track/useFullscreen';
 import { Place } from '@/generated';
 
 /** the server returns at most this many days */
@@ -75,6 +76,7 @@ export default function TrackPage({ carId }: { carId: number }) {
     to: to?.add(1, 'day').startOf('day').toISOString() ?? '',
   };
   const [deleting, setDeleting] = useState(false);
+  const { fullscreen, toggle } = useFullscreen();
   // a viewer sees the tracks and the places, the owner deletes them
   const role = useCarRole(carId);
   const [mode, setMode] = useState<Mode>('speed');
@@ -173,7 +175,11 @@ export default function TrackPage({ carId }: { carId: number }) {
         </ToggleButtonGroup>
       }
     >
-      <Stack spacing={2}>
+      <Stack
+        spacing={2}
+        data-testid="track-area"
+        sx={fullscreen ? fullscreenSx : undefined}
+      >
         <ToggleButtonGroup
           size="small"
           exclusive
@@ -243,6 +249,9 @@ export default function TrackPage({ carId }: { carId: number }) {
             }
             places={showPlaces ? places : undefined}
             onPlaceClick={role('WRITE') ? setToName : undefined}
+            fill={fullscreen}
+            fullscreen={fullscreen}
+            onFullscreen={toggle}
           />
         )}
         <Stack

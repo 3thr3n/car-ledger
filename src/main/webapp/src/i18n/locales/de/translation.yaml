@@ -472,6 +472,9 @@ track:
     last3: "Letzte 3 Tage"
     last7: "Letzte 7 Tage"
     month: "Dieser Monat"
+  fullscreen:
+    enter: "Karte im Vollbild zeigen"
+    leave: "Vollbild verlassen"
   earlier: "Früher"
   later: "Später"
   empty: "Keine Strecke in diesem Zeitraum."
