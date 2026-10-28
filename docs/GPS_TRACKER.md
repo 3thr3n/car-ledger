@@ -218,11 +218,14 @@ for good, also when it is found a little differently later. Dismissed drives are
 
 The tab *Map* of a car shows its tracks of a day or a period of at most 31 days, colored by speed (orange: slow, dark
 blue: fast, 0 to 160 km/h) or by how often the car drove each road in the period (*Frequency*: yellow and thin once,
-dark red and wide the most often). For the frequency the points lie on a grid of 15 m, a drive marks its cells and
-the ones around, so the drift of the GPS between two drives on the same road doesn't matter. Both directions count,
-and a cell counts again once the car was away from it for more than 5 minutes: standing or a jam doesn't add a pass,
-the way back after a stop does. Roads closer than about 30 m, e.g. the two carriageways of a motorway, may count
-together.
+dark red and wide the most often). The frequency draws every street once, for all drives on it: the drives, on their
+shared line (below), lie on a grid of 8 m, each drive is a path from cell to cell, and the pieces of all paths between
+junctions and ends are the streets, at the average position of their cells. A drive marks its cells and the ones
+around, so the drift of the GPS between two drives doesn't matter. Both directions of a street count, a crossing
+street doesn't (a pass counts for its direction ±56°), and a cell counts again once the car was away from it for more
+than 5 minutes: standing or a jam doesn't add a pass, the way back after a stop does. A street is cut where its
+passes change, e.g. where a drive turned in. Small detours of the grid (up to 40 m) are left out, a roundabout stays.
+Streets closer than about 10 m may merge. A busy month is about 80 streets, 30 KB, in about a second.
 
 A street driven more than once shows as one line, in both views: the GPS drifts by a few meters from drive to drive
 and the two directions use different lanes. CarLedger lays the drives of the period on a grid of 8 m and moves each

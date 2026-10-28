@@ -1,5 +1,6 @@
 package de.codeflowwizardry.carledger.tracker;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.Duration;
@@ -10,6 +11,8 @@ import java.util.Random;
 
 import org.junit.jupiter.api.Test;
 
+import de.codeflowwizardry.carledger.rest.car.track.FrequencyLine;
+import de.codeflowwizardry.carledger.rest.car.track.TrackFrequency;
 import de.codeflowwizardry.carledger.rest.car.track.TrackPoint;
 
 /**
@@ -140,5 +143,25 @@ class RepeatedDrivesTest
 	{
 		// why the tolerance has to stay small: 15 m, as for 3 days before #533
 		assertTrue(maxGap(15) > 12);
+	}
+
+	@Test
+	void shouldDrawTheCurveOnceForTheFrequency()
+	{
+		Random random = new Random(7);
+		List<List<TrackPoint>> drives = new ArrayList<>();
+		for (int i = 0; i < 6; i++)
+		{
+			// the first 2 km, less than a circle: the arc of 3 km meets its own start
+			List<TrackPoint> drive = drive(i, random);
+			drives.add(drive.subList(0, Math.min(drive.size(), 45)));
+		}
+
+		TrackFrequency frequency = StreetNetwork.frequency(drives, Duration.ofMinutes(5), TrackService.TOLERANCE);
+
+		assertEquals(6, frequency.maxPasses());
+		// one street, perhaps a short end where a drive started later
+		assertTrue(frequency.lines().stream().filter(line -> line.passes() == 6).count() == 1,
+				() -> "lines " + frequency.lines().stream().map(FrequencyLine::passes).toList());
 	}
 }
