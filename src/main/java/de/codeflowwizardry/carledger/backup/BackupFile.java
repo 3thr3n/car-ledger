@@ -19,6 +19,7 @@ import de.codeflowwizardry.carledger.data.TripType;
 import de.codeflowwizardry.carledger.data.Accent;
 import de.codeflowwizardry.carledger.data.ApprovalType;
 import de.codeflowwizardry.carledger.data.UnitSystem;
+import de.codeflowwizardry.carledger.tracker.TrackerStatus;
 
 /**
  * Content of backup.json in the ZIP of a backup. The files (receipts, pictures)
@@ -117,9 +118,12 @@ public record BackupFile(String format, int version, OffsetDateTime createdAt, S
 	/**
 	 * A GPS tracker. Its token isn't in the backup, only the SHA-256 the server
 	 * stores: after a restore on another server it keeps sending.
+	 *
+	 * @param status
+	 *            the latest it reported, missing in backups before it
 	 */
 	public record Tracker(String name, String tokenHash, OffsetDateTime createdAt, OffsetDateTime lastSeenAt,
-			OffsetDateTime revokedAt)
+			OffsetDateTime revokedAt, TrackerStatus status, OffsetDateTime statusAt)
 	{
 	}
 

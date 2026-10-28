@@ -411,6 +411,18 @@ tracker:
   revokeTitle: "{{name}} widerrufen?"
   revokeText: "Sein Token funktioniert sofort nicht mehr. Die gesendeten Punkte bleiben erhalten."
   revoked: "Tracker widerrufen"
+  status:
+    firmware: "Firmware {{version}}"
+    storage: "Speicher zu {{percent}} % von {{total}} belegt"
+    upload: "letzter Upload: {{result}}"
+    reset: "letzter Start: {{reason}}"
+    wifi: "WLAN {{ssid}}{{rssi}}"
+    parts: "mit {{parts}}"
+    reported: "gemeldet {{date}}"
+    warnings:
+      storageError: "Der Speicher des Trackers kann nicht beschrieben werden, er kann noch nicht gesendete Punkte nicht behalten."
+      config: "Die Einstellungen des Trackers sind ungültig: Er zeichnet Punkte auf, lädt sie aber nicht hoch. Richte ihn über USB neu ein."
+      firmware: "Andere Firmware: Der Tracker läuft mit {{version}}, CarLedger bietet {{offered}} an."
   flash:
     open: "Über USB einrichten"
     title: "{{name}} einrichten"

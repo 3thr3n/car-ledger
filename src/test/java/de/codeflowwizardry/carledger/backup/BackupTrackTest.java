@@ -37,6 +37,8 @@ import de.codeflowwizardry.carledger.data.repository.TrackPointRepository;
 import de.codeflowwizardry.carledger.rest.car.tracker.DeviceInput;
 import de.codeflowwizardry.carledger.rest.device.TrackPointInput;
 import de.codeflowwizardry.carledger.tracker.DeviceService;
+import de.codeflowwizardry.carledger.tracker.DeviceService.AuthenticatedDevice;
+import de.codeflowwizardry.carledger.tracker.TrackerStatus;
 import de.codeflowwizardry.carledger.tracker.DeviceTokens;
 import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.quarkus.test.junit.QuarkusTest;
@@ -92,6 +94,8 @@ class BackupTrackTest
 		});
 		var created = deviceService.create(carId, new DeviceInput("Glovebox"), "peter");
 		token = created.token();
+		deviceService.status(new AuthenticatedDevice(created.device().id(), carId), new TrackerStatus(1, "v1.1.0",
+				null, null, false, "poweron", "ok", 200, true, "Home", -60, List.of("sd")));
 		long old = deviceService.create(carId, new DeviceInput("Old one"), "peter").device().id();
 		deviceService.revoke(carId, old, "peter");
 
@@ -386,6 +390,21 @@ class BackupTrackTest
 
 		restore(zip(entries)).statusCode(200).body("trackPoints", is(1));
 		assertEquals(List.of("-1.9|unknown"), gForces(restoredCar()));
+	}
+
+	@Test
+	void shouldRestoreTheStatusOfTheTrackers()
+	{
+		byte[] backup = download();
+		deleteCar();
+
+		restore(backup).statusCode(200);
+		given().when().get("/api/tracker/{carId}", restoredCar()).then()
+				.body("[1].name", is("Glovebox"))
+				.body("[1].status.firmware", is("v1.1.0"))
+				.body("[1].status.parts", org.hamcrest.Matchers.contains("sd"))
+				.body("[1].statusAt", org.hamcrest.Matchers.notNullValue())
+				.body("[0].status", nullValue());
 	}
 
 	@Test

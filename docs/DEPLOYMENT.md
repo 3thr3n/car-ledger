@@ -481,6 +481,10 @@ kubectl set env deployment/car-ledger QUARKUS_FLYWAY_IGNORE_FUTURE_MIGRATIONS=tr
   point, they are stored with the points (migration 1.34.0) and in the backup, with three more columns in the CSV of
   the track; a restore still reads the backups before. Nothing to set up, see
   [GPS_TRACKER.md](GPS_TRACKER.md#sending-points).
+- **Status of the trackers** (0.10.0): a tracker reports its firmware, storage, last upload, WLAN and installed parts
+  to `/api/device/status`, shown on the tracker with warnings (migration 1.35.0, part of the backup). A proxy in front
+  must pass the header `Authorization` on that path as well. Nothing to set up, see
+  [GPS_TRACKER.md](GPS_TRACKER.md#status).
 - **Firmware interface spec** (0.10.0): the `manifest.json` of the tracker firmware has to follow
   [spec 1](TRACKER_FIRMWARE.md) (`spec`, `capabilities`, `layout`, the settings as `config.schema`). A release with an
   older manifest turns flashing off with a warning in the log; put a release of the firmware that follows the spec into

@@ -55,6 +55,30 @@ Content-Type: application/json
 
 The last contact of a tracker (`lastSeenAt`) is updated at most once per minute.
 
+## Status
+
+Whenever its WLAN connects, also without points, a tracker reports its status (capability `status` of the
+[firmware spec](TRACKER_FIRMWARE.md)), with the same token:
+
+```http
+POST /api/device/status
+Authorization: Bearer cl_…
+Content-Type: application/json
+
+{"spec":1,"firmware":"v1.1.0","storageUsed":262144,"storageTotal":1048576,"storageError":false,
+ "resetReason":"watchdog","uploadResult":"ok","uploadStatus":200,"configOk":true,"ssid":"Home","rssi":-67,
+ "parts":["sd","oled","imu"]}
+```
+
+All fields are optional, a field out of its range is left out and unknown ones are ignored (the fields and their
+ranges are in [`tracker-device-api.yaml`](tracker-device-api.yaml)). The answer is 204, 401 for a revoked tracker and
+429 above the limit of requests, which the status shares with the points. It updates the last contact like the points.
+
+CarLedger keeps only the latest status of each tracker, no history, and shows it on the tracker in *Edit car* → *GPS
+trackers*: firmware, storage, last upload, last start, WLAN and the installed parts. Warnings: storage that can't be
+written (`storageError`), invalid settings (`configOk` false) and *Different firmware* when the tracker runs another
+version than the one offered for flashing. The status is deleted with its tracker and part of the backup.
+
 ## Settings
 
 | Property                               | Default | Meaning                                                                      |

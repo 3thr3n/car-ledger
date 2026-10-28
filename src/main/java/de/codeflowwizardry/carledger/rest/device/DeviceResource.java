@@ -9,6 +9,7 @@ import de.codeflowwizardry.carledger.tracker.DeviceRateLimiter;
 import de.codeflowwizardry.carledger.tracker.DeviceService;
 import de.codeflowwizardry.carledger.tracker.DeviceService.AuthenticatedDevice;
 import de.codeflowwizardry.carledger.tracker.TrackerConfig;
+import de.codeflowwizardry.carledger.tracker.TrackerStatus;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
@@ -67,5 +68,30 @@ public class DeviceResource
 			throw new BadRequestException("At most " + config.maxBatch() + " points per request");
 		}
 		return Response.ok(deviceService.ingest(device, points)).build();
+	}
+
+	/**
+	 * The status of the tracker, sent whenever its WLAN connects, also without
+	 * points. Shares the limit of requests with the points.
+	 */
+	@POST
+	@Path("status")
+	@Consumes(MediaType.APPLICATION_JSON)
+	public Response status(TrackerStatus status)
+	{
+		AuthenticatedDevice device = new AuthenticatedDevice(identity.getAttribute(DeviceIdentityProvider.DEVICE_ID),
+				identity.getAttribute(DeviceIdentityProvider.CAR_ID));
+		if (!rateLimiter.tryAcquire(device.deviceId()))
+		{
+			return Response.status(Response.Status.TOO_MANY_REQUESTS)
+					.header("Retry-After", rateLimiter.retryAfterSeconds(device.deviceId()))
+					.build();
+		}
+		if (status == null)
+		{
+			throw new BadRequestException("The body must be a JSON object");
+		}
+		deviceService.status(device, status);
+		return Response.noContent().build();
 	}
 }

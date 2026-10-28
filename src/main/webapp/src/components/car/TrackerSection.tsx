@@ -28,6 +28,7 @@ import TrackerAddDialog from '@/components/car/TrackerAddDialog';
 import TrackHistory from '@/components/car/TrackHistory';
 import LazyTrackerFlashDialog from '@/components/tracker/LazyTrackerFlashDialog';
 import useFirmware from '@/components/tracker/useFirmware';
+import TrackerStatusDetails from '@/components/car/TrackerStatusDetails';
 
 /**
  * The GPS trackers of a car: each sends its points with its own token, the
@@ -104,6 +105,7 @@ export default function TrackerSection({
                 {index > 0 && <Divider />}
                 <TrackerRow
                   tracker={tracker}
+                  offered={firmware.version}
                   onFlash={
                     canFlash ? () => setFlashing({ tracker }) : undefined
                   }
@@ -157,11 +159,14 @@ export default function TrackerSection({
 
 function TrackerRow({
   tracker,
+  offered,
   onFlash,
   onRevoke,
   disabled,
 }: {
   tracker: Device;
+  /** version of the firmware the server offers for flashing */
+  offered?: string;
   onFlash?: () => void;
   onRevoke: () => void;
   disabled: boolean;
@@ -204,6 +209,13 @@ function TrackerRow({
           {' · '}
           {t('tracker.createdOn', { date: format.date(tracker.createdAt) })}
         </Typography>
+        {tracker.status && !tracker.revokedAt && (
+          <TrackerStatusDetails
+            status={tracker.status}
+            statusAt={tracker.statusAt}
+            offered={offered}
+          />
+        )}
       </Box>
       {!tracker.revokedAt && onFlash && (
         <Button
