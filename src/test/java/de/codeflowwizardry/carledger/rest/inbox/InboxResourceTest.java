@@ -129,6 +129,31 @@ class InboxResourceTest
 	}
 
 	@Test
+	void shouldShortenATitleLongerThanItsColumn()
+	{
+		// a user id of the identity provider has up to 255 characters, a car name 100
+		String owner = "o".repeat(255);
+		long car = QuarkusTransaction.requiringNew().call(() -> {
+			CarEntity entity = new CarEntity();
+			entity.setUser(account(owner, false));
+			entity.setName("c".repeat(100));
+			entity.setManufactureYear(2020);
+			entity.setPurchaseDate(LocalDate.of(2020, 5, 1));
+			carRepository.persist(entity);
+			return entity.getId();
+		});
+
+		carAccessService.invite(car, new CarInvitationInput("peter", CarRole.VIEWER, null, null), owner);
+
+		String title = given().when().get("/api/inbox").then()
+				.statusCode(200)
+				.body("total", is(1))
+				.extract().path("data[0].title");
+		assertEquals(NotificationEntity.MAX_TITLE, title.length());
+		assertEquals('…', title.charAt(title.length() - 1));
+	}
+
+	@Test
 	void shouldMarkAsReadAndDelete()
 	{
 		invitePeter();

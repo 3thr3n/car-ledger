@@ -33,7 +33,13 @@ public class NotificationEntity
 	@Column(name = "nt_tag", nullable = false, length = 100)
 	private String tag;
 
-	@Column(name = "nt_title", nullable = false, length = 300)
+	/**
+	 * characters, the push title can be longer: a user id has up to 255, a car name
+	 * 100
+	 */
+	public static final int MAX_TITLE = 300;
+
+	@Column(name = "nt_title", nullable = false, length = MAX_TITLE)
 	private String title;
 
 	@Column(name = "nt_text", nullable = false)
@@ -64,7 +70,7 @@ public class NotificationEntity
 		this.account = account;
 		this.event = event;
 		this.tag = tag;
-		this.title = title;
+		this.title = shorten(title);
 		this.text = text;
 		this.path = path;
 		this.data = data;
@@ -134,8 +140,26 @@ public class NotificationEntity
 	public void replace(String event, String title, String text, Map<String, Object> data)
 	{
 		this.event = event;
-		this.title = title;
+		this.title = shorten(title);
 		this.text = text;
 		this.data = data;
+	}
+
+	/**
+	 * @return the title, cut with an ellipsis to fit {@link #MAX_TITLE}
+	 */
+	static String shorten(String title)
+	{
+		if (title.length() <= MAX_TITLE)
+		{
+			return title;
+		}
+		int end = MAX_TITLE - 1;
+		// not between the halves of an emoji
+		if (Character.isHighSurrogate(title.charAt(end - 1)))
+		{
+			end--;
+		}
+		return title.substring(0, end) + "…";
 	}
 }
