@@ -1,6 +1,6 @@
 import type { ExpressionSpecification } from 'maplibre-gl';
 import type { Feature, FeatureCollection, LineString, Point } from 'geojson';
-import type { TrackPoint } from '@/generated';
+import type { MapPoint } from './trackData';
 
 /**
  * Speed is a magnitude: the plasma scale, orange (slow) over magenta and
@@ -44,44 +44,71 @@ export const legendGradient = `linear-gradient(to right, ${SPEED_STOPS.map(
   (stop) => `${stop.color} ${(stop.kmh / MAX_SPEED) * 100}%`,
 ).join(', ')})`;
 
+/** steps of the speed that a line keeps, km/h */
+const BAND = 10;
+
+/** the speed of the piece to the point: the mean of its ends that have one */
+function pieceSpeed(from: MapPoint, to: MapPoint): number | null {
+  const speeds = [from.speed, to.speed].filter(
+    (speed): speed is number => speed !== null,
+  );
+  return speeds.length
+    ? speeds.reduce((sum, speed) => sum + speed, 0) / speeds.length
+    : null;
+}
+
+const band = (speed: number | null) =>
+  speed === null ? -1 : Math.floor(speed / BAND);
+
 /**
- * Pieces between the points of the segments, each colored by the mean speed
- * of its two points (the one that is known, if only one is)
+ * The segments as lines of the same band of speed, each colored by the mean
+ * speed of its pieces: a few thousand lines for a month instead of a feature
+ * per pair of points, and the map can simplify them by its zoom. The segment
+ * and the indexes of its points find the point under the pointer.
  */
-export function trackPieces(
-  segments: TrackPoint[][],
+export function trackBands(
+  segments: MapPoint[][],
 ): FeatureCollection<LineString> {
   const features: Feature<LineString>[] = [];
-  for (const segment of segments) {
-    for (let i = 1; i < segment.length; i++) {
-      const from = segment[i - 1];
-      const to = segment[i];
-      const speeds = [from.speed, to.speed].filter(
-        (speed): speed is number => speed !== undefined && speed !== null,
-      );
+  segments.forEach((segment, seg) => {
+    let from = 0;
+    while (from < segment.length - 1) {
+      const first = band(pieceSpeed(segment[from], segment[from + 1]));
+      let to = from + 1;
+      const speeds = [pieceSpeed(segment[from], segment[to])];
+      while (
+        to < segment.length - 1 &&
+        band(pieceSpeed(segment[to], segment[to + 1])) === first
+      ) {
+        speeds.push(pieceSpeed(segment[to], segment[to + 1]));
+        to++;
+      }
+      const known = speeds.filter((speed): speed is number => speed !== null);
       features.push({
         type: 'Feature',
         geometry: {
           type: 'LineString',
-          coordinates: [
-            [from.lon, from.lat],
-            [to.lon, to.lat],
-          ],
+          coordinates: segment
+            .slice(from, to + 1)
+            .map((point) => [point.lon, point.lat]),
         },
         properties: {
-          ts: to.ts,
-          speed: speeds.length
-            ? speeds.reduce((sum, speed) => sum + speed, 0) / speeds.length
+          seg,
+          from,
+          to,
+          speed: known.length
+            ? known.reduce((sum, speed) => sum + speed, 0) / known.length
             : null,
         },
       });
+      from = to;
     }
-  }
+  });
   return { type: 'FeatureCollection', features };
 }
 
 /** the first and the last point of every segment */
-export function trackEnds(segments: TrackPoint[][]): FeatureCollection<Point> {
+export function trackEnds(segments: MapPoint[][]): FeatureCollection<Point> {
   return {
     type: 'FeatureCollection',
     features: segments.flatMap((segment) => {
@@ -95,7 +122,7 @@ export function trackEnds(segments: TrackPoint[][]): FeatureCollection<Point> {
           type: 'Point' as const,
           coordinates: [point.lon, point.lat],
         },
-        properties: { end, ts: point.ts, speed: point.speed ?? null },
+        properties: { end, ts: point.ts, speed: point.speed },
       }));
     }),
   };

@@ -22,6 +22,7 @@ import de.codeflowwizardry.carledger.rest.car.track.Track;
 import de.codeflowwizardry.carledger.rest.car.track.TrackDrive;
 import de.codeflowwizardry.carledger.rest.car.track.TrackFrequency;
 import de.codeflowwizardry.carledger.rest.car.track.TrackPoint;
+import de.codeflowwizardry.carledger.rest.car.track.TrackSegment;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -39,9 +40,11 @@ public class TrackService
 	public static final Duration GAP = Duration.ofMinutes(5);
 	/** a point is kept where the speed changes by more than this, km/h */
 	static final double SPEED_THRESHOLD = 10;
-	/** tolerance of the simplification per day of the range, meters */
-	static final double TOLERANCE_PER_DAY = 5;
-	static final double MAX_TOLERANCE = 50;
+	/**
+	 * meters, of the simplification: small, so the drives of a street stay on
+	 * their shared line; the map simplifies further by its zoom
+	 */
+	static final double TOLERANCE = 1;
 
 	private final CarRepository carRepository;
 	private final TrackPointRepository trackPointRepository;
@@ -104,7 +107,7 @@ public class TrackService
 		}
 
 		SharedLine shared = new SharedLine(GAP);
-		PassCounter counter = new PassCounter(GAP, tolerance(selection.span(Duration.between(from, to))), shared);
+		PassCounter counter = new PassCounter(GAP, TOLERANCE, shared);
 		trackPointRepository.forEach(carId, from, to, selection.filter(point -> {
 			counter.count(point);
 			shared.add(point);
@@ -199,7 +202,7 @@ public class TrackService
 	private Track collect(long carId, OffsetDateTime from, OffsetDateTime to, Selection selection,
 			SharedLine shared)
 	{
-		Collector collector = new Collector(tolerance(selection.span(Duration.between(from, to))), shared);
+		Collector collector = new Collector(TOLERANCE, shared);
 		trackPointRepository.forEach(carId, from, to, selection.filter(collector::add, collector::finish));
 		collector.finish();
 		return new Track(collector.segments, Math.round(collector.meters / 10) / 100.0, collector.count);
@@ -222,15 +225,6 @@ public class TrackService
 	}
 
 	/**
-	 * @return meters, more for a longer range: the map shows it smaller
-	 */
-	static double tolerance(Duration range)
-	{
-		double days = range.toMinutes() / (24.0 * 60);
-		return Math.clamp(days * TOLERANCE_PER_DAY, TOLERANCE_PER_DAY, MAX_TOLERANCE);
-	}
-
-	/**
 	 * Splits the points at the gaps, sums their distance and simplifies each
 	 * finished segment, moved onto the shared line
 	 */
@@ -238,7 +232,7 @@ public class TrackService
 	{
 		private final double tolerance;
 		private final SharedLine shared;
-		private final List<List<TrackPoint>> segments = new ArrayList<>();
+		private final List<TrackSegment> segments = new ArrayList<>();
 		private List<TrackPoint> current = new ArrayList<>();
 		private double meters;
 		private int count;
@@ -271,7 +265,7 @@ public class TrackService
 			if (!current.isEmpty())
 			{
 				List<TrackPoint> points = shared == null ? current : shared.apply(current);
-				segments.add(TrackSimplifier.simplify(points, tolerance, SPEED_THRESHOLD));
+				segments.add(TrackSegment.of(TrackSimplifier.simplify(points, tolerance, SPEED_THRESHOLD)));
 				current = new ArrayList<>();
 			}
 		}

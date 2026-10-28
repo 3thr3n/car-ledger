@@ -12,6 +12,7 @@ import java.util.Map;
 import de.codeflowwizardry.carledger.rest.car.track.FrequencyLine;
 import de.codeflowwizardry.carledger.rest.car.track.TrackFrequency;
 import de.codeflowwizardry.carledger.rest.car.track.TrackPoint;
+import de.codeflowwizardry.carledger.rest.car.track.TrackSegment;
 
 /**
  * Counts how often the car passed the roads of its points, in two runs over the
@@ -230,7 +231,7 @@ final class PassCounter
 		for (int i = 0; i < kept.size(); i++)
 		{
 			coordinates[i] = new double[] {
-					kept.get(i).lon(), kept.get(i).lat()
+					TrackSegment.round(kept.get(i).lon(), 1e6), TrackSegment.round(kept.get(i).lat(), 1e6)
 			};
 		}
 		lines.add(new FrequencyLine(passes, last, coordinates));

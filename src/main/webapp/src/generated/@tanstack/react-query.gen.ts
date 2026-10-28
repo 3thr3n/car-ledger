@@ -2135,7 +2135,7 @@ export const getTrackQueryKey = (options: Options<GetTrackData>) => createQueryK
 /**
  * Get Track
  *
- * GPS track of a car in a time range of at most 31 days, simplified for the map and split into segments at gaps of more than 5 minutes, and between the selected drives.
+ * GPS track of a car in a time range of at most 31 days, on the shared line of repeated drives, simplified with 1 m (the map simplifies further by its zoom), split into segments at gaps of more than 5 minutes and between the selected drives. Compact: each point is [lon, lat, seconds since the start of its segment, speed].
  */
 export const getTrackOptions = (options: Options<GetTrackData>) => queryOptions<GetTrackResponse, GetTrackError, GetTrackResponse, ReturnType<typeof getTrackQueryKey>>({
     queryFn: async ({ queryKey, signal }) => {

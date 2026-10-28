@@ -838,7 +838,7 @@ export type TotalStats = {
 };
 
 export type Track = {
-    segments: Array<Array<TrackPoint>>;
+    segments: Array<TrackSegment>;
     distance: number;
     points: number;
 };
@@ -856,15 +856,13 @@ export type TrackFrequency = {
     maxPasses: number;
 };
 
-export type TrackPoint = {
-    ts: OffsetDateTime;
-    lat: number;
-    lon: number;
-    speed?: number;
-};
-
 export type TrackRetentionInput = {
     days?: number;
+};
+
+export type TrackSegment = {
+    start: OffsetDateTime;
+    points: Array<Array<number>>;
 };
 
 export type TrackerStatus = {

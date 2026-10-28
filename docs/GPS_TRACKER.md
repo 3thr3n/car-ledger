@@ -226,6 +226,11 @@ crossing street doesn't pull). The more often a street is driven, the steadier i
 is. Streets closer than about 10 m may merge. Only the map is changed: the stored points, the trips, the suggestions,
 the places and the backup use the points as the tracker sent them, and so does the track of a single trip.
 
+The server simplifies the lines only by 1 m and sends them compact (`[lon, lat, seconds, speed]` per point, gzip); the
+map simplifies further by its zoom, so the drives of a street stay together at every zoom (a simplification per drive
+by the length of the period took them apart again by up to 50 m, #526). The speeds are drawn as lines of the same band
+of 10 km/h. A busy month (about 2000 km, a point every 2 s) is about 940 KB, 320 KB with gzip.
+
 It appears for cars with a tracker once a map is set up:
 
 | Property                  | Helm value               | Meaning                                                                       |
