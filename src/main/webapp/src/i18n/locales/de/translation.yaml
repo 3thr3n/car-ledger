@@ -92,7 +92,7 @@ landing:
       text: "Fahrten mit Kilometerstand beginnen und beenden, gelöschte bleiben mit Grund, Export als PDF oder CSV."
     gps:
       title: "GPS-Tracking"
-      text: "Ein Tracker im Auto sendet die Strecke: die Karte nach Tempo, Häufigkeit oder G-Kräften, vergessene Fahrten vorgeschlagen."
+      text: "Ein Tracker im Auto sendet die Strecke: die Karte nach Tempo oder Häufigkeit, vergessene Fahrten vorgeschlagen."
     sharing:
       title: "Teilen"
       text: "Lade deinen Haushalt oder deine Fahrer zu einem Auto ein, als Bearbeiter, Betrachter oder Fahrer, auch für einen Zeitraum."
