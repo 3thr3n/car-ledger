@@ -1,6 +1,6 @@
 # Eclipse Temurin on Ubuntu 24.04: its tag follows the JRE 21 and the security updates of Ubuntu, a new build of the
 # app gets them (see #501, the Red Hat image waited for its rebuilds)
-FROM eclipse-temurin:21-jre-noble
+FROM eclipse-temurin:24-jre-noble
 
 ENV LANGUAGE='en_US:en'
 
