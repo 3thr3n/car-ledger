@@ -22,6 +22,9 @@ keycloak:
     adminPassword: ""
 
   nameOverride: keycloak
+  # the keycloakx chart defaults to 26.7.4, whose JDK still trusts the compromised eMudhra CAs (CVE-2026-91403)
+  image:
+    tag: "26.8.1"
   command:
     - /opt/keycloak/bin/kc.sh
   # imports the realm car-ledger of templates/realm.yaml on the first start, if it does not exist yet

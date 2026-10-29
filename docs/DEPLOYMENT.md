@@ -6,7 +6,7 @@ CarLedger runs on Kubernetes. It needs an OpenID Connect provider for the login,
 |-------------------|-----------------------------------------------------------------------------------------------------------------------------------------|
 | `helm/stack`      | All of the charts below in one release, each switched on with one value and set up to work together, see [its README](../helm/stack/README.md) |
 | `helm/car-ledger` | The app, its PostgreSQL and Infinispan (keeps the login sessions, shared by all replicas)                                                |
-| `helm/keycloak`   | Keycloak 26.7 (via the [keycloakx chart](https://github.com/codecentric/helm-charts/tree/master/charts/keycloakx)) with its own PostgreSQL |
+| `helm/keycloak`   | Keycloak 26.8 (via the [keycloakx chart](https://github.com/codecentric/helm-charts/tree/master/charts/keycloakx)) with its own PostgreSQL |
 | `helm/authentik`  | authentik 2026.8 with its own PostgreSQL, CarLedger is set up by a blueprint, see [its README](../helm/authentik/README.md)              |
 
 The app is reachable as `car-ledger.<host>`.
@@ -477,6 +477,11 @@ kubectl set env deployment/car-ledger QUARKUS_FLYWAY_IGNORE_FUTURE_MIGRATIONS=tr
   users flash the firmware and the settings of a tracker from Chrome or Edge over USB; the firmware is not part of
   CarLedger. `carLedger.imagePullSecrets` pulls the images of the pod from a private registry, see
   [GPS_TRACKER.md](GPS_TRACKER.md#flashing).
+- **eMudhra** (0.10.0; keycloak chart 0.5.2, authentik chart 0.4.1): the trust stores no longer accept the eMudhra
+  certificate authorities whose keys were compromised (CVE-2026-91403). The app runs on Temurin 21.0.13, Keycloak is
+  raised to 26.8.1 and authentik to 2026.8.5. A `keycloak.image.tag` or authentik image of your own keeps the old
+  trust store, remove it or set a version from these on. Infinispan 15.2 still has an older JDK, it only accepts
+  connections of the app inside the cluster and opens none to the outside. Nothing else to set up.
 - **Notifications in the app** (0.10.0): every notification also goes into the inbox of the account, the page
   *Notifications* with the number of unread ones in the menu, also without e-mail and push (migration 1.36.0, table
   `notification`). The switches of the settings now choose what comes by e-mail and push as well; the inbox gets all.
@@ -588,7 +593,7 @@ upgrade, their volumes are kept:
 kubectl delete statefulset car-ledger-postgresql
 helm upgrade car-ledger ...
 
-# keycloak chart: the database of the bitnami Keycloak (26.0/26.1) can not be migrated to 26.7 directly,
+# keycloak chart: the database of the bitnami Keycloak (26.0/26.1) can not be migrated to 26.7 or later directly,
 # upgrade to 26.6 first and to the default version afterwards
 kubectl delete statefulset keycloak keycloak-postgresql
 helm upgrade keycloak ... --set keycloak.image.tag=26.6
