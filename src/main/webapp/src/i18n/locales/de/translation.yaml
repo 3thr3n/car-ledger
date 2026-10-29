@@ -86,13 +86,13 @@ landing:
       text: "Die Umbauten und die HUs mit allen Dokumenten in einem PDF, für eine Kontrolle oder den Verkauf."
     reminders:
       title: "Erinnerungen"
-      text: "Inspektion, Reifen, Vignette: fällig nach Datum oder Kilometerstand, per E-Mail und Push-Nachricht."
+      text: "Inspektion, Reifen, Vignette: fällig nach Datum oder Kilometerstand, per E-Mail, Push-Nachricht und im Posteingang der App."
     trips:
       title: "Fahrtenbuch"
       text: "Fahrten mit Kilometerstand beginnen und beenden, gelöschte bleiben mit Grund, Export als PDF oder CSV."
     gps:
       title: "GPS-Tracking"
-      text: "Ein Tracker im Auto sendet die Strecke: die Karte nach Tempo oder Häufigkeit, vergessene Fahrten vorgeschlagen."
+      text: "Ein Tracker im Auto sendet die Strecke: die Karte nach Tempo, Häufigkeit oder G-Kräften, vergessene Fahrten vorgeschlagen."
     sharing:
       title: "Teilen"
       text: "Lade deinen Haushalt oder deine Fahrer zu einem Auto ein, als Bearbeiter, Betrachter oder Fahrer, auch für einen Zeitraum."
