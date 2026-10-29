@@ -86,13 +86,13 @@ landing:
       text: "The modifications and the HUs with all their documents in one PDF, for a check or when selling the car."
     reminders:
       title: "Reminders"
-      text: "Service, tires, vignette: due by date or mileage, by e-mail and push message."
+      text: "Service, tires, vignette: due by date or mileage, by e-mail, push message and in the inbox of the app."
     trips:
       title: "Trip log"
       text: "Start and finish trips with the odometer, deleted ones stay with their reason, export as PDF or CSV."
     gps:
       title: "GPS tracking"
-      text: "A tracker in the car sends its route: the map by speed or by how often you drove it, forgotten trips suggested."
+      text: "A tracker in the car sends its route: the map by speed, by how often you drove it or by g-force, forgotten trips suggested."
     sharing:
       title: "Sharing"
       text: "Invite your household or your drivers to a car as editor, viewer or driver, also for a period."

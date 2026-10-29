@@ -58,9 +58,10 @@ authentik or any other provider).
 - **Trip log (Fahrtenbuch):** start and finish trips with the odometer, enter forgotten ones, delete with a reason
   (they stay in the log), export as PDF or CSV.
 - **GPS tracking:** a tracker in the car (e.g. an ESP32) sends its points, the app shows the tracks on a map colored
-  by speed or by how often a road was driven and the track of a trip, names the places the car stops at often and
-  suggests forgotten trips from the drives; the owner chooses how long the points are kept, see
-  [docs/GPS_TRACKER.md](docs/GPS_TRACKER.md).
+  by speed, by how often a road was driven or by the g-forces and the track of a trip, single drives and in
+  fullscreen, names the places the car stops at often and suggests forgotten trips from the drives; the owner chooses
+  how long the points are kept, sees the status of the tracker (firmware, storage, last upload) and updates only its
+  firmware with the settings kept, see [docs/GPS_TRACKER.md](docs/GPS_TRACKER.md).
 - **Reminders and notifications:** due reminders, invitations to cars and the answers to requests in the inbox of the
   app (*Notifications*, kept for 90 days), and by e-mail and push message for the topics you choose.
 
@@ -214,13 +215,13 @@ described in [values.yaml](helm/car-ledger/values.yaml), the options in [docs/DE
 
 ### Versions
 
-A [release](https://github.com/3thr3n/car-ledger/releases) (e.g. `0.9.0`) publishes the image
-`ghcr.io/3thr3n/car-ledger:0.9.0` and the charts `car-ledger` and `stack` in the same version, which run that image.
+A [release](https://github.com/3thr3n/car-ledger/releases) (e.g. `0.10.0`) publishes the image
+`ghcr.io/3thr3n/car-ledger:0.10.0` and the charts `car-ledger` and `stack` in the same version, which run that image.
 `keycloak` and `authentik` have their own versions, the release notes name them. Without `--version`, Helm installs the
 latest release.
 
-Every build of `develop` is published as a prerelease, `<next release>-dev.<run number>` (e.g. `0.10.0-dev.123`): `--devel`
-installs the latest one, a version range takes them only with a prerelease suffix (`>=0.10.0-0`). Leave
+Every build of `develop` is published as a prerelease, `<next release>-dev.<run number>` (e.g. `0.11.0-dev.123`): `--devel`
+installs the latest one, a version range takes them only with a prerelease suffix (`>=0.11.0-0`). Leave
 `carLedger.image.tag` empty, the chart runs the image of its own build.
 
 Up to 0.3.x the app chart was `oci://ghcr.io/3thr3n/car-ledger/helm`, since 0.4.0 it is `car-ledger`.
