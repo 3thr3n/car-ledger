@@ -1,0 +1,211 @@
+openapi: 3.1.0
+info:
+  title: CarLedger device API
+  version: "1"
+  description: |
+    The API of the GPS trackers, spec 1 (see TRACKER_FIRMWARE.md). It is not part of the openapi.json of the app.
+    Unknown fields in a request are ignored, so a newer firmware keeps working with an older CarLedger.
+  license:
+    name: AGPL-3.0-only
+servers:
+  - url: https://carledger.example.com/api
+security:
+  - tracker: []
+paths:
+  /device/points:
+    post:
+      operationId: addPoints
+      summary: Stores a batch of points
+      description: |
+        Invalid points are skipped, not rejected: a time more than 5 minutes in the future or before 2020, a position
+        outside of -90..90 / -180..180, a speed outside of 0..400 or an hdop of 0 or less. A point sent again (same
+        tracker and `ts`) is stored once, so a batch can be sent again safely. Updates the last contact of the tracker,
+        at most once per minute.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              maxItems: 500
+              description: at most `carledger.tracker.max-batch` points, 500 by default; the firmware sends 200
+              items:
+                $ref: "#/components/schemas/Point"
+      responses:
+        "200":
+          description: The batch is stored, the tracker drops it.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IngestResult"
+        "400":
+          description: Not JSON, not an array of points, or too many points. The tracker drops the batch.
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "5XX":
+          description: Error of the server. The tracker keeps the batch and sends it later.
+  /device/status:
+    post:
+      operationId: reportStatus
+      summary: Keeps the status of the tracker
+      description: |
+        Sent whenever the WLAN of the tracker connects, also without points (capability `status`). CarLedger keeps
+        only the latest one and shows it on the tracker. All fields are optional; a field out of its range is left
+        out, unknown ones are ignored. Updates the last contact of the tracker, like the points. A firmware ignores a
+        404 of an older CarLedger, and a failed status never holds up the points.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Status"
+      responses:
+        "204":
+          description: Kept.
+        "400":
+          description: Not a JSON object.
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+components:
+  securitySchemes:
+    tracker:
+      type: http
+      scheme: bearer
+      description: The token of the tracker, `cl_` and 43 characters. Works only for `/api/device/**`.
+  responses:
+    Unauthorized:
+      description: Missing, unknown or revoked token. The tracker keeps its data and sends it later.
+    TooManyRequests:
+      description: More than `carledger.tracker.rate-limit` requests per minute, 60 by default. The tracker keeps its data.
+      headers:
+        Retry-After:
+          description: seconds until the next request is accepted
+          schema:
+            type: integer
+  schemas:
+    Point:
+      type: object
+      required: [ts, lat, lon]
+      properties:
+        ts:
+          type: string
+          format: date-time
+          description: GPS time, UTC
+          examples: ["2026-10-20T20:15:03Z"]
+        lat:
+          type: number
+          minimum: -90
+          maximum: 90
+          description: degrees
+        lon:
+          type: number
+          minimum: -180
+          maximum: 180
+          description: degrees
+        speed:
+          type: number
+          minimum: 0
+          maximum: 400
+          description: km/h
+        alt:
+          type: number
+          description: meters
+        hdop:
+          type: number
+          exclusiveMinimum: 0
+        accel:
+          type: number
+          minimum: 0
+          maximum: 2
+          description: peak forward acceleration since the point before, g; a value out of range is left out, the point stays
+        brake:
+          type: number
+          minimum: 0
+          maximum: 2
+          description: peak braking since the point before, g, 0 or more; out of range left out like accel
+        lateral:
+          type: number
+          minimum: -2
+          maximum: 2
+          description: peak sideways acceleration since the point before, g, + turning right, - turning left
+        gsource:
+          type: string
+          examples: [imu, gps]
+          description: |
+            where accel, brake and lateral come from: imu (real peaks) or gps (averages over a second). Missing next to
+            values means gps (firmware before the IMU); another value is stored as unknown.
+    Status:
+      type: object
+      properties:
+        spec:
+          type: integer
+          minimum: 1
+          description: version of the spec the firmware implements
+        firmware:
+          type: string
+          maxLength: 40
+          examples: ["v1.1.0"]
+          description: version of the firmware; CarLedger shows "Different firmware" when it isn't the one it offers
+        storageUsed:
+          type: integer
+          minimum: 0
+          description: bytes of the storage for the points
+        storageTotal:
+          type: integer
+          minimum: 1
+          description: bytes
+        storageError:
+          type: boolean
+          description: the storage can't be written; shown as a warning
+        resetReason:
+          type: string
+          maxLength: 40
+          examples: [poweron, watchdog, brownout, panic]
+          description: of the last start
+        uploadResult:
+          type: string
+          maxLength: 40
+          examples: [ok, timeout, http]
+          description: of the last upload of points
+        uploadStatus:
+          type: integer
+          minimum: 100
+          maximum: 599
+          description: HTTP status of the last upload, missing without an answer
+        configOk:
+          type: boolean
+          description: whether the settings are valid; false is shown as a warning
+        ssid:
+          type: string
+          maxLength: 32
+          description: of the WLAN it is connected to
+        rssi:
+          type: integer
+          minimum: -127
+          maximum: 0
+          description: dBm
+        parts:
+          type: array
+          maxItems: 10
+          items:
+            type: string
+            pattern: "^[a-z0-9][a-z0-9_-]{0,19}$"
+          examples: [[sd, oled, imu]]
+          description: what is installed, e.g. sd (SD card), oled, imu (g-sensor); stored in lower case
+    IngestResult:
+      type: object
+      required: [accepted, duplicates, rejected]
+      properties:
+        accepted:
+          type: integer
+          description: points stored
+        duplicates:
+          type: integer
+          description: points already stored before
+        rejected:
+          type: integer
+          description: invalid points, skipped

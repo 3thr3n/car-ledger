@@ -22,6 +22,9 @@ keycloak:
     adminPassword: ""
 
   nameOverride: keycloak
+  # the keycloakx chart defaults to 26.7.4, whose JDK still trusts the compromised eMudhra CAs (CVE-2026-91403)
+  image:
+    tag: "26.8.1"
   command:
     - /opt/keycloak/bin/kc.sh
   # imports the realm car-ledger of templates/realm.yaml on the first start, if it does not exist yet
@@ -96,6 +99,21 @@ keycloak:
     limits:
       cpu: "1"
       memory: 1Gi
+  # the defaults of keycloakx (uid 1000, fsGroup 1000) hardened; the root filesystem stays writable, Keycloak keeps
+  # its build and temporary files in /opt/keycloak/data
+  podSecurityContext:
+    fsGroup: 1000
+    seccompProfile:
+      type: RuntimeDefault
+  securityContext:
+    runAsUser: 1000
+    runAsNonRoot: true
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop: [ "ALL" ]
+  # Keycloak doesn't call the Kubernetes API (no KUBE_PING, allowReadPods is off)
+  serviceAccount:
+    automountServiceAccountToken: false
 
   ingress:
     enabled: true

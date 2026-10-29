@@ -6,7 +6,7 @@ CarLedger runs on Kubernetes. It needs an OpenID Connect provider for the login,
 |-------------------|-----------------------------------------------------------------------------------------------------------------------------------------|
 | `helm/stack`      | All of the charts below in one release, each switched on with one value and set up to work together, see [its README](../helm/stack/README.md) |
 | `helm/car-ledger` | The app, its PostgreSQL and Infinispan (keeps the login sessions, shared by all replicas)                                                |
-| `helm/keycloak`   | Keycloak 26.7 (via the [keycloakx chart](https://github.com/codecentric/helm-charts/tree/master/charts/keycloakx)) with its own PostgreSQL |
+| `helm/keycloak`   | Keycloak 26.8 (via the [keycloakx chart](https://github.com/codecentric/helm-charts/tree/master/charts/keycloakx)) with its own PostgreSQL |
 | `helm/authentik`  | authentik 2026.8 with its own PostgreSQL, CarLedger is set up by a blueprint, see [its README](../helm/authentik/README.md)              |
 
 The app is reachable as `car-ledger.<host>`.
@@ -135,14 +135,14 @@ shorter ones), 32 or more are recommended, and all replicas need the same one.
 helm install car-ledger oci://ghcr.io/3thr3n/car-ledger/car-ledger --set ingress.host=example.com
 ```
 
-Without `--version` the latest release is installed. A release (e.g. `0.9.0`, see the
-[releases](https://github.com/3thr3n/car-ledger/releases)) publishes the image `ghcr.io/3thr3n/car-ledger:0.9.0` and the
-chart `oci://ghcr.io/3thr3n/car-ledger/car-ledger` in version `0.9.0`, which runs that image (up to 0.3.x the chart was
+Without `--version` the latest release is installed. A release (e.g. `0.10.0`, see the
+[releases](https://github.com/3thr3n/car-ledger/releases)) publishes the image `ghcr.io/3thr3n/car-ledger:0.10.0` and the
+chart `oci://ghcr.io/3thr3n/car-ledger/car-ledger` in version `0.10.0`, which runs that image (up to 0.3.x the chart was
 `oci://ghcr.io/3thr3n/car-ledger/helm`).
 
 Every build of `develop` publishes the image `ghcr.io/3thr3n/car-ledger:<run number>` and the chart as the prerelease
-`<next release>-dev.<run number>`, e.g. `0.10.0-dev.123`, which runs the image of the same build: `--version
-0.10.0-dev.123` installs build 123, `--devel` the latest build. Leave `carLedger.image.tag` empty, it would override
+`<next release>-dev.<run number>`, e.g. `0.11.0-dev.123`, which runs the image of the same build: `--version
+0.11.0-dev.123` installs build 123, `--devel` the latest build. Leave `carLedger.image.tag` empty, it would override
 the image of the chart.
 
 From the repository (`helm dependency update helm/car-ledger`, `helm install car-ledger helm/car-ledger ...`) the chart
@@ -417,6 +417,9 @@ Use the image of a release (a git tag of `main`) or a dev build of `develop`. On
 | 1.31.0    | Who created an entry, the owner of its car for the existing ones (0.9.0)                                             |
 | 1.32.0    | Invitations to a car, an access counts once accepted (0.9.0); an older image would count the open ones as well       |
 | 1.33.0    | The trips of a deleted account stay in the cars of others, without a driver (0.9.0)                                  |
+| 1.34.0    | G-forces of the track points, empty for older firmware (0.10.0)                                                      |
+| 1.35.0    | The latest status a GPS tracker reported (0.10.0)                                                                    |
+| 1.36.0    | Inbox of the notifications of an account, kept for 90 days (0.10.0)                                                  |
 
 An older image refuses to start on the migrated database, as Flyway finds migrations it does not know. To go back,
 restore the backup. Without the backup, the older image runs on the migrated database (the new columns have defaults)
@@ -477,6 +480,36 @@ kubectl set env deployment/car-ledger QUARKUS_FLYWAY_IGNORE_FUTURE_MIGRATIONS=tr
   users flash the firmware and the settings of a tracker from Chrome or Edge over USB; the firmware is not part of
   CarLedger. `carLedger.imagePullSecrets` pulls the images of the pod from a private registry, see
   [GPS_TRACKER.md](GPS_TRACKER.md#flashing).
+- **eMudhra** (0.10.0; keycloak chart 0.5.2, authentik chart 0.4.1): the trust stores no longer accept the eMudhra
+  certificate authorities whose keys were compromised (CVE-2026-91403). The app runs on Temurin 21.0.13, Keycloak is
+  raised to 26.8.1 and authentik to 2026.8.5. A `keycloak.image.tag` or authentik image of your own keeps the old
+  trust store, remove it or set a version from these on. Infinispan 15.2 still has an older JDK, it only accepts
+  connections of the app inside the cluster and opens none to the outside. Nothing else to set up.
+- **Notifications in the app** (0.10.0): every notification also goes into the inbox of the account, the page
+  *Notifications* with the number of unread ones in the menu, also without e-mail and push (migration 1.36.0, table
+  `notification`). The switches of the settings now choose what comes by e-mail and push as well; the inbox gets all.
+  Due reminders reach the inbox without a mail server or push, too. A notification is deleted after 90 days, read or
+  not (`carledger.notifications.cleanup-cron`, 03:15 every night), and with its account; notifications aren't part of
+  the backup. The badge of the garage and the note on the dashboard for open invitations are gone, the invitation is in
+  the inbox. Nothing to set up.
+- **G-forces of the track points** (0.10.0): a tracker sends the peak acceleration, braking and sideways force per
+  point, they are stored with the points (migration 1.34.0) and in the backup, with three more columns in the CSV of
+  the track; a restore still reads the backups before. Nothing to set up, see
+  [GPS_TRACKER.md](GPS_TRACKER.md#sending-points).
+- **Status of the trackers** (0.10.0): a tracker reports its firmware, storage, last upload, WLAN and installed parts
+  to `/api/device/status`, shown on the tracker with warnings (migration 1.35.0, part of the backup). A proxy in front
+  must pass the header `Authorization` on that path as well. Nothing to set up, see
+  [GPS_TRACKER.md](GPS_TRACKER.md#status).
+- **Firmware interface spec** (0.10.0): the `manifest.json` of the tracker firmware has to follow
+  [spec 1](TRACKER_FIRMWARE.md) (`spec`, `capabilities`, `layout`, the settings as `config.schema`). A release with an
+  older manifest turns flashing off with a warning in the log; put a release of the firmware that follows the spec into
+  the firmware volume. Trackers that are set up keep sending their points.
+- **Security contexts** (0.10.0; keycloak chart 0.5.2, authentik chart 0.4.1): the pods run with `seccompProfile:
+  RuntimeDefault`, without privilege escalation and capabilities. The app has a read-only root filesystem and writes
+  only to `/tmp`, an `emptyDir` (uploads, the ZIP of a restore, the truststore of `carLedger.trust`); a value
+  `carLedger.securityContext` of your own replaces these defaults, keep them in it. Keycloak and the authentik server
+  get no token of a service account, the authentik worker keeps its one for the outposts. Infinispan only gets the
+  security context of the pod, its chart has none for the container. Nothing to set up.
 - **No webhooks** (0.9.0): CarLedger sends no webhooks anymore, the mails and push messages and the decisions on the
   administration page stay. A configured `carLedger.webhook.*` (`CARLEDGER_WEBHOOK_URL` and the others) is ignored,
   remove it from your values; a script that decided the car requests on a webhook can poll
@@ -563,7 +596,7 @@ upgrade, their volumes are kept:
 kubectl delete statefulset car-ledger-postgresql
 helm upgrade car-ledger ...
 
-# keycloak chart: the database of the bitnami Keycloak (26.0/26.1) can not be migrated to 26.7 directly,
+# keycloak chart: the database of the bitnami Keycloak (26.0/26.1) can not be migrated to 26.7 or later directly,
 # upgrade to 26.6 first and to the default version afterwards
 kubectl delete statefulset keycloak keycloak-postgresql
 helm upgrade keycloak ... --set keycloak.image.tag=26.6

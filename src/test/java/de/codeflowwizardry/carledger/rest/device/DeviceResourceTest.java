@@ -20,11 +20,13 @@ import org.junit.jupiter.api.Test;
 
 import de.codeflowwizardry.carledger.data.AccountEntity;
 import de.codeflowwizardry.carledger.data.CarEntity;
+import de.codeflowwizardry.carledger.data.DeviceEntity;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import de.codeflowwizardry.carledger.rest.car.tracker.DeviceCreated;
 import de.codeflowwizardry.carledger.rest.car.tracker.DeviceInput;
 import de.codeflowwizardry.carledger.tracker.DeviceService;
+import de.codeflowwizardry.carledger.tracker.TrackerStatus;
 import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.keycloak.client.KeycloakTestClient;
@@ -165,6 +167,28 @@ class DeviceResourceTest
 		send(device.token(), List.of(Map.of("ts", now.toString(), "lat", -33.9, "lon", 151.2)))
 				.statusCode(200)
 				.body("accepted", is(1));
+	}
+
+	@Test
+	void shouldStoreTheGForcesAndLeaveOutImplausibleOnes()
+	{
+		Map<String, Object> imu = point(now.minusSeconds(3));
+		imu.putAll(Map.of("accel", 0.31, "brake", 0, "lateral", -0.42, "gsource", "imu"));
+		// a performance car, without a source: a firmware before the IMU, from the GPS
+		Map<String, Object> gps = point(now.minusSeconds(2));
+		gps.putAll(Map.of("accel", 1.95, "lateral", 2.0));
+		// only the implausible values are left out, the point stays
+		Map<String, Object> odd = point(now.minusSeconds(1));
+		odd.putAll(Map.of("accel", -0.1, "brake", 2.1, "lateral", -0.8, "gsource", "Laser"));
+
+		send(device.token(), List.of(imu, gps, odd, point(now))).statusCode(200).body("accepted", is(4))
+				.body("rejected", is(0));
+
+		assertEquals(List.of("0.31|0|-0.42|imu", "1.95|2|gps", "-0.8|unknown", ""),
+				QuarkusTransaction.requiringNew().call(() -> entityManager.createNativeQuery(
+						"select concat_ws('|', tk_accel, tk_brake, tk_lateral, tk_gsource) from track_point"
+								+ " where tk_car_id = ?1 order by tk_ts",
+						String.class).setParameter(1, carId).getResultList()));
 	}
 
 	@Test
@@ -314,6 +338,74 @@ class DeviceResourceTest
 		send(device.token(), List.of(point(now))).statusCode(200);
 
 		assertNotNull(lastSeenAt());
+	}
+
+	private ValidatableResponse status(String token, Object body)
+	{
+		return given()
+				.auth().oauth2(token)
+				.contentType(ContentType.JSON)
+				.body(body)
+				.when()
+				.post("/api/device/status")
+				.then();
+	}
+
+	private DeviceEntity stored()
+	{
+		return QuarkusTransaction.requiringNew().call(() -> entityManager.find(DeviceEntity.class,
+				device.device().id()));
+	}
+
+	@Test
+	void shouldKeepTheLatestStatusAndUpdateTheLastContact()
+	{
+		Map<String, Object> body = new HashMap<>();
+		body.putAll(Map.of("spec", 1, "firmware", "v1.1.0", "storageUsed", 1024, "storageTotal", 1441792,
+				"storageError", false, "resetReason", "watchdog", "uploadResult", "ok", "uploadStatus", 200,
+				"configOk", true, "ssid", "Home"));
+		body.putAll(Map.of("rssi", -67, "parts", List.of("sd", "IMU", "sd"), "teleporter", "on"));
+
+		status(device.token(), body).statusCode(204);
+
+		DeviceEntity tracker = stored();
+		assertEquals(new TrackerStatus(1, "v1.1.0", 1024L, 1441792L, false, "watchdog", "ok", 200, true, "Home", -67,
+				List.of("sd", "imu")), tracker.getStatus());
+		assertNotNull(tracker.getStatusAt());
+		// also without points
+		assertNotNull(lastSeenAt());
+
+		// only the latest
+		status(device.token(), Map.of("configOk", false)).statusCode(204);
+		assertEquals(new TrackerStatus(null, null, null, null, null, null, null, null, false, null, null, null),
+				stored().getStatus());
+	}
+
+	@Test
+	void shouldLeaveOutTheFieldsOfAStatusOutOfRange()
+	{
+		status(device.token(), Map.of("spec", 0, "firmware", "x".repeat(41), "storageUsed", -1, "uploadStatus", 42,
+				"ssid", "Ho\tme", "rssi", 10, "parts", List.of("SD card", "oled"), "storageError", true))
+				.statusCode(204);
+
+		assertEquals(new TrackerStatus(null, null, null, null, true, null, null, null, null, null, null,
+				List.of("oled")), stored().getStatus());
+	}
+
+	@Test
+	void shouldRejectTheStatusOfARevokedTracker()
+	{
+		deviceService.revoke(carId, device.device().id(), "peter");
+
+		status(device.token(), Map.of("configOk", true)).statusCode(401);
+		assertNull(stored().getStatus());
+	}
+
+	@Test
+	void shouldRejectAStatusThatIsNotAnObject()
+	{
+		status(device.token(), "null").statusCode(400);
+		status(device.token(), "[]").statusCode(400);
 	}
 
 	@Test

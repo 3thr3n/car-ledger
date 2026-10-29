@@ -7,5 +7,13 @@ export const Route = createLazyFileRoute('/car/$id/track')({
 
 function RouteComponent() {
   const { id } = Route.useParams();
-  return <TrackPage carId={Number(id)} />;
+  const search = Route.useSearch();
+  const navigate = Route.useNavigate();
+  return (
+    <TrackPage
+      carId={Number(id)}
+      search={search}
+      onSearchChange={(next) => navigate({ search: next, replace: true })}
+    />
+  );
 }

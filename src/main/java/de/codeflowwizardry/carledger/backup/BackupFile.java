@@ -19,6 +19,7 @@ import de.codeflowwizardry.carledger.data.TripType;
 import de.codeflowwizardry.carledger.data.Accent;
 import de.codeflowwizardry.carledger.data.ApprovalType;
 import de.codeflowwizardry.carledger.data.UnitSystem;
+import de.codeflowwizardry.carledger.tracker.TrackerStatus;
 
 /**
  * Content of backup.json in the ZIP of a backup. The files (receipts, pictures)
@@ -41,9 +42,12 @@ public record BackupFile(String format, int version, OffsetDateTime createdAt, S
 	public static final String ENTRY = "backup.json";
 	/**
 	 * first line of the CSV of the track points, tracker is the index in
-	 * {@link Car#trackers()}, times in ISO-8601, km/h and meters
+	 * {@link Car#trackers()}, times in epoch seconds, km/h, meters, the g-forces
+	 * in g and their source
 	 */
-	public static final String TRACK_HEADER = "tracker,ts,lat,lon,speed,alt,hdop";
+	public static final String TRACK_HEADER = "tracker,ts,lat,lon,speed,alt,hdop,accel,brake,lateral,gsource";
+	/** of the backups before the g-forces, still restored */
+	public static final String TRACK_HEADER_V0_9 = "tracker,ts,lat,lon,speed,alt,hdop";
 
 	/**
 	 * @param accent
@@ -114,9 +118,12 @@ public record BackupFile(String format, int version, OffsetDateTime createdAt, S
 	/**
 	 * A GPS tracker. Its token isn't in the backup, only the SHA-256 the server
 	 * stores: after a restore on another server it keeps sending.
+	 *
+	 * @param status
+	 *            the latest it reported, missing in backups before it
 	 */
 	public record Tracker(String name, String tokenHash, OffsetDateTime createdAt, OffsetDateTime lastSeenAt,
-			OffsetDateTime revokedAt)
+			OffsetDateTime revokedAt, TrackerStatus status, OffsetDateTime statusAt)
 	{
 	}
 

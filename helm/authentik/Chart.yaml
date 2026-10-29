@@ -3,10 +3,10 @@ name: authentik
 description: authentik for CarLedger, with its own PostgreSQL and the CarLedger application set up by a blueprint
 type: application
 
-version: 0.4.0
-appVersion: "2026.8.3"
+version: 0.4.1
+appVersion: "2026.8.5"
 
 dependencies:
   - name: authentik
-    version: 2026.8.3
+    version: 2026.8.5
     repository: https://charts.goauthentik.io

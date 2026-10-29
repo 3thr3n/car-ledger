@@ -15,7 +15,7 @@ import MenuRounded from '@mui/icons-material/MenuRounded';
 import CloudOffRounded from '@mui/icons-material/CloudOffRounded';
 import { ReactNode, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import useOpenInvitations from '@/hooks/useOpenInvitations';
+import useUnreadNotifications from '@/hooks/useUnreadNotifications';
 import Sidebar from '@/components/layout/Sidebar';
 import useMe from '@/hooks/useMe';
 import useOnline from '@/hooks/useOnline';
@@ -57,9 +57,10 @@ export default function AppShell({ children }: { children: ReactNode }) {
   // when it is fetched again, a query with an error is fetched again whenever
   // a page mounts it.
   const { isFetched } = useMe();
-  // the sidebar is behind the menu on phones: a dot shows the open requests
+  // the sidebar is behind the menu on phones: a dot shows the open requests and
+  // the unread notifications
   const openRequests = useOpenCarRequests();
-  const invitations = useOpenInvitations().length;
+  const unread = useUnreadNotifications();
   const online = useOnline();
 
   return (
@@ -107,7 +108,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
                 <Badge
                   variant="dot"
                   color="error"
-                  invisible={openRequests === 0 && invitations === 0}
+                  invisible={openRequests === 0 && unread === 0}
                   slotProps={{
                     badge: {
                       'aria-label': [
@@ -115,8 +116,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
                           t('admin.requests.openCount', {
                             count: openRequests,
                           }),
-                        invitations > 0 &&
-                          t('access.openCount', { count: invitations }),
+                        unread > 0 && t('inbox.unreadCount', { count: unread }),
                       ]
                         .filter(Boolean)
                         .join(', '),

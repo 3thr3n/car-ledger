@@ -66,6 +66,12 @@ test.describe.serial('GPS track', () => {
   });
 
   test('shows the track of today with the speed scale', async () => {
+    // the last 3 days by default
+    await expect(
+      page
+        .getByRole('group', { name: 'Period' })
+        .getByRole('button', { name: 'Last 3 days' }),
+    ).toHaveAttribute('aria-pressed', 'true');
     await expect(
       page.getByText('0.1 km GPS distance in 1 section'),
     ).toBeVisible();
@@ -78,6 +84,57 @@ test.describe.serial('GPS track', () => {
       'aria-label',
       'Speed from 0 km/h (light) to 160 km/h (dark)',
     );
+  });
+
+  test('shows the map in fullscreen and returns', async () => {
+    const area = page.getByTestId('track-area');
+    const enter = page.getByRole('button', {
+      name: 'Show the map in fullscreen',
+    });
+    await enter.click();
+
+    // the area with the period and the legend covers the window
+    const viewport = page.viewportSize()!;
+    await expect
+      .poll(async () => (await area.boundingBox())?.height)
+      .toBeGreaterThanOrEqual(viewport.height - 1);
+    const map = await page.getByTestId('track-map').boundingBox();
+    expect(map!.height).toBeGreaterThan(viewport.height / 2);
+    await expect(page.getByTestId('speed-legend')).toBeInViewport();
+    await expect(
+      page.getByRole('button', { name: 'Earlier' }),
+    ).toBeInViewport();
+    // the view can be switched in the fullscreen as well
+    const modes = page.getByRole('group', { name: 'Color the track by' });
+    await expect(modes).toHaveCount(1);
+    await modes.getByRole('button', { name: 'Frequency' }).click();
+    await expect(page.getByTestId('frequency-legend')).toBeInViewport();
+    await modes.getByRole('button', { name: 'Speed' }).click();
+    await expect(page.getByTestId('speed-legend')).toBeInViewport();
+    // no slip that deletes the whole period
+    const remove = page.getByRole('button', { name: 'Delete this track' });
+    await expect(remove).toHaveCount(0);
+
+    await page.keyboard.press('Escape');
+    await expect(enter).toBeVisible();
+    await expect(remove).toBeVisible();
+    await expect
+      .poll(
+        async () => (await page.getByTestId('track-map').boundingBox())?.height,
+      )
+      .toBeLessThan(500);
+
+    await enter.click();
+    await page.getByRole('button', { name: 'Leave the fullscreen' }).click();
+    await expect(enter).toBeVisible();
+    // the canvas stays inside the map on the page, not over the window
+    const back = await page.getByTestId('track-map').boundingBox();
+    const canvas = await page
+      .getByTestId('track-map')
+      .locator('canvas')
+      .boundingBox();
+    expect(canvas!.y).toBeCloseTo(back!.y, 0);
+    expect(canvas!.x).toBeCloseTo(back!.x, 0);
   });
 
   test('colors the track by how often it was driven', async () => {
@@ -179,11 +236,48 @@ test.describe.serial('GPS track', () => {
     await page.getByRole('switch', { name: 'Places' }).uncheck();
   });
 
-  test('shows no track on the day before', async () => {
+  test('shows no track in the days before', async () => {
     await page.getByRole('button', { name: 'Earlier' }).click();
 
     await expect(page.getByText('No track in this period.')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Later' })).toBeEnabled();
+  });
+
+  test('sets the period with a shortcut', async () => {
+    const shortcuts = page.getByRole('group', { name: 'Period' });
+    // the day before, moved with the arrows: no shortcut
+    await expect(shortcuts.getByRole('button', { pressed: true })).toHaveCount(
+      0,
+    );
+
+    const week = shortcuts.getByRole('button', { name: 'Last 7 days' });
+    const loaded = page.waitForResponse(
+      (response) => /\/api\/track\/\d+\?/.test(response.url()) && response.ok(),
+    );
+    await week.click();
+    const url = new URL((await loaded).url());
+    const days =
+      (Date.parse(url.searchParams.get('to')!) -
+        Date.parse(url.searchParams.get('from')!)) /
+      86_400_000;
+    expect(Math.round(days)).toBe(7);
+    await expect(week).toHaveAttribute('aria-pressed', 'true');
+    await expect(
+      page.getByText('0.1 km GPS distance in 1 section'),
+    ).toBeVisible();
+
+    await page.getByRole('button', { name: 'Earlier' }).click();
+    await expect(shortcuts.getByRole('button', { pressed: true })).toHaveCount(
+      0,
+    );
+
+    // back to the default for the next tests
+    const last3 = shortcuts.getByRole('button', { name: 'Last 3 days' });
+    await last3.click();
+    await expect(last3).toHaveAttribute('aria-pressed', 'true');
+    await expect(
+      page.getByText('0.1 km GPS distance in 1 section'),
+    ).toBeVisible();
   });
 
   test('shows the track of a trip next to its odometer distance', async () => {
@@ -232,6 +326,11 @@ test.describe.serial('GPS track', () => {
     await device.dispose();
 
     await page.getByRole('tab', { name: 'Map' }).click();
+    // only today, the default of the last 3 days has yesterday's point as well
+    await page
+      .getByRole('group', { name: 'Period' })
+      .getByRole('button', { name: 'Today' })
+      .click();
     await expect(
       page.getByText('0.1 km GPS distance in 1 section'),
     ).toBeVisible();
@@ -252,5 +351,108 @@ test.describe.serial('GPS track', () => {
       page.getByRole('button', { name: 'Delete this track' }),
     ).toBeVisible();
     await expect(page.getByText('No track in this period.')).toHaveCount(0);
+  });
+});
+
+test.describe.serial('Drives of the GPS track', () => {
+  let page: Page;
+  let carId: number;
+
+  /** 80 points, 10 m per second to the north or back */
+  const drive = (start: number, north: boolean) =>
+    Array.from({ length: 80 }, (_, i) => ({
+      ts: new Date(start + i * 1000).toISOString(),
+      lat: 50 + (north ? i : 79 - i) * 10 * LAT_PER_METER,
+      lon: 10,
+      speed: 36,
+    }));
+
+  test.beforeAll(async ({ browser }) => {
+    await deleteAllCars();
+    const api = await aliceApi();
+    await api.put('/api/car/my', {
+      data: { name: 'E2E Golf', year: 2021, odometer: 1000 },
+    });
+    carId = (
+      (await (await api.get('/api/car/my')).json()) as { id: number }[]
+    )[0].id;
+    const tracker = await api.put(`/api/tracker/${carId}`, {
+      data: { name: 'ESP32' },
+    });
+    const { token } = (await tracker.json()) as { token: string };
+    await api.dispose();
+
+    // there and back an hour later, the tracker off in between
+    const device = await request.newContext({ baseURL: API_URL });
+    const sent = await device.post('/api/device/points', {
+      headers: { Authorization: `Bearer ${token}` },
+      data: [
+        ...drive(Date.now() - 2 * 3600_000, true),
+        ...drive(Date.now() - 3600_000, false),
+      ],
+    });
+    expect(sent.status()).toBe(200);
+    await device.dispose();
+    page = await browser.newPage();
+  });
+
+  test.afterAll(async () => {
+    await page.close();
+    await deleteAllCars();
+  });
+
+  test('lists the drives and shows only the selected ones', async () => {
+    await page.goto(`/car/${carId}/track`);
+    const list = page.getByTestId('track-drives');
+    await expect(list).toContainText('2 drives');
+    await expect(
+      page.getByText('1.6 km GPS distance in 2 sections'),
+    ).toBeVisible();
+
+    // the newest first
+    const drives = list.getByTestId('track-drive');
+    await expect(drives).toHaveCount(2);
+    await drives.first().getByRole('checkbox').click();
+
+    await expect(list).toContainText('1 of 2 drives shown');
+    await expect(
+      page.getByText('0.7 km GPS distance in 1 section'),
+    ).toBeVisible();
+    await expect(page).toHaveURL(/drives=/);
+    await expect(drives.first().getByRole('checkbox')).toBeChecked();
+  });
+
+  test('keeps the selection on a reload', async () => {
+    await page.reload();
+
+    const list = page.getByTestId('track-drives');
+    await expect(list).toContainText('1 of 2 drives shown');
+    await expect(
+      page.getByText('0.7 km GPS distance in 1 section'),
+    ).toBeVisible();
+
+    await list.getByRole('button', { name: 'Show all' }).click();
+    await expect(list).toContainText('2 drives');
+    await expect(page).not.toHaveURL(/drives=/);
+    await expect(
+      page.getByText('1.6 km GPS distance in 2 sections'),
+    ).toBeVisible();
+  });
+
+  test('deletes a single drive', async () => {
+    const list = page.getByTestId('track-drives');
+    await list
+      .getByTestId('track-drive')
+      .last()
+      .getByRole('button', { name: /^Delete the drive/ })
+      .click();
+
+    const dialog = page.getByRole('dialog', { name: /^Delete the drive of/ });
+    await expect(dialog).toContainText('0.7 km');
+    await dialog.getByRole('button', { name: 'Delete drive' }).click();
+
+    await expect(page.getByText(/points deleted/)).toBeVisible();
+    await expect(list).toContainText('1 drive');
+    await expect(list.getByTestId('track-drive')).toHaveCount(1);
   });
 });

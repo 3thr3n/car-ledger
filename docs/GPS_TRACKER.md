@@ -28,15 +28,22 @@ POST /api/device/points
 Authorization: Bearer cl_…
 Content-Type: application/json
 
-[{"ts":"2026-10-20T20:15:03Z","lat":51.1,"lon":10.2,"speed":42.3,"alt":250.5,"hdop":1.2}]
+[{"ts":"2026-10-20T20:15:03Z","lat":51.1,"lon":10.2,"speed":42.3,"alt":250.5,"hdop":1.2,
+  "accel":0.12,"brake":0,"lateral":-0.31,"gsource":"imu"}]
 ```
 
 - `ts`: GPS time, ISO-8601 UTC; `lat`, `lon`: degrees; `speed`: km/h; `alt`: meters. `ts`, `lat` and `lon` are
   required, the others may be missing.
+- The g-forces since the point before, in g with 2 decimals: `accel` the peak forward acceleration and `brake` the peak
+  braking, both 0 or more; `lateral` the peak sideways acceleration, + turning right, - turning left. `gsource` says
+  where they come from: `imu` (real peaks) or `gps` (averages over a second, noticeably lower for the same drive);
+  without it, values come from the GPS (firmware before the IMU), another source is stored as `unknown`. A firmware
+  before the g-forces sends none of them. They are only stored for now, the map doesn't show them yet.
 - At most 500 points per request (the firmware sends 200).
 - A point sent again (same tracker and `ts`) is stored once, so a batch can be sent again safely.
 - Invalid points are skipped, not rejected: a time more than 5 minutes in the future or before 2020, a position outside
-  of -90..90 / -180..180, a speed outside of 0..400 or an hdop of 0 or less.
+  of -90..90 / -180..180, a speed outside of 0..400 or an hdop of 0 or less. An implausible g-force only leaves out
+  that value, the point is stored: `accel` or `brake` below 0 or above 2 g, `lateral` beyond ±2 g.
 
 | Status | Meaning                                                    | Tracker                         |
 |--------|------------------------------------------------------------|---------------------------------|
@@ -47,6 +54,30 @@ Content-Type: application/json
 | 5xx    | error of the server                                        | keeps the batch, sends it later |
 
 The last contact of a tracker (`lastSeenAt`) is updated at most once per minute.
+
+## Status
+
+Whenever its WLAN connects, also without points, a tracker reports its status (capability `status` of the
+[firmware spec](TRACKER_FIRMWARE.md)), with the same token:
+
+```http
+POST /api/device/status
+Authorization: Bearer cl_…
+Content-Type: application/json
+
+{"spec":1,"firmware":"v1.1.0","storageUsed":262144,"storageTotal":1048576,"storageError":false,
+ "resetReason":"watchdog","uploadResult":"ok","uploadStatus":200,"configOk":true,"ssid":"Home","rssi":-67,
+ "parts":["sd","oled","imu"]}
+```
+
+All fields are optional, a field out of its range is left out and unknown ones are ignored (the fields and their
+ranges are in [`tracker-device-api.yaml`](tracker-device-api.yaml)). The answer is 204, 401 for a revoked tracker and
+429 above the limit of requests, which the status shares with the points. It updates the last contact like the points.
+
+CarLedger keeps only the latest status of each tracker, no history, and shows it on the tracker in *Edit car* → *GPS
+trackers*: firmware, storage, last upload, last start, WLAN and the installed parts. Warnings: storage that can't be
+written (`storageError`), invalid settings (`configOk` false) and *Different firmware* when the tracker runs another
+version than the one offered for flashing. The status is deleted with its tracker and part of the backup.
 
 ## Settings
 
@@ -67,14 +98,16 @@ defaults.
 
 ## Flashing
 
-CarLedger can flash the tracker firmware onto an ESP32 and write its settings (WLAN, server URL, token) from the
+CarLedger can flash the tracker firmware onto an ESP32 and write its settings (e.g. WLAN, server URL, token) from the
 browser, over USB with Web Serial: no PlatformIO, no settings compiled into the firmware. It needs Chrome or Edge on a
-desktop and HTTPS (or `localhost`); other browsers see a hint instead.
+desktop and HTTPS (or `localhost`); other browsers see a hint instead. The firmware has to follow the
+[firmware interface spec](TRACKER_FIRMWARE.md): its manifest declares what CarLedger offers and which settings it
+asks for.
 
 The firmware isn't public and not part of CarLedger or its image. An admin puts a release into a directory and sets
 `carledger.tracker.firmware-dir`; CarLedger serves it only to logged-in users, and only the files its `manifest.json`
-lists. Without the directory, flashing is hidden. The directory is read on every request, a new release needs no
-restart.
+lists. Without the directory, or with a manifest that doesn't follow a supported version of the spec, flashing is
+hidden (with a warning in the log). The directory is read on every request, a new release needs no restart.
 
 ```text
 firmware/
@@ -104,12 +137,19 @@ carLedger:
 ```
 
 In *Edit car* → *GPS trackers*, *Set up over USB* opens the flashing, also right after creating a tracker, with its
-token. For an existing tracker, paste its token or issue a new one there. The two actions:
+token. For an existing tracker, paste its token or issue a new one there. The form of the settings comes from the
+manifest. The actions, as far as the manifest declares them in its
+[capabilities](TRACKER_FIRMWARE.md#capabilities):
 
-- **Install firmware**: writes the parts of the manifest and the settings.
-- **Update settings only**: writes only the settings, e.g. a new WLAN or token.
+- **Install firmware** (`install`): writes the parts of the manifest and the settings.
+- **Update firmware only** (`update-firmware`): writes the parts of the manifest and keeps the settings on the
+  tracker, no form needed. With other partitions on the tracker than the ones of the release, it asks first, see
+  [the layout](TRACKER_FIRMWARE.md#the-layout).
+- **Update settings only** (`settings`): writes only the settings, e.g. a new WLAN or token.
+- **Read settings** (`read-settings`): fills the form with the settings on the tracker, also its token, so only the
+  changes need to be entered. The token of a tracker just created stays.
 
-Neither erases the whole flash: the points the tracker hasn't sent yet stay. The tracker restarts afterwards, the
+None of them erases the whole flash: the points the tracker hasn't sent yet stay. The tracker restarts afterwards, the
 dialog shows its boot output, e.g. `Config: 1 WLAN(s), url=…, CA=bundle`.
 
 | Request                                   | Answer                                                   |
@@ -118,54 +158,11 @@ dialog shows its boot output, e.g. `Config: 1 WLAN(s), url=…, CA=bundle`.
 | `GET /api/tracker/firmware/manifest.json` | the manifest, 404 when flashing isn't set up             |
 | `GET /api/tracker/firmware/{file}`        | a file of the manifest, 404 for any other                |
 
-### `manifest.json`
+### `manifest.json` and the settings
 
-```json
-{
-  "name": "CarLedger GPS tracker",
-  "version": "v1.0.0",
-  "builds": [
-    {
-      "chipFamily": "ESP32",
-      "parts": [
-        { "path": "bootloader.bin", "offset": 4096 },
-        { "path": "partitions.bin", "offset": 32768 },
-        { "path": "firmware.bin", "offset": 65536 }
-      ]
-    }
-  ],
-  "config": { "offset": 4128768, "size": 8192, "maxLength": 8192, "version": 1 }
-}
-```
-
-`builds` follows the manifest of [ESP Web Tools](https://esphome.github.io/esp-web-tools/), the build of the detected
-chip is written. `config` is the partition with the settings. A path is a file name next to the manifest; a manifest
-with another path, or missing fields, turns flashing off with a warning in the log.
-
-### Settings
-
-The settings are JSON followed by one NUL byte, padded with `0xFF` to a multiple of 4 bytes, at most
-`config.maxLength` bytes with the NUL:
-
-```json
-{
-  "version": 1,
-  "wifi": [{ "ssid": "Home", "pass": "secret-password" }],
-  "url": "https://carledger.example.com/api/device/points",
-  "token": "cl_…",
-  "ca": "-----BEGIN CERTIFICATE-----\n…\n-----END CERTIFICATE-----\n"
-}
-```
-
-| Field   | Rules                                                                                            |
-|---------|--------------------------------------------------------------------------------------------------|
-| `wifi`  | at least one network, 2.4 GHz only; `ssid` 1–32 bytes, `pass` empty (open network) or 8–63 bytes |
-| `url`   | `https://`, `http://` only for local tests                                                       |
-| `token` | the token of the tracker                                                                         |
-| `ca`    | optional PEM root certificate for a private or self-signed CA, else the built-in CA bundle       |
-
-Without valid settings the tracker keeps logging points but doesn't upload, its ERR LED blinks at 1 Hz and it prints
-the reason on boot, e.g. `Config: no token`.
+Described in the [firmware interface spec](TRACKER_FIRMWARE.md): the [manifest](TRACKER_FIRMWARE.md#manifest), its
+[JSON Schema](../src/main/resources/tracker/manifest.schema.json) and how the [settings](TRACKER_FIRMWARE.md#settings)
+are encoded and described.
 
 ## Retention and deletion
 
@@ -185,10 +182,11 @@ Deleting a car deletes its trackers and points as well.
 The backup of a user contains the trackers of each car, with the SHA-256 of their tokens, never the tokens: after a
 restore on another server the trackers keep sending. A tracker whose hash is taken on the server already gets a new
 one, set it up again with a new token. The points are in the backup only for cars that keep them forever, as a CSV per
-car (`tracker,ts,lat,lon,speed,alt,hdop`: the time in epoch seconds, latitude and longitude with 6 decimals, about
-0.1 m, speed, altitude and hdop with 1); a car that keeps them for a while is backed up without its points, so a
+car (`tracker,ts,lat,lon,speed,alt,hdop,accel,brake,lateral,gsource`: the time in epoch seconds, latitude and
+longitude with 6 decimals, about 0.1 m, speed, altitude and hdop with 1, the g-forces with 2); a car that keeps them for a while is backed up without its points, so a
 backup kept for longer doesn't keep them either. A restore takes the points that are in the file and skips invalid
-ones like the ingest; it also reads the ISO times of the backups of the dev builds before 0.7.0.
+ones like the ingest; it also reads the ISO times of the backups of the dev builds before 0.7.0 and the points without
+g-forces of the backups before 0.10.0 (`tracker,ts,lat,lon,speed,alt,hdop`).
 
 A point takes about 6 bytes in the ZIP, a year of commuting at one point per second (2.3 million points) 14 MB: above
 the upload limit of 12 MB (`carLedger.attachments.maxRequestSize`), raise it to restore such a backup, see
@@ -220,11 +218,28 @@ for good, also when it is found a little differently later. Dismissed drives are
 
 The tab *Map* of a car shows its tracks of a day or a period of at most 31 days, colored by speed (orange: slow, dark
 blue: fast, 0 to 160 km/h) or by how often the car drove each road in the period (*Frequency*: yellow and thin once,
-dark red and wide the most often). For the frequency the points lie on a grid of 15 m, a drive marks its cells and
-the ones around, so the drift of the GPS between two drives on the same road doesn't matter. Both directions count,
-and a cell counts again once the car was away from it for more than 5 minutes: standing or a jam doesn't add a pass,
-the way back after a stop does. Roads closer than about 30 m, e.g. the two carriageways of a motorway, may count
-together. It appears for cars with a tracker once a map is set up:
+dark red and wide the most often). The frequency draws every street once, for all drives on it: the drives, on their
+shared line (below), lie on a grid of 8 m, each drive is a path from cell to cell, and the pieces of all paths between
+junctions and ends are the streets, at the average position of their cells. A drive marks its cells and the ones
+around, so the drift of the GPS between two drives doesn't matter. Both directions of a street count, a crossing
+street doesn't (a pass counts for its direction ±56°), and a cell counts again once the car was away from it for more
+than 5 minutes: standing or a jam doesn't add a pass, the way back after a stop does. A street is cut where its
+passes change, e.g. where a drive turned in. Small detours of the grid (up to 40 m) are left out, a roundabout stays.
+Streets closer than about 10 m may merge. A busy month is about 80 streets, 30 KB, in about a second.
+
+A street driven more than once shows as one line, in both views: the GPS drifts by a few meters from drive to drive
+and the two directions use different lanes. CarLedger lays the drives of the period on a grid of 8 m and moves each
+point sideways onto the average of the drives around it in about the same direction (both directions count as one, a
+crossing street doesn't pull). The more often a street is driven, the steadier its line; one driven once stays as it
+is. Streets closer than about 10 m may merge. Only the map is changed: the stored points, the trips, the suggestions,
+the places and the backup use the points as the tracker sent them, and so does the track of a single trip.
+
+The server simplifies the lines only by 1 m and sends them compact (`[lon, lat, seconds, speed]` per point, gzip); the
+map simplifies further by its zoom, so the drives of a street stay together at every zoom (a simplification per drive
+by the length of the period took them apart again by up to 50 m, #526). The speeds are drawn as lines of the same band
+of 10 km/h. A busy month (about 2000 km, a point every 2 s) is about 940 KB, 320 KB with gzip.
+
+It appears for cars with a tracker once a map is set up:
 
 | Property                  | Helm value               | Meaning                                                                       |
 |---------------------------|--------------------------|-------------------------------------------------------------------------------|
@@ -266,8 +281,29 @@ within 75 m of a named one renames that one. The named places are part of the ba
 | `PUT /api/track/{carId}/places/{id}` `{"name"}`        | 204, renames it                                                               |
 | `DELETE /api/track/{carId}/places/{id}`                | 204, removes the name                                                         |
 
+## Drives
+
+Below the map, the drives of the period are listed by day, newest first, with their times, duration, distance and the
+named places at both ends. A drive is found like a visit of a [place](#places): from a stop to the next (longer than
+`carledger.tracker.stop`, also with the tracker on), at least 200 m and 1 minute; one already on the road at the start
+of the period starts there. Picking drives shows only them on the map and zooms to them, the speeds and the frequency
+included; *Show all* goes back. Hovering a drive in the list highlights it on the map, a click on the track picks its
+drive. The period and the picked drives are part of the URL, so a reload or a link shows the same.
+
+The owner deletes a single drive, e.g. a broken one: its points and those of the stop after it, up to the start of the
+next drive (or the end of the period). Only the points of the drive would leave the stops before and after it, minutes
+apart after a short drive, and the map would join them with a straight line, a drive again. The other drives, the
+places and the trips stay.
+
+| Request                                                      | Answer                                                           |
+|--------------------------------------------------------------|------------------------------------------------------------------|
+| `GET /api/track/{carId}/drives?from=…&to=…`                  | the drives with `start`, `end`, `distance` (km), `from` and `to` |
+| `GET /api/track/{carId}?from=…&to=…&drive=start/end&drive=…` | the track of only these drives, each a segment of its own        |
+| `GET /api/track/{carId}/frequency?…&drive=start/end`         | the passes of only these drives                                  |
+
 ## Not in the OpenAPI spec
 
 `/api/device/**` isn't part of `openapi.json` and the generated client of the frontend: the package
 `de.codeflowwizardry.carledger.rest.device` is excluded with `mp.openapi.scan.exclude.packages` in
-`application.properties`. This page describes it instead.
+`application.properties`. This page and its own OpenAPI file, [`tracker-device-api.yaml`](tracker-device-api.yaml),
+describe it instead.

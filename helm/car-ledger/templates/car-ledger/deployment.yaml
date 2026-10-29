@@ -16,6 +16,10 @@ spec:
     spec:
       automountServiceAccountToken: false
       serviceAccountName: "car-ledger-sa"
+      {{- with .Values.carLedger.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       {{- with .Values.carLedger.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
@@ -214,8 +218,10 @@ spec:
           resources:
             {{- toYaml .Values.carLedger.resources | nindent 12 }}
           {{- $firmware := .Values.carLedger.tracker.firmware }}
-          {{- if or (include "carLedger.trustSources" .) $firmware.volume }}
           volumeMounts:
+            # the only writable directory, the root filesystem is read-only
+            - name: tmp
+              mountPath: /tmp
             {{- if include "carLedger.trustSources" . }}
             - name: trust
               mountPath: /etc/car-ledger/trust
@@ -230,6 +236,8 @@ spec:
               readOnly: true
             {{- end }}
       volumes:
+        - name: tmp
+          emptyDir: {}
         {{- if include "carLedger.trustSources" . }}
         # the certificates to trust, read once at the start (a renewed CA needs a restart)
         - name: trust
@@ -242,4 +250,3 @@ spec:
         - name: tracker-firmware
           {{- toYaml . | nindent 10 }}
         {{- end }}
-          {{- end }}

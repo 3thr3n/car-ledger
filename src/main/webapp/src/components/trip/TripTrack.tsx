@@ -7,6 +7,7 @@ import { useFormat } from '@/utils/format';
 import { localClient } from '@/utils/QueryClient';
 import LazyTrackMap from '@/components/track/LazyTrackMap';
 import SpeedLegend from '@/components/track/SpeedLegend';
+import useFullscreen, { fullscreenSx } from '@/components/track/useFullscreen';
 
 /**
  * The GPS track during a trip and its GPS distance next to the odometer
@@ -23,6 +24,7 @@ export default function TripTrack({
 }) {
   const { t } = useTranslation();
   const format = useFormat();
+  const { fullscreen, toggle } = useFullscreen();
   const { data: track, isLoading } = useQuery(
     getTripTrackOptions({
       client: localClient,
@@ -42,7 +44,11 @@ export default function TripTrack({
   }
 
   return (
-    <Stack spacing={1.5} data-testid="trip-track">
+    <Stack
+      spacing={1.5}
+      data-testid="trip-track"
+      sx={fullscreen ? fullscreenSx : undefined}
+    >
       {trip.deletedAt && (
         <Typography variant="body2" sx={{ color: 'error.main' }}>
           {t('trip.track.deleted')}
@@ -64,7 +70,14 @@ export default function TripTrack({
       <Typography variant="caption" sx={{ color: 'text.secondary' }}>
         {t('trip.track.hint')}
       </Typography>
-      <LazyTrackMap styleUrl={styleUrl} track={track} height={320} />
+      <LazyTrackMap
+        styleUrl={styleUrl}
+        track={track}
+        height={320}
+        fill={fullscreen}
+        fullscreen={fullscreen}
+        onFullscreen={toggle}
+      />
       <SpeedLegend />
     </Stack>
   );

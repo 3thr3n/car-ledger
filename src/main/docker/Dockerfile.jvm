@@ -1,18 +1,24 @@
-FROM registry.access.redhat.com/ubi9/openjdk-21-runtime:1.24
+# Eclipse Temurin on Ubuntu 24.04: its tag follows the JRE 21 and the security updates of Ubuntu, a new build of the
+# app gets them (see #501, the Red Hat image waited for its rebuilds)
+FROM eclipse-temurin:21-jre-noble
 
 ENV LANGUAGE='en_US:en'
 
+# user 185 in the group root, as in the Red Hat image before: the same user in existing installations, and any user
+# id of the group root (e.g. OpenShift) reads the files
+RUN useradd --system --uid 185 --gid 0 --home-dir /deployments --no-create-home --shell /usr/sbin/nologin default
 
+WORKDIR /deployments
 # We make four distinct layers so if there are application changes the library layers can be re-used
-COPY --chown=185 target/quarkus-app/lib/ /deployments/lib/
-COPY --chown=185 target/quarkus-app/*.jar /deployments/
-COPY --chown=185 target/quarkus-app/app/ /deployments/app/
-COPY --chown=185 target/quarkus-app/quarkus/ /deployments/quarkus/
+COPY --chown=185:0 target/quarkus-app/lib/ /deployments/lib/
+COPY --chown=185:0 target/quarkus-app/*.jar /deployments/
+COPY --chown=185:0 target/quarkus-app/app/ /deployments/app/
+COPY --chown=185:0 target/quarkus-app/quarkus/ /deployments/quarkus/
 
 EXPOSE 8080
 USER 185
 ENV JAVA_OPTS_APPEND="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager"
-ENV JAVA_APP_JAR="/deployments/quarkus-run.jar"
 
-ENTRYPOINT [ "/opt/jboss/container/java/run/run-java.sh" ]
-
+# the options run-java.sh of the Red Hat image set: the heap takes 80 % of the memory limit of the container. JAVA_OPTS
+# of the installation come after them and win.
+ENTRYPOINT [ "sh", "-c", "exec java -XX:MaxRAMPercentage=80.0 -XX:+UseParallelGC -XX:MinHeapFreeRatio=10 -XX:MaxHeapFreeRatio=20 -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -XX:+ExitOnOutOfMemoryError $JAVA_OPTS $JAVA_OPTS_APPEND -jar /deployments/quarkus-run.jar" ]

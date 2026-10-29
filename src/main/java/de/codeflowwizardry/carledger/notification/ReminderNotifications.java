@@ -19,7 +19,6 @@ import de.codeflowwizardry.carledger.data.ReminderEntity;
 import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.CarAccessRepository;
 import de.codeflowwizardry.carledger.data.repository.ReminderRepository;
-import de.codeflowwizardry.carledger.notification.push.PushConfig;
 import de.codeflowwizardry.carledger.rest.car.reminder.Reminder;
 import de.codeflowwizardry.carledger.rest.car.reminder.ReminderStatus;
 import io.quarkus.narayana.jta.QuarkusTransaction;
@@ -28,9 +27,10 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 /**
- * Once a day, the owner and the editors of a car get one notification (mail and
- * push) with its reminders that became due soon or overdue (the status of the
- * app: 30 days or 1000 km before), not the viewers and drivers. A reminder is
+ * Once a day, the owner and the editors of a car get one notification with its
+ * reminders that became due soon or overdue (the status of the app: 30 days or
+ * 1000 km before), not the viewers and drivers: in the inbox, by mail and push
+ * if they want the reminders. A reminder is
  * notified once per due date and odometer; done or changed, it is notified
  * again
  * when its new due comes.
@@ -40,8 +40,6 @@ public class ReminderNotifications
 {
 	private static final Logger LOG = LoggerFactory.getLogger(ReminderNotifications.class);
 
-	private final MailConfig config;
-	private final PushConfig pushConfig;
 	private final AccountRepository accountRepository;
 	private final ReminderRepository reminderRepository;
 	private final CarAccessRepository carAccessRepository;
@@ -49,12 +47,10 @@ public class ReminderNotifications
 	private final Notifications notifications;
 
 	@Inject
-	public ReminderNotifications(MailConfig config, PushConfig pushConfig, AccountRepository accountRepository,
+	public ReminderNotifications(AccountRepository accountRepository,
 			ReminderRepository reminderRepository, CarAccessRepository carAccessRepository,
 			OdometerService odometerService, Notifications notifications)
 	{
-		this.config = config;
-		this.pushConfig = pushConfig;
 		this.accountRepository = accountRepository;
 		this.reminderRepository = reminderRepository;
 		this.carAccessRepository = carAccessRepository;
@@ -75,10 +71,7 @@ public class ReminderNotifications
 	 */
 	void send(LocalDate today)
 	{
-		if (!config.enabled() && !pushConfig.enabled())
-		{
-			return;
-		}
+		// the inbox gets them without mail and push as well
 		Map<Long, List<Reminder>> perAccount = QuarkusTransaction.requiringNew().call(() -> claimDue(today));
 		perAccount.forEach((accountId, due) -> {
 			try
@@ -107,8 +100,6 @@ public class ReminderNotifications
 		{
 			CarEntity car = entity.getCar();
 			List<AccountEntity> to = recipients.computeIfAbsent(car.getId(), id -> recipients(car));
-			// without a channel the reminders stay unmarked, e.g. for an address added
-			// later
 			if (to.isEmpty())
 			{
 				continue;
@@ -127,14 +118,12 @@ public class ReminderNotifications
 	}
 
 	/**
-	 * @return the owner and the editors of the car who want the reminders and get
-	 *         notifications
+	 * @return the owner and the editors of the car: the reminders are in their
+	 *         inbox, by mail and push if they want them
 	 */
 	private List<AccountEntity> recipients(CarEntity car)
 	{
 		return Stream.concat(Stream.of(car.getUser()), carAccessRepository.editorsOf(car.getId()).stream())
-				.filter(AccountEntity::isNotifyReminders)
-				.filter(notifications::canReach)
 				.toList();
 	}
 

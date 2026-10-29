@@ -12,7 +12,6 @@ import {
   getMyCarsOptions,
   getRemindersOptions,
 } from '@/generated/@tanstack/react-query.gen';
-import InvitationNote from '@/components/car/access/InvitationNote';
 import { can } from '@/utils/carRole';
 import { localClient } from '@/utils/QueryClient';
 import { hasValue, useFormat } from '@/utils/format';
@@ -92,7 +91,6 @@ export default function DashboardPage({
         title={t('dashboard.title')}
         subtitle={t('dashboard.subtitle')}
       />
-      <InvitationNote />
       <InstallHint />
       <DashboardFilter search={search} onChange={onSearchChange} />
 

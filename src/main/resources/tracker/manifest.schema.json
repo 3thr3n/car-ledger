@@ -1,0 +1,164 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/3thr3n/car-ledger/blob/develop/src/main/resources/tracker/manifest.schema.json",
+  "title": "Manifest of a release of the CarLedger tracker firmware",
+  "description": "Spec 1, see docs/TRACKER_FIRMWARE.md. Unknown fields are allowed and ignored.",
+  "type": "object",
+  "required": ["name", "version", "spec", "builds", "capabilities", "layout", "config"],
+  "properties": {
+    "name": { "type": "string", "minLength": 1 },
+    "version": { "description": "of the firmware, e.g. v1.1.0", "type": "string", "minLength": 1 },
+    "spec": { "description": "version of this spec the firmware implements", "type": "integer", "minimum": 1 },
+    "builds": {
+      "description": "as in the manifest of ESP Web Tools, the build of the detected chip is written",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["chipFamily", "parts"],
+        "properties": {
+          "chipFamily": { "description": "e.g. ESP32", "type": "string", "minLength": 1 },
+          "parts": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": ["path", "offset"],
+              "properties": {
+                "path": {
+                  "description": "a file next to the manifest, no directories",
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9_-][A-Za-z0-9._-]*$"
+                },
+                "offset": { "type": "integer", "minimum": 0 }
+              }
+            }
+          }
+        }
+      }
+    },
+    "capabilities": {
+      "description": "what of the spec the firmware implements; unknown ones are ignored",
+      "type": "array",
+      "items": { "type": "string" },
+      "uniqueItems": true
+    },
+    "layout": {
+      "description": "version of the flash layout (partition table, config and data partitions)",
+      "type": "integer",
+      "minimum": 1
+    },
+    "config": {
+      "description": "the partition with the settings",
+      "type": "object",
+      "required": ["offset", "size", "maxLength", "format", "version", "schema"],
+      "properties": {
+        "offset": { "type": "integer", "minimum": 0 },
+        "size": { "type": "integer", "minimum": 1 },
+        "maxLength": { "description": "bytes of the encoded settings", "type": "integer", "minimum": 1 },
+        "format": { "description": "encoding of the settings", "enum": ["json-nul"] },
+        "version": { "description": "of the settings, written as their field version", "type": "integer", "minimum": 1 },
+        "schema": { "$ref": "#/$defs/settings" }
+      }
+    }
+  },
+  "$defs": {
+    "settings": {
+      "description": "the settings the firmware takes, the form of CarLedger is rendered from it",
+      "type": "object",
+      "required": ["type", "properties"],
+      "properties": {
+        "type": { "const": "object" },
+        "properties": {
+          "type": "object",
+          "description": "url and token are reserved: CarLedger fills them",
+          "required": ["url", "token"],
+          "properties": {
+            "url": { "$ref": "#/$defs/reserved" },
+            "token": { "$ref": "#/$defs/reserved" },
+            "version": false
+          },
+          "additionalProperties": { "$ref": "#/$defs/field" }
+        },
+        "required": { "$ref": "#/$defs/names" }
+      }
+    },
+    "reserved": {
+      "type": "object",
+      "required": ["type"],
+      "properties": { "type": { "const": "string" } }
+    },
+    "names": {
+      "type": "array",
+      "items": { "type": "string" },
+      "uniqueItems": true
+    },
+    "texts": {
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "translations": {
+          "description": "title and description per language, e.g. de",
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "title": { "type": "string" },
+              "description": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "field": {
+      "type": "object",
+      "required": ["type"],
+      "$ref": "#/$defs/texts",
+      "properties": {
+        "type": { "enum": ["string", "integer", "number", "boolean", "array"] },
+        "advanced": { "description": "shown folded away", "type": "boolean" }
+      },
+      "if": { "properties": { "type": { "const": "array" } } },
+      "then": { "$ref": "#/$defs/list" },
+      "else": { "$ref": "#/$defs/scalar" }
+    },
+    "scalar": {
+      "type": "object",
+      "required": ["type"],
+      "$ref": "#/$defs/texts",
+      "properties": {
+        "type": { "enum": ["string", "integer", "number", "boolean"] },
+        "default": { "type": ["string", "number", "boolean"] },
+        "minLength": { "type": "integer", "minimum": 0 },
+        "maxLength": { "type": "integer", "minimum": 0 },
+        "minBytes": { "description": "UTF-8 bytes", "type": "integer", "minimum": 0 },
+        "maxBytes": { "description": "UTF-8 bytes", "type": "integer", "minimum": 0 },
+        "pattern": { "type": "string", "format": "regex" },
+        "format": { "description": "unknown formats are plain text", "type": "string" },
+        "minimum": { "type": "number" },
+        "maximum": { "type": "number" }
+      }
+    },
+    "list": {
+      "required": ["items"],
+      "properties": {
+        "minItems": { "type": "integer", "minimum": 0 },
+        "maxItems": { "type": "integer", "minimum": 1 },
+        "items": {
+          "type": "object",
+          "required": ["type", "properties"],
+          "$ref": "#/$defs/texts",
+          "properties": {
+            "type": { "const": "object" },
+            "properties": {
+              "type": "object",
+              "minProperties": 1,
+              "additionalProperties": { "$ref": "#/$defs/scalar" }
+            },
+            "required": { "$ref": "#/$defs/names" }
+          }
+        }
+      }
+    }
+  }
+}

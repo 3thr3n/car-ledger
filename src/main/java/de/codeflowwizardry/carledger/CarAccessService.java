@@ -213,7 +213,8 @@ public class CarAccessService
 		{
 			names.add(email.toLowerCase(Locale.ROOT));
 		}
-		carAccessRepository.claim(account, names);
+		// it couldn't be notified before it existed
+		carAccessRepository.claim(account, names).forEach(notifications::carAccessInvited);
 	}
 
 	private CarEntity ownedCar(long carId, String username)

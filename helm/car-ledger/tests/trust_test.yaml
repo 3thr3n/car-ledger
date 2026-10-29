@@ -17,11 +17,13 @@ tests:
       - equal:
           path: spec.template.spec.containers[0].volumeMounts
           value:
+            - name: tmp
+              mountPath: /tmp
             - name: trust
               mountPath: /etc/car-ledger/trust
               readOnly: true
       - equal:
-          path: spec.template.spec.volumes[0].projected.sources
+          path: spec.template.spec.volumes[1].projected.sources
           value:
             - secret:
                 name: car-ledger-ingress-tls
@@ -41,7 +43,7 @@ tests:
       global.authentik.enabled: true
     asserts:
       - equal:
-          path: spec.template.spec.volumes[0].projected.sources[1].secret.name
+          path: spec.template.spec.volumes[1].projected.sources[1].secret.name
           value: authentik-ingress-tls
 
   - it: trusts only the CA of its own ingress with another identity provider
@@ -49,10 +51,10 @@ tests:
       carLedger.auth.url: https://idp.example.org/realms/cars
     asserts:
       - lengthEqual:
-          path: spec.template.spec.volumes[0].projected.sources
+          path: spec.template.spec.volumes[1].projected.sources
           count: 1
       - equal:
-          path: spec.template.spec.volumes[0].projected.sources[0].secret.name
+          path: spec.template.spec.volumes[1].projected.sources[0].secret.name
           value: car-ledger-ingress-tls
 
   - it: adds further certificates of secrets and ConfigMaps
@@ -66,7 +68,7 @@ tests:
         - secret: other-ca
     asserts:
       - equal:
-          path: spec.template.spec.volumes[0].projected.sources
+          path: spec.template.spec.volumes[1].projected.sources
           value:
             - secret:
                 name: keycloak.example.com-tls
@@ -96,10 +98,17 @@ tests:
     set:
       carLedger.trust.ingressCA: false
     asserts:
-      - notExists:
+      # only the writable /tmp
+      - equal:
           path: spec.template.spec.volumes
-      - notExists:
+          value:
+            - name: tmp
+              emptyDir: {}
+      - equal:
           path: spec.template.spec.containers[0].volumeMounts
+          value:
+            - name: tmp
+              mountPath: /tmp
       - notContains:
           path: spec.template.spec.containers[0].env
           content:
@@ -111,5 +120,6 @@ tests:
       ingress.enabled: false
       httpRoute.enabled: true
     asserts:
-      - notExists:
+      - lengthEqual:
           path: spec.template.spec.volumes
+          count: 1

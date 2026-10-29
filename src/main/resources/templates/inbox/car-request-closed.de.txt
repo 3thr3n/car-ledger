@@ -1,0 +1,2 @@
+Fahrzeug-Anfrage von {account} {#if approved}genehmigt{#else}abgelehnt{/if}
+{#if admin}{admin} hat sie {#if approved}genehmigt{#else}abgelehnt{/if}.{#else}Sie wurde entschieden.{/if}

@@ -374,7 +374,11 @@ export type ConfigPartition = {
     offset: number;
     size: number;
     maxLength: number;
+    format: string;
     version: number;
+    schema: {
+        [key: string]: unknown;
+    };
 };
 
 export type CsvFields = {
@@ -402,6 +406,8 @@ export type Device = {
     createdAt: OffsetDateTime;
     lastSeenAt?: OffsetDateTime;
     revokedAt?: OffsetDateTime;
+    status?: TrackerStatus;
+    statusAt?: OffsetDateTime;
 };
 
 export type DeviceCreated = {
@@ -432,9 +438,11 @@ export enum EnergyType {
 export type FirmwareManifest = {
     name: string;
     version: string;
+    spec: number;
     builds: Array<Build>;
+    capabilities: Array<string>;
+    layout: number;
     config: ConfigPartition;
-    valid?: boolean;
 };
 
 export type FirmwareSettings = {
@@ -488,6 +496,28 @@ export type HiLoStats = {
     fuelCost?: HiLo;
     chargingCost?: HiLo;
     maintenanceCost?: HiLo;
+};
+
+export type InboxEntry = {
+    id: number;
+    event: string;
+    title: string;
+    text: string;
+    path: string;
+    createdAt: OffsetDateTime;
+    readAt?: OffsetDateTime;
+};
+
+export type InboxPage = {
+    total: number;
+    unread: number;
+    page: number;
+    size: number;
+    data: Array<InboxEntry>;
+};
+
+export type InboxUnread = {
+    count: number;
 };
 
 export enum InspectionResult {
@@ -830,9 +860,17 @@ export type TotalStats = {
 };
 
 export type Track = {
-    segments: Array<Array<TrackPoint>>;
+    segments: Array<TrackSegment>;
     distance: number;
     points: number;
+};
+
+export type TrackDrive = {
+    start: OffsetDateTime;
+    end: OffsetDateTime;
+    distance: number;
+    from?: string;
+    to?: string;
 };
 
 export type TrackFrequency = {
@@ -840,15 +878,28 @@ export type TrackFrequency = {
     maxPasses: number;
 };
 
-export type TrackPoint = {
-    ts: OffsetDateTime;
-    lat: number;
-    lon: number;
-    speed?: number;
-};
-
 export type TrackRetentionInput = {
     days?: number;
+};
+
+export type TrackSegment = {
+    start: OffsetDateTime;
+    points: Array<Array<number>>;
+};
+
+export type TrackerStatus = {
+    spec?: number;
+    firmware?: string;
+    storageUsed?: number;
+    storageTotal?: number;
+    storageError?: boolean;
+    resetReason?: string;
+    uploadResult?: string;
+    uploadStatus?: number;
+    configOk?: boolean;
+    ssid?: string;
+    rssi?: number;
+    parts?: Array<string>;
 };
 
 export type TracksDeleted = {
@@ -2983,6 +3034,107 @@ export type GetCsvFieldsResponses = {
 
 export type GetCsvFieldsResponse = GetCsvFieldsResponses[keyof GetCsvFieldsResponses];
 
+export type GetInboxData = {
+    body?: never;
+    path?: never;
+    query?: {
+        page?: number;
+        size?: number;
+    };
+    url: '/api/inbox';
+};
+
+export type GetInboxResponses = {
+    /**
+     * Notifications found.
+     */
+    200: InboxPage;
+};
+
+export type GetInboxResponse = GetInboxResponses[keyof GetInboxResponses];
+
+export type ReadInboxData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/inbox/read';
+};
+
+export type ReadInboxResponses = {
+    /**
+     * Marked.
+     */
+    204: void;
+};
+
+export type ReadInboxResponse = ReadInboxResponses[keyof ReadInboxResponses];
+
+export type GetInboxUnreadData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/inbox/unread';
+};
+
+export type GetInboxUnreadResponses = {
+    /**
+     * Counted.
+     */
+    200: InboxUnread;
+};
+
+export type GetInboxUnreadResponse = GetInboxUnreadResponses[keyof GetInboxUnreadResponses];
+
+export type DeleteInboxEntryData = {
+    body?: never;
+    path: {
+        id: number;
+    };
+    query?: never;
+    url: '/api/inbox/{id}';
+};
+
+export type DeleteInboxEntryErrors = {
+    /**
+     * Not a notification of the own account.
+     */
+    404: unknown;
+};
+
+export type DeleteInboxEntryResponses = {
+    /**
+     * Deleted.
+     */
+    204: void;
+};
+
+export type DeleteInboxEntryResponse = DeleteInboxEntryResponses[keyof DeleteInboxEntryResponses];
+
+export type ReadInboxEntryData = {
+    body?: never;
+    path: {
+        id: number;
+    };
+    query?: never;
+    url: '/api/inbox/{id}/read';
+};
+
+export type ReadInboxEntryErrors = {
+    /**
+     * Not a notification of the own account.
+     */
+    404: unknown;
+};
+
+export type ReadInboxEntryResponses = {
+    /**
+     * Marked.
+     */
+    204: void;
+};
+
+export type ReadInboxEntryResponse = ReadInboxEntryResponses[keyof ReadInboxEntryResponses];
+
 export type GetInvitationsData = {
     body?: never;
     path?: never;
@@ -3525,6 +3677,10 @@ export type GetTrackData = {
     };
     query: {
         /**
+         * Only these drives, each start/end (ISO-8601, both inclusive) as listed by the drives; all without
+         */
+        drive?: Array<string>;
+        /**
          * Start of the range, inclusive
          */
         from: OffsetDateTime;
@@ -3558,12 +3714,56 @@ export type GetTrackResponses = {
 
 export type GetTrackResponse = GetTrackResponses[keyof GetTrackResponses];
 
+export type GetTrackDrivesData = {
+    body?: never;
+    path: {
+        carId: number;
+    };
+    query: {
+        /**
+         * Start of the range, inclusive
+         */
+        from: OffsetDateTime;
+        /**
+         * End of the range, exclusive
+         */
+        to: OffsetDateTime;
+    };
+    url: '/api/track/{carId}/drives';
+};
+
+export type GetTrackDrivesErrors = {
+    /**
+     * Range missing, empty or too long
+     */
+    400: Array<unknown>;
+    /**
+     * Car is not for your user.
+     */
+    404: unknown;
+};
+
+export type GetTrackDrivesError = GetTrackDrivesErrors[keyof GetTrackDrivesErrors];
+
+export type GetTrackDrivesResponses = {
+    /**
+     * Drives found.
+     */
+    200: Array<TrackDrive>;
+};
+
+export type GetTrackDrivesResponse = GetTrackDrivesResponses[keyof GetTrackDrivesResponses];
+
 export type GetTrackFrequencyData = {
     body?: never;
     path: {
         carId: number;
     };
     query: {
+        /**
+         * Only these drives, each start/end (ISO-8601, both inclusive) as listed by the drives; all without
+         */
+        drive?: Array<string>;
         /**
          * Start of the range, inclusive
          */

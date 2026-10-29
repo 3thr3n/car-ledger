@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -131,9 +132,10 @@ class TrackResourceTest
 	}
 
 	@Test
-	void shouldSimplifyTheTrack()
+	void shouldSimplifyTheTrackCompact()
 	{
-		drive(0, 101, 50);
+		// 1 km straight to the north at 36 km/h: its two ends are enough
+		line(0, 0, 1000);
 
 		given()
 				.pathParam("carId", carId)
@@ -145,11 +147,37 @@ class TrackResourceTest
 				.statusCode(200)
 				.body("points", is(101))
 				.body("segments", hasSize(1))
-				.body("segments[0]", hasSize(2))
-				.body("segments[0][0].ts", is("2026-10-20T08:00:00Z"))
-				.body("segments[0][1].ts", is("2026-10-20T08:01:40Z"))
-				.body("segments[0][0].speed", is(50.0f))
-				.body("segments[0][0].lat", is(50.0f));
+				.body("segments[0].start", is("2026-10-20T08:00:00Z"))
+				// lon, lat, seconds since the start, km/h
+				.body("segments[0].points", hasSize(2))
+				.body("segments[0].points[0]", contains(10.0f, 50.0f, 0.0f, 36.0f))
+				.body("segments[0].points[1][2]", is(100.0f));
+	}
+
+	@Test
+	void shouldKeepWhatIsMoreThanAMeterOff()
+	{
+		// the zigzag of 3 m is more than the tolerance of 1 m: the map simplifies by
+		// its zoom
+		drive(0, 101, 50);
+
+		range().when().get().then().body("segments[0].points", hasSize(101));
+	}
+
+	@Test
+	void shouldCompressTheTrack()
+	{
+		drive(0, 101, 50);
+
+		range().header("Accept-Encoding", "gzip").when().get().then()
+				.statusCode(200)
+				.header("Content-Encoding", "gzip");
+		range().header("Accept-Encoding", "gzip").when().get("frequency").then()
+				.header("Content-Encoding", "gzip");
+		// not the other answers, e.g. of a new token
+		given().basePath("/").header("Accept-Encoding", "gzip").when().get("api/tracker/" + carId).then()
+				.statusCode(200)
+				.header("Content-Encoding", nullValue());
 	}
 
 	@Test
@@ -187,9 +215,9 @@ class TrackResourceTest
 				.statusCode(200)
 				.body("points", is(33))
 				.body("segments", hasSize(2))
-				.body("segments[0][0].ts", is("2026-10-20T08:00:00Z"))
-				.body("segments[0][-1].ts", is("2026-10-20T08:05:20Z"))
-				.body("segments[1][0].ts", is("2026-10-20T08:10:21Z"))
+				.body("segments[0].start", is("2026-10-20T08:00:00Z"))
+				.body("segments[0].points[-1][2]", is(320.0f))
+				.body("segments[1].start", is("2026-10-20T08:10:21Z"))
 				// first segment: 2 x 104.4 m and the 3 km during the 5 minutes, second: 104.4
 				// m; not the 3 km of the gap
 				.body("distance", is(3.31f));
@@ -209,8 +237,8 @@ class TrackResourceTest
 				.then()
 				.statusCode(200)
 				.body("points", is(5))
-				.body("segments[0][0].ts", is("2026-10-20T08:00:05Z"))
-				.body("segments[0][-1].ts", is("2026-10-20T08:00:09Z"));
+				.body("segments[0].start", is("2026-10-20T08:00:05Z"))
+				.body("segments[0].points[-1][2]", is(4.0f));
 	}
 
 	@Test
@@ -282,7 +310,7 @@ class TrackResourceTest
 		// the same road an hour later
 		drive(0, 101, 50, 3600);
 
-		given()
+		List<Double> lats = given()
 				.pathParam("carId", carId)
 				.queryParam("from", START.toString())
 				.queryParam("to", START.plusHours(2).toString())
@@ -292,8 +320,14 @@ class TrackResourceTest
 				.statusCode(200)
 				.body("maxPasses", is(2))
 				.body("lines.passes", everyItem(is(2)))
+				// the street once, for both drives
+				.body("lines", hasSize(1))
 				.body("lines[0].last", is("2026-10-20T09:01:40Z"))
-				.body("lines[0].coordinates[0]", contains(10.0f, 50.0f));
+				.extract().jsonPath().getList("lines[0].coordinates.collect { it[1] }", Double.class);
+		// from one end of the 1000 m to the other, within a cell of 8 m
+		assertEquals(50, lats.stream().mapToDouble(Double::doubleValue).min().orElseThrow(), 8 * LAT_PER_METER);
+		assertEquals(50 + 1000 * LAT_PER_METER, lats.stream().mapToDouble(Double::doubleValue).max().orElseThrow(),
+				8 * LAT_PER_METER);
 	}
 
 	@Test
@@ -365,8 +399,8 @@ class TrackResourceTest
 		tripTrack(id)
 				.statusCode(200)
 				.body("points", is(41))
-				.body("segments[0][0].ts", is("2026-10-20T08:00:10Z"))
-				.body("segments[0][-1].ts", is("2026-10-20T08:00:50Z"))
+				.body("segments[0].start", is("2026-10-20T08:00:10Z"))
+				.body("segments[0].points[-1][2]", is(40.0f))
 				.body("distance", is(0.42f));
 	}
 
@@ -524,5 +558,174 @@ class TrackResourceTest
 		given().pathParam("carId", otherCarId).queryParam("from", START.toString())
 				.queryParam("to", START.plusHours(1).toString())
 				.when().delete().then().statusCode(404);
+	}
+
+	/** a point every second, 10 m per second to the north or the south */
+	private void line(int start, double fromNorth, double toNorth)
+	{
+		List<TrackPointInput> points = new ArrayList<>();
+		double step = fromNorth < toNorth ? 10 : -10;
+		int second = start;
+		for (double north = fromNorth; step > 0 ? north <= toNorth : north >= toNorth; north += step)
+		{
+			points.add(new TrackPointInput(START.plusSeconds(second++), 50 + north * LAT_PER_METER, 10.0, 36.0,
+					null, null));
+		}
+		QuarkusTransaction.requiringNew().run(() -> trackPointRepository.insert(deviceId, carId, points));
+	}
+
+	/** parked with the tracker on: a point every 10 seconds */
+	private void stand(int start, int seconds, double north)
+	{
+		List<TrackPointInput> points = new ArrayList<>();
+		for (int second = start; second < start + seconds; second += 10)
+		{
+			points.add(new TrackPointInput(START.plusSeconds(second), 50 + north * LAT_PER_METER, 10.0, 0.0, null,
+					null));
+		}
+		QuarkusTransaction.requiringNew().run(() -> trackPointRepository.insert(deviceId, carId, points));
+	}
+
+	/** from home to work, 7 minutes there with the tracker on, and back */
+	private void commute()
+	{
+		line(0, 0, 1000);
+		stand(101, 420, 1000);
+		line(530, 1000, 0);
+		stand(631, 420, 0);
+	}
+
+	private RequestSpecification range()
+	{
+		return given().pathParam("carId", carId)
+				.queryParam("from", START.toString())
+				.queryParam("to", START.plusHours(1).toString());
+	}
+
+	/** start/end of the drive of the list, newest first */
+	private String drive(int index)
+	{
+		Map<String, String> drive = range().when().get("drives").then().extract().jsonPath()
+				.getMap("[" + index + "]");
+		return drive.get("start") + "/" + drive.get("end");
+	}
+
+	@Test
+	void shouldListTheDrivesWithTheNamedPlaces()
+	{
+		commute();
+		for (Object[] place : new Object[][] {
+				{
+						0, "Home"
+				}, {
+						1000, "Work"
+				}
+		})
+		{
+			given().pathParam("carId", carId).contentType(ContentType.JSON)
+					.body(Map.of("lat", 50 + (int) place[0] * LAT_PER_METER, "lon", 10.0, "name", place[1]))
+					.when().put("places").then().statusCode(204);
+		}
+
+		range().when().get("drives").then()
+				.statusCode(200)
+				.body("size()", is(2))
+				// the newest first, the standing at work in between isn't part of a drive
+				.body("[0].from", is("Work"))
+				.body("[0].to", is("Home"))
+				.body("[0].end", is("2026-10-20T08:10:30Z"))
+				.body("[1].from", is("Home"))
+				.body("[1].to", is("Work"))
+				// from the last point within the drift of the GPS
+				.body("[1].start", is("2026-10-20T08:00:03Z"))
+				.body("[1].end", is("2026-10-20T08:01:40Z"))
+				.body("[1].distance", is(0.97f));
+	}
+
+	@Test
+	void shouldListDrivesWithoutNamesAndAtTheEndsOfTheRange()
+	{
+		// already on the road at the start of the range, still on the road at its end
+		line(0, 0, 1000);
+
+		given().pathParam("carId", carId)
+				.queryParam("from", START.plusSeconds(10).toString())
+				.queryParam("to", START.plusSeconds(90).toString())
+				.when().get("drives").then()
+				.statusCode(200)
+				.body("size()", is(1))
+				.body("[0].start", is("2026-10-20T08:00:13Z"))
+				.body("[0].end", is("2026-10-20T08:01:26Z"))
+				.body("[0].from", nullValue());
+	}
+
+	@Test
+	void shouldValidateTheRangeOfTheDrives()
+	{
+		given().pathParam("carId", carId).queryParam("from", START.toString())
+				.when().get("drives").then().statusCode(400);
+		given().pathParam("carId", otherCarId).queryParam("from", START.toString())
+				.queryParam("to", START.plusHours(1).toString())
+				.when().get("drives").then().statusCode(404);
+	}
+
+	@Test
+	void shouldShowOnlyTheSelectedDrives()
+	{
+		commute();
+		String back = drive(0);
+
+		range().queryParam("drive", back).when().get().then()
+				.statusCode(200)
+				.body("segments.size()", is(1))
+				.body("segments[0].start", is(back.split("/")[0]))
+				.body("segments[0].points[-1][2]", is((float) Duration
+						.between(OffsetDateTime.parse(back.split("/")[0]), OffsetDateTime.parse(back.split("/")[1]))
+						.toSeconds()))
+				.body("distance", is(0.97f));
+		// both: each a segment of its own
+		range().queryParam("drive", back).queryParam("drive", drive(1)).when().get().then()
+				.body("segments.size()", is(2))
+				.body("distance", is(1.94f));
+	}
+
+	@Test
+	void shouldCountThePassesOfTheSelectedDrives()
+	{
+		commute();
+
+		range().when().get("frequency").then().body("maxPasses", is(2));
+		range().queryParam("drive", drive(1)).when().get("frequency").then().body("maxPasses", is(1));
+	}
+
+	@Test
+	void shouldRejectAnInvalidSelection()
+	{
+		range().queryParam("drive", "yesterday").when().get().then()
+				.statusCode(400)
+				.body("", contains("A drive is start/end, ISO-8601: yesterday"));
+		range().queryParam("drive", START.plusMinutes(1) + "/" + START).when().get("frequency").then()
+				.statusCode(400);
+	}
+
+	@Test
+	void shouldDeleteOnlyTheSelectedDrive()
+	{
+		commute();
+		String[] there = drive(1).split("/");
+		String[] back = drive(0).split("/");
+
+		// as the map deletes a drive: up to the start of the next one, with the stop
+		// after it, else the stops around it would be joined by a straight line
+		given().pathParam("carId", carId)
+				.queryParam("from", there[0])
+				.queryParam("to", back[0])
+				.when().delete().then().statusCode(200);
+
+		// the way back stays; it starts a few seconds later, its stop before is gone
+		range().when().get("drives").then()
+				.body("size()", is(1))
+				.body("[0].start", startsWith("2026-10-20T08:08:5"))
+				.body("[0].end", startsWith("2026-10-20T08:10:"));
 	}
 }

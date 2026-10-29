@@ -81,6 +81,45 @@ test.describe.serial('GPS trackers', () => {
     await expect(tracker).toContainText('Last seen');
   });
 
+  test('shows the status the tracker reported', async () => {
+    const device = await request.newContext({ baseURL: API_URL });
+    const sent = await device.post('/api/device/status', {
+      headers: { Authorization: `Bearer ${token}` },
+      data: {
+        spec: 1,
+        firmware: 'v1.1.0',
+        storageUsed: 262144,
+        storageTotal: 1048576,
+        storageError: true,
+        resetReason: 'brownout',
+        uploadResult: 'ok',
+        uploadStatus: 200,
+        configOk: false,
+        ssid: 'Hotspot',
+        rssi: -71,
+        parts: ['sd', 'imu'],
+      },
+    });
+    expect(sent.status()).toBe(204);
+    await device.dispose();
+
+    await page.reload();
+    const status = page
+      .getByTestId('tracker')
+      .filter({ hasText: 'ESP32' })
+      .getByTestId('tracker-status');
+    await expect(status).toContainText('Firmware v1.1.0');
+    await expect(status).toContainText('Storage 25 % of');
+    await expect(status).toContainText('last upload: ok (200)');
+    await expect(status).toContainText('last start: brownout');
+    await expect(status).toContainText('WLAN Hotspot (-71 dBm)');
+    await expect(status).toContainText('with sd, imu');
+    await expect(status).toContainText(
+      "storage of the tracker can't be written",
+    );
+    await expect(status).toContainText('settings of the tracker are invalid');
+  });
+
   test('revokes the tracker after a confirmation', async () => {
     const tracker = page.getByTestId('tracker').filter({ hasText: 'ESP32' });
     await tracker.getByRole('button', { name: 'Revoke' }).click();
@@ -95,6 +134,8 @@ test.describe.serial('GPS trackers', () => {
       0,
     );
     expect(await sendPoint()).toBe(401);
+    // a revoked tracker shows no status
+    await expect(tracker.getByTestId('tracker-status')).toHaveCount(0);
   });
 
   test('keeps the tracks for a while after a confirmation', async () => {

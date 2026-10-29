@@ -3,8 +3,8 @@
 import { type DefaultError, type InfiniteData, infiniteQueryOptions, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen';
-import { acceptInvitation, addBillAttachment, addModification, addModificationDocument, addNewChargingBill, addNewFuelBill, addNewMaintenanceBill, addNewMiscellaneousBill, addNewRecurringBill, addPastTrip, addRecurringBillFile, addReminder, addTechnicalInspection, addTechnicalInspectionFile, addTracker, approveCarRequest, callback, changeCarAccess, completeReminder, createCar, declineInvitation, deleteAdminAccount, deleteAttachment, deleteBill, deleteCarPicture, deleteModification, deleteMyCar, deleteMyself, deletePlaceName, deleteRecurringBill, deleteReminder, deleteTechnicalInspection, deleteTracks, deleteTrip, dismissTripSuggestion, downloadBackup, endRecurringBill, exportAllExpensesCsv, exportCarPapersPdf, exportCsv, exportTripsCsv, exportTripsPdf, finishTrip, getAdminAccounts, getAdminCarRequests, getAdminStats, getAllBills, getAllBillYears, getAllChargingBills, getAllChargingBillYears, getAllFuelBills, getAllFuelBillYears, getAllMaintenanceBills, getAllMaintenanceBillYears, getAllMiscellaneousBills, getAllMiscellaneousBillYears, getAllRecurringBills, getAttachmentContent, getAttachmentLimits, getAttachmentPreview, getBillAttachments, getCarAccess, getCarPicture, getChargingBill, getCsvFields, getCurrentTrip, getDashboardStats, getFirmwareFile, getFirmwareManifest, getFirmwareSettings, getFuelBill, getInvitations, getLinkableBills, getMaintenanceBill, getMapSettings, getMiscellaneousBill, getModificationDocuments, getModifications, getMonthlyStats, getMyCar, getMyCarOverview, getMyCars, getMyLatestCarRequest, getMyNotifications, getMyPush, getMyself, getPlaces, getRecurringBill, getRecurringBillFiles, getReminders, getTechnicalInspectionFiles, getTechnicalInspections, getTrack, getTrackers, getTrackFrequency, getTrip, getTrips, getTripSuggestions, getTripTrack, getTripYears, getVersion, importCsv, inviteToCar, login, loginError, logout, logoutCallback, markCarRequestSeen, namePlace, type Options, rejectCarRequest, renamePlace, renewTrackerToken, requestMoreCars, restoreBackup, revokeCarAccess, revokeTracker, setCarPicture, setTrackRetention, startTrip, subscribeMyPush, testMyPush, unsubscribeMyPush, updateAdminAccount, updateChargingBill, updateFuelBill, updateMaintenanceBill, updateMiscellaneousBill, updateModification, updateMyCar, updateMyNotifications, updateMySettings, updateRecurringBill, updateReminder, updateTechnicalInspection } from '../sdk.gen';
-import type { AcceptInvitationData, AcceptInvitationResponse, AddBillAttachmentData, AddBillAttachmentError, AddBillAttachmentResponse, AddModificationData, AddModificationDocumentData, AddModificationDocumentError, AddModificationDocumentResponse, AddModificationError, AddModificationResponse, AddNewChargingBillData, AddNewChargingBillError, AddNewFuelBillData, AddNewFuelBillError, AddNewMaintenanceBillData, AddNewMaintenanceBillError, AddNewMiscellaneousBillData, AddNewMiscellaneousBillError, AddNewRecurringBillData, AddNewRecurringBillError, AddNewRecurringBillResponse, AddPastTripData, AddPastTripError, AddPastTripResponse, AddRecurringBillFileData, AddRecurringBillFileError, AddRecurringBillFileResponse, AddReminderData, AddReminderError, AddReminderResponse, AddTechnicalInspectionData, AddTechnicalInspectionError, AddTechnicalInspectionFileData, AddTechnicalInspectionFileError, AddTechnicalInspectionFileResponse, AddTechnicalInspectionResponse, AddTrackerData, AddTrackerError, AddTrackerResponse, ApproveCarRequestData, ApproveCarRequestError, ApproveCarRequestResponse, CallbackData, ChangeCarAccessData, ChangeCarAccessError, ChangeCarAccessResponse, CompleteReminderData, CompleteReminderError, CompleteReminderResponse, CreateCarData, DeclineInvitationData, DeclineInvitationResponse, DeleteAdminAccountData, DeleteAdminAccountResponse, DeleteAttachmentData, DeleteAttachmentResponse, DeleteBillData, DeleteBillResponse, DeleteCarPictureData, DeleteCarPictureResponse, DeleteModificationData, DeleteModificationResponse, DeleteMyCarData, DeleteMyCarResponse, DeleteMyselfData, DeleteMyselfResponse, DeletePlaceNameData, DeletePlaceNameResponse, DeleteRecurringBillData, DeleteReminderData, DeleteReminderResponse, DeleteTechnicalInspectionData, DeleteTechnicalInspectionResponse, DeleteTracksData, DeleteTracksError, DeleteTracksResponse, DeleteTripData, DeleteTripError, DeleteTripResponse, DismissTripSuggestionData, DismissTripSuggestionResponse, DownloadBackupData, DownloadBackupResponse, EndRecurringBillData, EndRecurringBillError, EndRecurringBillResponse, ExportAllExpensesCsvData, ExportAllExpensesCsvResponse, ExportCarPapersPdfData, ExportCarPapersPdfResponse, ExportCsvData, ExportCsvResponse, ExportTripsCsvData, ExportTripsCsvResponse, ExportTripsPdfData, ExportTripsPdfResponse, FinishTripData, FinishTripError, FinishTripResponse, GetAdminAccountsData, GetAdminAccountsResponse, GetAdminCarRequestsData, GetAdminCarRequestsResponse, GetAdminStatsData, GetAdminStatsResponse, GetAllBillsData, GetAllBillsResponse, GetAllBillYearsData, GetAllBillYearsResponse, GetAllChargingBillsData, GetAllChargingBillsResponse, GetAllChargingBillYearsData, GetAllChargingBillYearsResponse, GetAllFuelBillsData, GetAllFuelBillsResponse, GetAllFuelBillYearsData, GetAllFuelBillYearsResponse, GetAllMaintenanceBillsData, GetAllMaintenanceBillsResponse, GetAllMaintenanceBillYearsData, GetAllMaintenanceBillYearsResponse, GetAllMiscellaneousBillsData, GetAllMiscellaneousBillsResponse, GetAllMiscellaneousBillYearsData, GetAllMiscellaneousBillYearsResponse, GetAllRecurringBillsData, GetAllRecurringBillsResponse, GetAttachmentContentData, GetAttachmentLimitsData, GetAttachmentLimitsResponse, GetAttachmentPreviewData, GetBillAttachmentsData, GetBillAttachmentsResponse, GetCarAccessData, GetCarAccessResponse, GetCarPictureData, GetChargingBillData, GetChargingBillResponse, GetCsvFieldsData, GetCsvFieldsResponse, GetCurrentTripData, GetCurrentTripResponse, GetDashboardStatsData, GetDashboardStatsResponse, GetFirmwareFileData, GetFirmwareFileResponse, GetFirmwareManifestData, GetFirmwareManifestResponse, GetFirmwareSettingsData, GetFirmwareSettingsResponse, GetFuelBillData, GetFuelBillResponse, GetInvitationsData, GetInvitationsResponse, GetLinkableBillsData, GetLinkableBillsResponse, GetMaintenanceBillData, GetMaintenanceBillResponse, GetMapSettingsData, GetMapSettingsResponse, GetMiscellaneousBillData, GetMiscellaneousBillResponse, GetModificationDocumentsData, GetModificationDocumentsResponse, GetModificationsData, GetModificationsResponse, GetMonthlyStatsData, GetMonthlyStatsResponse, GetMyCarData, GetMyCarOverviewData, GetMyCarOverviewResponse, GetMyCarResponse, GetMyCarsData, GetMyCarsResponse, GetMyLatestCarRequestData, GetMyLatestCarRequestResponse, GetMyNotificationsData, GetMyNotificationsResponse, GetMyPushData, GetMyPushResponse, GetMyselfData, GetMyselfResponse, GetPlacesData, GetPlacesError, GetPlacesResponse, GetRecurringBillData, GetRecurringBillFilesData, GetRecurringBillFilesResponse, GetRecurringBillResponse, GetRemindersData, GetRemindersResponse, GetTechnicalInspectionFilesData, GetTechnicalInspectionFilesResponse, GetTechnicalInspectionsData, GetTechnicalInspectionsResponse, GetTrackData, GetTrackError, GetTrackersData, GetTrackersResponse, GetTrackFrequencyData, GetTrackFrequencyError, GetTrackFrequencyResponse, GetTrackResponse, GetTripData, GetTripResponse, GetTripsData, GetTripsResponse, GetTripSuggestionsData, GetTripSuggestionsResponse, GetTripTrackData, GetTripTrackResponse, GetTripYearsData, GetTripYearsResponse, GetVersionData, GetVersionResponse, ImportCsvData, InviteToCarData, InviteToCarError, InviteToCarResponse, LoginData, LoginErrorData, LogoutCallbackData, LogoutData, MarkCarRequestSeenData, MarkCarRequestSeenResponse, NamePlaceData, NamePlaceResponse, RejectCarRequestData, RejectCarRequestError, RejectCarRequestResponse, RenamePlaceData, RenamePlaceResponse, RenewTrackerTokenData, RenewTrackerTokenResponse, RequestMoreCarsData, RequestMoreCarsError, RequestMoreCarsResponse, RestoreBackupData, RestoreBackupError, RestoreBackupResponse, RevokeCarAccessData, RevokeCarAccessResponse, RevokeTrackerData, RevokeTrackerResponse, SetCarPictureData, SetCarPictureError, SetCarPictureResponse, SetTrackRetentionData, SetTrackRetentionResponse, StartTripData, StartTripError, StartTripResponse, SubscribeMyPushData, SubscribeMyPushResponse, TestMyPushData, UnsubscribeMyPushData, UnsubscribeMyPushResponse, UpdateAdminAccountData, UpdateAdminAccountError, UpdateAdminAccountResponse, UpdateChargingBillData, UpdateChargingBillError, UpdateChargingBillResponse, UpdateFuelBillData, UpdateFuelBillError, UpdateFuelBillResponse, UpdateMaintenanceBillData, UpdateMaintenanceBillError, UpdateMaintenanceBillResponse, UpdateMiscellaneousBillData, UpdateMiscellaneousBillError, UpdateMiscellaneousBillResponse, UpdateModificationData, UpdateModificationError, UpdateModificationResponse, UpdateMyCarData, UpdateMyNotificationsData, UpdateMyNotificationsResponse, UpdateMySettingsData, UpdateMySettingsError, UpdateMySettingsResponse, UpdateRecurringBillData, UpdateRecurringBillError, UpdateRecurringBillResponse, UpdateReminderData, UpdateReminderError, UpdateReminderResponse, UpdateTechnicalInspectionData, UpdateTechnicalInspectionError, UpdateTechnicalInspectionResponse } from '../types.gen';
+import { acceptInvitation, addBillAttachment, addModification, addModificationDocument, addNewChargingBill, addNewFuelBill, addNewMaintenanceBill, addNewMiscellaneousBill, addNewRecurringBill, addPastTrip, addRecurringBillFile, addReminder, addTechnicalInspection, addTechnicalInspectionFile, addTracker, approveCarRequest, callback, changeCarAccess, completeReminder, createCar, declineInvitation, deleteAdminAccount, deleteAttachment, deleteBill, deleteCarPicture, deleteInboxEntry, deleteModification, deleteMyCar, deleteMyself, deletePlaceName, deleteRecurringBill, deleteReminder, deleteTechnicalInspection, deleteTracks, deleteTrip, dismissTripSuggestion, downloadBackup, endRecurringBill, exportAllExpensesCsv, exportCarPapersPdf, exportCsv, exportTripsCsv, exportTripsPdf, finishTrip, getAdminAccounts, getAdminCarRequests, getAdminStats, getAllBills, getAllBillYears, getAllChargingBills, getAllChargingBillYears, getAllFuelBills, getAllFuelBillYears, getAllMaintenanceBills, getAllMaintenanceBillYears, getAllMiscellaneousBills, getAllMiscellaneousBillYears, getAllRecurringBills, getAttachmentContent, getAttachmentLimits, getAttachmentPreview, getBillAttachments, getCarAccess, getCarPicture, getChargingBill, getCsvFields, getCurrentTrip, getDashboardStats, getFirmwareFile, getFirmwareManifest, getFirmwareSettings, getFuelBill, getInbox, getInboxUnread, getInvitations, getLinkableBills, getMaintenanceBill, getMapSettings, getMiscellaneousBill, getModificationDocuments, getModifications, getMonthlyStats, getMyCar, getMyCarOverview, getMyCars, getMyLatestCarRequest, getMyNotifications, getMyPush, getMyself, getPlaces, getRecurringBill, getRecurringBillFiles, getReminders, getTechnicalInspectionFiles, getTechnicalInspections, getTrack, getTrackDrives, getTrackers, getTrackFrequency, getTrip, getTrips, getTripSuggestions, getTripTrack, getTripYears, getVersion, importCsv, inviteToCar, login, loginError, logout, logoutCallback, markCarRequestSeen, namePlace, type Options, readInbox, readInboxEntry, rejectCarRequest, renamePlace, renewTrackerToken, requestMoreCars, restoreBackup, revokeCarAccess, revokeTracker, setCarPicture, setTrackRetention, startTrip, subscribeMyPush, testMyPush, unsubscribeMyPush, updateAdminAccount, updateChargingBill, updateFuelBill, updateMaintenanceBill, updateMiscellaneousBill, updateModification, updateMyCar, updateMyNotifications, updateMySettings, updateRecurringBill, updateReminder, updateTechnicalInspection } from '../sdk.gen';
+import type { AcceptInvitationData, AcceptInvitationResponse, AddBillAttachmentData, AddBillAttachmentError, AddBillAttachmentResponse, AddModificationData, AddModificationDocumentData, AddModificationDocumentError, AddModificationDocumentResponse, AddModificationError, AddModificationResponse, AddNewChargingBillData, AddNewChargingBillError, AddNewFuelBillData, AddNewFuelBillError, AddNewMaintenanceBillData, AddNewMaintenanceBillError, AddNewMiscellaneousBillData, AddNewMiscellaneousBillError, AddNewRecurringBillData, AddNewRecurringBillError, AddNewRecurringBillResponse, AddPastTripData, AddPastTripError, AddPastTripResponse, AddRecurringBillFileData, AddRecurringBillFileError, AddRecurringBillFileResponse, AddReminderData, AddReminderError, AddReminderResponse, AddTechnicalInspectionData, AddTechnicalInspectionError, AddTechnicalInspectionFileData, AddTechnicalInspectionFileError, AddTechnicalInspectionFileResponse, AddTechnicalInspectionResponse, AddTrackerData, AddTrackerError, AddTrackerResponse, ApproveCarRequestData, ApproveCarRequestError, ApproveCarRequestResponse, CallbackData, ChangeCarAccessData, ChangeCarAccessError, ChangeCarAccessResponse, CompleteReminderData, CompleteReminderError, CompleteReminderResponse, CreateCarData, DeclineInvitationData, DeclineInvitationResponse, DeleteAdminAccountData, DeleteAdminAccountResponse, DeleteAttachmentData, DeleteAttachmentResponse, DeleteBillData, DeleteBillResponse, DeleteCarPictureData, DeleteCarPictureResponse, DeleteInboxEntryData, DeleteInboxEntryResponse, DeleteModificationData, DeleteModificationResponse, DeleteMyCarData, DeleteMyCarResponse, DeleteMyselfData, DeleteMyselfResponse, DeletePlaceNameData, DeletePlaceNameResponse, DeleteRecurringBillData, DeleteReminderData, DeleteReminderResponse, DeleteTechnicalInspectionData, DeleteTechnicalInspectionResponse, DeleteTracksData, DeleteTracksError, DeleteTracksResponse, DeleteTripData, DeleteTripError, DeleteTripResponse, DismissTripSuggestionData, DismissTripSuggestionResponse, DownloadBackupData, DownloadBackupResponse, EndRecurringBillData, EndRecurringBillError, EndRecurringBillResponse, ExportAllExpensesCsvData, ExportAllExpensesCsvResponse, ExportCarPapersPdfData, ExportCarPapersPdfResponse, ExportCsvData, ExportCsvResponse, ExportTripsCsvData, ExportTripsCsvResponse, ExportTripsPdfData, ExportTripsPdfResponse, FinishTripData, FinishTripError, FinishTripResponse, GetAdminAccountsData, GetAdminAccountsResponse, GetAdminCarRequestsData, GetAdminCarRequestsResponse, GetAdminStatsData, GetAdminStatsResponse, GetAllBillsData, GetAllBillsResponse, GetAllBillYearsData, GetAllBillYearsResponse, GetAllChargingBillsData, GetAllChargingBillsResponse, GetAllChargingBillYearsData, GetAllChargingBillYearsResponse, GetAllFuelBillsData, GetAllFuelBillsResponse, GetAllFuelBillYearsData, GetAllFuelBillYearsResponse, GetAllMaintenanceBillsData, GetAllMaintenanceBillsResponse, GetAllMaintenanceBillYearsData, GetAllMaintenanceBillYearsResponse, GetAllMiscellaneousBillsData, GetAllMiscellaneousBillsResponse, GetAllMiscellaneousBillYearsData, GetAllMiscellaneousBillYearsResponse, GetAllRecurringBillsData, GetAllRecurringBillsResponse, GetAttachmentContentData, GetAttachmentLimitsData, GetAttachmentLimitsResponse, GetAttachmentPreviewData, GetBillAttachmentsData, GetBillAttachmentsResponse, GetCarAccessData, GetCarAccessResponse, GetCarPictureData, GetChargingBillData, GetChargingBillResponse, GetCsvFieldsData, GetCsvFieldsResponse, GetCurrentTripData, GetCurrentTripResponse, GetDashboardStatsData, GetDashboardStatsResponse, GetFirmwareFileData, GetFirmwareFileResponse, GetFirmwareManifestData, GetFirmwareManifestResponse, GetFirmwareSettingsData, GetFirmwareSettingsResponse, GetFuelBillData, GetFuelBillResponse, GetInboxData, GetInboxResponse, GetInboxUnreadData, GetInboxUnreadResponse, GetInvitationsData, GetInvitationsResponse, GetLinkableBillsData, GetLinkableBillsResponse, GetMaintenanceBillData, GetMaintenanceBillResponse, GetMapSettingsData, GetMapSettingsResponse, GetMiscellaneousBillData, GetMiscellaneousBillResponse, GetModificationDocumentsData, GetModificationDocumentsResponse, GetModificationsData, GetModificationsResponse, GetMonthlyStatsData, GetMonthlyStatsResponse, GetMyCarData, GetMyCarOverviewData, GetMyCarOverviewResponse, GetMyCarResponse, GetMyCarsData, GetMyCarsResponse, GetMyLatestCarRequestData, GetMyLatestCarRequestResponse, GetMyNotificationsData, GetMyNotificationsResponse, GetMyPushData, GetMyPushResponse, GetMyselfData, GetMyselfResponse, GetPlacesData, GetPlacesError, GetPlacesResponse, GetRecurringBillData, GetRecurringBillFilesData, GetRecurringBillFilesResponse, GetRecurringBillResponse, GetRemindersData, GetRemindersResponse, GetTechnicalInspectionFilesData, GetTechnicalInspectionFilesResponse, GetTechnicalInspectionsData, GetTechnicalInspectionsResponse, GetTrackData, GetTrackDrivesData, GetTrackDrivesError, GetTrackDrivesResponse, GetTrackError, GetTrackersData, GetTrackersResponse, GetTrackFrequencyData, GetTrackFrequencyError, GetTrackFrequencyResponse, GetTrackResponse, GetTripData, GetTripResponse, GetTripsData, GetTripsResponse, GetTripSuggestionsData, GetTripSuggestionsResponse, GetTripTrackData, GetTripTrackResponse, GetTripYearsData, GetTripYearsResponse, GetVersionData, GetVersionResponse, ImportCsvData, InviteToCarData, InviteToCarError, InviteToCarResponse, LoginData, LoginErrorData, LogoutCallbackData, LogoutData, MarkCarRequestSeenData, MarkCarRequestSeenResponse, NamePlaceData, NamePlaceResponse, ReadInboxData, ReadInboxEntryData, ReadInboxEntryResponse, ReadInboxResponse, RejectCarRequestData, RejectCarRequestError, RejectCarRequestResponse, RenamePlaceData, RenamePlaceResponse, RenewTrackerTokenData, RenewTrackerTokenResponse, RequestMoreCarsData, RequestMoreCarsError, RequestMoreCarsResponse, RestoreBackupData, RestoreBackupError, RestoreBackupResponse, RevokeCarAccessData, RevokeCarAccessResponse, RevokeTrackerData, RevokeTrackerResponse, SetCarPictureData, SetCarPictureError, SetCarPictureResponse, SetTrackRetentionData, SetTrackRetentionResponse, StartTripData, StartTripError, StartTripResponse, SubscribeMyPushData, SubscribeMyPushResponse, TestMyPushData, UnsubscribeMyPushData, UnsubscribeMyPushResponse, UpdateAdminAccountData, UpdateAdminAccountError, UpdateAdminAccountResponse, UpdateChargingBillData, UpdateChargingBillError, UpdateChargingBillResponse, UpdateFuelBillData, UpdateFuelBillError, UpdateFuelBillResponse, UpdateMaintenanceBillData, UpdateMaintenanceBillError, UpdateMaintenanceBillResponse, UpdateMiscellaneousBillData, UpdateMiscellaneousBillError, UpdateMiscellaneousBillResponse, UpdateModificationData, UpdateModificationError, UpdateModificationResponse, UpdateMyCarData, UpdateMyNotificationsData, UpdateMyNotificationsResponse, UpdateMySettingsData, UpdateMySettingsError, UpdateMySettingsResponse, UpdateRecurringBillData, UpdateRecurringBillError, UpdateRecurringBillResponse, UpdateReminderData, UpdateReminderError, UpdateReminderResponse, UpdateTechnicalInspectionData, UpdateTechnicalInspectionError, UpdateTechnicalInspectionResponse } from '../types.gen';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -1733,6 +1733,135 @@ export const getCsvFieldsOptions = (options: Options<GetCsvFieldsData>) => query
     queryKey: getCsvFieldsQueryKey(options)
 });
 
+export const getInboxQueryKey = (options?: Options<GetInboxData>) => createQueryKey('getInbox', options);
+
+/**
+ * Get Inbox
+ *
+ * The notifications of the own account, newest first; pages starting at 1
+ */
+export const getInboxOptions = (options?: Options<GetInboxData>) => queryOptions<GetInboxResponse, DefaultError, GetInboxResponse, ReturnType<typeof getInboxQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getInbox({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getInboxQueryKey(options)
+});
+
+export const getInboxInfiniteQueryKey = (options?: Options<GetInboxData>): QueryKey<Options<GetInboxData>> => createQueryKey('getInbox', options, true);
+
+/**
+ * Get Inbox
+ *
+ * The notifications of the own account, newest first; pages starting at 1
+ */
+export const getInboxInfiniteOptions = (options?: Options<GetInboxData>) => {
+    const opts = infiniteQueryOptions<GetInboxResponse, DefaultError, InfiniteData<GetInboxResponse>, QueryKey<Options<GetInboxData>>, number | Pick<QueryKey<Options<GetInboxData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<GetInboxData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    page: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await getInbox({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: getInboxInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
+
+/**
+ * Read All
+ *
+ * Marks all notifications of the own account as read
+ */
+export const readInboxMutation = (options?: Partial<Options<ReadInboxData>>): UseMutationOptions<ReadInboxResponse, DefaultError, Options<ReadInboxData>> => {
+    const mutationOptions: UseMutationOptions<ReadInboxResponse, DefaultError, Options<ReadInboxData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await readInbox({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const getInboxUnreadQueryKey = (options?: Options<GetInboxUnreadData>) => createQueryKey('getInboxUnread', options);
+
+/**
+ * Get Unread
+ *
+ * How many notifications of the own account are unread
+ */
+export const getInboxUnreadOptions = (options?: Options<GetInboxUnreadData>) => queryOptions<GetInboxUnreadResponse, DefaultError, GetInboxUnreadResponse, ReturnType<typeof getInboxUnreadQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getInboxUnread({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getInboxUnreadQueryKey(options)
+});
+
+/**
+ * Delete
+ *
+ * Deletes a notification of the own account
+ */
+export const deleteInboxEntryMutation = (options?: Partial<Options<DeleteInboxEntryData>>): UseMutationOptions<DeleteInboxEntryResponse, DefaultError, Options<DeleteInboxEntryData>> => {
+    const mutationOptions: UseMutationOptions<DeleteInboxEntryResponse, DefaultError, Options<DeleteInboxEntryData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await deleteInboxEntry({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Read
+ *
+ * Marks a notification as read, e.g. when its page was opened
+ */
+export const readInboxEntryMutation = (options?: Partial<Options<ReadInboxEntryData>>): UseMutationOptions<ReadInboxEntryResponse, DefaultError, Options<ReadInboxEntryData>> => {
+    const mutationOptions: UseMutationOptions<ReadInboxEntryResponse, DefaultError, Options<ReadInboxEntryData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await readInboxEntry({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
 export const getInvitationsQueryKey = (options?: Options<GetInvitationsData>) => createQueryKey('getInvitations', options);
 
 /**
@@ -2135,7 +2264,7 @@ export const getTrackQueryKey = (options: Options<GetTrackData>) => createQueryK
 /**
  * Get Track
  *
- * GPS track of a car in a time range of at most 31 days, simplified for the map and split into segments at gaps of more than 5 minutes.
+ * GPS track of a car in a time range of at most 31 days, on the shared line of repeated drives, simplified with 1 m (the map simplifies further by its zoom), split into segments at gaps of more than 5 minutes and between the selected drives. Compact: each point is [lon, lat, seconds since the start of its segment, speed].
  */
 export const getTrackOptions = (options: Options<GetTrackData>) => queryOptions<GetTrackResponse, GetTrackError, GetTrackResponse, ReturnType<typeof getTrackQueryKey>>({
     queryFn: async ({ queryKey, signal }) => {
@@ -2148,6 +2277,26 @@ export const getTrackOptions = (options: Options<GetTrackData>) => queryOptions<
         return data;
     },
     queryKey: getTrackQueryKey(options)
+});
+
+export const getTrackDrivesQueryKey = (options: Options<GetTrackDrivesData>) => createQueryKey('getTrackDrives', options);
+
+/**
+ * Get Track Drives
+ *
+ * The drives of the GPS track in a time range of at most 31 days, newest first: a drive ends where the car stood for more than 5 minutes, also with the tracker on. With the names of the named places at its start and end.
+ */
+export const getTrackDrivesOptions = (options: Options<GetTrackDrivesData>) => queryOptions<GetTrackDrivesResponse, GetTrackDrivesError, GetTrackDrivesResponse, ReturnType<typeof getTrackDrivesQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getTrackDrives({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getTrackDrivesQueryKey(options)
 });
 
 export const getTrackFrequencyQueryKey = (options: Options<GetTrackFrequencyData>) => createQueryKey('getTrackFrequency', options);
