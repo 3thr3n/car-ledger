@@ -3686,6 +3686,10 @@ export type GetTrackData = {
          */
         from: OffsetDateTime;
         /**
+         * The g-forces in the points as well
+         */
+        gforces?: boolean;
+        /**
          * End of the range, exclusive
          */
         to: OffsetDateTime;

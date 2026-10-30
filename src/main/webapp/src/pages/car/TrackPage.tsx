@@ -41,6 +41,7 @@ import DateRangeFields from '@/components/dashboard/DateRangeFields';
 import LazyTrackMap from '@/components/track/LazyTrackMap';
 import SpeedLegend from '@/components/track/SpeedLegend';
 import FrequencyLegend from '@/components/track/FrequencyLegend';
+import GForceLegend from '@/components/track/GForceLegend';
 import PlaceDialog from '@/components/track/PlaceDialog';
 import {
   Range,
@@ -57,7 +58,7 @@ import { Place, TrackDrive, TripSuggestion } from '@/generated';
 /** the server returns at most this many days */
 export const MAX_DAYS = 31;
 
-type Mode = 'speed' | 'frequency';
+type Mode = 'speed' | 'frequency' | 'gforce';
 
 /** in the URL, so a reload or a shared link shows the same */
 export interface TrackSearch {
@@ -153,7 +154,8 @@ export default function TrackPage({
     ...getTrackOptions({
       client: localClient,
       path: { carId },
-      query: selection,
+      // only for the mode: they make a busy month larger
+      query: mode === 'gforce' ? { ...selection, gforces: true } : selection,
     }),
     enabled: ready,
     // the old track stays on the map while the next one loads
@@ -254,6 +256,9 @@ export default function TrackPage({
       </ToggleButton>
       <ToggleButton value="frequency" sx={{ px: 1.5 }}>
         {t('track.mode.frequency')}
+      </ToggleButton>
+      <ToggleButton value="gforce" sx={{ px: 1.5 }}>
+        {t('track.mode.gforce')}
       </ToggleButton>
     </ToggleButtonGroup>
   );
@@ -367,6 +372,8 @@ export default function TrackPage({
                 ? (frequency ?? { lines: [], maxPasses: 0 })
                 : undefined
             }
+            // the track of the speeds stays until the one with them is loaded
+            gForces={mode === 'gforce' && !isPlaceholderData}
             places={showPlaces ? places : undefined}
             onPlaceClick={role('WRITE') ? setToName : undefined}
             highlight={hovered}
@@ -389,11 +396,11 @@ export default function TrackPage({
             spacing={{ xs: 1, md: 3 }}
             sx={{ flexGrow: 1, alignItems: { md: 'center' } }}
           >
-            {mode === 'speed' ? (
-              <SpeedLegend />
-            ) : (
+            {mode === 'speed' && <SpeedLegend />}
+            {mode === 'frequency' && (
               <FrequencyLegend maxPasses={frequency?.maxPasses ?? 0} />
             )}
+            {mode === 'gforce' && <GForceLegend />}
             <Tooltip title={t('track.places.showHint')}>
               <FormControlLabel
                 control={

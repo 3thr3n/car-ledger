@@ -19,6 +19,7 @@ import javax.sql.DataSource;
 import org.postgresql.PGConnection;
 import org.postgresql.copy.CopyIn;
 
+import de.codeflowwizardry.carledger.rest.car.track.GForces;
 import de.codeflowwizardry.carledger.rest.car.track.TrackPoint;
 import de.codeflowwizardry.carledger.rest.device.TrackPointInput;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -39,7 +40,7 @@ public class TrackPointRepository
 			ON CONFLICT (tk_device_id, tk_ts) DO NOTHING""";
 
 	private static final String SELECT = """
-			SELECT tk_ts, tk_lat, tk_lon, tk_speed FROM track_point
+			SELECT tk_ts, tk_lat, tk_lon, tk_speed, tk_accel, tk_brake, tk_lateral, tk_gsource FROM track_point
 			WHERE tk_car_id = ? AND tk_ts >= ? AND tk_ts < ?
 			ORDER BY tk_ts, id""";
 
@@ -116,7 +117,9 @@ public class TrackPointRepository
 				while (result.next())
 				{
 					consumer.accept(new TrackPoint(result.getObject(1, OffsetDateTime.class), result.getDouble(2),
-							result.getDouble(3), result.getObject(4, Double.class)));
+							result.getDouble(3), result.getObject(4, Double.class),
+							GForces.of(result.getObject(5, Double.class), result.getObject(6, Double.class),
+									result.getObject(7, Double.class), result.getString(8))));
 				}
 			}
 		}

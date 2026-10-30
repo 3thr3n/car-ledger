@@ -45,7 +45,8 @@ test.describe.serial('GPS track', () => {
     token = ((await tracker.json()) as { token: string }).token;
     await api.dispose();
 
-    // 11 points in the last minute, 10 m apart to the north, faster and faster
+    // 11 points in the last minute, 10 m apart to the north, faster and faster,
+    // accelerating harder and harder by the IMU
     start = Date.now() - 60_000;
     const device = await request.newContext({ baseURL: API_URL });
     const sent = await device.post('/api/device/points', {
@@ -55,6 +56,10 @@ test.describe.serial('GPS track', () => {
         lat: 50 + i * 10 * LAT_PER_METER,
         lon: 10,
         speed: i * 15,
+        accel: i * 0.05,
+        brake: 0,
+        lateral: 0,
+        gsource: 'imu',
       })),
     });
     expect(sent.status()).toBe(200);
@@ -147,6 +152,31 @@ test.describe.serial('GPS track', () => {
       'aria-label',
       'Driven from 1× (light, thin) to 2× (dark, wide)',
     );
+    await expect(page.getByTestId('speed-legend')).toHaveCount(0);
+
+    await page.getByRole('button', { name: 'Speed' }).click();
+    await expect(page.getByTestId('speed-legend')).toBeVisible();
+  });
+
+  test('colors the track by its g-forces', async () => {
+    const withGForces = page.waitForResponse(
+      (response) =>
+        /\/api\/track\/\d+\?.*gforces=true/.test(response.url()) &&
+        response.ok(),
+    );
+    await page.getByRole('button', { name: 'G-forces' }).click();
+
+    const track = (await (await withGForces).json()) as {
+      segments: { points: (number | null)[][] }[];
+    };
+    // the peak of the last second, from the IMU
+    expect(track.segments[0].points.at(-1)?.slice(4)).toEqual([0.5, 0, 0, 1]);
+    const legend = page.getByTestId('gforce-legend');
+    await expect(legend).toContainText('G-force');
+    await expect(legend).toContainText(
+      'Harsh from 0.50 g of the IMU, from 0.30 g of the GPS',
+    );
+    await expect(legend).toContainText('No g-forces');
     await expect(page.getByTestId('speed-legend')).toHaveCount(0);
 
     await page.getByRole('button', { name: 'Speed' }).click();

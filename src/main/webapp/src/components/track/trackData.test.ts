@@ -31,6 +31,30 @@ describe('decodeTrack', () => {
   });
 });
 
+describe('decodeTrack with g-forces', () => {
+  it('reads the four values after the speed, none as null', () => {
+    const none = null as unknown as number;
+    const [segment] = decodeTrack({
+      segments: [
+        {
+          start: '2026-10-20T08:00:00Z',
+          points: [
+            [10, 50, 0, 42.5, 0.1, 0.62, -0.3, 1],
+            [10, 50, 1, 40, 0.05, none, 0.2, 0],
+            [10, 50, 2, 40, none, none, none, none],
+          ],
+        },
+      ],
+    });
+
+    expect(segment.map((point) => point.g)).toEqual([
+      { accel: 0.1, brake: 0.62, lateral: -0.3, imu: true },
+      { accel: 0.05, brake: null, lateral: 0.2, imu: false },
+      null,
+    ]);
+  });
+});
+
 describe('nearestPoint', () => {
   const segment = [0, 1, 2, 3, 4].map((i) => ({
     ts: `2026-10-20T08:00:0${i}Z`,
