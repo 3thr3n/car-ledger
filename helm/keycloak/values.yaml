@@ -35,8 +35,10 @@ keycloak:
     relativePath: /
   proxy:
     mode: xforwarded
+  # also turns on the readiness probe, the keycloakx chart sets it only with the metrics. Both are on the management
+  # port, which the NetworkPolicy closes to other pods (networkPolicy.managementFrom)
   metrics:
-    enabled: false
+    enabled: true
   # database of the postgresql below, defaults match the former bitnami chart
   database:
     vendor: postgres
@@ -92,6 +94,13 @@ keycloak:
     timeoutSeconds: 2
     failureThreshold: 180
     periodSeconds: 5
+  # out of the service while it can't answer, e.g. without its database
+  readinessProbe: |
+    httpGet:
+      path: /health/ready
+      port: '{{ .Values.http.internalPort }}'
+    timeoutSeconds: 2
+    periodSeconds: 10
   resources:
     requests:
       cpu: 250m
@@ -159,8 +168,12 @@ postgresql:
       cpu: 500m
       memory: 512Mi
 
-# only the server reaches its PostgreSQL; needs a network plugin that enforces NetworkPolicies
+# only Keycloak reaches its PostgreSQL; Keycloak itself takes HTTP (8080) from everywhere, and everything from its
+# other replicas (the cache). Needs a network plugin that enforces NetworkPolicies
 networkPolicy:
   enabled: true
-  # further sources, e.g. a backup tool: entries of NetworkPolicy ingress "from"
+  # further sources for the PostgreSQL, e.g. a backup tool: entries of NetworkPolicy ingress "from"
   extraFrom: []
+  # sources for the management port of Keycloak (9000: /health, /metrics), e.g. Prometheus: entries of NetworkPolicy
+  # ingress "from". The probes of the kubelet are always allowed
+  managementFrom: []
