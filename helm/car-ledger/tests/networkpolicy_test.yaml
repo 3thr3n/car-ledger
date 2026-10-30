@@ -80,6 +80,18 @@ tests:
               - port: 9000
                 protocol: TCP
 
+  - it: lets the backup reach PostgreSQL
+    set:
+      backup.enabled: true
+    documentIndex: 0
+    asserts:
+      - contains:
+          path: spec.ingress[0].from
+          content:
+            podSelector:
+              matchLabels:
+                app: car-ledger-backup
+
   - it: has no policies when turned off
     set:
       networkPolicy.enabled: false

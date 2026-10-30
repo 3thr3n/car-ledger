@@ -189,6 +189,8 @@ with the role `user`, the roles are missing in the tokens of the client.
 - **Self-signed certificates**: the app trusts the CA of the ingresses and further certificates for its own HTTPS
   requests (login, SMTP, push), see [Self-signed certificates](#self-signed-certificates).
 - **Metrics**: for Prometheus on the management port, an optional ServiceMonitor, see [Metrics](#metrics).
+- **Database backups**: a CronJob with `pg_dump` into a volume and S3, off by default, see
+  [Database backups](#database-backups).
 - **Network policies**: only the app reaches its PostgreSQL and Infinispan, only Keycloak and authentik their
   PostgreSQL (`networkPolicy.enabled`, on by default in all charts; needs a network plugin that enforces them). Further
   sources, e.g. a backup tool: `networkPolicy.extraFrom`. The management port of Keycloak (9000: health, metrics) is
@@ -343,6 +345,61 @@ With the stack chart the values are under `app:`. The certificates are read at t
 names the trusted certificates (`Trusting 2 certificate(s) ...`).
 
 Outside of Kubernetes, the environment variable `CARLEDGER_TRUST_DIR` points to a directory with the PEM files.
+
+### Database backups
+
+The backup in the settings is per account. A backup of the whole database protects against a failed migration, a
+wrong delete or a lost volume: a CronJob dumps the database with `pg_dump` (custom format) every night, off by default.
+
+```yaml
+backup:
+  enabled: true
+  schedule: "0 3 * * *"   # cron, in the time zone of the cluster or of backup.timeZone
+  keep: 7                 # the dumps kept in the volume
+  persistence:
+    size: 8Gi             # a volume of its own; it outlives helm uninstall, delete it by hand
+  s3:                     # optional, off the cluster
+    bucket: car-ledger-backups
+    prefix: car-ledger-backup/
+    endpoint: https://s3.example.com
+    existingSecret: backup-s3   # accessKeyId and secretAccessKey
+```
+
+With the stack chart the values are under `app:`. It dumps the database of `carLedger.postgres` (host, port, database,
+user and the password of its secret), also an external one; `pg_dump` comes from the image of `carledgerpostgres` and
+has to be at least the version of the server (`backup.image` for another one). The NetworkPolicy of PostgreSQL lets the
+backup in. With a bucket, each dump is also uploaded there (`amazon/aws-cli`), use a bucket or prefix of its own, not
+the one of the attachments; old dumps in S3 are deleted by a lifecycle rule of the bucket, not by CarLedger. Without
+`backup.persistence.enabled` the dumps only go to S3. The volume is created once, before the first install or upgrade
+with the backup (a hook, so `helm --wait` doesn't wait for it): with a storage class that binds on the first consumer
+it stays `Pending` until the first backup runs.
+
+**Check**: the jobs and their logs show the file and its size.
+
+```bash
+kubectl get cronjob car-ledger-backup
+kubectl create job --from=cronjob/car-ledger-backup car-ledger-backup-now   # one now
+kubectl logs job/car-ledger-backup-now -c dump
+```
+
+**Restore** a dump into the database, e.g. the newest of the volume. The app is stopped meanwhile, the restore replaces
+its tables:
+
+```bash
+kubectl scale deployment/car-ledger --replicas=0
+kubectl run restore --rm -it --restart=Never --image=postgres:17-bookworm \
+  --overrides='{"spec":{"securityContext":{"runAsUser":1001},"volumes":[{"name":"b","persistentVolumeClaim":{"claimName":"car-ledger-backup"}}],"containers":[{"name":"restore","image":"postgres:17-bookworm","stdin":true,"tty":true,"command":["bash"],"volumeMounts":[{"name":"b","mountPath":"/backup"}]}]}}' \
+  --labels=app=car-ledger-backup
+# in the pod: the dumps, then the restore (password: secret car-ledger-postgresql, key postgres-password)
+ls /backup
+pg_restore --clean --if-exists -h car-ledger-postgresql -U postgres -d car-ledger /backup/car-ledger-<time>.dump
+exit
+kubectl scale deployment/car-ledger --replicas=1
+```
+
+The label `app=car-ledger-backup` lets the pod through the NetworkPolicy of PostgreSQL. A dump of S3 is copied into the
+pod first (`kubectl cp`). A dump of a newer CarLedger than the running one is migrated forward at the next start, an
+older version can't read a newer database.
 
 ### Metrics
 
@@ -553,6 +610,8 @@ kubectl set env deployment/car-ledger QUARKUS_FLYWAY_IGNORE_FUTURE_MIGRATIONS=tr
   A new NetworkPolicy closes that port to the other pods (the probes of the kubelet are always allowed), open it e.g.
   for Prometheus with `networkPolicy.managementFrom`. HTTP (8080) stays open to everyone, the replicas reach each
   other on every port (the cache). A proxy or a tool that reaches Keycloak on another port needs an entry there.
+- **Database backups** (0.11.0, optional): `backup.enabled` dumps the whole database every night into a volume of its
+  own and, with a bucket, into S3, see [Database backups](#database-backups). Off by default.
 - **Metrics** (0.11.0): the app serves metrics for Prometheus on its management port, see [Metrics](#metrics). A
   new NetworkPolicy of the app (`networkPolicy.enabled`) lets HTTP (8080) in from everywhere and closes the management
   port 9000 to other pods, the probes of the kubelet stay allowed. A tool that reached `/q/health` of the app from

@@ -22,6 +22,12 @@ spec:
         - podSelector:
             matchLabels:
               app: car-ledger
+        {{- if .Values.backup.enabled }}
+        # the dumps of the backup CronJob
+        - podSelector:
+            matchLabels:
+              app: car-ledger-backup
+        {{- end }}
         {{- with .Values.networkPolicy.extraFrom }}
         {{- toYaml . | nindent 8 }}
         {{- end }}

@@ -233,6 +233,51 @@ carledgerpostgres:
       cpu: 500m
       memory: 512Mi
 
+# Backups of the whole database (pg_dump, custom format) by a CronJob, off by default. The backup in the settings of
+# the app is per account; this one protects against a failed migration, a wrong delete or a lost volume. Restore: see
+# docs/DEPLOYMENT.md#database-backups. It dumps the database of carLedger.postgres, also an external one
+backup:
+  enabled: false
+  # cron, in the time zone of the cluster (or timeZone)
+  schedule: "0 3 * * *"
+  timeZone: ""
+  # the dumps kept in the volume, the oldest is deleted
+  keep: 7
+  # PostgreSQL of the dump: its pg_dump has to be at least the version of the server, the image of
+  # carledgerpostgres by default
+  image:
+    repository: ""
+    tag: ""
+  # a volume of its own for the dumps; off: only into S3
+  persistence:
+    enabled: true
+    size: 8Gi
+    storageClass:
+  # also into an S3 compatible storage when a bucket is set, off the cluster: its own bucket or prefix, not the one of
+  # the attachments. Only uploads, a lifecycle rule of the bucket deletes old dumps
+  s3:
+    bucket: ""
+    prefix: car-ledger-backup/
+    # empty for AWS, e.g. https://s3.example.com for others
+    endpoint: ""
+    region: us-east-1
+    # bucket in the path of the URL instead of the host name, needed by most storages besides AWS
+    pathStyle: true
+    # secret with the access key, without one the default chain of AWS is used (e.g. IRSA)
+    existingSecret: ""
+    accessKeyIdKey: accessKeyId
+    secretAccessKeyKey: secretAccessKey
+    image:
+      repository: docker.io/amazon/aws-cli
+      tag: "2.38.0"
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
+
 # only the app reaches its PostgreSQL and Infinispan, the app takes HTTP from everywhere; needs a network plugin that
 # enforces NetworkPolicies
 networkPolicy:
