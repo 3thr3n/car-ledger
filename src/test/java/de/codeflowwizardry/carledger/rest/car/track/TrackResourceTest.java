@@ -17,6 +17,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import de.codeflowwizardry.carledger.TripService;
 import de.codeflowwizardry.carledger.data.AccountEntity;
 import de.codeflowwizardry.carledger.data.CarEntity;
 import de.codeflowwizardry.carledger.data.TripType;
@@ -24,6 +25,7 @@ import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.CarAccess.Action;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import de.codeflowwizardry.carledger.data.repository.TrackPointRepository;
+import de.codeflowwizardry.carledger.rest.car.trip.TripPastInput;
 import de.codeflowwizardry.carledger.rest.car.tracker.DeviceInput;
 import de.codeflowwizardry.carledger.rest.device.TrackPointInput;
 import de.codeflowwizardry.carledger.tracker.DeviceService;
@@ -63,6 +65,9 @@ class TrackResourceTest
 
 	@Inject
 	EntityManager entityManager;
+
+	@Inject
+	TripService tripService;
 
 	long carId;
 	long otherCarId;
@@ -640,6 +645,23 @@ class TrackResourceTest
 				.body("[1].start", is("2026-10-20T08:00:03Z"))
 				.body("[1].end", is("2026-10-20T08:01:40Z"))
 				.body("[1].distance", is(0.97f));
+	}
+
+	@Test
+	void shouldMarkTheDrivesWithATrip()
+	{
+		commute();
+		// a trip during the way there, its times a little off the ones of the GPS
+		tripService.addPast(carId, UUID.randomUUID(), new TripPastInput(TripType.PRIVATE, 0,
+				START.plusSeconds(10), 1, START.plusMinutes(2), null, null, null), "peter");
+
+		range().when().get("drives").then()
+				.body("trip", contains(false, true));
+
+		QuarkusTransaction.requiringNew()
+				.run(() -> carRepository.findById(carId, "peter", Action.MANAGE).setTripLog(false));
+		range().when().get("drives").then()
+				.body("trip", contains(false, false));
 	}
 
 	@Test

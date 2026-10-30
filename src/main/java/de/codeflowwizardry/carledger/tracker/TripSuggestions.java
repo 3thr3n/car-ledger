@@ -2,6 +2,7 @@ package de.codeflowwizardry.carledger.tracker;
 
 import java.time.Duration;
 import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -98,6 +99,42 @@ public class TripSuggestions
 			suggestions.add(new TripSuggestion(drive.start(), drive.end(), km, start, odometer));
 		}
 		return suggestions;
+	}
+
+	/**
+	 * A drive of the track as a trip to add, e.g. one picked on the map: the
+	 * odometers like a suggestion, from the highest one known before it. Also for
+	 * a drive that was dismissed or is older than {@link #WINDOW}.
+	 *
+	 * @param end
+	 *            inclusive, the last point of the drive
+	 */
+	@Transactional
+	public TripSuggestion forDrive(long carId, OffsetDateTime start, OffsetDateTime end, String username)
+	{
+		List<String> errors = new ArrayList<>();
+		if (start == null || end == null)
+		{
+			errors.add("Start and end time must be set!");
+		} else if (!end.isAfter(start))
+		{
+			errors.add("End time must be after the start time!");
+		} else if (Duration.between(start, end).compareTo(TrackService.MAX_RANGE) > 0)
+		{
+			errors.add("The drive must not be longer than " + TrackService.MAX_RANGE.toDays() + " days!");
+		}
+		Utils.requireValid(errors);
+		CarEntity car = car(carId, username);
+
+		// the same drive as in the list of the map
+		DriveDetector detector = new DriveDetector(config.stop(), Places.MIN_DRIVE_METERS, Places.MIN_DRIVE_DURATION,
+				null);
+		trackPointRepository.forEach(car.getId(), start, end.plus(1, ChronoUnit.MICROS), detector::add);
+		double meters = detector.drives(OffsetDateTime.MAX).stream().mapToDouble(Drive::meters).sum();
+		double km = Math.round(meters / 10) / 100.0;
+		int known = tripService.minimumOdometer(car, start);
+		int startOdometer = known > 0 ? known : car.getOdometer();
+		return new TripSuggestion(start, end, km, startOdometer, startOdometer + (int) Math.round(km));
 	}
 
 	/**

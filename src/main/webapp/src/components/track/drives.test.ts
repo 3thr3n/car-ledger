@@ -5,6 +5,7 @@ const drive = (start: string, end: string) => ({
   start,
   end,
   distance: 1,
+  trip: false,
 });
 
 /** newest first, at noon so the local day is the same in every time zone */

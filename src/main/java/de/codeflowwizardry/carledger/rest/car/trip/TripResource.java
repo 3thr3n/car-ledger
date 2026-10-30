@@ -3,6 +3,7 @@ package de.codeflowwizardry.carledger.rest.car.trip;
 import io.quarkus.security.identity.SecurityIdentity;
 import io.quarkus.vertx.http.Compressed;
 import java.net.URI;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -11,6 +12,7 @@ import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
 import de.codeflowwizardry.carledger.TripService;
@@ -55,6 +57,20 @@ public class TripResource extends AbstractResource
 	public List<TripSuggestion> getTripSuggestions(@PathParam("carId") long carId)
 	{
 		return tripSuggestions.list(carId, context.getName());
+	}
+
+	@GET
+	@Path("suggestions/drive")
+	@Produces(MediaType.APPLICATION_JSON)
+	@Operation(operationId = "getTripSuggestionForDrive", description = "A drive of the GPS track as a trip to add, as listed by the drives of the track: the GPS distance and the odometers like a suggestion, from the highest one known before it. Also for drives that were dismissed or are older than the suggestions.")
+	@APIResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = TripSuggestion.class)))
+	@APIResponse(responseCode = "400", description = "Times missing, the end before the start or longer than 31 days", content = @Content(schema = @Schema(implementation = List.class)))
+	@APIResponse(responseCode = "404", description = "Car is not for your user.")
+	public TripSuggestion getTripSuggestionForDrive(@PathParam("carId") long carId,
+			@Parameter(description = "Start of the drive", required = true) @QueryParam("start") OffsetDateTime start,
+			@Parameter(description = "End of the drive, inclusive", required = true) @QueryParam("end") OffsetDateTime end)
+	{
+		return tripSuggestions.forDrive(carId, start, end, context.getName());
 	}
 
 	@POST

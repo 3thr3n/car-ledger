@@ -372,7 +372,7 @@ test.describe.serial('Drives of the GPS track', () => {
     await deleteAllCars();
     const api = await aliceApi();
     await api.put('/api/car/my', {
-      data: { name: 'E2E Golf', year: 2021, odometer: 1000 },
+      data: { name: 'E2E Golf', year: 2021, odometer: 1000, tripLog: true },
     });
     carId = (
       (await (await api.get('/api/car/my')).json()) as { id: number }[]
@@ -436,6 +436,33 @@ test.describe.serial('Drives of the GPS track', () => {
     await expect(page).not.toHaveURL(/drives=/);
     await expect(
       page.getByText('1.6 km GPS distance in 2 sections'),
+    ).toBeVisible();
+  });
+
+  test('adds a drive as trip, prefilled', async () => {
+    const drives = page.getByTestId('track-drives').getByTestId('track-drive');
+    const addTrip = /^Add the drive .* as trip$/;
+    await drives.first().getByRole('button', { name: addTrip }).click();
+
+    const dialog = page.getByRole('dialog', { name: 'Add a past trip' });
+    await expect(dialog).toContainText('Prefilled from the GPS track');
+    await expect(
+      dialog.getByRole('textbox', { name: /Odometer at the start/ }),
+    ).toHaveValue(/1,000/);
+    await expect(
+      dialog.getByRole('textbox', { name: /Odometer at the finish/ }),
+    ).toHaveValue(/1,001/);
+    await page.getByRole('combobox', { name: 'Type' }).click();
+    await page.getByRole('option', { name: 'Private' }).click();
+    await dialog.getByRole('button', { name: 'Add trip' }).click();
+
+    await expect(page.getByText('Trip added')).toBeVisible();
+    // the drive has its trip now, the other one not
+    await expect(
+      drives.first().getByRole('button', { name: addTrip }),
+    ).toHaveCount(0);
+    await expect(
+      drives.last().getByRole('button', { name: addTrip }),
     ).toBeVisible();
   });
 

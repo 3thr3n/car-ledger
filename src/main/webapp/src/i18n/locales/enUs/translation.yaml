@@ -541,6 +541,8 @@ track:
     minutes_other: "{{count}} min"
     delete: "Delete drive"
     deleteLabel: "Delete the drive {{drive}}"
+    addTrip: "Add as trip"
+    addTripLabel: "Add the drive {{drive}} as trip"
     deleteTitle: "Delete the drive of {{drive}}?"
     deleteText: "Its points ({{distance}}) and those of the stop after it, up to the next drive, are deleted and can't be restored. The other drives, the places, trips and odometers stay as they are."
     deleted_one: "{{count}} point deleted"

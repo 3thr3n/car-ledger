@@ -13,6 +13,7 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
+import AddRoadRounded from '@mui/icons-material/AddRoadRounded';
 import DeleteOutlineRounded from '@mui/icons-material/DeleteOutlineRounded';
 import { useTranslation } from 'react-i18next';
 import type { TrackDrive } from '@/generated';
@@ -30,6 +31,11 @@ export interface DriveListProps {
   onHover: (drive?: TrackDrive) => void;
   /** only for who may delete the track */
   onDelete?: (drive: TrackDrive) => void;
+  /**
+   * only for who may add trips to a car with the trip log, for the drives
+   * without a trip
+   */
+  onAddTrip?: (drive: TrackDrive) => void;
 }
 
 /**
@@ -43,6 +49,7 @@ export default function DriveList({
   onShowAll,
   onHover,
   onDelete,
+  onAddTrip,
 }: DriveListProps) {
   const { t } = useTranslation();
   const format = useFormat();
@@ -101,24 +108,43 @@ export default function DriveList({
                 {ofDay.map((drive) => {
                   const checked = selected.includes(drive.start);
                   const label = title(drive);
+                  const addTrip = onAddTrip && !drive.trip;
+                  const actions = (addTrip ? 1 : 0) + (onDelete ? 1 : 0);
                   return (
                     <ListItem
                       key={drive.start}
                       disablePadding
                       data-testid="track-drive"
                       secondaryAction={
-                        onDelete && (
-                          <Tooltip title={t('track.drives.delete')}>
-                            <IconButton
-                              edge="end"
-                              aria-label={t('track.drives.deleteLabel', {
-                                drive: label,
-                              })}
-                              onClick={() => onDelete(drive)}
-                            >
-                              <DeleteOutlineRounded />
-                            </IconButton>
-                          </Tooltip>
+                        actions > 0 && (
+                          <Stack direction="row">
+                            {addTrip && (
+                              <Tooltip title={t('track.drives.addTrip')}>
+                                <IconButton
+                                  edge={onDelete ? undefined : 'end'}
+                                  aria-label={t('track.drives.addTripLabel', {
+                                    drive: label,
+                                  })}
+                                  onClick={() => onAddTrip(drive)}
+                                >
+                                  <AddRoadRounded />
+                                </IconButton>
+                              </Tooltip>
+                            )}
+                            {onDelete && (
+                              <Tooltip title={t('track.drives.delete')}>
+                                <IconButton
+                                  edge="end"
+                                  aria-label={t('track.drives.deleteLabel', {
+                                    drive: label,
+                                  })}
+                                  onClick={() => onDelete(drive)}
+                                >
+                                  <DeleteOutlineRounded />
+                                </IconButton>
+                              </Tooltip>
+                            )}
+                          </Stack>
                         )
                       }
                       onMouseEnter={() => onHover(drive)}
@@ -129,7 +155,11 @@ export default function DriveList({
                         onClick={() => onToggle(drive)}
                         onFocus={() => onHover(drive)}
                         onBlur={() => onHover(undefined)}
-                        sx={{ borderRadius: 1 }}
+                        // room for the buttons on the right, 48px for one
+                        sx={{
+                          borderRadius: 1,
+                          ...(actions > 0 && { pr: actions * 5 + 1 }),
+                        }}
                       >
                         <ListItemIcon sx={{ minWidth: 36 }}>
                           <Checkbox

@@ -541,6 +541,8 @@ track:
     minutes_other: "{{count}} Min."
     delete: "Fahrt löschen"
     deleteLabel: "Fahrt {{drive}} löschen"
+    addTrip: "Ins Fahrtenbuch eintragen"
+    addTripLabel: "Fahrt {{drive}} ins Fahrtenbuch eintragen"
     deleteTitle: "Fahrt vom {{drive}} löschen?"
     deleteText: "Ihre Punkte ({{distance}}) und die des Halts danach, bis zur nächsten Fahrt, werden gelöscht und können nicht wiederhergestellt werden. Die anderen Fahrten, die Orte, das Fahrtenbuch und die Kilometerstände bleiben, wie sie sind."
     deleted_one: "{{count}} Punkt gelöscht"
