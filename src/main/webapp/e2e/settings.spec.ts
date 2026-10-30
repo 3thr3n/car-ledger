@@ -47,6 +47,8 @@ test.describe.serial('settings', () => {
     await expect(
       page.getByRole('heading', { name: 'Einstellungen' }),
     ).toBeVisible();
+    // screen readers read the page in its language
+    await expect(page.locator('html')).toHaveAttribute('lang', 'de');
 
     // the language is part of the account, not only of this browser
     await page.evaluate(() => localStorage.clear());
@@ -59,6 +61,7 @@ test.describe.serial('settings', () => {
     await page.getByRole('option', { name: 'English' }).click();
     await page.getByRole('button', { name: 'Speichern' }).click();
     await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible();
+    await expect(page.locator('html')).toHaveAttribute('lang', 'en');
   });
 
   test('colors the app with the chosen accent', async ({ page }) => {

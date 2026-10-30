@@ -20,6 +20,7 @@ import { Formatter, num, useFormat } from '@/utils/format';
 import { monthlyParts } from '@/utils/monthlyChart';
 import Section from '@/components/ui/Section';
 import EmptyState from '@/components/ui/EmptyState';
+import ChartTable from '@/components/ui/ChartTable';
 
 export interface MonthlyChartProps {
   /** -1 for all cars */
@@ -175,6 +176,34 @@ export default function MonthlyChart({
     shown === 'costs' ? !hasCosts : shown === 'fuel' ? !hasFuel : !hasCharging;
   const energy = shown === 'costs' ? undefined : energyViews(format)[shown];
 
+  // the chart for screen readers
+  const table = energy
+    ? {
+        columns: [
+          t(`dashboard.monthly.pricePerUnit.${shown}`),
+          t('dashboard.monthly.consumption'),
+        ],
+        rows: months.map((month) => ({
+          label: label(month.month, true),
+          values: [
+            energy.formatPrice(inUnits(month[energy.price], energy.toPrice)),
+            energy.formatConsumption(
+              inUnits(month[energy.consumption], energy.toConsumption),
+            ),
+          ],
+        })),
+      }
+    : {
+        columns: shownCostParts.map((part) => t(`bill.types.${part.type}`)),
+        rows: months.map((month) => {
+          const row = costRow(month);
+          return {
+            label: label(month.month, true),
+            values: shownCostParts.map((part) => format.money(row[part.key])),
+          };
+        }),
+      };
+
   const compactMoney = new Intl.NumberFormat(format.locale, {
     style: 'currency',
     currency: format.currency,
@@ -215,7 +244,14 @@ export default function MonthlyChart({
             title={t(`dashboard.monthly.empty.${shown}`)}
           />
         </Box>
-      ) : !energy ? (
+      ) : (
+        <ChartTable
+          caption={t(`dashboard.monthly.${shown}`)}
+          rowHeader={t('dashboard.monthly.month')}
+          {...table}
+        />
+      )}
+      {!isLoading && isEmpty ? null : !energy ? (
         <BarChart
           height={HEIGHT}
           loading={isLoading}

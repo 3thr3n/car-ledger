@@ -575,6 +575,9 @@ export default function TrackMap({
   return (
     <Box
       data-testid="track-map"
+      // a picture of the track: the distance and the drives are text next to it
+      role="region"
+      aria-label={t('track.mapLabel')}
       sx={{
         ...(fill ? { flex: 1, minHeight: 320 } : { height }),
         borderRadius: 3,

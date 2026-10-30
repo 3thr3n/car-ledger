@@ -98,7 +98,7 @@ export default function BillAttachments({
 
   return (
     <Box>
-      <Typography variant="subtitle2" sx={{ mb: 1 }}>
+      <Typography variant="subtitle2" component="h2" sx={{ mb: 1 }}>
         {t('attachments.title')}
       </Typography>
       <Stack direction="row" sx={{ flexWrap: 'wrap', gap: 1 }}>

@@ -51,6 +51,7 @@ import EmptyState from '@/components/ui/EmptyState';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import NumberField from '@/components/bill/NumberField';
 import CarRequestList from '@/components/admin/CarRequestList';
+import { visuallyHidden } from '@/components/ui/visuallyHidden';
 
 /** refreshes everything shown on the page, and the own account */
 const refresh = () =>
@@ -250,7 +251,13 @@ function AccountTable() {
     },
     {
       field: '__actions',
-      headerName: '',
+      // named for screen readers, the buttons explain themselves
+      headerName: t('common.actions'),
+      renderHeader: () => (
+        <Box component="span" sx={visuallyHidden}>
+          {t('common.actions')}
+        </Box>
+      ),
       width: 96,
       sortable: false,
       disableColumnMenu: true,

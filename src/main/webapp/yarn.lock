@@ -10,6 +10,13 @@
     jsonpointer "^5.0.1"
     leven "^3.1.0"
 
+"@axe-core/playwright@4.14.0":
+  version "4.14.0"
+  resolved "https://registry.yarnpkg.com/@axe-core/playwright/-/playwright-4.14.0.tgz#a137c84ad18cf1ec17b5458f300a6e370444fbe5"
+  integrity sha512-SGUhG5PIHd2eMdpgBF2PyQLOhX+qyDR2PT4cmoS4Qk2ak+jX/rrSvst9l0PGv5WTHolKpUMvVmoHpr4cZgf1RQ==
+  dependencies:
+    axe-core "~4.14.0"
+
 "@babel/code-frame@^7.0.0", "@babel/code-frame@^7.29.7":
   version "7.29.7"
   resolved "https://registry.yarnpkg.com/@babel/code-frame/-/code-frame-7.29.7.tgz#f2fbbfea87c44a21590ec515b778b2c26d8866e7"
@@ -2242,6 +2249,11 @@ available-typed-arrays@^1.0.7:
   integrity sha512-wvUjBtSGN7+7SjNpq/9M2Tg350UZD3q62IFZLbRAR1bSMlCo1ZaeW+BJ+D090e4hIIZLBcTDWe4Mh4jvUDajzQ==
   dependencies:
     possible-typed-array-names "^1.0.0"
+
+axe-core@~4.14.0:
+  version "4.14.0"
+  resolved "https://registry.yarnpkg.com/axe-core/-/axe-core-4.14.0.tgz#a9819d3932a8198fbe935d8cbd8afcdfecbcf31d"
+  integrity sha512-9WTZxEjsZ7b13TH8JPmbV2z8CHbl80/2hm3XPEG4JgNdQLK81IBRXmSxHfMAOkSqQeRxT/0dwNDz2GOm3zzpcQ==
 
 babel-dead-code-elimination@^1.0.12:
   version "1.0.12"

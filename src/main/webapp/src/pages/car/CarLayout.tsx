@@ -172,6 +172,8 @@ export default function CarLayout({ id }: { id: number }) {
                   alignItems: 'center',
                   flexGrow: 1,
                   minWidth: 0,
+                  // in the column of a phone not wider than it: a long name ends with …
+                  maxWidth: '100%',
                 }}
               >
                 <CarAvatar

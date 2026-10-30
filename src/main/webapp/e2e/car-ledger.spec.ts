@@ -391,15 +391,20 @@ test.describe.serial('car ledger', () => {
       page.getByText(`January 2026 · Total ${money(71.75)}`),
     ).toBeVisible();
     await chart.getByRole('button', { name: 'Fuel', exact: true }).click();
-    await expect(chart.getByText('Fuel price')).toBeVisible();
+    // the legend, the table for screen readers has the same names
+    await expect(chart.getByRole('list').getByText('Fuel price')).toBeVisible();
     await expect(chart.getByText('No refuels in this period')).toHaveCount(0);
     await chart.getByRole('button', { name: 'Charging', exact: true }).click();
-    await expect(chart.getByText('Electricity price')).toBeVisible();
+    await expect(
+      chart.getByRole('list').getByText('Electricity price'),
+    ).toBeVisible();
   });
 
   test('deletes an entry from the ledger', async () => {
     await page.goto(carUrl);
-    const row = page.getByRole('row', { name: /Maintenance/ });
+    // of the ledger, the chart has a table for screen readers as well
+    const ledger = page.getByRole('grid');
+    const row = ledger.getByRole('row', { name: /Maintenance/ });
     await row.getByRole('button', { name: 'Delete' }).click();
     await page
       .getByRole('dialog')
@@ -407,7 +412,9 @@ test.describe.serial('car ledger', () => {
       .click();
 
     await expect(page.getByText('Entry deleted')).toBeVisible();
-    await expect(page.getByRole('row', { name: /Maintenance/ })).toHaveCount(0);
+    await expect(ledger.getByRole('row', { name: /Maintenance/ })).toHaveCount(
+      0,
+    );
   });
 
   test('deletes the car with its entries', async () => {

@@ -1,6 +1,6 @@
 import { Box, Card, Skeleton, Stack, Typography } from '@mui/material';
 import { ReactNode } from 'react';
-import { BillPaletteKey } from '@/utils/billTypes';
+import { BillPaletteKey, categoryInk } from '@/utils/billTypes';
 
 export interface StatTileProps {
   label: ReactNode;
@@ -40,7 +40,7 @@ export default function StatTile({
               width: 28,
               height: 28,
               borderRadius: 2,
-              color: theme.vars.palette[color].main,
+              ...categoryInk(theme, color),
               backgroundColor: `rgba(${theme.vars.palette[color].mainChannel} / 0.12)`,
               '& svg': { fontSize: 17 },
             })}

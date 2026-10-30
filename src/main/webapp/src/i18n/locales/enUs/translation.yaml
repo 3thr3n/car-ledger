@@ -1,4 +1,6 @@
 app:
+  skipToContent: "Skip to content"
+  menu: "Menu"
   title: "CarLedger"
   loading: "Loading"
   hideSidebar: "Hide the sidebar"
@@ -35,6 +37,7 @@ button:
   logout: "Log out"
 
 nav:
+  label: "Main menu"
   dashboard: "Dashboard"
   garage: "Garage"
   yourCars: "Your cars"
@@ -44,6 +47,7 @@ nav:
   signedInAs: "Signed in as"
 
 common:
+  actions: "Actions"
   all: "See all"
   allYears: "All years"
 
@@ -166,6 +170,7 @@ dashboard:
     pricePerUnit:
       fuel: "Fuel price"
       charging: "Electricity price"
+    month: "Month"
     consumption: "Consumption"
     tooltipTotal: "{{month}} · Total {{total}}"
     empty:
@@ -513,6 +518,7 @@ track:
   tooLong: "Please choose at most {{days}} days."
   speed: "Speed ({{unit}})"
   legendLabel: "Speed from {{from}} {{unit}} (light) to {{to}} {{unit}} (dark)"
+  mapLabel: "Map of the GPS track, the distance and the drives are listed with it"
   noSpeed: "No speed"
   frequency: "Times driven"
   frequencyLabel: "Driven from 1× (light, thin) to {{to}}× (dark, wide)"

@@ -355,6 +355,7 @@ function CarForm({
         <Box>
           <Typography
             variant="subtitle1"
+            component="h2"
             sx={{
               fontWeight: 650,
             }}
