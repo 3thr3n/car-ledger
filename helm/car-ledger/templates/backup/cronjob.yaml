@@ -1,0 +1,158 @@
+{{- /*
+Backups of the whole database: pg_dump in the custom format into a volume of its own, the last backup.keep kept, and
+uploaded to S3 when backup.s3.bucket is set. See docs/DEPLOYMENT.md#database-backups
+*/}}
+{{- if .Values.backup.enabled }}
+{{- $b := .Values.backup }}
+{{- $pg := .Values.carLedger.postgres }}
+{{- $s3 := $b.s3.bucket }}
+{{- if lt (int $b.keep) 1 }}
+{{- fail "backup.keep must be at least 1" }}
+{{- end }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ .Release.Name }}-backup
+  labels:
+    app: car-ledger-backup
+spec:
+  schedule: {{ $b.schedule | quote }}
+  {{- with $b.timeZone }}
+  timeZone: {{ . | quote }}
+  {{- end }}
+  # one at a time: the volume is ReadWriteOnce
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      template:
+        metadata:
+          labels:
+            app: car-ledger-backup
+        spec:
+          restartPolicy: Never
+          automountServiceAccountToken: false
+          serviceAccountName: "car-ledger-sa"
+          securityContext:
+            runAsUser: 1001
+            runAsGroup: 1001
+            fsGroup: 1001
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
+          {{- with .Values.carLedger.imagePullSecrets }}
+          imagePullSecrets:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- /* with S3 the dump runs first, the upload after it */}}
+          {{- if $s3 }}
+          initContainers:
+          {{- else }}
+          containers:
+          {{- end }}
+            - name: dump
+              image: "{{ $b.image.repository | default .Values.carledgerpostgres.image.repository }}:{{ $b.image.tag | default .Values.carledgerpostgres.image.tag }}"
+              command: [ "/bin/sh", "-c" ]
+              args:
+                - |
+                  set -eu
+                  file="/backup/car-ledger-$(date -u +%Y-%m-%dT%H%M%SZ).dump"
+                  pg_dump --format=custom --file="$file.partial"
+                  mv "$file.partial" "$file"
+                  echo "Backup $file, $(du -h "$file" | cut -f1)"
+                  # the newest ones stay, the names sort by time
+                  ls -1 /backup/car-ledger-*.dump | sort | head -n -"$KEEP" | xargs -r rm -v --
+              env:
+                - name: PGHOST
+                  value: {{ $pg.host | quote }}
+                - name: PGPORT
+                  value: {{ $pg.port | quote }}
+                - name: PGDATABASE
+                  value: {{ $pg.database | quote }}
+                - name: PGUSER
+                  value: {{ $pg.auth.username | quote }}
+                - name: PGPASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ $pg.auth.secret }}
+                      key: {{ $pg.auth.secretPasswordKey }}
+                - name: KEEP
+                  value: {{ $b.keep | quote }}
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop: [ "ALL" ]
+                readOnlyRootFilesystem: true
+              resources:
+                {{- toYaml $b.resources | nindent 16 }}
+              volumeMounts:
+                - name: backup
+                  mountPath: /backup
+          {{- if $s3 }}
+          containers:
+            - name: upload
+              image: "{{ $b.s3.image.repository }}:{{ $b.s3.image.tag }}"
+              command: [ "/bin/sh", "-c" ]
+              args:
+                - |
+                  set -eu
+                  {{- if $b.s3.pathStyle }}
+                  printf '[default]\ns3 =\n  addressing_style = path\n' > "$AWS_CONFIG_FILE"
+                  {{- end }}
+                  file=$(ls -1 /backup/car-ledger-*.dump | sort | tail -n 1)
+                  aws s3 cp --only-show-errors "$file" "s3://$BUCKET/$PREFIX$(basename "$file")" ${ENDPOINT:+--endpoint-url "$ENDPOINT"}
+                  echo "Uploaded $(basename "$file") to s3://$BUCKET/$PREFIX"
+              env:
+                - name: BUCKET
+                  value: {{ $b.s3.bucket | quote }}
+                - name: PREFIX
+                  value: {{ $b.s3.prefix | quote }}
+                - name: ENDPOINT
+                  value: {{ $b.s3.endpoint | quote }}
+                - name: AWS_REGION
+                  value: {{ $b.s3.region | quote }}
+                - name: AWS_CONFIG_FILE
+                  value: /tmp/aws-config
+                - name: HOME
+                  value: /tmp
+                {{- with $b.s3.existingSecret }}
+                - name: AWS_ACCESS_KEY_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ . }}
+                      key: {{ $b.s3.accessKeyIdKey }}
+                - name: AWS_SECRET_ACCESS_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ . }}
+                      key: {{ $b.s3.secretAccessKeyKey }}
+                {{- end }}
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop: [ "ALL" ]
+                readOnlyRootFilesystem: true
+              resources:
+                {{- toYaml $b.resources | nindent 16 }}
+              volumeMounts:
+                - name: backup
+                  mountPath: /backup
+                  readOnly: true
+                - name: tmp
+                  mountPath: /tmp
+          {{- end }}
+          volumes:
+            - name: backup
+              {{- if $b.persistence.enabled }}
+              persistentVolumeClaim:
+                claimName: {{ .Release.Name }}-backup
+              {{- else }}
+              emptyDir: { }
+              {{- end }}
+            {{- if $s3 }}
+            - name: tmp
+              emptyDir: { }
+            {{- end }}
+{{- end }}
