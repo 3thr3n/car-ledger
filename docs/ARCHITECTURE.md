@@ -7,6 +7,9 @@ each package starts with an overview (`package-info.java`):
 ./mvnw javadoc:javadoc    # target/reports/apidocs/index.html, private members included
 ```
 
+A change of the API, the backup, the migrations, the values of the charts or the device API has to keep the rules of
+[STABILITY.md](STABILITY.md).
+
 ## The parts
 
 ```
