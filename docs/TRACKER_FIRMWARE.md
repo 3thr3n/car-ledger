@@ -17,7 +17,8 @@ This is **spec 1**. It consists of:
 
 - Changes to the interface happen here first. A firmware follows and raises its `spec`; one release implements one
   spec version.
-- CarLedger supports the current and the previous spec version. A manifest of another version, an invalid one or one
+- CarLedger supports the current and the previous spec version, and spec 1 (the one of 1.0.0) for all of 1.x, see
+  [STABILITY.md](STABILITY.md#device-api-of-the-trackers). A manifest of another version, an invalid one or one
   without `spec` (a firmware of before the spec) turns flashing off with a warning in the log.
 - Unknown fields and capabilities are ignored, in the manifest as in the device API. A newer firmware keeps working with
   an older CarLedger and the other way round: what one side doesn't know is skipped and never blocks the upload of

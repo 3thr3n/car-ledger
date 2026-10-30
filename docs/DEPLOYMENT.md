@@ -345,7 +345,8 @@ Outside of Kubernetes, the environment variable `CARLEDGER_TRUST_DIR` points to 
 
 ## Upgrading to the current version
 
-Checklist for installations running an older image of the app.
+Checklist for installations running an older image of the app. Which upgrades are supported, and what stays stable
+within 1.x, is in [STABILITY.md](STABILITY.md).
 
 ### Before
 

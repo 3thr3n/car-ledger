@@ -386,6 +386,51 @@ class BackupTest
 		assertArrayEquals(PNG, picture);
 	}
 
+	/**
+	 * Every backup since 0.5.0 can be restored (docs/STABILITY.md): the
+	 * backup.json has the fields of 0.5.0 only, keep the file as it is
+	 */
+	@Test
+	void shouldRestoreABackupOf050() throws IOException
+	{
+		deleteCar();
+		byte[] json;
+		try (var in = getClass().getResourceAsStream("/backup/0.5.0/backup.json"))
+		{
+			json = in.readAllBytes();
+		}
+
+		restore(zip(Map.of("backup.json", json, "files/0", PNG, "files/1", PDF)))
+				.statusCode(200)
+				.body("cars", is(1))
+				.body("bills", is(4))
+				.body("recurringBills", is(1))
+				.body("reminders", is(1))
+				.body("trips", is(0))
+				.body("files", is(2));
+
+		given().when().get("/api/user/me").then()
+				.body("vatCountry", is("AT"))
+				.body("language", is("DE"));
+		long restored = given().when().get("/api/car/my").then().statusCode(200)
+				.body("name", contains("Golf GTE"))
+				.body("[0].pictureId", notNullValue())
+				.body("[0].licensePlate", is("W-12345A"))
+				.body("[0].tripLog", is(false))
+				.extract().jsonPath().getLong("[0].id");
+		given().when().get("/api/bill/{carId}/fuel/all", restored).then()
+				.body("data[0].avgConsumption", is(6.67F));
+		given().when().get("/api/bill/{carId}/charging/all", restored).then()
+				.body("data[0].stateOfCharge", is(90));
+		given().when().get("/api/bill/{carId}/maintenance/all", restored).then()
+				.body("data[0].workshop", is("Garage"))
+				.body("data[0].attachments", is(1));
+		given().when().get("/api/bill/{carId}/recurring", restored).then()
+				.body("data[0].total", is(90.0F));
+		given().when().get("/api/reminder/{carId}", restored).then()
+				.body("title", contains("Service"));
+	}
+
 	@Test
 	void shouldRestoreABackupWithoutTrips() throws IOException
 	{
