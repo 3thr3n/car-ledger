@@ -38,7 +38,7 @@ Content-Type: application/json
   braking, both 0 or more; `lateral` the peak sideways acceleration, + turning right, - turning left. `gsource` says
   where they come from: `imu` (real peaks) or `gps` (averages over a second, noticeably lower for the same drive);
   without it, values come from the GPS (firmware before the IMU), another source is stored as `unknown`. A firmware
-  before the g-forces sends none of them. They are only stored for now, the map doesn't show them yet.
+  before the g-forces sends none of them. The map shows them, see [Map](#map).
 - At most 500 points per request (the firmware sends 200).
 - A point sent again (same tracker and `ts`) is stored once, so a batch can be sent again safely.
 - Invalid points are skipped, not rejected: a time more than 5 minutes in the future or before 2020, a position outside
@@ -228,6 +228,14 @@ than 5 minutes: standing or a jam doesn't add a pass, the way back after a stop 
 passes change, e.g. where a drive turned in. Small detours of the grid (up to 40 m) are left out, a roundabout stays.
 Streets closer than about 10 m may merge. A busy month is about 80 streets, 30 KB, in about a second.
 
+*G-forces* colors the track by the largest of the [g-forces](#sending-points) of each piece: forward acceleration,
+braking and cornering to either side, from calm (blue) over yellow to harsh (red). The g-forces of a point are the
+peaks since the point before, so they color the piece to it. The IMU measures real peaks, the GPS only averages over a
+second, noticeably lower for the same drive: each source has its own range of the same colors, harsh from 0.5 g of the
+IMU and from 0.3 g of the GPS (a guess, to tune with real drives), so a period with both doesn't look calmer because of
+the GPS. Pieces without g-forces (a firmware before them) are gray. Hovering the track shows the g-force there, its
+kind and source. Like the speeds, the drives are drawn on their shared line, also in fullscreen and for picked drives.
+
 A street driven more than once shows as one line, in both views: the GPS drifts by a few meters from drive to drive
 and the two directions use different lanes. CarLedger lays the drives of the period on a grid of 8 m and moves each
 point sideways onto the average of the drives around it in about the same direction (both directions count as one, a
@@ -235,10 +243,14 @@ crossing street doesn't pull). The more often a street is driven, the steadier i
 is. Streets closer than about 10 m may merge. Only the map is changed: the stored points, the trips, the suggestions,
 the places and the backup use the points as the tracker sent them, and so does the track of a single trip.
 
-The server simplifies the lines only by 1 m and sends them compact (`[lon, lat, seconds, speed]` per point, gzip); the
+The server simplifies the lines only by 1 m and sends them compact (`[lon, lat, seconds, speed]` per point, gzip; for
+*G-forces* also `[accel, brake, lateral, imu]`, imu 1 or 0, all `null` without, only in that mode so the others stay as
+small); the
 map simplifies further by its zoom, so the drives of a street stay together at every zoom (a simplification per drive
-by the length of the period took them apart again by up to 50 m, #526). The speeds are drawn as lines of the same band
-of 10 km/h. A busy month (about 2000 km, a point every 2 s) is about 940 KB, 320 KB with gzip.
+by the length of the period took them apart again by up to 50 m, #526). A point left out passes its g-forces on to the
+next one kept, so the peaks stay: the highest acceleration and braking and the strongest cornering of the points in
+between. The speeds are drawn as lines of the same band of 10 km/h, the g-forces of a tenth of the range of their
+source, each line with the highest of its pieces, so a short harsh braking isn't averaged away. A busy month (about 2000 km, a point every 2 s) is about 940 KB, 320 KB with gzip.
 
 It appears for cars with a tracker once a map is set up:
 

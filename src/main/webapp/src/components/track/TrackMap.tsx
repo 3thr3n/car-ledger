@@ -21,6 +21,7 @@ import { useTranslation } from 'react-i18next';
 import { Place, Track, TrackFrequency } from '@/generated';
 import { useFormat } from '@/utils/format';
 import { speedColor, trackBands, trackEnds } from './speedScale';
+import { gforceBands, gforceColor, largest } from './gforceScale';
 import { decodeTrack, MapPoint, nearestPoint } from './trackData';
 import {
   frequencyColor,
@@ -35,6 +36,11 @@ export interface TrackMapProps {
   track: Track;
   /** shown instead of the speeds of the track */
   frequency?: TrackFrequency;
+  /**
+   * the track colored by its g-forces instead of the speeds, of a track with
+   * them
+   */
+  gForces?: boolean;
   /** the places the car stops at often, as markers */
   places?: Place[];
   onPlaceClick?: (place: Place) => void;
@@ -99,15 +105,32 @@ const EMPTY: FeatureCollection = {
   features: [],
 };
 
-/** draws the track and zooms to it */
-function showTrack(map: MapLibreMap, segments: MapPoint[][]) {
-  (map.getSource('track') as GeoJSONSource).setData(trackBands(segments));
+/**
+ * draws the track, by its speeds or its g-forces, and zooms to it when its
+ * bounds changed: not for another mode of the same track
+ */
+function showTrack(
+  map: MapLibreMap,
+  segments: MapPoint[][],
+  gForces: boolean,
+  shown: { bounds?: string },
+) {
+  (map.getSource('track') as GeoJSONSource).setData(
+    gForces ? gforceBands(segments) : trackBands(segments),
+  );
+  map.setPaintProperty(
+    'track-line',
+    'line-color',
+    gForces ? gforceColor : speedColor,
+  );
   (map.getSource('ends') as GeoJSONSource).setData(trackEnds(segments));
   const bounds = new LngLatBounds();
   segments.flat().forEach((point) => bounds.extend([point.lon, point.lat]));
-  if (!bounds.isEmpty()) {
+  const key = bounds.isEmpty() ? undefined : bounds.toArray().join();
+  if (key && key !== shown.bounds) {
     map.fitBounds(bounds, { padding: 40, maxZoom: 16, duration: 0 });
   }
+  shown.bounds = key;
 }
 
 /** the points of the track from start to end, as lines */
@@ -237,6 +260,7 @@ export default function TrackMap({
   styleUrl,
   track,
   frequency,
+  gForces = false,
   places,
   onPlaceClick,
   highlight,
@@ -257,6 +281,10 @@ export default function TrackMap({
   segmentsRef.current = segments;
   const frequencyRef = useRef(frequency);
   frequencyRef.current = frequency;
+  const gForcesRef = useRef(gForces);
+  gForcesRef.current = gForces;
+  /** what the map zoomed to last */
+  const shown = useRef<{ bounds?: string }>({});
   // the handlers of the map are registered once, they read the current format
   const formatRef = useRef(format);
   formatRef.current = format;
@@ -359,7 +387,13 @@ export default function TrackMap({
         frequencyWidth(0),
       );
       map.current = instance;
-      showTrack(instance, segmentsRef.current);
+      shown.current = {};
+      showTrack(
+        instance,
+        segmentsRef.current,
+        gForcesRef.current,
+        shown.current,
+      );
       showFrequency(instance, frequencyRef.current);
       (instance.getSource('highlight') as GeoJSONSource).setData(
         highlightLines(segmentsRef.current, highlightRef.current),
@@ -382,8 +416,9 @@ export default function TrackMap({
         speed?: number | null;
       };
       if (properties.seg === undefined) {
+        // an end shows its speed, also with the g-forces
         return properties.ts
-          ? { ts: properties.ts, speed: properties.speed ?? null }
+          ? { ts: properties.ts, speed: properties.speed ?? null, g: undefined }
           : undefined;
       }
       const segment = segmentsRef.current[properties.seg];
@@ -408,8 +443,25 @@ export default function TrackMap({
           : tRef.current('track.noSpeed');
       popup
         .setLngLat(event.lngLat)
-        .setText(`${formatRef.current.dateTime(ts)} · ${speedText}`)
+        .setText(
+          [formatRef.current.dateTime(ts), gForceText(point) ?? speedText].join(
+            ' · ',
+          ),
+        )
         .addTo(instance);
+    };
+    /** the g-forces of the piece to the point, in the mode of them */
+    const gForceText = (point: Pick<MapPoint, 'g'>) => {
+      if (!gForcesRef.current || point.g === undefined) return undefined;
+      const top = largest(point.g);
+      if (!top || !point.g) return tRef.current('track.gforce.none');
+      return tRef.current('track.gforce.value', {
+        g: top.g.toFixed(2),
+        kind: tRef.current(`track.gforce.kinds.${top.kind}`),
+        source: tRef.current(
+          point.g.imu ? 'track.gforce.imu' : 'track.gforce.gps',
+        ),
+      });
     };
     const showPasses = (event: MapLayerMouseEvent) => {
       // the most frequent is drawn on top
@@ -500,8 +552,8 @@ export default function TrackMap({
   }, [ready, places, t, format]);
 
   useEffect(() => {
-    if (map.current) showTrack(map.current, segments);
-  }, [segments]);
+    if (map.current) showTrack(map.current, segments, gForces, shown.current);
+  }, [segments, gForces]);
 
   useEffect(() => {
     fullscreenToggle.current?.show(

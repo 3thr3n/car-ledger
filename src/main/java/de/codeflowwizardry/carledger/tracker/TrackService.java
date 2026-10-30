@@ -72,9 +72,13 @@ public class TrackService
 	 *            exclusive
 	 * @param selection
 	 *            the drives to show, each a segment of its own
+	 * @param gForces
+	 *            the g-forces in the points as well, only for the map that shows
+	 *            them: a busy month is some hundred KB
 	 */
 	@Transactional
-	public Track track(long carId, OffsetDateTime from, OffsetDateTime to, Selection selection, String username)
+	public Track track(long carId, OffsetDateTime from, OffsetDateTime to, Selection selection, boolean gForces,
+			String username)
 	{
 		Utils.requireValid(validate(from, to));
 		if (carRepository.findById(carId, username, Action.READ) == null)
@@ -84,7 +88,7 @@ public class TrackService
 
 		SharedLine shared = new SharedLine(GAP);
 		trackPointRepository.forEach(carId, from, to, selection.filter(shared::add, shared::cut));
-		return collect(carId, from, to, selection, shared);
+		return collect(carId, from, to, selection, shared, gForces);
 	}
 
 	/**
@@ -194,7 +198,7 @@ public class TrackService
 		{
 			to = from.plus(MAX_RANGE);
 		}
-		return collect(carId, from, to, Selection.ALL, null);
+		return collect(carId, from, to, Selection.ALL, null, false);
 	}
 
 	/**
@@ -203,9 +207,9 @@ public class TrackService
 	 *            points
 	 */
 	private Track collect(long carId, OffsetDateTime from, OffsetDateTime to, Selection selection,
-			SharedLine shared)
+			SharedLine shared, boolean gForces)
 	{
-		Collector collector = new Collector(TOLERANCE, shared);
+		Collector collector = new Collector(TOLERANCE, shared, gForces);
 		trackPointRepository.forEach(carId, from, to, selection.filter(collector::add, collector::finish));
 		collector.finish();
 		return new Track(collector.segments, Math.round(collector.meters / 10) / 100.0, collector.count);
@@ -235,15 +239,17 @@ public class TrackService
 	{
 		private final double tolerance;
 		private final SharedLine shared;
+		private final boolean gForces;
 		private final List<TrackSegment> segments = new ArrayList<>();
 		private List<TrackPoint> current = new ArrayList<>();
 		private double meters;
 		private int count;
 
-		Collector(double tolerance, SharedLine shared)
+		Collector(double tolerance, SharedLine shared, boolean gForces)
 		{
 			this.tolerance = tolerance;
 			this.shared = shared;
+			this.gForces = gForces;
 		}
 
 		void add(TrackPoint point)
@@ -268,7 +274,7 @@ public class TrackService
 			if (!current.isEmpty())
 			{
 				List<TrackPoint> points = shared == null ? current : shared.apply(current);
-				segments.add(TrackSegment.of(TrackSimplifier.simplify(points, tolerance, SPEED_THRESHOLD)));
+				segments.add(TrackSegment.of(TrackSimplifier.simplify(points, tolerance, SPEED_THRESHOLD), gForces));
 				current = new ArrayList<>();
 			}
 		}

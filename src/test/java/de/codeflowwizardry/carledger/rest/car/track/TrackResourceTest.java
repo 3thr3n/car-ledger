@@ -159,6 +159,53 @@ class TrackResourceTest
 				.body("segments[0].points[1][2]", is(100.0f));
 	}
 
+	/**
+	 * 1 km straight to the north at 36 km/h, with calm g-forces of the source,
+	 * braking at second 50 and a curve to the left at second 30
+	 */
+	private void lineWithGForces(String source)
+	{
+		List<TrackPointInput> points = new ArrayList<>();
+		for (int second = 0; second <= 100; second++)
+		{
+			points.add(new TrackPointInput(START.plusSeconds(second), 50 + second * 10 * LAT_PER_METER, 10.0, 36.0,
+					null, null, 0.05, second == 50 ? 0.62 : 0.0, second == 30 ? -0.4 : 0.1, source));
+		}
+		QuarkusTransaction.requiringNew().run(() -> trackPointRepository.insert(deviceId, carId, points));
+	}
+
+	@Test
+	void shouldKeepThePeaksOfTheGForcesOfThePointsLeftOut()
+	{
+		lineWithGForces("imu");
+
+		// only the ends are kept, the last one carries the peaks of the line to it
+		range().queryParam("gforces", true).when().get().then()
+				.statusCode(200)
+				.body("segments[0].points", hasSize(2))
+				.body("segments[0].points[0]", contains(10.0f, 50.0f, 0.0f, 36.0f, 0.05f, 0.0f, 0.1f, 1.0f))
+				.body("segments[0].points[1]", contains(10.0f, 50.00899f, 100.0f, 36.0f, 0.05f, 0.62f, -0.4f, 1.0f));
+	}
+
+	@Test
+	void shouldSendTheGForcesOnlyWhenAsked()
+	{
+		lineWithGForces("gps");
+
+		range().when().get().then().body("segments[0].points[1]", hasSize(4));
+		range().queryParam("gforces", true).when().get().then()
+				.body("segments[0].points[1][7]", is(0.0f));
+	}
+
+	@Test
+	void shouldSendNoGForcesOfAnOlderFirmware()
+	{
+		line(0, 0, 1000);
+
+		range().queryParam("gforces", true).when().get().then()
+				.body("segments[0].points[1]", contains(10.0f, 50.00899f, 100.0f, 36.0f, null, null, null, null));
+	}
+
 	@Test
 	void shouldKeepWhatIsMoreThanAMeterOff()
 	{

@@ -907,7 +907,7 @@ export const deleteTracks = <ThrowOnError extends boolean = false>(options: Opti
 /**
  * Get Track
  *
- * GPS track of a car in a time range of at most 31 days, on the shared line of repeated drives, simplified with 1 m (the map simplifies further by its zoom), split into segments at gaps of more than 5 minutes and between the selected drives. Compact: each point is [lon, lat, seconds since the start of its segment, speed].
+ * GPS track of a car in a time range of at most 31 days, on the shared line of repeated drives, simplified with 1 m (the map simplifies further by its zoom), split into segments at gaps of more than 5 minutes and between the selected drives. Compact: each point is [lon, lat, seconds since the start of its segment, speed], with gforces also [accel, brake, lateral, imu]: the peaks in g since the point before (of the points left out as well), imu 1 for real peaks and 0 for the averages of the GPS, all null without g-forces.
  */
 export const getTrack = <ThrowOnError extends boolean = false>(options: Options<GetTrackData, ThrowOnError>): RequestResult<GetTrackResponses, GetTrackErrors, ThrowOnError> => (options.client ?? client).get<GetTrackResponses, GetTrackErrors, ThrowOnError>({ url: '/api/track/{carId}', ...options });
 
