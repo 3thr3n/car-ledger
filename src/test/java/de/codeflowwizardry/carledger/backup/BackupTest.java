@@ -387,7 +387,7 @@ class BackupTest
 	}
 
 	/**
-	 * Every backup since 0.5.0 can be restored (docs/STABILITY.md): the
+	 * The backups since 0.5.0 should stay restorable (docs/STABILITY.md): the
 	 * backup.json has the fields of 0.5.0 only, keep the file as it is
 	 */
 	@Test

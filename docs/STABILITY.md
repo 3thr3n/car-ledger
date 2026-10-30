@@ -25,10 +25,21 @@ name it.
 
 ## Backup
 
-Every backup since 0.5.0 can be restored by every later version, also by every 1.x and later. The format (`version`
-1 in `backup.json`) only gets new optional fields; a backup without them is restored with the defaults. A new,
-incompatible version of the format would still restore the older ones. `BackupTest#shouldRestoreABackupOf050` restores
-a backup in the shape of 0.5.0 and stays as it is.
+A backup of a 1.x can be restored by every later 1.x. The format (`version` 1 in `backup.json`) only gets new
+optional fields; a backup without them is restored with the defaults. A new, incompatible version of the format would
+still restore the older ones.
+
+The backups of before 1.0.0 are not guaranteed, but every one since 0.5.0 should be restorable as well, like the
+upgrades. `BackupTest#shouldRestoreABackupOf050` restores a backup in the shape of 0.5.0 and stays as it is; a change
+that makes it fail needs a reason in the release notes.
+
+## CSV
+
+The CSV formats are stable within 1.x like the API:
+
+- **Import**: the formats in the [README](../README.md#csv-format) (refuels and charges, the date formats, the
+  columns) stay accepted, and so does every export of a 1.x that can be imported again (e.g. the charges).
+- **Export**: a column keeps its name, its place and its meaning; new columns are added at the end.
 
 ## Upgrade
 
@@ -62,7 +73,9 @@ A change is breaking when an installation, a script or a tracker that worked wit
 1.x without being changed itself:
 
 - an API contract that is removed or changed (see [API](#api)),
-- a backup since 0.5.0 that can't be restored anymore,
+- a backup of a 1.x that can't be restored anymore,
+- a CSV file of the documented formats or of a 1.x export that isn't imported anymore, or an export column that is
+  renamed, moved or removed,
 - a chart value that stops working without the minor release in between,
 - a tracker of spec 1 that can't send its points or be flashed anymore.
 
