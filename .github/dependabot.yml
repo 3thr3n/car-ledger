@@ -19,6 +19,10 @@ updates:
     groups:
       maven-minor-patch:
         update-types: [ "minor", "patch" ]
+    ignore:
+      # 3.x is built on Jackson 3 (tools.jackson), the JSON of Quarkus is still Jackson 2: raise it together with Quarkus
+      - dependency-name: "com.networknt:json-schema-validator"
+        update-types: [ "version-update:semver-major" ]
 
   - package-ecosystem: "npm"
     directory: "/src/main/webapp"
@@ -42,6 +46,11 @@ updates:
     groups:
       docker-minor-patch:
         update-types: [ "minor", "patch" ]
+    ignore:
+      # the JRE follows the LTS releases and maven.compiler.release, not every feature release (e.g. 24, unsupported
+      # since 25): raised by hand together with the build
+      - dependency-name: "eclipse-temurin"
+        update-types: [ "version-update:semver-major" ]
 
   - package-ecosystem: "github-actions"
     directory: "/"
