@@ -241,7 +241,8 @@ and the two directions use different lanes. CarLedger lays the drives of the per
 point sideways onto the average of the drives around it in about the same direction (both directions count as one, a
 crossing street doesn't pull). The more often a street is driven, the steadier its line; one driven once stays as it
 is. Streets closer than about 10 m may merge. Only the map is changed: the stored points, the trips, the suggestions,
-the places and the backup use the points as the tracker sent them, and so does the track of a single trip.
+the places and the backup use the points as the tracker sent them, and so does the track of a single trip. With
+[map matching](#map-matching) the points are on the roads before, the shared line only moves the ones without a road.
 
 The server simplifies the lines only by 1 m and sends them compact (`[lon, lat, seconds, speed]` per point, gzip; for
 *G-forces* also `[accel, brake, lateral, imu]`, imu 1 or 0, all `null` without, only in that mode so the others stay as
@@ -273,6 +274,61 @@ Examples (check the terms of use of the provider):
 
 The public tile servers of OpenStreetMap (`tile.openstreetmap.org`) aren't meant for apps like this and provide no
 MapLibre style.
+
+## Map matching
+
+Optional: a self-hosted [Valhalla](https://valhalla.github.io/valhalla/) snaps the tracks to the roads of
+OpenStreetMap, so all drives of a street lie on exactly the same line, and cut corners and gaps in tunnels follow the
+road. Without it (the default) everything stays as before: the map shows the shared line of the drives. It has to be
+self-hosted: a public service would get the positions of the users.
+
+**Set up** with the stack chart, `global.mapMatching.enabled=true`: the chart `map-matching` runs Valhalla as
+`car-ledger-map-matching` and the app uses it by itself. On the first start Valhalla downloads the extracts of
+`mapMatching.extracts` (Germany, Austria and Switzerland of [Geofabrik](https://download.geofabrik.de) by default) and
+builds its routing tiles into its volume (`mapMatching.persistence.size`, 40Gi): about an hour and up to 8 GB of
+memory (`mapMatching.resources`), the startup probe waits up to 12 hours. Later starts use the tiles. Outside of the
+stack, install `helm/map-matching` and set `carLedger.map.matchingUrl` (e.g. `http://map-matching.maps:8002`) and
+`networkPolicy.extraFrom` of the chart for the namespace of the app. Its NetworkPolicy lets only the app in.
+
+**How**: the points that arrive while a service is set up wait for the matching. Every 2 minutes the app takes the
+finished drives (no point of the car for 5 minutes) and sends each, in parts of at most 2000 points, to
+`trace_attributes` with `map_snap`. The position on the road is stored next to the one of the GPS, which stays. A
+point Valhalla leaves out, one more than 50 m from its road (a parking lot) and a drive without a road near it (off-road,
+a new road) keep the position of the GPS, the shared line of the map applies to them. Without a reachable service the
+points wait and are matched once it is back. `carledger_map_matching_points_total{result=matched|unmatched}` counts
+them ([Metrics](DEPLOYMENT.md#metrics)).
+
+**Where**: the map (speeds, g-forces, frequency), the distances of its drives and the distance of the
+[suggested trips](#suggested-trips) use the positions on the roads. The trip log keeps its odometers, the track of a
+single trip, the stops of the places and the backup use the points of the GPS; restored points are matched again.
+
+**Older points** (sent before the service was set up) aren't matched by themselves. To match them, e.g. of the last
+year:
+
+```bash
+kubectl exec car-ledger-postgresql-0 -- psql -U postgres car-ledger -c \
+  "UPDATE track_point SET tk_match = 'P' WHERE tk_match IS NULL AND tk_ts > now() - interval '1 year'"
+```
+
+**New map data** is loaded by hand, e.g. every few months: delete the extracts and the tiles, then the pod downloads
+and builds them again on its start (the map matching waits meanwhile), and match the points again if wanted:
+
+```bash
+kubectl exec car-ledger-map-matching-0 -- sh -c \
+  'rm -rf /custom_files/*.osm.pbf /custom_files/valhalla_tiles /custom_files/valhalla_tiles.tar /custom_files/file_hashes.txt'
+kubectl delete pod car-ledger-map-matching-0
+# once it is ready again
+kubectl exec car-ledger-postgresql-0 -- psql -U postgres car-ledger -c \
+  "UPDATE track_point SET tk_match = 'P' WHERE tk_match IS NOT NULL"
+```
+
+| Property                              | Helm value                  | Meaning                                                     |
+|---------------------------------------|-----------------------------|-------------------------------------------------------------|
+| `carledger.map.matching.url`          | `carLedger.map.matchingUrl` | base URL of Valhalla; without it nothing is matched         |
+| `carledger.map.matching.max-distance` |                             | meters, a position further from its road keeps the GPS (50) |
+| `carledger.map.matching.every`        |                             | how often the finished drives are matched (`2m`, `off`)     |
+| `carledger.map.matching.timeout`      |                             | of a request (`60s`)                                        |
+| `carledger.map.matching.max-points`   |                             | points of one request, a longer drive is split (2000)       |
 
 ## Places
 

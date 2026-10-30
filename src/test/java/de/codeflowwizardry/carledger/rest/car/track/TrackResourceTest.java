@@ -207,6 +207,17 @@ class TrackResourceTest
 	}
 
 	@Test
+	void shouldNotWaitForTheMapMatchingWithoutAService()
+	{
+		line(0, 0, 100);
+
+		// none of them in the index of the waiting points
+		assertEquals(0, QuarkusTransaction.requiringNew().call(() -> ((Number) entityManager
+				.createNativeQuery("SELECT count(*) FROM track_point WHERE tk_match IS NOT NULL")
+				.getSingleResult()).intValue()));
+	}
+
+	@Test
 	void shouldKeepWhatIsMoreThanAMeterOff()
 	{
 		// the zigzag of 3 m is more than the tolerance of 1 m: the map simplifies by

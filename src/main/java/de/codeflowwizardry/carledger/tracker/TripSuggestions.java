@@ -78,7 +78,8 @@ public class TripSuggestions
 
 		DriveDetector detector = new DriveDetector(config.stop(), config.minDriveDistance(),
 				config.minDriveDuration(), from);
-		trackPointRepository.forEach(car.getId(), from, now, detector::add);
+		// the distance along the roads where they are matched
+		trackPointRepository.forEach(car.getId(), from, now, true, detector::add);
 		List<TripSuggestionDismissalEntity> dismissed = dismissalRepository.endingAfter(car, from);
 
 		List<TripSuggestion> suggestions = new ArrayList<>();
@@ -129,7 +130,7 @@ public class TripSuggestions
 		// the same drive as in the list of the map
 		DriveDetector detector = new DriveDetector(config.stop(), Places.MIN_DRIVE_METERS, Places.MIN_DRIVE_DURATION,
 				null);
-		trackPointRepository.forEach(car.getId(), start, end.plus(1, ChronoUnit.MICROS), detector::add);
+		trackPointRepository.forEach(car.getId(), start, end.plus(1, ChronoUnit.MICROS), true, detector::add);
 		double meters = detector.drives(OffsetDateTime.MAX).stream().mapToDouble(Drive::meters).sum();
 		double km = Math.round(meters / 10) / 100.0;
 		int known = tripService.minimumOdometer(car, start);

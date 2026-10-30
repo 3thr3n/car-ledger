@@ -10,6 +10,7 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.sql.Types;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -22,6 +23,7 @@ import org.postgresql.copy.CopyIn;
 import de.codeflowwizardry.carledger.rest.car.track.GForces;
 import de.codeflowwizardry.carledger.rest.car.track.TrackPoint;
 import de.codeflowwizardry.carledger.rest.device.TrackPointInput;
+import de.codeflowwizardry.carledger.tracker.MapMatchingConfig;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.PersistenceException;
@@ -35,8 +37,8 @@ public class TrackPointRepository
 {
 	private static final String INSERT = """
 			INSERT INTO track_point (tk_device_id, tk_car_id, tk_ts, tk_lat, tk_lon, tk_speed, tk_alt, tk_hdop,
-				tk_accel, tk_brake, tk_lateral, tk_gsource)
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+				tk_accel, tk_brake, tk_lateral, tk_gsource, tk_match)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 			ON CONFLICT (tk_device_id, tk_ts) DO NOTHING""";
 
 	private static final String SELECT = """
@@ -44,15 +46,28 @@ public class TrackPointRepository
 			WHERE tk_car_id = ? AND tk_ts >= ? AND tk_ts < ?
 			ORDER BY tk_ts, id""";
 
+	/** the same, a matched point at its position on the road */
+	private static final String SELECT_MATCHED = SELECT.replace("SELECT tk_ts, tk_lat, tk_lon,",
+			"SELECT tk_ts, CASE WHEN tk_match = 'M' THEN tk_match_lat ELSE tk_lat END,"
+					+ " CASE WHEN tk_match = 'M' THEN tk_match_lon ELSE tk_lon END,");
+
+	/** waiting for the matching: P, see V1.37.0__map_matching.sql */
+	public static final String PENDING = "P";
+	public static final String MATCHED = "M";
+	public static final String UNMATCHED = "U";
+
 	/** rows per round trip, a month of points isn't loaded at once */
 	private static final int FETCH_SIZE = 2000;
 
 	private final DataSource dataSource;
+	/** new points wait for the matching only with a service */
+	private final boolean matching;
 
 	@Inject
-	public TrackPointRepository(DataSource dataSource)
+	public TrackPointRepository(DataSource dataSource, MapMatchingConfig matchingConfig)
 	{
 		this.dataSource = dataSource;
+		this.matching = matchingConfig.url().isPresent();
 	}
 
 	/**
@@ -80,6 +95,7 @@ public class TrackPointRepository
 				statement.setObject(10, point.brake(), Types.DOUBLE);
 				statement.setObject(11, point.lateral(), Types.DOUBLE);
 				statement.setString(12, point.gsource());
+				statement.setString(13, matching ? PENDING : null);
 				statement.addBatch();
 			}
 
@@ -105,8 +121,21 @@ public class TrackPointRepository
 	 */
 	public void forEach(long carId, OffsetDateTime from, OffsetDateTime to, Consumer<TrackPoint> consumer)
 	{
+		forEach(carId, from, to, false, consumer);
+	}
+
+	/**
+	 * @param to
+	 *            exclusive
+	 * @param matched
+	 *            the matched points at their position on the road, e.g. for the
+	 *            map; the others at the position of the GPS
+	 */
+	public void forEach(long carId, OffsetDateTime from, OffsetDateTime to, boolean matched,
+			Consumer<TrackPoint> consumer)
+	{
 		try (Connection connection = dataSource.getConnection();
-				PreparedStatement statement = connection.prepareStatement(SELECT))
+				PreparedStatement statement = connection.prepareStatement(matched ? SELECT_MATCHED : SELECT))
 		{
 			statement.setFetchSize(FETCH_SIZE);
 			statement.setLong(1, carId);
@@ -126,6 +155,128 @@ public class TrackPointRepository
 		catch (SQLException e)
 		{
 			throw new PersistenceException("Track points of car " + carId + " could not be read", e);
+		}
+	}
+
+	/** a point waiting for the matching */
+	public record Pending(long id, OffsetDateTime ts, double lat, double lon)
+	{
+	}
+
+	/**
+	 * @param state
+	 *            {@link #MATCHED} with the position on the road, else
+	 *            {@link #UNMATCHED}
+	 */
+	public record Match(long id, String state, Double lat, Double lon)
+	{
+	}
+
+	/**
+	 * @return the cars with points waiting for the matching that were sent before
+	 *         the time
+	 */
+	public List<Long> carsWithPending(OffsetDateTime before)
+	{
+		try (Connection connection = dataSource.getConnection();
+				PreparedStatement statement = connection.prepareStatement(
+						"SELECT DISTINCT tk_car_id FROM track_point WHERE tk_match = 'P' AND tk_ts < ?"))
+		{
+			statement.setObject(1, before);
+			List<Long> cars = new ArrayList<>();
+			try (ResultSet result = statement.executeQuery())
+			{
+				while (result.next())
+				{
+					cars.add(result.getLong(1));
+				}
+			}
+			return cars;
+		}
+		catch (SQLException e)
+		{
+			throw new PersistenceException("Cars with points to match could not be read", e);
+		}
+	}
+
+	/**
+	 * @return the oldest points of the car waiting for the matching, before the
+	 *         time, in the order of time
+	 */
+	public List<Pending> pending(long carId, OffsetDateTime before, int limit)
+	{
+		try (Connection connection = dataSource.getConnection();
+				PreparedStatement statement = connection.prepareStatement("SELECT id, tk_ts, tk_lat, tk_lon"
+						+ " FROM track_point WHERE tk_car_id = ? AND tk_match = 'P' AND tk_ts < ?"
+						+ " ORDER BY tk_ts, id LIMIT ?"))
+		{
+			statement.setLong(1, carId);
+			statement.setObject(2, before);
+			statement.setInt(3, limit);
+			List<Pending> points = new ArrayList<>();
+			try (ResultSet result = statement.executeQuery())
+			{
+				while (result.next())
+				{
+					points.add(new Pending(result.getLong(1), result.getObject(2, OffsetDateTime.class),
+							result.getDouble(3), result.getDouble(4)));
+				}
+			}
+			return points;
+		}
+		catch (SQLException e)
+		{
+			throw new PersistenceException("Track points of car " + carId + " to match could not be read", e);
+		}
+	}
+
+	/**
+	 * @return whether the car has a point after the time, up to the other one
+	 *         (inclusive): a drive on the road then isn't finished
+	 */
+	public boolean hasPoint(long carId, OffsetDateTime after, OffsetDateTime until)
+	{
+		try (Connection connection = dataSource.getConnection();
+				PreparedStatement statement = connection.prepareStatement(
+						"SELECT 1 FROM track_point WHERE tk_car_id = ? AND tk_ts > ? AND tk_ts <= ? LIMIT 1"))
+		{
+			statement.setLong(1, carId);
+			statement.setObject(2, after);
+			statement.setObject(3, until);
+			try (ResultSet result = statement.executeQuery())
+			{
+				return result.next();
+			}
+		}
+		catch (SQLException e)
+		{
+			throw new PersistenceException("Track points of car " + carId + " could not be read", e);
+		}
+	}
+
+	/**
+	 * Stores the results of the matching, of points still waiting for it: a
+	 * point deleted or matched by another instance meanwhile is skipped
+	 */
+	public void saveMatches(List<Match> matches)
+	{
+		try (Connection connection = dataSource.getConnection();
+				PreparedStatement statement = connection.prepareStatement("UPDATE track_point"
+						+ " SET tk_match = ?, tk_match_lat = ?, tk_match_lon = ? WHERE id = ? AND tk_match = 'P'"))
+		{
+			for (Match match : matches)
+			{
+				statement.setString(1, match.state());
+				statement.setObject(2, match.lat(), Types.DOUBLE);
+				statement.setObject(3, match.lon(), Types.DOUBLE);
+				statement.setLong(4, match.id());
+				statement.addBatch();
+			}
+			statement.executeBatch();
+		}
+		catch (SQLException e)
+		{
+			throw new PersistenceException("Matches of track points could not be stored", e);
 		}
 	}
 
@@ -255,11 +406,13 @@ public class TrackPointRepository
 				copy.endCopy();
 				try (Statement statement = connection.createStatement())
 				{
+					// restored points are matched again, the matches aren't part of the backup
 					return statement.executeUpdate("INSERT INTO track_point (tk_device_id, tk_car_id, tk_ts, tk_lat,"
-							+ " tk_lon, tk_speed, tk_alt, tk_hdop, tk_accel, tk_brake, tk_lateral, tk_gsource)"
+							+ " tk_lon, tk_speed, tk_alt, tk_hdop, tk_accel, tk_brake, tk_lateral, tk_gsource, tk_match)"
 							+ " SELECT tk_device_id, " + carId + ", tk_ts, tk_lat, tk_lon, tk_speed, tk_alt, tk_hdop,"
-							+ " tk_accel, tk_brake, tk_lateral, tk_gsource FROM bulk_track_point ORDER BY tk_ts"
-							+ " ON CONFLICT (tk_device_id, tk_ts) DO NOTHING");
+							+ " tk_accel, tk_brake, tk_lateral, tk_gsource, "
+							+ (matching ? "'" + PENDING + "'" : "NULL")
+							+ " FROM bulk_track_point ORDER BY tk_ts ON CONFLICT (tk_device_id, tk_ts) DO NOTHING");
 				}
 			}
 			catch (SQLException e)

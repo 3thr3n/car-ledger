@@ -5,6 +5,7 @@ templates:
   - charts/app/templates/postgresql/statefulset.yaml
   - charts/keycloak/templates/secret.yaml
   - charts/authentik/templates/secret.yaml
+  - charts/mapMatching/templates/service.yaml
 release:
   name: car-ledger
   namespace: car-ledger
@@ -102,3 +103,18 @@ tests:
           path: metadata.name
           value: car-ledger-oidc
         documentIndex: 2
+
+  - it: lets the app use the map matching of the stack
+    set:
+      global.mapMatching.enabled: true
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: CARLEDGER_MAP_MATCHING_URL
+            value: http://car-ledger-map-matching:8002
+        template: charts/app/templates/car-ledger/deployment.yaml
+      - equal:
+          path: metadata.name
+          value: car-ledger-map-matching
+        template: charts/mapMatching/templates/service.yaml

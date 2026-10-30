@@ -177,6 +177,10 @@ spec:
             {{- end }}
             {{- end }}
             {{- end }}
+            {{- with include "carLedger.matchingUrl" . }}
+            - name: CARLEDGER_MAP_MATCHING_URL
+              value: {{ . | quote }}
+            {{- end }}
             {{- with .Values.carLedger.map }}
             {{- if .styleUrl }}
             - name: CARLEDGER_MAP_STYLE_URL

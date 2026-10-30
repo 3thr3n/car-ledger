@@ -40,7 +40,7 @@ jobs:
 
       # One version for the app, the image and the charts car-ledger and stack: a tag (e.g. 0.2.0) has to match the
       # version of Chart.yaml and is used as it is, every other build is <version of Chart.yaml>-dev.<run number>.
-      # The charts keycloak and authentik have their own versions, raised when they change.
+      # The charts keycloak, authentik and map-matching have their own versions, raised when they change.
       # Checked before anything is published.
       - name: Version
         id: version
@@ -140,7 +140,7 @@ jobs:
   # installs with --devel or an explicit --version. A tag (e.g. 0.2.0, has to match the version of Chart.yaml)
   # publishes the charts in that version with the image of the tag, and creates the GitHub release.
   # car-ledger and stack carry the version of the build; the stack bundles the other charts
-  # of the same commit. keycloak and authentik are published by a release in their own version, once.
+  # of the same commit. keycloak, authentik and map-matching are published by a release in their own version, once.
   chart:
     needs: build
     if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref_type == 'tag') && github.actor != 'dependabot[bot]' }}
@@ -170,14 +170,14 @@ jobs:
           # the version and the image also for the copy in the stack
           sed -i "s/^version:.*/version: $VERSION/; s/^appVersion:.*/appVersion: \"$IMAGE_TAG\"/" \
             helm/car-ledger/Chart.yaml helm/stack/Chart.yaml
-          for chart in car-ledger keycloak authentik stack; do
+          for chart in car-ledger keycloak authentik map-matching stack; do
             helm dependency update "helm/$chart"
           done
           helm package helm/car-ledger helm/stack --destination chart-dist
-          # keycloak and authentik: by a release, if their version is not published yet
+          # keycloak, authentik and map-matching: by a release, if their version is not published yet
           OTHERS=""
           if [ "$GITHUB_REF_TYPE" = tag ]; then
-            for chart in keycloak authentik; do
+            for chart in keycloak authentik map-matching; do
               CHART_VERSION=$(sed -n 's/^version: *//p' "helm/$chart/Chart.yaml")
               if helm show chart "$CHARTS/$chart" --version "$CHART_VERSION" > /dev/null 2>&1; then
                 echo "$chart $CHART_VERSION is already published"

@@ -189,6 +189,8 @@ with the role `user`, the roles are missing in the tokens of the client.
 - **Self-signed certificates**: the app trusts the CA of the ingresses and further certificates for its own HTTPS
   requests (login, SMTP, push), see [Self-signed certificates](#self-signed-certificates).
 - **Metrics**: for Prometheus on the management port, an optional ServiceMonitor, see [Metrics](#metrics).
+- **Map matching**: a self-hosted Valhalla snaps the GPS tracks to the roads, off by default, see
+  [GPS_TRACKER.md](GPS_TRACKER.md#map-matching).
 - **Database backups**: a CronJob with `pg_dump` into a volume and S3, off by default, see
   [Database backups](#database-backups).
 - **Network policies**: only the app reaches its PostgreSQL and Infinispan, only Keycloak and authentik their
@@ -425,12 +427,13 @@ Without the Prometheus Operator, scrape the service `car-ledger-sv`, port `manag
 stack chart the values are under `app:`. Besides the metrics of Quarkus (HTTP requests by `uri`, the pages of the app
 counted as `/app`; the JVM; the pool of the database `agroal_*`; Hibernate `hibernate_*`), the app has its own:
 
-| Metric                                         | Tags                                       | Meaning                                                    |
-|------------------------------------------------|--------------------------------------------|------------------------------------------------------------|
-| `carledger_tracker_points_total`               | `result`: accepted, duplicate, rejected    | points of the GPS trackers: stored, sent again, invalid    |
-| `carledger_mails_total`                        | `event`, `result`: sent, failed            | mails, failed after the retries                            |
-| `carledger_pushes_total`                       | `event`, `result`: delivered, gone, failed | push messages; gone: the subscription ended and is removed |
-| `carledger_track_seconds` (count, sum, bucket) | `kind`: track, frequency                   | time to calculate the map of a period                      |
+| Metric                                         | Tags                                       | Meaning                                                                   |
+|------------------------------------------------|--------------------------------------------|---------------------------------------------------------------------------|
+| `carledger_tracker_points_total`               | `result`: accepted, duplicate, rejected    | points of the GPS trackers: stored, sent again, invalid                   |
+| `carledger_mails_total`                        | `event`, `result`: sent, failed            | mails, failed after the retries                                           |
+| `carledger_pushes_total`                       | `event`, `result`: delivered, gone, failed | push messages; gone: the subscription ended and is removed                |
+| `carledger_map_matching_points_total`          | `result`: matched, unmatched               | points snapped to the roads ([map matching](GPS_TRACKER.md#map-matching)) |
+| `carledger_track_seconds` (count, sum, bucket) | `kind`: track, frequency                   | time to calculate the map of a period                                     |
 
 Keycloak of the keycloak chart serves its metrics on its own management port 9000, opened with
 `networkPolicy.managementFrom` of that chart.
@@ -514,6 +517,7 @@ Use the image of a release (a git tag of `main`) or a dev build of `develop`. On
 | 1.34.0    | G-forces of the track points, empty for older firmware (0.10.0)                                                      |
 | 1.35.0    | The latest status a GPS tracker reported (0.10.0)                                                                    |
 | 1.36.0    | Inbox of the notifications of an account, kept for 90 days (0.10.0)                                                  |
+| 1.37.0    | The position of a track point on the road, of the map matching (0.11.0)                                              |
 
 An older image refuses to start on the migrated database, as Flyway finds migrations it does not know. To go back,
 restore the backup. Without the backup, the older image runs on the migrated database (the new columns have defaults)
@@ -610,6 +614,10 @@ kubectl set env deployment/car-ledger QUARKUS_FLYWAY_IGNORE_FUTURE_MIGRATIONS=tr
   A new NetworkPolicy closes that port to the other pods (the probes of the kubelet are always allowed), open it e.g.
   for Prometheus with `networkPolicy.managementFrom`. HTTP (8080) stays open to everyone, the replicas reach each
   other on every port (the cache). A proxy or a tool that reaches Keycloak on another port needs an entry there.
+- **Map matching** (0.11.0, optional; map-matching chart 0.1.0): `global.mapMatching.enabled` of the stack runs
+  Valhalla, which snaps the GPS tracks to the roads (migration 1.37.0, new columns of `track_point`). Off by default,
+  without it the map stays as before. Only points sent afterwards are matched, see
+  [GPS_TRACKER.md](GPS_TRACKER.md#map-matching) for the older ones.
 - **Database backups** (0.11.0, optional): `backup.enabled` dumps the whole database every night into a volume of its
   own and, with a bucket, into S3, see [Database backups](#database-backups). Off by default.
 - **Metrics** (0.11.0): the app serves metrics for Prometheus on its management port, see [Metrics](#metrics). A

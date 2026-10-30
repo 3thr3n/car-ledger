@@ -10,6 +10,10 @@ global:
   # authentik: sets up CarLedger by itself, the app uses its client and the generated secret car-ledger-oidc
   authentik:
     enabled: false
+  # Valhalla that snaps the GPS tracks to the roads (docs/GPS_TRACKER.md#map-matching), the app uses it by itself.
+  # Builds its tiles on the first start, for the extracts of mapMatching.extracts (Germany, Austria, Switzerland)
+  mapMatching:
+    enabled: false
 
 # Values of the car-ledger chart (helm/car-ledger), e.g. app.ingress.certManager or app.carLedger.resources.
 # The login defaults to the chart enabled above, values set here win.
@@ -20,3 +24,6 @@ keycloak: {}
 
 # Values of the authentik chart (helm/authentik), e.g. authentik.ingress.certManager
 authentik: {}
+
+# Values of the map-matching chart (helm/map-matching), e.g. mapMatching.extracts or mapMatching.persistence.size
+mapMatching: {}

@@ -33,9 +33,16 @@ render() {
   render authentik --set hostname=authentik.example.com --set carLedger.hostname=car-ledger.example.com
   render authentik --set hostname=authentik.example.com --set carLedger.hostname=car-ledger.example.com \
     --set ingress.enabled=false --set httpRoute.enabled=true
+  # the map matching on its own
+  render map-matching
   # the stack without, with Keycloak and with authentik
   render stack --set global.host=example.com
   render stack --set global.host=example.com --set global.keycloak.enabled=true
   render stack --set global.host=example.com --set global.authentik.enabled=true
+  # with the map matching, the backups and the metrics
+  render stack --set global.host=example.com --set global.mapMatching.enabled=true \
+    --set app.backup.enabled=true --set app.backup.s3.bucket=backups --set app.backup.s3.existingSecret=s3 \
+    --set app.carLedger.metrics.serviceMonitor.enabled=true \
+    --set 'app.networkPolicy.managementFrom[0].podSelector.matchLabels.app=prometheus'
 } | kubeconform -strict -summary -kubernetes-version "$KUBERNETES_VERSION" \
   -schema-location default -schema-location "$CRDS"

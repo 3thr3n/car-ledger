@@ -93,7 +93,7 @@ public class TrackService
 
 		Timer.Sample sample = Timer.start(registry);
 		SharedLine shared = new SharedLine(GAP);
-		trackPointRepository.forEach(carId, from, to, selection.filter(shared::add, shared::cut));
+		trackPointRepository.forEach(carId, from, to, true, selection.filter(shared::add, shared::cut));
 		Track track = collect(carId, from, to, selection, shared, gForces);
 		sample.stop(timer("track"));
 		return track;
@@ -121,7 +121,7 @@ public class TrackService
 		// the network needs all drives at once: a month is some ten thousand points
 		Timer.Sample sample = Timer.start(registry);
 		Segments segments = new Segments();
-		trackPointRepository.forEach(carId, from, to, selection.filter(segments::add, segments::finish));
+		trackPointRepository.forEach(carId, from, to, true, selection.filter(segments::add, segments::finish));
 		segments.finish();
 		TrackFrequency frequency = StreetNetwork.frequency(segments.all, GAP, TOLERANCE);
 		sample.stop(timer("frequency"));
@@ -161,7 +161,7 @@ public class TrackService
 
 		DriveDetector detector = new DriveDetector(config.stop(), Places.MIN_DRIVE_METERS, Places.MIN_DRIVE_DURATION,
 				null);
-		trackPointRepository.forEach(carId, from, to, detector::add);
+		trackPointRepository.forEach(carId, from, to, true, detector::add);
 		List<PlaceEntity> named = placeRepository.list(car);
 		List<TripEntity> trips = car.isTripLog() ? tripRepository.overlapping(car, from, to) : List.of();
 		List<TrackDrive> drives = new ArrayList<>();
@@ -231,7 +231,9 @@ public class TrackService
 			SharedLine shared, boolean gForces)
 	{
 		Collector collector = new Collector(TOLERANCE, shared, gForces);
-		trackPointRepository.forEach(carId, from, to, selection.filter(collector::add, collector::finish));
+		// the map on the roads, the track of a trip as the GPS sent it
+		trackPointRepository.forEach(carId, from, to, shared != null,
+				selection.filter(collector::add, collector::finish));
 		collector.finish();
 		return new Track(collector.segments, Math.round(collector.meters / 10) / 100.0, collector.count);
 	}
