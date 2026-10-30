@@ -23,13 +23,15 @@ import { toast } from 'react-toastify';
 import {
   deleteTracksMutation,
   getMapSettingsOptions,
+  getMyCarOptions,
   getPlacesOptions,
   getTrackDrivesOptions,
   getTrackFrequencyOptions,
   getTrackOptions,
+  getTripSuggestionForDriveOptions,
 } from '@/generated/@tanstack/react-query.gen';
 import useCarRole from '@/hooks/useCarRole';
-import { invalidateCar, localClient } from '@/utils/QueryClient';
+import queryClient, { invalidateCar, localClient } from '@/utils/QueryClient';
 import { errorMessage } from '@/utils/BackendError';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import { toApiDate, useFormat } from '@/utils/format';
@@ -49,7 +51,8 @@ import {
 import useFullscreen, { fullscreenSx } from '@/components/track/useFullscreen';
 import DriveList from '@/components/track/DriveList';
 import { deleteRange, driveAt, interval } from '@/components/track/drives';
-import { Place, TrackDrive } from '@/generated';
+import TripPastDialog from '@/components/trip/TripPastDialog';
+import { Place, TrackDrive, TripSuggestion } from '@/generated';
 
 /** the server returns at most this many days */
 export const MAX_DAYS = 31;
@@ -122,6 +125,10 @@ export default function TrackPage({
   const [toName, setToName] = useState<Place>();
   const [hovered, setHovered] = useState<TrackDrive>();
   const [toDelete, setToDelete] = useState<TrackDrive>();
+  const [addingTrip, setAddingTrip] = useState<TripSuggestion>();
+  const { data: car } = useQuery(
+    getMyCarOptions({ client: localClient, path: { id: carId } }),
+  );
 
   const { data: drives } = useQuery({
     ...getTrackDrivesOptions({
@@ -198,6 +205,23 @@ export default function TrackPage({
         ? selected.filter((start) => start !== drive.start)
         : [...selected, drive.start],
     );
+
+  /** prefilled like a trip suggestion, with the odometers known before it */
+  const addTrip = async (drive: TrackDrive) => {
+    try {
+      setAddingTrip(
+        await queryClient.query(
+          getTripSuggestionForDriveOptions({
+            client: localClient,
+            path: { carId },
+            query: { start: drive.start, end: drive.end },
+          }),
+        ),
+      );
+    } catch (e) {
+      toast.error(errorMessage(e, t('errors.backend')));
+    }
+  };
 
   /** a click on the track picks its drive */
   const pick = (ts: string) => {
@@ -414,9 +438,20 @@ export default function TrackPage({
             onShowAll={() => select([])}
             onHover={setHovered}
             onDelete={role('MANAGE') ? setToDelete : undefined}
+            onAddTrip={
+              car?.tripLog && role('WRITE')
+                ? (drive) => void addTrip(drive)
+                : undefined
+            }
           />
         </Box>
       )}
+      <TripPastDialog
+        carId={carId}
+        open={addingTrip !== undefined}
+        initial={addingTrip}
+        onClose={() => setAddingTrip(undefined)}
+      />
       <PlaceDialog
         carId={carId}
         place={toName}

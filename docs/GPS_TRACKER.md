@@ -209,10 +209,11 @@ for good, also when it is found a little differently later. Dismissed drives are
   or a trip; the one of the car without any) or the end of the suggestion before, the end with the start and the GPS
   distance rounded to km. Start and end are a few seconds off: the drift radius delays them.
 
-| Request                                      | Answer                                                                |
-|----------------------------------------------|-----------------------------------------------------------------------|
-| `GET /api/trip/{carId}/suggestions`          | the drives with `startedAt`, `endedAt`, `distance` and the odometers  |
-| `POST /api/trip/{carId}/suggestions/dismiss` | 204, `{"startedAt":…,"endedAt":…}` of the drive                       |
+| Request                                                   | Answer                                                               |
+|-----------------------------------------------------------|----------------------------------------------------------------------|
+| `GET /api/trip/{carId}/suggestions`                       | the drives with `startedAt`, `endedAt`, `distance` and the odometers |
+| `POST /api/trip/{carId}/suggestions/dismiss`              | 204, `{"startedAt":…,"endedAt":…}` of the drive                      |
+| `GET /api/trip/{carId}/suggestions/drive?start=…&end=…`   | one drive of the map as a suggestion, see [Drives](#drives)          |
 
 ## Map
 
@@ -295,11 +296,16 @@ next drive (or the end of the period). Only the points of the drive would leave 
 apart after a short drive, and the map would join them with a straight line, a drive again. The other drives, the
 places and the trips stay.
 
-| Request                                                      | Answer                                                           |
-|--------------------------------------------------------------|------------------------------------------------------------------|
-| `GET /api/track/{carId}/drives?from=…&to=…`                  | the drives with `start`, `end`, `distance` (km), `from` and `to` |
-| `GET /api/track/{carId}?from=…&to=…&drive=start/end&drive=…` | the track of only these drives, each a segment of its own        |
-| `GET /api/track/{carId}/frequency?…&drive=start/end`         | the passes of only these drives                                  |
+With the trip log on, who may add trips (owner, editor) adds a drive without a trip as a past trip: *Add as trip* opens
+it prefilled like a [suggestion](#suggested-trips), also for a drive that was dismissed or is older than 7 days. Its
+start odometer is the highest one known before the drive, not the end of the drive before: only the suggestions follow
+each other. A drive that a trip overlaps (`trip` in the list) has no button.
+
+| Request                                                      | Answer                                                                   |
+|--------------------------------------------------------------|--------------------------------------------------------------------------|
+| `GET /api/track/{carId}/drives?from=…&to=…`                  | the drives with `start`, `end`, `distance` (km), `from`, `to` and `trip` |
+| `GET /api/track/{carId}?from=…&to=…&drive=start/end&drive=…` | the track of only these drives, each a segment of its own                |
+| `GET /api/track/{carId}/frequency?…&drive=start/end`         | the passes of only these drives                                          |
 
 ## Not in the OpenAPI spec
 

@@ -2263,7 +2263,7 @@
       },
       "TrackDrive" : {
         "type" : "object",
-        "required" : [ "start", "end", "distance" ],
+        "required" : [ "start", "end", "distance", "trip" ],
         "properties" : {
           "start" : {
             "type" : "string",
@@ -2282,6 +2282,9 @@
           },
           "to" : {
             "type" : "string"
+          },
+          "trip" : {
+            "type" : "boolean"
           }
         }
       },
@@ -7931,6 +7934,65 @@
           }
         },
         "summary" : "Dismiss Trip Suggestion",
+        "tags" : [ "Trip Resource" ]
+      }
+    },
+    "/api/trip/{carId}/suggestions/drive" : {
+      "get" : {
+        "description" : "A drive of the GPS track as a trip to add, as listed by the drives of the track: the GPS distance and the odometers like a suggestion, from the highest one known before it. Also for drives that were dismissed or are older than the suggestions.",
+        "operationId" : "getTripSuggestionForDrive",
+        "parameters" : [ {
+          "name" : "carId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "description" : "End of the drive, inclusive",
+          "required" : true,
+          "name" : "end",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          }
+        }, {
+          "description" : "Start of the drive",
+          "required" : true,
+          "name" : "start",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TripSuggestion"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Times missing, the end before the start or longer than 31 days",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : { }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Car is not for your user."
+          }
+        },
+        "summary" : "Get Trip Suggestion For Drive",
         "tags" : [ "Trip Resource" ]
       }
     },

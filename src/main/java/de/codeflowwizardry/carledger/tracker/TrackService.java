@@ -138,13 +138,22 @@ public class TrackService
 				null);
 		trackPointRepository.forEach(carId, from, to, detector::add);
 		List<PlaceEntity> named = placeRepository.list(car);
+		List<TripEntity> trips = car.isTripLog() ? tripRepository.overlapping(car, from, to) : List.of();
 		List<TrackDrive> drives = new ArrayList<>();
 		for (Drive drive : detector.drives(OffsetDateTime.MAX))
 		{
 			drives.add(new TrackDrive(drive.start(), drive.end(), Math.round(drive.meters() / 10) / 100.0,
-					name(named, drive.departure()), name(named, drive.arrival())));
+					name(named, drive.departure()), name(named, drive.arrival()), hasTrip(trips, drive)));
 		}
 		return drives.reversed();
+	}
+
+	/** like {@link TripRepository#overlaps}: the drive ends with its last point */
+	private static boolean hasTrip(List<TripEntity> trips, Drive drive)
+	{
+		return trips.stream().anyMatch(trip -> (trip.getStartedAt().isBefore(drive.end())
+				|| trip.getStartedAt().isEqual(drive.start()))
+				&& (trip.getEndedAt() == null || trip.getEndedAt().isAfter(drive.start())));
 	}
 
 	/**
