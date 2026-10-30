@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test';
-import { aliceApi, deleteAllCars } from './helpers';
+import { aliceApi, deleteAllCars, resetAccounts } from './helpers';
+
+test.beforeAll(resetAccounts);
 
 /** creates the only car of alice, returns its id */
 async function createCar(energyType: string, tripLog = false) {
@@ -27,8 +29,6 @@ async function createCar(energyType: string, tripLog = false) {
  * new entry of the last opened car
  */
 test.describe.serial('shortcut "Add refuel"', () => {
-  test.afterAll(deleteAllCars);
-
   test('opens the garage without cars', async ({ page }) => {
     await deleteAllCars();
     await page.goto('/refuel');
@@ -55,8 +55,6 @@ test.describe.serial('shortcut "Add refuel"', () => {
 
 /** The shortcut "Trip" opens /trip: the trips of the last opened car */
 test.describe.serial('shortcut "Trip"', () => {
-  test.afterAll(deleteAllCars);
-
   test('opens the garage without cars', async ({ page }) => {
     await deleteAllCars();
     await page.goto('/trip');

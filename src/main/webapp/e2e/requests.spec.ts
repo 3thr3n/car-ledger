@@ -5,7 +5,9 @@ import {
   Page,
   test,
 } from '@playwright/test';
-import { aliceApi, keycloakLogin } from './helpers';
+import { aliceApi, keycloakLogin, resetAccounts } from './helpers';
+
+test.beforeAll(resetAccounts);
 
 /**
  * Bob reaches his car limit and requests more, alice approves as administrator
@@ -15,21 +17,8 @@ test.describe.serial('car requests', () => {
   let bobContext: BrowserContext;
   let bob: Page;
 
-  /** bob starts without an account, the login creates it with one car */
-  const deleteBob = async () => {
-    const accounts = await (
-      await api.get('/api/admin/accounts?search=bob')
-    ).json();
-    for (const account of accounts.data as { id: number; name: string }[]) {
-      if (account.name === 'bob') {
-        await api.delete(`/api/admin/accounts/${account.id}`);
-      }
-    }
-  };
-
   test.beforeAll(async ({ browser }) => {
     api = await aliceApi();
-    await deleteBob();
     bobContext = await browser.newContext({
       storageState: { cookies: [], origins: [] },
     });
@@ -38,7 +27,6 @@ test.describe.serial('car requests', () => {
 
   test.afterAll(async () => {
     await bobContext.close();
-    await deleteBob();
     await api.dispose();
   });
 

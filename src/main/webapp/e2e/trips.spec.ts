@@ -5,7 +5,9 @@ import {
   Page,
   test,
 } from '@playwright/test';
-import { aliceApi, deleteAllCars } from './helpers';
+import { aliceApi, resetAccounts } from './helpers';
+
+test.beforeAll(resetAccounts);
 
 interface Trip {
   id: string;
@@ -32,7 +34,6 @@ test.describe.serial('trips', () => {
   let carId: number;
 
   test.beforeAll(async () => {
-    await deleteAllCars();
     api = await aliceApi();
     await api.put('/api/car/my', {
       data: { name: 'E2E Trips', year: 2021, odometer: 20000 },
@@ -44,7 +45,6 @@ test.describe.serial('trips', () => {
 
   test.afterAll(async () => {
     await api.dispose();
-    await deleteAllCars();
   });
 
   const trips = async () =>

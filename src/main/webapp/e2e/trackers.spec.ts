@@ -1,6 +1,8 @@
 import { expect, Page, request, test } from '@playwright/test';
 import { ALICE, API_URL } from '../playwright.config';
-import { aliceApi, deleteAllCars } from './helpers';
+import { aliceApi, resetAccounts } from './helpers';
+
+test.beforeAll(resetAccounts);
 
 test.describe.serial('GPS trackers', () => {
   let page: Page;
@@ -8,7 +10,6 @@ test.describe.serial('GPS trackers', () => {
   let token: string;
 
   test.beforeAll(async ({ browser }) => {
-    await deleteAllCars();
     const api = await aliceApi();
     const created = await api.put('/api/car/my', {
       data: { name: 'E2E Polo', year: 2020, odometer: 50000 },
@@ -29,7 +30,6 @@ test.describe.serial('GPS trackers', () => {
 
   test.afterAll(async () => {
     await page.context().close();
-    await deleteAllCars();
   });
 
   /** sends a point as the tracker, without the session of the browser */

@@ -1,6 +1,8 @@
 import { expect, Page, test } from '@playwright/test';
 import { API_URL } from '../playwright.config';
-import { aliceApi, deleteAllCars, keycloakLogin, money } from './helpers';
+import { aliceApi, keycloakLogin, money, resetAccounts } from './helpers';
+
+test.beforeAll(resetAccounts);
 
 /**
  * The access of bob as a driver ends while he drives and refuels offline: his
@@ -14,7 +16,6 @@ test.describe.serial('end of a car access', () => {
   let accessId: number;
 
   test.beforeAll(async ({ browser }) => {
-    await deleteAllCars();
     const api = await aliceApi();
     await api.put('/api/car/my', {
       data: { name: 'E2E Caddy', year: 2022, odometer: 30000, tripLog: true },
@@ -74,7 +75,6 @@ test.describe.serial('end of a car access', () => {
   test.afterAll(async () => {
     await alice.close();
     await bob.context().close();
-    await deleteAllCars();
   });
 
   test('a refuel sent after the end is kept on the device', async () => {

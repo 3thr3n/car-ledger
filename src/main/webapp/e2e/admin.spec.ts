@@ -1,6 +1,8 @@
 import { expect, test } from '@playwright/test';
 import { API_URL } from '../playwright.config';
-import { keycloakLogin } from './helpers';
+import { keycloakLogin, resetAccounts } from './helpers';
+
+test.beforeAll(resetAccounts);
 
 test.describe.serial('administration', () => {
   test('is not available to normal users', async ({ browser }) => {

@@ -1,4 +1,7 @@
 import { expect, test } from '@playwright/test';
+import { resetAccounts } from './helpers';
+
+test.beforeAll(resetAccounts);
 
 // before the login
 test.use({ storageState: { cookies: [], origins: [] } });

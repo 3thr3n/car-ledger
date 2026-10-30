@@ -1,12 +1,13 @@
 import { expect, Page, test } from '@playwright/test';
-import { aliceApi, day, deleteAllCars } from './helpers';
+import { aliceApi, day, resetAccounts } from './helpers';
+
+test.beforeAll(resetAccounts);
 
 test.describe.serial('reminders', () => {
   let page: Page;
   let carId: number;
 
   test.beforeAll(async ({ browser }) => {
-    await deleteAllCars();
     const api = await aliceApi();
     const created = await api.put('/api/car/my', {
       data: { name: 'E2E Polo', year: 2020, odometer: 50000 },
@@ -31,7 +32,6 @@ test.describe.serial('reminders', () => {
 
   test.afterAll(async () => {
     await page.close();
-    await deleteAllCars();
   });
 
   const reminder = (title: string) =>

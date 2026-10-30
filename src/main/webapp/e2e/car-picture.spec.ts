@@ -1,5 +1,7 @@
 import { expect, Locator, Page, test } from '@playwright/test';
-import { deleteAllCars } from './helpers';
+import { resetAccounts } from './helpers';
+
+test.beforeAll(resetAccounts);
 
 /** picks an image of the size, drawn in the browser */
 async function pickImage(input: Locator, width: number, height: number) {
@@ -28,13 +30,11 @@ test.describe.serial('car picture', () => {
   let carUrl: string;
 
   test.beforeAll(async ({ browser }) => {
-    await deleteAllCars();
     page = await browser.newPage();
   });
 
   test.afterAll(async () => {
     await page.close();
-    await deleteAllCars();
   });
 
   const header = () => page.getByRole('img', { name: 'E2E Fiat' }).first();

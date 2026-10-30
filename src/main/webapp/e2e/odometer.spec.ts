@@ -1,12 +1,13 @@
 import { APIRequestContext, expect, test } from '@playwright/test';
-import { aliceApi, day, deleteAllCars } from './helpers';
+import { aliceApi, day, resetAccounts } from './helpers';
+
+test.beforeAll(resetAccounts);
 
 test.describe.serial('odometer', () => {
   let api: APIRequestContext;
   let carId: number;
 
   test.beforeAll(async () => {
-    await deleteAllCars();
     api = await aliceApi();
     await api.put('/api/car/my', {
       data: { name: 'E2E Corsa', year: 2019, odometer: 30000 },
@@ -18,7 +19,6 @@ test.describe.serial('odometer', () => {
 
   test.afterAll(async () => {
     await api.dispose();
-    await deleteAllCars();
   });
 
   test('adds the refuels since the latest reading', async ({ page }) => {

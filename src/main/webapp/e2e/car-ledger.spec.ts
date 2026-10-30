@@ -1,6 +1,8 @@
 import { expect, Page, test } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
-import { deleteAllCars, money } from './helpers';
+import { money, resetAccounts } from './helpers';
+
+test.beforeAll(resetAccounts);
 
 /**
  * One journey through the app, the steps build on each other
@@ -10,7 +12,6 @@ test.describe.serial('car ledger', () => {
   let carUrl: string;
 
   test.beforeAll(async ({ browser }) => {
-    await deleteAllCars();
     page = await browser.newPage();
   });
 
