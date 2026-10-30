@@ -94,6 +94,10 @@ carLedger:
     # further origins the style loads tiles, glyphs or sprites from, e.g. ["https://tiles.example.com"];
     # the origin of the styleUrl is allowed anyway
     sources: []
+    # Valhalla that snaps the tracks to the roads, e.g. of the chart map-matching: http://map-matching:8002. In the
+    # stack chart set by global.mapMatching.enabled. Without it the map shows the shared line of the drives
+    # (docs/GPS_TRACKER.md#map-matching)
+    matchingUrl: ""
   # GPS trackers (see docs/GPS_TRACKER.md)
   tracker:
     # release of the tracker firmware (manifest.json and the files it lists), the users flash it from the

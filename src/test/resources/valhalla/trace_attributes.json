@@ -1,0 +1,45 @@
+{
+ "matched_points": [
+  {
+   "lon": 1.527556,
+   "lat": 42.505238,
+   "type": "matched",
+   "edge_index": 26,
+   "distance_from_trace_point": 8.923185
+  },
+  {
+   "lon": 1.527556,
+   "lat": 42.505238,
+   "type": "interpolated",
+   "edge_index": 27,
+   "distance_from_trace_point": 2.746384
+  },
+  {
+   "lon": 1.527813,
+   "lat": 42.505144,
+   "type": "matched",
+   "edge_index": 29,
+   "distance_from_trace_point": 1.851671
+  },
+  {
+   "lon": 1.527891,
+   "lat": 42.506548,
+   "type": "unmatched"
+  },
+  {
+   "lon": 1.528031,
+   "lat": 42.505241,
+   "type": "matched",
+   "edge_index": 30,
+   "distance_from_trace_point": 0.902592
+  },
+  {
+   "lon": 1.528166,
+   "lat": 42.505249,
+   "type": "matched",
+   "edge_index": 30,
+   "distance_from_trace_point": 0.465549
+  }
+ ],
+ "units": "kilometers"
+}

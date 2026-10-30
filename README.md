@@ -109,6 +109,7 @@ the identity providers and the upgrades.
 | `car-ledger` | The app, its PostgreSQL and Infinispan (the login sessions, shared by all replicas)                       | [values](helm/car-ledger/values.yaml)        |
 | `keycloak`   | Keycloak with its PostgreSQL, the realm of CarLedger imported                                             | [DEPLOYMENT.md](docs/DEPLOYMENT.md#fresh-install-with-keycloak) |
 | `authentik`  | authentik with its PostgreSQL, CarLedger set up as application                                            | [README](helm/authentik/README.md)           |
+| `map-matching` | Valhalla, snaps the GPS tracks to the roads (optional)                                                  | [GPS_TRACKER.md](docs/GPS_TRACKER.md#map-matching) |
 
 For a new installation, use the `stack`. The single charts are for an existing identity provider, separate namespaces or
 your own umbrella chart.
@@ -342,7 +343,7 @@ cd src/main/webapp && npx playwright install chromium && yarn test:e2e
 
 # charts: the template tests of helm/<chart>/tests (plugin helm-unittest) and the rendered
 # resources against the schemas of Kubernetes (kubeconform), after helm dependency update
-helm unittest --with-subchart=false helm/car-ledger helm/keycloak helm/authentik helm/stack
+helm unittest --with-subchart=false helm/car-ledger helm/keycloak helm/authentik helm/map-matching helm/stack
 helm/validate-manifests.sh
 ```
 

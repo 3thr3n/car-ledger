@@ -1,0 +1,48 @@
+# Valhalla (https://valhalla.github.io/valhalla/) for the map matching of CarLedger: the app sends the points of the
+# finished drives, Valhalla returns them on the roads (docs/GPS_TRACKER.md#map-matching). Self-hosted, so the
+# positions of the users stay in the cluster.
+#
+# On the first start it downloads the extracts of OpenStreetMap and builds its routing tiles into the volume: for
+# Germany, Austria and Switzerland about an hour and several GB of memory. Later starts use the tiles. Newer map data
+# is loaded by hand, see docs/GPS_TRACKER.md#map-matching.
+
+image:
+  repository: ghcr.io/valhalla/valhalla-scripted
+  # defaults to the appVersion of the chart
+  tag: ""
+
+# the extracts of OpenStreetMap the tiles are built from, e.g. of https://download.geofabrik.de
+extracts:
+  - https://download.geofabrik.de/europe/germany-latest.osm.pbf
+  - https://download.geofabrik.de/europe/austria-latest.osm.pbf
+  - https://download.geofabrik.de/europe/switzerland-latest.osm.pbf
+
+# threads of the build and the service
+threads: 2
+
+# the extracts, the tiles and their tarball: about 3× the size of the extracts
+persistence:
+  size: 40Gi
+  storageClass:
+
+# the build of the tiles needs the most, the service about the size of the tiles that are used
+resources:
+  requests:
+    cpu: 500m
+    memory: 2Gi
+  limits:
+    cpu: "2"
+    memory: 8Gi
+
+# the build of the tiles counts as the start: up to 12 hours by default
+startupProbe:
+  periodSeconds: 60
+  failureThreshold: 720
+
+# only CarLedger reaches the service; needs a network plugin that enforces NetworkPolicies
+networkPolicy:
+  enabled: true
+  # further sources: entries of NetworkPolicy ingress "from", e.g. CarLedger in another namespace
+  # (- namespaceSelector: {matchLabels: {kubernetes.io/metadata.name: car-ledger}}
+  #    podSelector: {matchLabels: {app: car-ledger}})
+  extraFrom: []
