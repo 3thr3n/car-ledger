@@ -5,7 +5,9 @@ import {
   Page,
   test,
 } from '@playwright/test';
-import { aliceApi, deleteAllCars, money } from './helpers';
+import { aliceApi, money, resetAccounts } from './helpers';
+
+test.beforeAll(resetAccounts);
 
 /**
  * Refuels without a connection: kept on the device, sent when online again.
@@ -16,7 +18,6 @@ test.describe.serial('offline', () => {
   let carId: number;
 
   test.beforeAll(async () => {
-    await deleteAllCars();
     api = await aliceApi();
     await api.put('/api/car/my', {
       data: { name: 'E2E Offline', year: 2021, odometer: 20000 },
@@ -28,7 +29,6 @@ test.describe.serial('offline', () => {
 
   test.afterAll(async () => {
     await api.dispose();
-    await deleteAllCars();
   });
 
   const field = (page: Page, name: RegExp) =>

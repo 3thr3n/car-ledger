@@ -1,6 +1,8 @@
 import { expect, Page, request, test } from '@playwright/test';
 import { API_URL } from '../playwright.config';
-import { aliceApi, deleteAllCars } from './helpers';
+import { aliceApi, resetAccounts } from './helpers';
+
+test.beforeAll(resetAccounts);
 
 /** degrees of latitude per meter */
 const LAT_PER_METER = 1 / 111_195;
@@ -51,7 +53,6 @@ test.describe.serial('Trips suggested from the GPS tracks', () => {
   };
 
   test.beforeAll(async ({ browser }) => {
-    await deleteAllCars();
     const api = await aliceApi();
     const created = await api.put('/api/car/my', {
       data: { name: 'E2E Polo', year: 2020, odometer: 50000, tripLog: true },
@@ -72,7 +73,6 @@ test.describe.serial('Trips suggested from the GPS tracks', () => {
 
   test.afterAll(async () => {
     await page.close();
-    await deleteAllCars();
   });
 
   test('adds a drive as a trip, prefilled', async () => {

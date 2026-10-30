@@ -1,4 +1,7 @@
 import { expect, test } from '@playwright/test';
+import { resetAccounts } from './helpers';
+
+test.beforeAll(resetAccounts);
 
 test.describe('version of the app', () => {
   test('is up to date with the server', async ({ page }) => {

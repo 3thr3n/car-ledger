@@ -1,7 +1,9 @@
 import { readFileSync } from 'node:fs';
 import { expect, Page, request, Route, test } from '@playwright/test';
 import { ALICE, API_URL } from '../playwright.config';
-import { aliceApi, deleteAllCars } from './helpers';
+import { aliceApi, deleteAllCars, resetAccounts } from './helpers';
+
+test.beforeAll(resetAccounts);
 
 /** the release of the tests of the backend, spec 1 */
 const MANIFEST = JSON.parse(
@@ -60,7 +62,6 @@ test.describe.serial('Setting up GPS trackers over USB', () => {
   let token: string;
 
   test.beforeAll(async () => {
-    await deleteAllCars();
     const api = await aliceApi();
     expect(
       (

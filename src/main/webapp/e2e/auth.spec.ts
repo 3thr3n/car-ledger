@@ -1,6 +1,8 @@
 import { expect, test } from '@playwright/test';
 import { API_URL } from '../playwright.config';
-import { keycloakLogin } from './helpers';
+import { keycloakLogin, resetAccounts } from './helpers';
+
+test.beforeAll(resetAccounts);
 
 // own sessions, not the shared one of the other tests
 test.use({ storageState: { cookies: [], origins: [] } });

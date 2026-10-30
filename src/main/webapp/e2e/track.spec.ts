@@ -1,6 +1,8 @@
 import { expect, Page, request, test } from '@playwright/test';
 import { API_URL } from '../playwright.config';
-import { aliceApi, deleteAllCars } from './helpers';
+import { aliceApi, deleteAllCars, resetAccounts } from './helpers';
+
+test.beforeAll(resetAccounts);
 
 /** degrees of latitude per meter */
 const LAT_PER_METER = 1 / 111_195;
@@ -13,7 +15,6 @@ test.describe.serial('GPS track', () => {
   let token: string;
 
   test.beforeAll(async ({ browser }) => {
-    await deleteAllCars();
     const api = await aliceApi();
     const created = await api.put('/api/car/my', {
       data: { name: 'E2E Polo', year: 2020, odometer: 50000, tripLog: true },
@@ -29,7 +30,6 @@ test.describe.serial('GPS track', () => {
 
   test.afterAll(async () => {
     await page.close();
-    await deleteAllCars();
   });
 
   test('shows the map tab only with a tracker', async () => {
@@ -368,6 +368,7 @@ test.describe.serial('Drives of the GPS track', () => {
     }));
 
   test.beforeAll(async ({ browser }) => {
+    // the car of the drives above
     await deleteAllCars();
     const api = await aliceApi();
     await api.put('/api/car/my', {
@@ -398,7 +399,6 @@ test.describe.serial('Drives of the GPS track', () => {
 
   test.afterAll(async () => {
     await page.close();
-    await deleteAllCars();
   });
 
   test('lists the drives and shows only the selected ones', async () => {

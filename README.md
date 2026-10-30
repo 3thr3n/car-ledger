@@ -332,7 +332,8 @@ yarn dev
 cd src/main/webapp && yarn test
 
 # end-to-end tests, start Quarkus (with dev services, needs Docker) and Vite themselves,
-# running servers are reused
+# running servers are reused. Each spec starts with new accounts of alice and bob (resetAccounts in
+# e2e/helpers.ts), so one runs alone too: yarn test:e2e e2e/trips.spec.ts
 cd src/main/webapp && npx playwright install chromium && yarn test:e2e
 
 # charts: the template tests of helm/<chart>/tests (plugin helm-unittest) and the rendered

@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test';
-import { aliceApi } from './helpers';
+import { aliceApi, resetAccounts } from './helpers';
+
+test.beforeAll(resetAccounts);
 
 /** as the server has it */
 async function accentOfTheAccount() {
@@ -12,15 +14,6 @@ async function accentOfTheAccount() {
 }
 
 test.describe.serial('settings', () => {
-  test.afterAll(async () => {
-    // back to the defaults, the other tests expect them
-    const api = await aliceApi();
-    await api.put('/api/user/me/settings', {
-      data: { vatCountry: 'DE', currency: 'EUR', accent: 'TEAL' },
-    });
-    await api.dispose();
-  });
-
   test('changes the currency of all amounts', async ({ page }) => {
     await page.goto('/dashboard');
     await page.getByRole('link', { name: 'Settings' }).click();

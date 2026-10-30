@@ -1,5 +1,7 @@
 import { expect, Page, test } from '@playwright/test';
-import { aliceApi, deleteAllCars, keycloakLogin } from './helpers';
+import { aliceApi, keycloakLogin, resetAccounts } from './helpers';
+
+test.beforeAll(resetAccounts);
 
 /**
  * alice shares her car with bob: bob accepts or declines the invitation, alice
@@ -11,7 +13,6 @@ test.describe.serial('car access', () => {
   let carId: number;
 
   test.beforeAll(async ({ browser }) => {
-    await deleteAllCars();
     const api = await aliceApi();
     await api.put('/api/car/my', {
       data: { name: 'E2E Up', year: 2019, odometer: 30000 },
@@ -35,7 +36,6 @@ test.describe.serial('car access', () => {
   test.afterAll(async () => {
     await alice.close();
     await bob.context().close();
-    await deleteAllCars();
   });
 
   const section = () => alice.getByTestId('car-access');
@@ -65,7 +65,6 @@ test.describe.serial('car access', () => {
 
   test('bob sees the invitation in his notifications', async () => {
     await bob.goto('/dashboard');
-    // other tests invited bob before: his inbox isn't empty
     await expect(
       bob.getByLabel(/unread notifications?$/).first(),
     ).toBeVisible();

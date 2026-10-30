@@ -1,12 +1,13 @@
 import { APIRequestContext, expect, test } from '@playwright/test';
-import { aliceApi, day, deleteAllCars } from './helpers';
+import { aliceApi, day, resetAccounts } from './helpers';
+
+test.beforeAll(resetAccounts);
 
 test.describe.serial('paging', () => {
   let api: APIRequestContext;
   let carId: number;
 
   test.beforeAll(async () => {
-    await deleteAllCars();
     api = await aliceApi();
     await api.put('/api/car/my', {
       data: { name: 'E2E Polo', year: 2021, odometer: 10000 },
@@ -34,7 +35,6 @@ test.describe.serial('paging', () => {
 
   test.afterAll(async () => {
     await api.dispose();
-    await deleteAllCars();
   });
 
   test('stays on the next page of the refuels', async ({ page }) => {
