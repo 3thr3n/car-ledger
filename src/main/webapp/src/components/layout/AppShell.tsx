@@ -72,9 +72,30 @@ export default function AppShell({ children }: { children: ReactNode }) {
       }}
     >
       <OfflineSync />
+      {/* the first stop of the keyboard: past the menu to the page */}
+      <Box
+        component="a"
+        href="#main"
+        sx={{
+          position: 'fixed',
+          zIndex: (theme) => theme.zIndex.tooltip,
+          top: 8,
+          left: 8,
+          px: 2,
+          py: 1,
+          borderRadius: 2,
+          bgcolor: 'primary.main',
+          color: 'primary.contrastText',
+          fontWeight: 600,
+          textDecoration: 'none',
+          transform: 'translateY(-200%)',
+          '&:focus': { transform: 'none' },
+        }}
+      >
+        {t('app.skipToContent')}
+      </Box>
       {beside ? (
         <Box
-          component="nav"
           sx={{
             width: SIDEBAR_WIDTH,
             flexShrink: 0,
@@ -103,7 +124,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
               <IconButton
                 edge="start"
                 onClick={() => setOpen(true)}
-                aria-label="menu"
+                aria-label={t('app.menu')}
               >
                 <Badge
                   variant="dot"
@@ -132,7 +153,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
                 alt=""
                 sx={{ height: 26 }}
               />
-              <Typography variant="h6" sx={{ fontWeight: 750 }}>
+              <Typography variant="h6" component="div" sx={{ fontWeight: 750 }}>
                 {t('app.title')}
               </Typography>
             </Toolbar>
@@ -152,7 +173,11 @@ export default function AppShell({ children }: { children: ReactNode }) {
 
       <Box
         component="main"
+        id="main"
+        // reachable by the skip link, not by tab
+        tabIndex={-1}
         sx={{
+          outline: 'none',
           flexGrow: 1,
           minWidth: 0,
           pt: beside ? 0 : 7,

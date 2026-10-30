@@ -110,3 +110,18 @@ matching becomes the standard.
 The frontend keeps the account, the cars and the open trip on the device and queues refuels, charges and trips made
 without a connection (`src/main/webapp/src/offline`). Each queued request carries an `Idempotency-Key`, so one sent
 again after a lost answer doesn't create the entry twice; the backend stores the key with the entry.
+
+## Accessibility
+
+The app aims at WCAG 2.1 AA (#543), checked by `e2e/accessibility.spec.ts`: axe on the main pages in light and dark
+mode and with every accent color, the keyboard (skip link, dialogs, the map) and 320 px without scrolling sideways.
+What keeps it so:
+
+- **Headings**: the title of a page is the `h1` (`PageHeader`); the theme renders `h5`/`h6` as `h2` and
+  `subtitle1`/`subtitle2` as `h3`. A group directly under the title sets `component="h2"`, a text in a heading variant
+  that isn't one sets `component="p"` or `"div"`.
+- **Colors**: a category color as text or icon on its tint goes through `categoryInk` (the darker shade in light mode);
+  the accent colors and the warning and info colors of the theme have 4.5:1 for white and as text.
+- **Names**: icon buttons and the columns of buttons (`visuallyHidden`) are named, a chart has its values as a
+  `ChartTable` for screen readers, the map is a named region next to the list of its drives.
+- **Language**: `<html lang>` follows the language of the account.

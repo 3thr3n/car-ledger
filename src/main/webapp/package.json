@@ -48,6 +48,7 @@
     "workbox-window": "^7.4.1"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.14.0",
     "@eslint/js": "^10.0.1",
     "@hey-api/openapi-ts": "^0.99.0",
     "@modyfi/vite-plugin-yaml": "^1.1.1",

@@ -6,7 +6,7 @@ import { BillType } from '@/generated';
 import { getMyCarOptions } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
 import { useFormat } from '@/utils/format';
-import { billTypesFor } from '@/utils/billTypes';
+import { billTypesFor, categoryInk } from '@/utils/billTypes';
 import PageHeader from '@/components/ui/PageHeader';
 import FuelForm from '@/components/bill/FuelForm';
 import ChargingForm from '@/components/bill/ChargingForm';
@@ -93,7 +93,7 @@ export default function AddBillPage({
                       width: 30,
                       height: 30,
                       borderRadius: 2,
-                      color: theme.vars.palette[meta.color].main,
+                      ...categoryInk(theme, meta.color),
                       backgroundColor: `rgba(${theme.vars.palette[meta.color].mainChannel} / 0.14)`,
                     })}
                   >

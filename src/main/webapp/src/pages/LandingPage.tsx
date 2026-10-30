@@ -30,7 +30,7 @@ import {
 } from '@/utils/accountDeleted';
 import { baseUrl } from '@/utils/QueryClient';
 import { RouterButton } from '@/components/ui/links';
-import { billTypes, BillPaletteKey } from '@/utils/billTypes';
+import { billTypes, BillPaletteKey, categoryInk } from '@/utils/billTypes';
 import { BillType } from '@/generated';
 import { SOURCE_URL } from '@/utils/source';
 
@@ -216,7 +216,7 @@ export default function LandingPage() {
                     mb: 1.5,
                     ...(typeof feature.color === 'string'
                       ? {
-                          color: theme.vars.palette[feature.color].main,
+                          ...categoryInk(theme, feature.color),
                           backgroundColor: `rgba(${theme.vars.palette[feature.color].mainChannel} / 0.12)`,
                         }
                       : {
@@ -233,6 +233,7 @@ export default function LandingPage() {
                 </Box>
                 <Typography
                   variant="subtitle1"
+                  component="h2"
                   sx={{
                     fontWeight: 650,
                   }}

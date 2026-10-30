@@ -71,6 +71,9 @@ const createAppTheme = (accent: Accent) =>
         palette: {
           primary: ACCENTS[accent].light,
           secondary: { main: '#475569' },
+          // darker than the defaults of MUI: white on them and they as text reach 4.5:1
+          warning: { main: '#b45309' },
+          info: { main: '#0277bd' },
           background: { default: '#f5f6f8', paper: '#ffffff' },
           text: { primary: '#111827', secondary: '#5b6472' },
           divider: '#e4e7ec',
@@ -112,6 +115,18 @@ const createAppTheme = (accent: Accent) =>
       button: { fontWeight: 600, textTransform: 'none' },
     },
     components: {
+      // the levels of the headings follow the page: its title h1 (PageHeader), the sections h2, the groups within
+      // them and in dialogs h3; a text in such a variant that isn't a heading sets its own component
+      MuiTypography: {
+        defaultProps: {
+          variantMapping: {
+            h5: 'h2',
+            h6: 'h2',
+            subtitle1: 'h3',
+            subtitle2: 'h3',
+          },
+        },
+      },
       MuiCssBaseline: {
         styleOverrides: {
           body: {
@@ -180,9 +195,15 @@ const createAppTheme = (accent: Accent) =>
             '& .strong': {
               fontWeight: 600,
             },
+            // the focus of a click isn't shown, the one of the keyboard is
             '& .MuiDataGrid-cell:focus, & .MuiDataGrid-columnHeader:focus': {
               outline: 'none',
             },
+            '& .MuiDataGrid-cell:focus-visible, & .MuiDataGrid-columnHeader:focus-visible':
+              {
+                outline: `2px solid ${theme.vars.palette.primary.main}`,
+                outlineOffset: -2,
+              },
           }),
         },
       },

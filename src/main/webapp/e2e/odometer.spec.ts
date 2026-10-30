@@ -63,8 +63,12 @@ test.describe.serial('odometer', () => {
     // the refuel and the maintenance of the test before are the costs
     await page.goto(`/car/${carId}`);
     const chart = page.locator('.MuiCard-root', { hasText: 'Costs per month' });
-    await expect(chart.getByText('Maintenance', { exact: true })).toBeVisible();
-    await expect(chart.getByText('Charging', { exact: true })).toHaveCount(0);
+    // the legend, the table for screen readers has the same names
+    const legend = chart.getByRole('list');
+    await expect(
+      legend.getByText('Maintenance', { exact: true }),
+    ).toBeVisible();
+    await expect(legend.getByText('Charging', { exact: true })).toHaveCount(0);
 
     await page.goto('/dashboard');
     const split = page.locator('.MuiCard-root', { hasText: 'Cost breakdown' });

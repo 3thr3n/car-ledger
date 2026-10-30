@@ -31,6 +31,7 @@ import { invalidateInbox } from '@/hooks/useUnreadNotifications';
 import Page from '@/components/layout/Page';
 import PageHeader from '@/components/ui/PageHeader';
 import EmptyState from '@/components/ui/EmptyState';
+import { visuallyHidden } from '@/components/ui/visuallyHidden';
 
 const PAGE_SIZE = 20;
 
@@ -198,13 +199,3 @@ export default function NotificationsPage() {
     </Page>
   );
 }
-
-/** read by screen readers only */
-const visuallyHidden = {
-  position: 'absolute',
-  width: 1,
-  height: 1,
-  overflow: 'hidden',
-  clip: 'rect(0 0 0 0)',
-  whiteSpace: 'nowrap',
-} as const;

@@ -132,6 +132,7 @@ function SettingsForm({ account }: { account: Account }) {
         <Box>
           <Typography
             variant="subtitle1"
+            component="h2"
             sx={{
               fontWeight: 650,
               mb: 1.5,
@@ -149,6 +150,7 @@ function SettingsForm({ account }: { account: Account }) {
         <Box>
           <Typography
             variant="subtitle1"
+            component="h2"
             sx={{
               fontWeight: 650,
               mb: 1.5,

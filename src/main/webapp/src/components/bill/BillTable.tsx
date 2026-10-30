@@ -24,6 +24,7 @@ import CreatorHint from '@/components/ui/CreatorHint';
 import { previewUrl } from './attachments';
 import EmptyState from '@/components/ui/EmptyState';
 import { PageModel, SortModel } from '@/hooks/useBillList';
+import { visuallyHidden } from '@/components/ui/visuallyHidden';
 
 export interface MobileRow {
   primary: ReactNode;
@@ -298,7 +299,13 @@ export default function BillTable<
           ...withHint,
           {
             field: '__actions',
-            headerName: '',
+            // named for screen readers, the buttons explain themselves
+            headerName: t('common.actions'),
+            renderHeader: () => (
+              <Box component="span" sx={visuallyHidden}>
+                {t('common.actions')}
+              </Box>
+            ),
             sortable: false,
             filterable: false,
             disableColumnMenu: true,
