@@ -226,7 +226,8 @@ installs the latest one, a version range takes them only with a prerelease suffi
 
 Up to 0.3.x the app chart was `oci://ghcr.io/3thr3n/car-ledger/helm`, since 0.4.0 it is `car-ledger`.
 
-What stays stable within 1.x (the API, backups, upgrades, the values of the charts, the device API of the trackers)
+What stays stable within 1.x (the API, backups, the CSV formats, upgrades, the values of the charts, the device API
+of the trackers)
 is written down in [docs/STABILITY.md](docs/STABILITY.md).
 
 ### Upgrading
