@@ -2296,10 +2296,10 @@ balanced-match@^4.0.2:
   resolved "https://registry.yarnpkg.com/balanced-match/-/balanced-match-4.0.4.tgz#bfb10662feed8196a2c62e7c68e17720c274179a"
   integrity sha512-BLrgEcRTwX2o6gGxGOCNyMvGSp35YofuYzw9h1IMTRmKqttAZZVU67bdb9Pr2vUHA8+j3i2tJfjO6C6+4myGTA==
 
-baseline-browser-mapping@^2.11.25, baseline-browser-mapping@^2.11.26, baseline-browser-mapping@^2.11.28:
-  version "2.11.28"
-  resolved "https://registry.yarnpkg.com/baseline-browser-mapping/-/baseline-browser-mapping-2.11.28.tgz#784efec0fa3965c28a0bbb755f40604ace1c9db0"
-  integrity sha512-br0LOmjJqr6Rt4AEkadbcNf67Zpo7EPwKsWbjnRrJIa1QYFHQBqM4C7F2WTbV8ahTEcg1Eo+Y0aWjjORInYFyA==
+baseline-browser-mapping@^2.11.25, baseline-browser-mapping@^2.11.26, baseline-browser-mapping@^2.11.29:
+  version "2.11.29"
+  resolved "https://registry.yarnpkg.com/baseline-browser-mapping/-/baseline-browser-mapping-2.11.29.tgz#dbed0ed2c17943aa4427863c91300865d9d8ca23"
+  integrity sha512-YeesxhUmR4h5y5V8KF8iBCqJb8YFrBJ++XBTeGcWIaQOYXGN19JM0FoiOjAhwuDoln8owMgXcWBmgHtYSkky2w==
 
 bezier-easing@^3.1.0:
   version "3.1.0"
@@ -3105,10 +3105,10 @@ find-up@^5.0.0:
     locate-path "^6.0.0"
     path-exists "^4.0.0"
 
-flag-icons@7.5.0:
-  version "7.5.0"
-  resolved "https://registry.yarnpkg.com/flag-icons/-/flag-icons-7.5.0.tgz#66462df3e8bc5ef3a283322a46bb9dde1b290505"
-  integrity sha512-kd+MNXviFIg5hijH766tt+3x76ele1AXlo4zDdCxIvqWZhKt4T83bOtxUOOMlTx/EcFdUMH5yvQgYlFh1EqqFg==
+flag-icons@7.6.0:
+  version "7.6.0"
+  resolved "https://registry.yarnpkg.com/flag-icons/-/flag-icons-7.6.0.tgz#79668a719f1ca591002ddda20dbe7e364bb96621"
+  integrity sha512-hir/PsXwr0EESyizKrXJzmkzpLIMf+1vlNKLqAfvdh+bsU94a7LYWTiubkHKqptGoCPzOUGcm6c4PfC9/BaGSQ==
 
 flat-cache@^6.1.23:
   version "6.1.23"
@@ -3384,10 +3384,10 @@ i18next-browser-languagedetector@*, i18next-browser-languagedetector@^8.2.1:
   dependencies:
     "@babel/runtime" "^7.23.2"
 
-i18next@^26.4.5:
-  version "26.4.5"
-  resolved "https://registry.yarnpkg.com/i18next/-/i18next-26.4.5.tgz#af9e0aa894dde8e02e58975e2feefd5fd891a5bc"
-  integrity sha512-CY9xqbWNQ+eLGDhFX3eNl1kDO1amJixszVKjC4Nd0tvfxUFLKqarN0VUHRt+2b88U7bkNIhnL84dRKQ5mFI+fg==
+i18next@^26.4.6:
+  version "26.4.6"
+  resolved "https://registry.yarnpkg.com/i18next/-/i18next-26.4.6.tgz#845cd2ac052203ed7e3085b1b195bbe2960164fd"
+  integrity sha512-f/QHPNtH3XmBjL3sCRCrp5+jycwgV0W9fr1Vsy5msg1mR5grgaHc8eIbZhU7ASFwiGtF9PHVRQDqQ8Nf6iDTFA==
 
 idb@^7.0.1:
   version "7.1.1"
@@ -4289,10 +4289,10 @@ react-dom@^19:
   dependencies:
     scheduler "^0.28.0"
 
-react-i18next@^17.0.17:
-  version "17.0.17"
-  resolved "https://registry.yarnpkg.com/react-i18next/-/react-i18next-17.0.17.tgz#2ba91c10b0176bd0bbaa5871c8179daa9b2daf41"
-  integrity sha512-/gI72sAiVDJh7WAFdF0Sd9BMsVjF97W6avaCjPqgYDPj4Sq6wv9/94Gti3t8g9bYqo6A9c+xdmL3gRRH8GaM2Q==
+react-i18next@^17.0.18:
+  version "17.0.18"
+  resolved "https://registry.yarnpkg.com/react-i18next/-/react-i18next-17.0.18.tgz#fa2ee745b037ba8b9daa1218d83d2920cd5ed782"
+  integrity sha512-WC8i9i2QOom9q3v/aBzrGwUSbEBlvUylk2VV3k3kgUhMaAUyDZJ934PHfYJ2RUApzhG7cZCV0LlTVnVTLRjqcQ==
   dependencies:
     "@babel/runtime" "^7.29.7"
     html-parse-stringify "^4.0.1"
