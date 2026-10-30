@@ -11,6 +11,7 @@ import java.util.Base64;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,19 +35,23 @@ public class PushSender
 	private final PushConfig config;
 	private final VapidKeys keys;
 	private final PushSubscriptionRepository repository;
+	private final MeterRegistry registry;
 	private final HttpClient client;
 
 	@Inject
-	public PushSender(PushConfig config, VapidKeys keys, PushSubscriptionRepository repository)
+	public PushSender(PushConfig config, VapidKeys keys, PushSubscriptionRepository repository,
+			MeterRegistry registry)
 	{
-		this(config, keys, repository, HttpClient.newBuilder().connectTimeout(config.timeout()).build());
+		this(config, keys, repository, registry, HttpClient.newBuilder().connectTimeout(config.timeout()).build());
 	}
 
-	PushSender(PushConfig config, VapidKeys keys, PushSubscriptionRepository repository, HttpClient client)
+	PushSender(PushConfig config, VapidKeys keys, PushSubscriptionRepository repository, MeterRegistry registry,
+			HttpClient client)
 	{
 		this.config = config;
 		this.keys = keys;
 		this.repository = repository;
+		this.registry = registry;
 		this.client = client;
 	}
 
@@ -68,6 +73,7 @@ public class PushSender
 			// saved before the check, or the allowed hosts changed
 			LOG.warn("Push {} to subscription {} not sent: the endpoint is no known push service", event,
 					message.subscriptionId());
+			count(event, "failed");
 			return CompletableFuture.completedFuture(false);
 		}
 		HttpRequest request;
@@ -89,6 +95,7 @@ public class PushSender
 		catch (RuntimeException e)
 		{
 			LOG.warn("Push {} to subscription {} cannot be sent: {}", event, message.subscriptionId(), e.toString());
+			count(event, "failed");
 			return CompletableFuture.completedFuture(false);
 		}
 		return attempt(request, event, message, 0);
@@ -103,12 +110,14 @@ public class PushSender
 					int status = error == null ? response.statusCode() : 0;
 					if (status / 100 == 2)
 					{
+						count(event, "delivered");
 						return CompletableFuture.completedFuture(true);
 					}
 					if (status == 404 || status == 410)
 					{
 						// the browser unsubscribed or the subscription expired
 						remove(message);
+						count(event, "gone");
 						return CompletableFuture.completedFuture(false);
 					}
 					String problem = error != null ? error.getClass().getSimpleName() : "status " + status;
@@ -117,6 +126,7 @@ public class PushSender
 					{
 						LOG.warn("Push {} to subscription {} not delivered after {} attempts: {}", event,
 								message.subscriptionId(), retry + 1, problem);
+						count(event, "failed");
 						return CompletableFuture.completedFuture(false);
 					}
 					Duration wait = config.backoff().multipliedBy((long) Math.pow(4, retry));
@@ -127,6 +137,12 @@ public class PushSender
 							.thenCompose(ignored -> attempt(request, event, message, retry + 1));
 				})
 				.thenCompose(result -> result);
+	}
+
+	/** carledger_pushes_total, see docs/DEPLOYMENT.md#metrics */
+	private void count(String event, String result)
+	{
+		registry.counter("carledger.pushes", "event", event, "result", result).increment();
 	}
 
 	private void remove(PushMessage message)

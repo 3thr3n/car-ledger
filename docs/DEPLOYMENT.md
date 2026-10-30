@@ -188,6 +188,7 @@ with the role `user`, the roles are missing in the tokens of the client.
 - **Push**: the notifications reach the browsers as push messages, on by default, see [Push](#push).
 - **Self-signed certificates**: the app trusts the CA of the ingresses and further certificates for its own HTTPS
   requests (login, SMTP, push), see [Self-signed certificates](#self-signed-certificates).
+- **Metrics**: for Prometheus on the management port, an optional ServiceMonitor, see [Metrics](#metrics).
 - **Network policies**: only the app reaches its PostgreSQL and Infinispan, only Keycloak and authentik their
   PostgreSQL (`networkPolicy.enabled`, on by default in all charts; needs a network plugin that enforces them). Further
   sources, e.g. a backup tool: `networkPolicy.extraFrom`. The management port of Keycloak (9000: health, metrics) is
@@ -342,6 +343,40 @@ With the stack chart the values are under `app:`. The certificates are read at t
 names the trusted certificates (`Trusting 2 certificate(s) ...`).
 
 Outside of Kubernetes, the environment variable `CARLEDGER_TRUST_DIR` points to a directory with the PEM files.
+
+### Metrics
+
+The app serves metrics for Prometheus at `/q/metrics` on the management port 9000, next to the health; the ingress
+doesn't expose it. The NetworkPolicy of the app closes the port to other pods (the probes of the kubelet are always
+allowed), open it for Prometheus:
+
+```yaml
+carLedger:
+  metrics:
+    serviceMonitor:
+      enabled: true          # needs the CRD of the Prometheus Operator
+      labels:
+        release: prometheus  # the label your Prometheus selects ServiceMonitors by
+networkPolicy:
+  managementFrom:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: monitoring
+```
+
+Without the Prometheus Operator, scrape the service `car-ledger-sv`, port `management`, path `/q/metrics`. With the
+stack chart the values are under `app:`. Besides the metrics of Quarkus (HTTP requests by `uri`, the pages of the app
+counted as `/app`; the JVM; the pool of the database `agroal_*`; Hibernate `hibernate_*`), the app has its own:
+
+| Metric                                         | Tags                                       | Meaning                                                    |
+|------------------------------------------------|--------------------------------------------|------------------------------------------------------------|
+| `carledger_tracker_points_total`               | `result`: accepted, duplicate, rejected    | points of the GPS trackers: stored, sent again, invalid    |
+| `carledger_mails_total`                        | `event`, `result`: sent, failed            | mails, failed after the retries                            |
+| `carledger_pushes_total`                       | `event`, `result`: delivered, gone, failed | push messages; gone: the subscription ended and is removed |
+| `carledger_track_seconds` (count, sum, bucket) | `kind`: track, frequency                   | time to calculate the map of a period                      |
+
+Keycloak of the keycloak chart serves its metrics on its own management port 9000, opened with
+`networkPolicy.managementFrom` of that chart.
 
 ## Upgrading to the current version
 
@@ -518,6 +553,10 @@ kubectl set env deployment/car-ledger QUARKUS_FLYWAY_IGNORE_FUTURE_MIGRATIONS=tr
   A new NetworkPolicy closes that port to the other pods (the probes of the kubelet are always allowed), open it e.g.
   for Prometheus with `networkPolicy.managementFrom`. HTTP (8080) stays open to everyone, the replicas reach each
   other on every port (the cache). A proxy or a tool that reaches Keycloak on another port needs an entry there.
+- **Metrics** (0.11.0): the app serves metrics for Prometheus on its management port, see [Metrics](#metrics). A
+  new NetworkPolicy of the app (`networkPolicy.enabled`) lets HTTP (8080) in from everywhere and closes the management
+  port 9000 to other pods, the probes of the kubelet stay allowed. A tool that reached `/q/health` of the app from
+  another pod needs an entry in `networkPolicy.managementFrom`.
 - **Cross-Origin-Resource-Policy** (0.11.0): the answers of `/api` have `Cross-Origin-Resource-Policy: same-origin`,
   a page of another origin can't load them (e.g. an attachment as `<img>`). The app itself is not affected. Nothing to
   set up.
@@ -622,7 +661,7 @@ configured as in the keycloakx chart (`keycloak.ingress`).
 ## Operations
 
 - **Health**: the management port 9000 serves `/q/health/started`, `/q/health/live` and `/q/health` (used by the
-  probes), it is not exposed by the ingress.
+  probes) and the [metrics](#metrics), it is not exposed by the ingress.
 - **Slow start**: the startup probe allows 150 s (`carLedger.startupProbe.failureThreshold` 30 × `periodSeconds` 5)
   before Kubernetes restarts the pod, liveness and readiness only start afterwards. Raise the threshold on slow
   nodes, or the CPU limit (`carLedger.resources`, 350m by default): the start takes most of its time on CPU.

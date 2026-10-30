@@ -10,7 +10,7 @@ tests:
   - it: lets only the app reach PostgreSQL and Infinispan
     asserts:
       - hasDocuments:
-          count: 2
+          count: 3
       - equal:
           path: spec.ingress[0].from
           value:
@@ -43,6 +43,42 @@ tests:
               matchLabels:
                 app: pg-backup
         documentIndex: 0
+
+  - it: lets everyone reach the app, its management port only the kubelet
+    documentIndex: 2
+    asserts:
+      - equal:
+          path: metadata.name
+          value: car-ledger-app
+      - equal:
+          path: spec.podSelector.matchLabels
+          value:
+            app: car-ledger
+      - equal:
+          path: spec.ingress
+          value:
+            - ports:
+                - port: 8080
+                  protocol: TCP
+
+  - it: opens the management port to the sources set
+    set:
+      networkPolicy.managementFrom:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+    documentIndex: 2
+    asserts:
+      - equal:
+          path: spec.ingress[1]
+          value:
+            from:
+              - namespaceSelector:
+                  matchLabels:
+                    kubernetes.io/metadata.name: monitoring
+            ports:
+              - port: 9000
+                protocol: TCP
 
   - it: has no policies when turned off
     set:
