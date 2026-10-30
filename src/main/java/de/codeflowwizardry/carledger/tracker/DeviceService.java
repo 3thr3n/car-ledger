@@ -17,6 +17,7 @@ import de.codeflowwizardry.carledger.rest.car.tracker.DeviceCreated;
 import de.codeflowwizardry.carledger.rest.car.tracker.DeviceInput;
 import de.codeflowwizardry.carledger.rest.device.IngestResult;
 import de.codeflowwizardry.carledger.rest.device.TrackPointInput;
+import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -37,14 +38,16 @@ public class DeviceService
 	private final DeviceRepository deviceRepository;
 	private final CarRepository carRepository;
 	private final TrackPointRepository trackPointRepository;
+	private final MeterRegistry registry;
 
 	@Inject
 	public DeviceService(DeviceRepository deviceRepository, CarRepository carRepository,
-			TrackPointRepository trackPointRepository)
+			TrackPointRepository trackPointRepository, MeterRegistry registry)
 	{
 		this.deviceRepository = deviceRepository;
 		this.carRepository = carRepository;
 		this.trackPointRepository = trackPointRepository;
+		this.registry = registry;
 	}
 
 	/**
@@ -138,7 +141,11 @@ public class DeviceService
 		List<TrackPointInput> valid = points.stream().filter(point -> point != null && point.isValid(now))
 				.map(TrackPointInput::plausible).toList();
 		int accepted = valid.isEmpty() ? 0 : trackPointRepository.insert(device.deviceId(), device.carId(), valid);
-		return new IngestResult(accepted, valid.size() - accepted, points.size() - valid.size());
+		IngestResult result = new IngestResult(accepted, valid.size() - accepted, points.size() - valid.size());
+		countPoints("accepted", result.accepted());
+		countPoints("duplicate", result.duplicates());
+		countPoints("rejected", result.rejected());
+		return result;
 	}
 
 	/**
@@ -150,5 +157,13 @@ public class DeviceService
 	{
 		DeviceEntity entity = deviceRepository.findById(device.deviceId());
 		entity.setStatus(status.plausible(), OffsetDateTime.now());
+	}
+
+	/**
+	 * carledger_tracker_points_total of the result, see docs/DEPLOYMENT.md#metrics
+	 */
+	private void countPoints(String result, int count)
+	{
+		registry.counter("carledger.tracker.points", "result", result).increment(count);
 	}
 }

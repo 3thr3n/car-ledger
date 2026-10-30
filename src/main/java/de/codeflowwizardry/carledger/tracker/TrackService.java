@@ -23,6 +23,8 @@ import de.codeflowwizardry.carledger.rest.car.track.TrackDrive;
 import de.codeflowwizardry.carledger.rest.car.track.TrackFrequency;
 import de.codeflowwizardry.carledger.rest.car.track.TrackPoint;
 import de.codeflowwizardry.carledger.rest.car.track.TrackSegment;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -51,11 +53,14 @@ public class TrackService
 	private final TripRepository tripRepository;
 	private final PlaceRepository placeRepository;
 	private final TrackerConfig config;
+	private final MeterRegistry registry;
 
 	@Inject
 	public TrackService(CarRepository carRepository, TrackPointRepository trackPointRepository,
-			TripRepository tripRepository, PlaceRepository placeRepository, TrackerConfig config)
+			TripRepository tripRepository, PlaceRepository placeRepository, TrackerConfig config,
+			MeterRegistry registry)
 	{
+		this.registry = registry;
 		this.carRepository = carRepository;
 		this.trackPointRepository = trackPointRepository;
 		this.tripRepository = tripRepository;
@@ -86,9 +91,12 @@ public class TrackService
 			throw new WrongUserException();
 		}
 
+		Timer.Sample sample = Timer.start(registry);
 		SharedLine shared = new SharedLine(GAP);
 		trackPointRepository.forEach(carId, from, to, selection.filter(shared::add, shared::cut));
-		return collect(carId, from, to, selection, shared, gForces);
+		Track track = collect(carId, from, to, selection, shared, gForces);
+		sample.stop(timer("track"));
+		return track;
 	}
 
 	/**
@@ -111,10 +119,23 @@ public class TrackService
 		}
 
 		// the network needs all drives at once: a month is some ten thousand points
+		Timer.Sample sample = Timer.start(registry);
 		Segments segments = new Segments();
 		trackPointRepository.forEach(carId, from, to, selection.filter(segments::add, segments::finish));
 		segments.finish();
-		return StreetNetwork.frequency(segments.all, GAP, TOLERANCE);
+		TrackFrequency frequency = StreetNetwork.frequency(segments.all, GAP, TOLERANCE);
+		sample.stop(timer("frequency"));
+		return frequency;
+	}
+
+	/** carledger_track_seconds of the map, see docs/DEPLOYMENT.md#metrics */
+	private Timer timer(String kind)
+	{
+		// a few buckets, a busy month takes about a second
+		return Timer.builder("carledger.track").tag("kind", kind)
+				.serviceLevelObjectives(Duration.ofMillis(100), Duration.ofMillis(250), Duration.ofMillis(500),
+						Duration.ofSeconds(1), Duration.ofMillis(2500), Duration.ofSeconds(5))
+				.register(registry);
 	}
 
 	/**

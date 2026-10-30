@@ -177,6 +177,15 @@ carLedger:
     failureThreshold: 3
     periodSeconds: 20
     timeoutSeconds: 2
+  # metrics for Prometheus on the management port (/q/metrics), see docs/DEPLOYMENT.md#metrics
+  metrics:
+    # a ServiceMonitor of the Prometheus Operator, its CRD has to exist; open the port to Prometheus with
+    # networkPolicy.managementFrom
+    serviceMonitor:
+      enabled: false
+      interval: 30s
+      # e.g. the label the Prometheus selects its ServiceMonitors by
+      labels: {}
   readinessProbe:
     failureThreshold: 3
     periodSeconds: 5
@@ -224,12 +233,17 @@ carledgerpostgres:
       cpu: 500m
       memory: 512Mi
 
-# only the app reaches its PostgreSQL and Infinispan; needs a network plugin that enforces NetworkPolicies
+# only the app reaches its PostgreSQL and Infinispan, the app takes HTTP from everywhere; needs a network plugin that
+# enforces NetworkPolicies
 networkPolicy:
   enabled: true
-  # further sources, e.g. a backup tool: entries of NetworkPolicy ingress "from"
+  # further sources for PostgreSQL and Infinispan, e.g. a backup tool: entries of NetworkPolicy ingress "from"
   # (- podSelector: {matchLabels: {app: pg-backup}})
   extraFrom: []
+  # sources for the management port of the app (9000: /q/health, /q/metrics), e.g. Prometheus: entries of
+  # NetworkPolicy ingress "from" (- namespaceSelector: {matchLabels: {kubernetes.io/metadata.name: monitoring}}).
+  # The probes of the kubelet are always allowed
+  managementFrom: []
 
 infinispan:
   enabled: true

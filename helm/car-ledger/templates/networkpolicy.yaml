@@ -1,6 +1,8 @@
 {{- /*
-Only the app reaches its PostgreSQL and Infinispan (and what networkPolicy.extraFrom allows). The app itself is not
-restricted. Needs a network plugin that enforces NetworkPolicies, ignored by the others.
+Only the app reaches its PostgreSQL and Infinispan (and what networkPolicy.extraFrom allows). The app takes HTTP from
+everywhere (the ingress), its management port with the health and the metrics only from networkPolicy.managementFrom;
+the probes of the kubelet are always allowed. Needs a network plugin that enforces NetworkPolicies, ignored by the
+others.
 */}}
 {{- if .Values.networkPolicy.enabled }}
 {{- if .Values.carledgerpostgres.enabled }}
@@ -62,4 +64,26 @@ spec:
         - port: 11223
           protocol: TCP
 {{- end }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ .Release.Name }}-app
+spec:
+  podSelector:
+    matchLabels:
+      app: car-ledger
+  policyTypes: [ Ingress ]
+  ingress:
+    - ports:
+        - port: 8080
+          protocol: TCP
+    {{- with .Values.networkPolicy.managementFrom }}
+    # the metrics, e.g. for Prometheus
+    - from:
+        {{- toYaml . | nindent 8 }}
+      ports:
+        - port: 9000
+          protocol: TCP
+    {{- end }}
 {{- end }}
