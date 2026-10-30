@@ -190,7 +190,8 @@ with the role `user`, the roles are missing in the tokens of the client.
   requests (login, SMTP, push), see [Self-signed certificates](#self-signed-certificates).
 - **Network policies**: only the app reaches its PostgreSQL and Infinispan, only Keycloak and authentik their
   PostgreSQL (`networkPolicy.enabled`, on by default in all charts; needs a network plugin that enforces them). Further
-  sources, e.g. a backup tool: `networkPolicy.extraFrom`. `kubectl exec … pg_dump` (see [Operations](#operations))
+  sources, e.g. a backup tool: `networkPolicy.extraFrom`. The management port of Keycloak (9000: health, metrics) is
+  closed to other pods, `networkPolicy.managementFrom` of the keycloak chart opens it, e.g. for Prometheus. `kubectl exec … pg_dump` (see [Operations](#operations))
   is not affected.
 - **Installable app**: the app has a web app manifest (`/manifest.json`) and a service worker (`/sw.js`), which keeps
   the files of the app (not the data) for a fast start. Both need HTTPS, which the ingress provides. The server sends
@@ -510,6 +511,15 @@ kubectl set env deployment/car-ledger QUARKUS_FLYWAY_IGNORE_FUTURE_MIGRATIONS=tr
   `carLedger.securityContext` of your own replaces these defaults, keep them in it. Keycloak and the authentik server
   get no token of a service account, the authentik worker keeps its one for the outposts. Infinispan only gets the
   security context of the pod, its chart has none for the container. Nothing to set up.
+- **Keycloak: readiness and a network policy** (0.11.0; keycloak chart 0.6.0): Keycloak gets a readiness probe
+  (`/health/ready`), so its service only sends requests to a pod that can answer. The keycloakx chart sets it only with
+  `keycloak.metrics.enabled`, which is on now: `/metrics` is served on the management port 9000, next to the health.
+  A new NetworkPolicy closes that port to the other pods (the probes of the kubelet are always allowed), open it e.g.
+  for Prometheus with `networkPolicy.managementFrom`. HTTP (8080) stays open to everyone, the replicas reach each
+  other on every port (the cache). A proxy or a tool that reaches Keycloak on another port needs an entry there.
+- **Cross-Origin-Resource-Policy** (0.11.0): the answers of `/api` have `Cross-Origin-Resource-Policy: same-origin`,
+  a page of another origin can't load them (e.g. an attachment as `<img>`). The app itself is not affected. Nothing to
+  set up.
 - **No webhooks** (0.9.0): CarLedger sends no webhooks anymore, the mails and push messages and the decisions on the
   administration page stay. A configured `carLedger.webhook.*` (`CARLEDGER_WEBHOOK_URL` and the others) is ignored,
   remove it from your values; a script that decided the car requests on a webhook can poll

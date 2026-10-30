@@ -6,6 +6,7 @@ release:
   namespace: auth
 tests:
   - it: lets only Keycloak reach its PostgreSQL
+    documentIndex: 0
     asserts:
       - equal:
           path: metadata.name
@@ -23,6 +24,7 @@ tests:
       name: car-ledger
     set:
       global.keycloak.enabled: true
+    documentIndex: 0
     asserts:
       - equal:
           path: spec.podSelector.matchLabels["app.kubernetes.io/instance"]
@@ -34,3 +36,59 @@ tests:
     asserts:
       - hasDocuments:
           count: 0
+
+  - it: lets everyone reach the HTTP port of Keycloak, its replicas everything
+    documentIndex: 1
+    asserts:
+      - equal:
+          path: metadata.name
+          value: keycloak
+      - equal:
+          path: spec.podSelector.matchLabels
+          value:
+            app.kubernetes.io/name: keycloak
+            app.kubernetes.io/instance: keycloak
+      - equal:
+          path: spec.ingress
+          value:
+            - ports:
+                - port: 8080
+                  protocol: TCP
+            - from:
+                - podSelector:
+                    matchLabels:
+                      app.kubernetes.io/name: keycloak
+                      app.kubernetes.io/instance: keycloak
+
+  - it: opens the management port only to the sources set
+    set:
+      networkPolicy.managementFrom:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+    documentIndex: 1
+    asserts:
+      - equal:
+          path: spec.ingress[2]
+          value:
+            from:
+              - namespaceSelector:
+                  matchLabels:
+                    kubernetes.io/metadata.name: monitoring
+            ports:
+              - port: 9000
+                protocol: TCP
+
+  - it: selects the Keycloak of the stack chart by the release
+    release:
+      name: car-ledger
+    set:
+      global.keycloak.enabled: true
+    documentIndex: 1
+    asserts:
+      - equal:
+          path: metadata.name
+          value: car-ledger-keycloak
+      - equal:
+          path: spec.podSelector.matchLabels["app.kubernetes.io/instance"]
+          value: car-ledger
