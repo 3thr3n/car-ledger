@@ -105,15 +105,15 @@ public class ValhallaClient
 			Thread.currentThread().interrupt();
 			throw new IOException("Interrupted", e);
 		}
-		if (response.statusCode() / 100 == 4)
+		if (response.statusCode() == 400)
 		{
 			// e.g. 444: no path along the roads, 171: no road near a point
-			throw new NoRoadException(mapper.readTree(response.body()).path("error").asText("status "
-					+ response.statusCode()));
+			throw new NoRoadException(error(response));
 		}
 		if (response.statusCode() != 200)
 		{
-			throw new IOException("Valhalla answered " + response.statusCode());
+			// e.g. 404 of a wrong URL: the points wait instead of losing their roads
+			throw new IOException("Valhalla answered " + response.statusCode() + ": " + error(response));
 		}
 
 		JsonNode matched = mapper.readTree(response.body()).path("matched_points");
@@ -132,5 +132,18 @@ public class ValhallaClient
 					: null);
 		}
 		return snapped;
+	}
+
+	/** the message of Valhalla, else the status */
+	private String error(HttpResponse<byte[]> response)
+	{
+		try
+		{
+			return mapper.readTree(response.body()).path("error").asText("status " + response.statusCode());
+		}
+		catch (IOException e)
+		{
+			return "status " + response.statusCode();
+		}
 	}
 }

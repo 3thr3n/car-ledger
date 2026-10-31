@@ -155,7 +155,8 @@ public class MapMatcher
 			}
 			catch (NoRoadException e)
 			{
-				LOG.debug("No road for {} points from {}: {}", points.size(), points.getFirst().ts(),
+				// visible: a whole region outside the map data would look like off-road
+				LOG.info("No road for {} points from {}: {}", points.size(), points.getFirst().ts(),
 						e.getMessage());
 			}
 		}
