@@ -146,4 +146,16 @@ class ValhallaClientTest
 
 		assertThrows(IOException.class, () -> client.match(shape()));
 	}
+
+	@Test
+	void shouldWaitOnAWrongUrl()
+	{
+		// the answer of Valhalla to an unknown path, the points must not lose their
+		// roads
+		status.set(404);
+		answer.set("{\"error_code\":106,\"error\":\"Try any of: '/locate' '/route'\"}".getBytes());
+
+		IOException e = assertThrows(IOException.class, () -> client.match(shape()));
+		assertEquals("Valhalla answered 404: Try any of: '/locate' '/route'", e.getMessage());
+	}
 }
