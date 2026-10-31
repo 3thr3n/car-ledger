@@ -25,7 +25,7 @@ tests:
           path: spec.template.spec.containers[0].env
           content:
             name: use_tiles_ignore_pbf
-            value: "True"
+            value: "False"
       - equal:
           path: spec.volumeClaimTemplates[0].spec.resources.requests.storage
           value: 40Gi
