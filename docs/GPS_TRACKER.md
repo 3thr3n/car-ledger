@@ -286,7 +286,8 @@ self-hosted: a public service would get the positions of the users.
 `car-ledger-map-matching` and the app uses it by itself. On the first start Valhalla downloads the extracts of
 `mapMatching.extracts` (Germany, Austria and Switzerland of [Geofabrik](https://download.geofabrik.de) by default) and
 builds its routing tiles into its volume (`mapMatching.persistence.size`, 40Gi): about an hour and up to 8 GB of
-memory (`mapMatching.resources`), the startup probe waits up to 12 hours. Later starts use the tiles. Outside of the
+memory (`mapMatching.resources`), the startup probe waits up to 12 hours. Later starts use the tiles of a
+finished build, a failed one (`valhalla_build_tiles failed` in the log) is built again. Outside of the
 stack, install `helm/map-matching` and set `carLedger.map.matchingUrl` (e.g. `http://map-matching.maps:8002`) and
 `networkPolicy.extraFrom` of the chart for the namespace of the app. Its NetworkPolicy lets only the app in.
 

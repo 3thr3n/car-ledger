@@ -44,9 +44,11 @@ spec:
               value: {{ join " " .Values.extracts | quote }}
             - name: server_threads
               value: {{ .Values.threads | quote }}
-            # the tiles of the volume as they are, also when an extract changed: new data by hand
+            # the tiles of the volume as long as their build finished: its hashes (of the file names) are only
+            # written by a finished build, a failed one is built again on the next start instead of being served
+            # without its roads. A newer extract under the same name keeps the tiles: new data by hand
             - name: use_tiles_ignore_pbf
-              value: "True"
+              value: "False"
             - name: build_tar
               value: "True"
             - name: serve_tiles
