@@ -321,12 +321,26 @@ class TrackResourceTest
 	}
 
 	@Test
+	void shouldAcceptAMonthOverTheEndOfSummerTime()
+	{
+		// all of October in Berlin: 31 days and the hour of the 25th
+		given()
+				.pathParam("carId", carId)
+				.queryParam("from", "2026-09-30T22:00:00Z")
+				.queryParam("to", "2026-10-31T23:00:00Z")
+				.when()
+				.get()
+				.then()
+				.statusCode(200);
+	}
+
+	@Test
 	void shouldRejectAnInvalidRange()
 	{
 		given()
 				.pathParam("carId", carId)
 				.queryParam("from", START.toString())
-				.queryParam("to", START.plusDays(31).plusSeconds(1).toString())
+				.queryParam("to", START.plusDays(31).plusHours(1).plusSeconds(1).toString())
 				.when()
 				.get()
 				.then()

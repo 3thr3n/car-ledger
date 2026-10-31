@@ -131,7 +131,7 @@ export default function TrackPage({
     getMyCarOptions({ client: localClient, path: { id: carId } }),
   );
 
-  const { data: drives } = useQuery({
+  const { data: drives, error: drivesError } = useQuery({
     ...getTrackDrivesOptions({
       client: localClient,
       path: { carId },
@@ -150,7 +150,11 @@ export default function TrackPage({
   // the selection needs the ends of its drives
   const ready = valid && !!settings?.styleUrl && (!selected.length || !!drives);
 
-  const { data: track, isPlaceholderData } = useQuery({
+  const {
+    data: track,
+    isPlaceholderData,
+    error: trackError,
+  } = useQuery({
     ...getTrackOptions({
       client: localClient,
       path: { carId },
@@ -356,6 +360,12 @@ export default function TrackPage({
         {days > MAX_DAYS && (
           <Alert severity="info">
             {t('track.tooLong', { days: MAX_DAYS })}
+          </Alert>
+        )}
+        {/* inline: the period stays changeable */}
+        {valid && !!(drivesError ?? trackError) && (
+          <Alert severity="error">
+            {errorMessage(drivesError ?? trackError, t('errors.backend'))}
           </Alert>
         )}
         {settings?.styleUrl && track && valid && track.points === 0 && (

@@ -38,6 +38,11 @@ public class TrackService
 {
 	/** longest range of one query */
 	public static final Duration MAX_RANGE = Duration.ofDays(31);
+	/**
+	 * whole local days are an hour longer over the end of summer time, e.g. all
+	 * of October in Europe
+	 */
+	static final Duration DST_SHIFT = Duration.ofHours(1);
 	/** a longer time without a point starts a new segment */
 	public static final Duration GAP = Duration.ofMinutes(5);
 	/** a point is kept where the speed changes by more than this, km/h */
@@ -247,7 +252,7 @@ public class TrackService
 		} else if (!to.isAfter(from))
 		{
 			errors.add("To must be after from!");
-		} else if (Duration.between(from, to).compareTo(MAX_RANGE) > 0)
+		} else if (Duration.between(from, to).compareTo(MAX_RANGE.plus(DST_SHIFT)) > 0)
 		{
 			errors.add("The range must not be longer than " + MAX_RANGE.toDays() + " days!");
 		}
