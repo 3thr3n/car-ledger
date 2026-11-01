@@ -371,7 +371,11 @@ class RecurringResourceTest
 				 }
 				""";
 
-		LocalDate nextMonth = LocalDate.now().plusMonths(1).withDayOfMonth(1);
+		// the history covers the payments before today, the one of today is left to the
+		// schedule: on the first of a
+		// month the next payment is due today
+		LocalDate today = LocalDate.now();
+		LocalDate nextDue = today.getDayOfMonth() == 1 ? today : today.plusMonths(1).withDayOfMonth(1);
 
 		given()
 				.pathParam("carId", carId)
@@ -382,7 +386,7 @@ class RecurringResourceTest
 				.put()
 				.then()
 				.statusCode(202)
-				.body("nextDueDate", is(nextMonth.format(DateTimeFormatter.ISO_DATE)));
+				.body("nextDueDate", is(nextDue.format(DateTimeFormatter.ISO_DATE)));
 	}
 
 	private int createMonthlyBill()
