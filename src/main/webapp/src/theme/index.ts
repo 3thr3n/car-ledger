@@ -27,6 +27,9 @@ declare module '@mui/material/styles' {
   }
 }
 
+/** the figures of the headlines, Overpass descends from the lettering of road signs */
+export const displayFont = `"Overpass Variable", "Inter Variable", system-ui, sans-serif`;
+
 const fontFamily = `"Inter Variable", "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif`;
 
 /**

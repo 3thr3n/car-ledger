@@ -1044,6 +1044,11 @@
   resolved "https://registry.yarnpkg.com/@fontsource-variable/inter/-/inter-5.3.0.tgz#351dd1e02dab63a6cf66d57ec36dcfd10c07f07b"
   integrity sha512-OupL48va4JNofb97w6NYeF9S7W/kHNKM0Er8Dem5nqi4jeOLrVJDoE8tZEpnMJmtkvNbB1EIPPwHcdkF6b1oUA==
 
+"@fontsource-variable/overpass@5":
+  version "5.3.0"
+  resolved "https://registry.yarnpkg.com/@fontsource-variable/overpass/-/overpass-5.3.0.tgz#2ec9618c2f231400d347042d8dc2cdbcc9870f25"
+  integrity sha512-HviVvVvKCwhXjxM61GjnCW2cKoeEWFkoBANaArzIHliC+7mV4lmKKIBAa0O7E5ISHnkV3sihgOHXxzpnsbP3Xg==
+
 "@hey-api/codegen-core@0.9.1":
   version "0.9.1"
   resolved "https://registry.yarnpkg.com/@hey-api/codegen-core/-/codegen-core-0.9.1.tgz#e66bcc294ee16c4dcb8b8750b70e62d3b53f5fea"

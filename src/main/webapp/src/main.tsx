@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import { createRouter, RouterProvider } from '@tanstack/react-router';
 
 import '@fontsource-variable/inter';
+import '@fontsource-variable/overpass';
 import './styles/index.css';
 
 // Import the generated route tree

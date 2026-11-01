@@ -71,8 +71,8 @@ test.describe.serial('odometer', () => {
     await expect(legend.getByText('Charging', { exact: true })).toHaveCount(0);
 
     await page.goto('/dashboard');
-    const split = page.locator('.MuiCard-root', { hasText: 'Cost breakdown' });
-    await expect(split.getByText('Fuel', { exact: false })).toBeVisible();
+    const split = page.getByRole('region', { name: 'Summary of the period' });
+    await expect(split.getByText('Fuel', { exact: true })).toBeVisible();
     await expect(split.getByText(/^Charging/)).toHaveCount(0);
   });
 
