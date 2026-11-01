@@ -15,6 +15,19 @@ async function accentOfTheAccount() {
 
 test.describe.serial('settings', () => {
   test('changes the currency of all amounts', async ({ page }) => {
+    // an empty dashboard shows no amounts
+    const api = await aliceApi();
+    await api.put('/api/car/my', {
+      data: { name: 'E2E Polo', year: 2020, odometer: 10000 },
+    });
+    const [car] = (await (await api.get('/api/car/my')).json()) as {
+      id: number;
+    }[];
+    await api.put(`/api/bill/${car.id}/miscellaneous`, {
+      data: { date: '2026-01-15', vatRate: 19, total: 12.5 },
+    });
+    await api.dispose();
+
     await page.goto('/dashboard');
     await page.getByRole('link', { name: 'Settings' }).click();
     await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible();
@@ -28,7 +41,7 @@ test.describe.serial('settings', () => {
     await expect(page.getByText('Settings saved')).toBeVisible();
 
     await page.goto('/dashboard');
-    await expect(page.getByText('$0.00').first()).toBeVisible();
+    await expect(page.getByText('$12.50').first()).toBeVisible();
   });
 
   test('keeps the settings after a reload', async ({ page }) => {
