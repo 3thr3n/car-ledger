@@ -121,18 +121,18 @@ dashboard:
       last12: "Letzte 12 Monate"
       custom: "Zeitraum"
   kpi:
-    total: "Ausgaben gesamt"
-    costPerKm: "Kosten pro km"
-    costPerKm_miles: "Kosten pro Meile"
-    consumption: "Ø Verbrauch"
-    distance: "Erfasste Strecke"
     fuelVolume: "{{value}} Kraftstoff"
     chargingConsumption: "{{value}} elektrisch"
     chargedVolume: "{{value}} geladen"
     bothVolumes: "{{fuel}} Kraftstoff · {{charged}} geladen"
+  summary:
+    label: "Übersicht des Zeitraums"
+    spent: "<b>{{total}}</b> ausgegeben"
+    perDistance: "<b>{{cost}}</b> auf <b>{{distance}}</b> erfasster Strecke"
+    distance: "Auf <b>{{distance}}</b> erfasster Strecke"
+    consumption: "Ø {{value}}"
   split:
     title: "Kostenaufteilung"
-    subtitle: "Anteil jeder Kostenart"
     count_one: "{{count}} Eintrag"
     count_other: "{{count}} Einträge"
   average:
@@ -148,6 +148,9 @@ dashboard:
   range:
     title: "Tiefst- und Höchstwerte"
     subtitle: "Spanne über einzelne Einträge"
+    lowest: "Tiefstwert"
+    highest: "Höchstwert"
+    metric: "Wert"
     pricePerUnit: "Kraftstoffpreis"
     consumption: "Verbrauch"
     fuelCostPerKm: "Kraftstoffkosten pro km"

@@ -1,4 +1,10 @@
-import { Box, Stack, Typography } from '@mui/material';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+} from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { HiLo, HiLoStats } from '@/generated';
 import { EMPTY, Formatter, hasValue, useFormat } from '@/utils/format';
@@ -72,74 +78,60 @@ export default function RangeList({ hiLo }: { hiLo: HiLoStats }) {
     return row.format(format, number);
   };
 
+  const cell = {
+    py: 1.25,
+    px: 0,
+    borderColor: 'divider',
+  } as const;
+  const figure = { ...cell, fontWeight: 600, whiteSpace: 'nowrap' } as const;
+
   return (
     <Section
       title={t('dashboard.range.title')}
       subtitle={t('dashboard.range.subtitle')}
     >
-      <Stack spacing={2}>
-        {shown.map((row) => {
-          const { key } = row;
-          const range = hiLo[key];
-          const hasRange = range?.min !== undefined && hasValue(range?.max);
-
-          return (
-            <Box key={key}>
-              <Typography
-                variant="body2"
-                sx={{
-                  color: 'text.secondary',
-                  mb: 0.5,
-                }}
-              >
-                {t(`dashboard.range.${key}`, {
+      <Table
+        size="small"
+        sx={{ '& tr:last-of-type td, & tr:last-of-type th': { border: 0 } }}
+      >
+        <TableHead>
+          <TableRow>
+            <TableCell sx={{ ...cell, color: 'text.secondary' }}>
+              {t('dashboard.range.metric')}
+            </TableCell>
+            <TableCell align="right" sx={{ ...cell, color: 'text.secondary' }}>
+              {t('dashboard.range.lowest')}
+            </TableCell>
+            <TableCell
+              align="right"
+              sx={{ ...cell, color: 'text.secondary', pl: 2 }}
+            >
+              {t('dashboard.range.highest')}
+            </TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {shown.map((row) => (
+            <TableRow key={row.key}>
+              <TableCell component="th" scope="row" sx={cell}>
+                {t(`dashboard.range.${row.key}`, {
                   context: format.units.distance.context,
                 })}
-              </Typography>
-              <Stack
-                direction="row"
-                spacing={1.5}
-                sx={{
-                  alignItems: 'center',
-                }}
+              </TableCell>
+              <TableCell align="right" className="tabular" sx={figure}>
+                {value(hiLo[row.key], 'min', row)}
+              </TableCell>
+              <TableCell
+                align="right"
+                className="tabular"
+                sx={{ ...figure, pl: 2 }}
               >
-                <Typography
-                  variant="body2"
-                  className="tabular"
-                  sx={{
-                    fontWeight: 600,
-                    minWidth: 92,
-                  }}
-                >
-                  {value(range, 'min', row)}
-                </Typography>
-                <Box
-                  sx={{
-                    flexGrow: 1,
-                    height: 6,
-                    borderRadius: 999,
-                    background: (theme) =>
-                      hasRange
-                        ? `linear-gradient(90deg, rgba(${theme.vars.palette.primary.mainChannel} / 0.25), ${theme.vars.palette.primary.main})`
-                        : theme.vars.palette.action.hover,
-                  }}
-                />
-                <Typography
-                  variant="body2"
-                  className="tabular"
-                  sx={{
-                    fontWeight: 600,
-                    minWidth: 92,
-                    textAlign: 'right',
-                  }}
-                >
-                  {value(range, 'max', row)}
-                </Typography>
-              </Stack>
-            </Box>
-          );
-        })}
-      </Stack>
+                {value(hiLo[row.key], 'max', row)}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
     </Section>
   );
 }
