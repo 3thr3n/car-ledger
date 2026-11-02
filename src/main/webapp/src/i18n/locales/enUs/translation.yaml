@@ -56,11 +56,19 @@ common:
   allYears: "All years"
 
 landing:
-  eyebrow: "Car cost tracking"
   title: "Know what your car really costs."
   subtitle: "Log refuels, charges, workshop visits, insurance and everything else, and keep the papers of your car at hand. CarLedger turns your receipts into cost per kilometer, consumption and trends."
   cta: "Log in to start"
   ctaDashboard: "Open dashboard"
+  selfHosted: "Runs on your own server: your receipts and your routes stay with you."
+  example:
+    car: "Octavia Combi, petrol"
+    caption: "An example: the page of a car after a year of entries."
+  groups:
+    costs: "Every cost of the car"
+    papers: "Papers and dates"
+    road: "On the road"
+    data: "Your data"
   features:
     fuel:
       title: "Refuels"
