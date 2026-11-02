@@ -533,9 +533,9 @@ tracker:
 
 track:
   title: "GPS tracks"
-  subtitle: "The tracks of the GPS trackers of this car"
-  summary_one: "{{distance}} GPS distance in {{count}} section"
-  summary_other: "{{distance}} GPS distance in {{count}} sections"
+  gpsDistance: "GPS distance"
+  atTheWheel: "GPS distance, {{duration}} at the wheel"
+  legend: "Legend of the map"
   shortcuts:
     label: "Period"
     today: "Today"
@@ -593,6 +593,8 @@ track:
     unnamed: "Unnamed place"
     minutes_one: "{{count}} min"
     minutes_other: "{{count}} min"
+    hours: "{{hours}} h {{minutes}} min"
+    parked: "parked {{duration}}"
     delete: "Delete drive"
     deleteLabel: "Delete the drive {{drive}}"
     addTrip: "Add as trip"

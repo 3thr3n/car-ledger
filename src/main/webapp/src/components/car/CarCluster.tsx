@@ -21,15 +21,13 @@ import { getTrackersOptions } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
 import { hasValue, num, useFormat } from '@/utils/format';
 import { hasTank } from '@/utils/energy';
-import { displayFont } from '@/theme';
+import { CLUSTER_AMBER, displayFont } from '@/theme';
 import { inspectionsOptions } from '@/components/offline/useOfflineDocuments';
 import useReminderText from '@/components/reminder/useReminderText';
 import { RouterLink } from '@/components/ui/links';
 import { scaleOf } from '@/utils/gauge';
 import Gauge from './Gauge';
 
-/** the amber of the total on the dark panel */
-const AMBER = '#f5a524';
 /** a tracker that sent within this time is online */
 const ONLINE_MINUTES = 15;
 /** an HU is due soon this many days before the end of its month */
@@ -75,7 +73,7 @@ function StatusLight({
             color: 'text.disabled',
             ...(tone === 'warn' && {
               color: theme.vars.palette.warning.main,
-              ...theme.applyStyles('dark', { color: AMBER }),
+              ...theme.applyStyles('dark', { color: CLUSTER_AMBER }),
             }),
             ...(tone === 'ok' && {
               color: '#15803d',
@@ -100,7 +98,7 @@ function StatusLight({
               fontWeight: 600,
               ...(tone === 'warn' && {
                 color: theme.vars.palette.warning.main,
-                ...theme.applyStyles('dark', { color: AMBER }),
+                ...theme.applyStyles('dark', { color: CLUSTER_AMBER }),
               }),
             })}
           >
@@ -405,7 +403,7 @@ export default function CarCluster({
               fontSize: 'clamp(2.5rem, 1.8rem + 2.6vw, 4rem)',
               lineHeight: 1,
               color: 'text.primary',
-              ...theme.applyStyles('dark', { color: AMBER }),
+              ...theme.applyStyles('dark', { color: CLUSTER_AMBER }),
             })}
           >
             {loading ? <Skeleton width={240} /> : format.money(total.total)}

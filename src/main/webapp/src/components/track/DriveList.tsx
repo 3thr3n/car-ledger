@@ -1,14 +1,7 @@
 import {
   Box,
   Button,
-  Checkbox,
   IconButton,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-  ListSubheader,
   Stack,
   Tooltip,
   Typography,
@@ -18,7 +11,9 @@ import DeleteOutlineRounded from '@mui/icons-material/DeleteOutlineRounded';
 import { useTranslation } from 'react-i18next';
 import type { TrackDrive } from '@/generated';
 import { useFormat } from '@/utils/format';
-import { byDay, minutes } from './drives';
+import { displayFont } from '@/theme';
+import { byDay, Leg, legsOf, minutes } from './drives';
+import useDuration from './useDuration';
 
 export interface DriveListProps {
   /** newest first */
@@ -38,9 +33,70 @@ export interface DriveListProps {
   onAddTrip?: (drive: TrackDrive) => void;
 }
 
+/** the column of the times, the one of the line, the text */
+const COLUMNS = '4.75rem 1.5rem minmax(0, 1fr)';
+
+/** a place the route stops at: a ring on the line, its name and how long */
+function Stop({ name, parked }: { name?: string; parked?: string }) {
+  const { t } = useTranslation();
+  return (
+    <Box
+      sx={{
+        display: 'grid',
+        gridTemplateColumns: COLUMNS,
+        alignItems: 'center',
+        minHeight: 32,
+      }}
+    >
+      <Box
+        aria-hidden
+        sx={(theme) => ({
+          gridColumn: 2,
+          justifySelf: 'center',
+          width: 14,
+          height: 14,
+          borderRadius: '50%',
+          border: `3px solid ${theme.vars.palette.text.primary}`,
+          bgcolor: 'background.paper',
+        })}
+      />
+      <Stack
+        direction="row"
+        spacing={1}
+        sx={{
+          gridColumn: 3,
+          pl: 1,
+          alignItems: 'baseline',
+          justifyContent: 'space-between',
+          minWidth: 0,
+        }}
+      >
+        <Typography
+          noWrap
+          sx={{
+            fontWeight: 600,
+            ...(!name && { fontWeight: 400, color: 'text.secondary' }),
+          }}
+        >
+          {name ?? t('track.drives.unnamed')}
+        </Typography>
+        {parked && (
+          <Typography
+            variant="body2"
+            noWrap
+            sx={{ color: 'text.secondary', flexShrink: 0 }}
+          >
+            {t('track.drives.parked', { duration: parked })}
+          </Typography>
+        )}
+      </Stack>
+    </Box>
+  );
+}
+
 /**
- * The drives of the period by day: picking some shows only them on the map,
- * none shows all
+ * The drives of the period by day, each day as its route from stop to stop:
+ * picking drives shows only them on the map, none shows all
  */
 export default function DriveList({
   drives,
@@ -56,25 +112,156 @@ export default function DriveList({
 
   const title = (drive: TrackDrive) =>
     `${format.time(drive.start)} – ${format.time(drive.end)}`;
-  const details = (drive: TrackDrive) =>
-    [
-      drive.from || drive.to
-        ? `${drive.from ?? t('track.drives.unnamed')} → ${drive.to ?? t('track.drives.unnamed')}`
-        : undefined,
-      t('track.drives.minutes', { count: minutes(drive) }),
-      format.distance(drive.distance, 1),
-    ]
-      .filter(Boolean)
-      .join(' · ');
+  const duration = useDuration();
+  const dayName = (day: string) =>
+    new Intl.DateTimeFormat(format.locale, {
+      weekday: 'long',
+      month: 'long',
+      day: 'numeric',
+    }).format(new Date(`${day}T12:00:00`));
+
+  const leg = ({ drive, departure, parked }: Leg) => {
+    const checked = selected.includes(drive.start);
+    const label = title(drive);
+    const addTrip = onAddTrip && !drive.trip;
+    return (
+      <Box
+        component="li"
+        key={drive.start}
+        data-testid="track-drive"
+        onMouseEnter={() => onHover(drive)}
+      >
+        {departure && <Stop name={drive.from} />}
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: `${COLUMNS} auto`,
+            alignItems: 'stretch',
+          }}
+        >
+          {/* the leg of the route picks the drive, like a checkbox */}
+          <Box
+            component="button"
+            type="button"
+            role="checkbox"
+            aria-checked={checked}
+            aria-label={label}
+            onClick={() => onToggle(drive)}
+            onFocus={() => onHover(drive)}
+            onBlur={() => onHover(undefined)}
+            sx={(theme) => ({
+              gridColumn: '1 / 4',
+              display: 'grid',
+              gridTemplateColumns: COLUMNS,
+              alignItems: 'center',
+              minHeight: 56,
+              p: 0,
+              border: 0,
+              borderRadius: 1,
+              bgcolor: checked
+                ? `rgba(${theme.vars.palette.primary.mainChannel} / 0.1)`
+                : 'transparent',
+              color: 'inherit',
+              font: 'inherit',
+              textAlign: 'left',
+              cursor: 'pointer',
+              '& .line': {
+                bgcolor: checked ? 'primary.main' : 'text.disabled',
+              },
+              '&:hover': {
+                bgcolor: `rgba(${theme.vars.palette.primary.mainChannel} / ${checked ? 0.14 : 0.05})`,
+              },
+              '&:hover .line': { bgcolor: 'primary.main' },
+              '&:focus-visible': {
+                outline: `2px solid ${theme.vars.palette.primary.main}`,
+                outlineOffset: -2,
+              },
+            })}
+          >
+            <Box
+              className="tabular"
+              sx={{
+                pl: 1,
+                fontFamily: displayFont,
+                lineHeight: 1.2,
+                whiteSpace: 'nowrap',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                alignSelf: 'stretch',
+                py: 0.5,
+              }}
+            >
+              <Box component="span" sx={{ fontWeight: 650 }}>
+                {format.time(drive.start)}
+              </Box>
+              <Box component="span" sx={{ color: 'text.secondary' }}>
+                {format.time(drive.end)}
+              </Box>
+            </Box>
+            <Box
+              aria-hidden
+              className="line"
+              sx={{
+                justifySelf: 'center',
+                alignSelf: 'stretch',
+                width: 6,
+                borderRadius: 3,
+                transition: 'background-color 120ms',
+              }}
+            />
+            <Typography
+              component="span"
+              variant="body2"
+              sx={{ pl: 1, color: 'text.secondary' }}
+            >
+              {duration(minutes(drive))}, {format.distance(drive.distance, 1)}
+            </Typography>
+          </Box>
+          {(addTrip || onDelete) && (
+            <Stack direction="row" sx={{ alignItems: 'center' }}>
+              {addTrip && (
+                <Tooltip title={t('track.drives.addTrip')}>
+                  <IconButton
+                    aria-label={t('track.drives.addTripLabel', {
+                      drive: label,
+                    })}
+                    onClick={() => onAddTrip(drive)}
+                    sx={{ color: 'text.secondary' }}
+                  >
+                    <AddRoadRounded />
+                  </IconButton>
+                </Tooltip>
+              )}
+              {onDelete && (
+                <Tooltip title={t('track.drives.delete')}>
+                  <IconButton
+                    aria-label={t('track.drives.deleteLabel', {
+                      drive: label,
+                    })}
+                    onClick={() => onDelete(drive)}
+                    sx={{ color: 'text.secondary' }}
+                  >
+                    <DeleteOutlineRounded />
+                  </IconButton>
+                </Tooltip>
+              )}
+            </Stack>
+          )}
+        </Box>
+        <Stop name={drive.to} parked={parked ? duration(parked) : undefined} />
+      </Box>
+    );
+  };
 
   return (
     <Box data-testid="track-drives">
       <Stack
         direction="row"
         spacing={1}
-        sx={{ alignItems: 'center', justifyContent: 'space-between', mb: 0.5 }}
+        sx={{ alignItems: 'center', justifyContent: 'space-between', mb: 1 }}
       >
-        <Typography sx={{ fontWeight: 600 }}>
+        <Typography variant="h6" component="h3">
           {selected.length
             ? t('track.drives.selected', {
                 count: selected.length,
@@ -93,98 +280,44 @@ export default function DriveList({
           {t('track.drives.empty')}
         </Typography>
       ) : (
-        <List
-          dense
-          disablePadding
-          onMouseLeave={() => onHover(undefined)}
-          sx={{ maxHeight: 420, overflow: 'auto' }}
-        >
+        <Stack spacing={3} onMouseLeave={() => onHover(undefined)}>
           {byDay(drives).map(({ day, drives: ofDay }) => (
-            <li key={day}>
-              <ul style={{ padding: 0 }}>
-                <ListSubheader sx={{ lineHeight: '32px', px: 1 }}>
-                  {format.date(day)}
-                </ListSubheader>
-                {ofDay.map((drive) => {
-                  const checked = selected.includes(drive.start);
-                  const label = title(drive);
-                  const addTrip = onAddTrip && !drive.trip;
-                  const actions = (addTrip ? 1 : 0) + (onDelete ? 1 : 0);
-                  return (
-                    <ListItem
-                      key={drive.start}
-                      disablePadding
-                      data-testid="track-drive"
-                      secondaryAction={
-                        actions > 0 && (
-                          <Stack direction="row">
-                            {addTrip && (
-                              <Tooltip title={t('track.drives.addTrip')}>
-                                <IconButton
-                                  edge={onDelete ? undefined : 'end'}
-                                  aria-label={t('track.drives.addTripLabel', {
-                                    drive: label,
-                                  })}
-                                  onClick={() => onAddTrip(drive)}
-                                >
-                                  <AddRoadRounded />
-                                </IconButton>
-                              </Tooltip>
-                            )}
-                            {onDelete && (
-                              <Tooltip title={t('track.drives.delete')}>
-                                <IconButton
-                                  edge="end"
-                                  aria-label={t('track.drives.deleteLabel', {
-                                    drive: label,
-                                  })}
-                                  onClick={() => onDelete(drive)}
-                                >
-                                  <DeleteOutlineRounded />
-                                </IconButton>
-                              </Tooltip>
-                            )}
-                          </Stack>
-                        )
-                      }
-                      onMouseEnter={() => onHover(drive)}
-                    >
-                      <ListItemButton
-                        role={undefined}
-                        selected={checked}
-                        onClick={() => onToggle(drive)}
-                        onFocus={() => onHover(drive)}
-                        onBlur={() => onHover(undefined)}
-                        // room for the buttons on the right, 48px for one
-                        sx={{
-                          borderRadius: 1,
-                          ...(actions > 0 && { pr: actions * 5 + 1 }),
-                        }}
-                      >
-                        <ListItemIcon sx={{ minWidth: 36 }}>
-                          <Checkbox
-                            edge="start"
-                            size="small"
-                            checked={checked}
-                            tabIndex={-1}
-                            disableRipple
-                            slotProps={{
-                              input: { 'aria-label': label },
-                            }}
-                          />
-                        </ListItemIcon>
-                        <ListItemText
-                          primary={label}
-                          secondary={details(drive)}
-                        />
-                      </ListItemButton>
-                    </ListItem>
-                  );
-                })}
-              </ul>
-            </li>
+            <Box component="section" key={day} aria-label={dayName(day)}>
+              <Stack
+                direction="row"
+                spacing={1}
+                sx={{
+                  alignItems: 'baseline',
+                  justifyContent: 'space-between',
+                  pb: 0.75,
+                  mb: 0.5,
+                  borderBottom: 1,
+                  borderColor: 'divider',
+                }}
+              >
+                <Typography
+                  component="h4"
+                  sx={{ fontFamily: displayFont, fontWeight: 650 }}
+                >
+                  {dayName(day)}
+                </Typography>
+                <Typography
+                  className="tabular"
+                  variant="body2"
+                  sx={{ color: 'text.secondary', whiteSpace: 'nowrap' }}
+                >
+                  {format.distance(
+                    ofDay.reduce((sum, drive) => sum + drive.distance, 0),
+                    1,
+                  )}
+                </Typography>
+              </Stack>
+              <Box component="ol" sx={{ listStyle: 'none', m: 0, p: 0 }}>
+                {legsOf(ofDay).map(leg)}
+              </Box>
+            </Box>
           ))}
-        </List>
+        </Stack>
       )}
     </Box>
   );

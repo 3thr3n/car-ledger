@@ -44,6 +44,9 @@ export const fonts = {
   },
 };
 
+/** the amber of the totals on the dark panels, like the lit figures of a cluster */
+export const CLUSTER_AMBER = '#f5a524';
+
 /** the face of the figures and headlines, in the color scheme shown */
 export const displayFont = 'var(--app-font-display)';
 

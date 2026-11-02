@@ -13,11 +13,8 @@ import { RouterButton } from '@/components/ui/links';
 import { CarPlate } from '@/components/layout/CarAvatar';
 import Gauge from '@/components/car/Gauge';
 import { BillPaletteKey } from '@/utils/billTypes';
-import { displayFont } from '@/theme';
+import { CLUSTER_AMBER, displayFont } from '@/theme';
 import { SOURCE_URL } from '@/utils/source';
-
-/** the amber of the total on the dark panel, as in the cluster of a car */
-const AMBER = '#f5a524';
 
 interface Feature {
   key: string;
@@ -148,7 +145,7 @@ function ExampleCluster() {
               fontWeight: 700,
               fontSize: 'clamp(2.5rem, 2rem + 2vw, 3.5rem)',
               lineHeight: 1.05,
-              ...theme.applyStyles('dark', { color: AMBER }),
+              ...theme.applyStyles('dark', { color: CLUSTER_AMBER }),
             })}
           >
             {format.money(example.total)}

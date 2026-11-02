@@ -1,9 +1,6 @@
 import { Box, Typography } from '@mui/material';
 import { ReactNode } from 'react';
-import { displayFont } from '@/theme';
-
-/** the amber of the last value, the glow of the cluster in the dark theme */
-const AMBER = '#f5a524';
+import { CLUSTER_AMBER, displayFont } from '@/theme';
 
 const CX = 120;
 const CY = 140;
@@ -115,7 +112,7 @@ export default function Gauge({
             r={5}
             sx={(theme) => ({
               fill: theme.vars.palette.warning.main,
-              ...theme.applyStyles('dark', { fill: AMBER }),
+              ...theme.applyStyles('dark', { fill: CLUSTER_AMBER }),
             })}
           />
         )}

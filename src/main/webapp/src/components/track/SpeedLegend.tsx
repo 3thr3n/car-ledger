@@ -10,16 +10,21 @@ import {
 } from './speedScale';
 
 /** the speed scale of the track, in the distance unit of the account */
-export default function SpeedLegend() {
+export default function SpeedLegend({
+  stacked,
+}: {
+  /** below each other, e.g. in a panel on the map */
+  stacked?: boolean;
+}) {
   const { t } = useTranslation();
   const { units } = useFormat();
   const unit = `${units.distance.label}/h`;
 
   return (
     <Stack
-      direction={{ xs: 'column', sm: 'row' }}
-      spacing={{ xs: 1, sm: 3 }}
-      sx={{ flexGrow: 1, alignItems: { sm: 'center' } }}
+      direction={stacked ? 'column' : { xs: 'column', sm: 'row' }}
+      spacing={stacked ? 1 : { xs: 1, sm: 3 }}
+      sx={{ flexGrow: 1, alignItems: stacked ? undefined : { sm: 'center' } }}
       data-testid="speed-legend"
     >
       <ScaleLegend
