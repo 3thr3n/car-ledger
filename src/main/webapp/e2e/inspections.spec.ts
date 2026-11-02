@@ -57,6 +57,13 @@ test.describe.serial('HU', () => {
     await expect(inspection()).toContainText('No defects');
     await expect(inspection()).toContainText('DEKRA · 80,000 km');
     await expect(inspection()).toContainText(`Next HU ${nextMonth()}`);
+    // the sticker of the plate for the next one
+    const next = page.getByTestId('next-hu');
+    await expect(next).toContainText(nextMonth());
+    await expect(next).toContainText('In 24 months');
+    await expect(
+      next.getByRole('img', { name: `HU sticker, due in ${nextMonth()}` }),
+    ).toBeVisible();
 
     await page.getByRole('tab', { name: 'Reminders' }).click();
     await expect(

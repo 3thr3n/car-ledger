@@ -1397,6 +1397,13 @@ inspection:
   details: "Details"
   nextDue: "Next HU {{month}}"
   nextDueHint: "The reminder of the HU moves to this month."
+  sticker: "HU sticker, due in {{month}}"
+  due:
+    thisMonth: "Due this month"
+    inMonths_one: "In {{count}} month"
+    inMonths_other: "In {{count}} months"
+    overdue_one: "{{count}} month overdue"
+    overdue_other: "{{count}} months overdue"
   fields:
     date: "Date"
     odometer: "Odometer"

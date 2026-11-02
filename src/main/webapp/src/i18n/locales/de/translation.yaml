@@ -1397,6 +1397,13 @@ inspection:
   details: "Details"
   nextDue: "Nächste HU {{month}}"
   nextDueHint: "Die Erinnerung an die HU wird auf diesen Monat verschoben."
+  sticker: "HU-Plakette, fällig im {{month}}"
+  due:
+    thisMonth: "Fällig in diesem Monat"
+    inMonths_one: "In {{count}} Monat"
+    inMonths_other: "In {{count}} Monaten"
+    overdue_one: "{{count}} Monat überfällig"
+    overdue_other: "{{count}} Monate überfällig"
   fields:
     date: "Datum"
     odometer: "Kilometerstand"
