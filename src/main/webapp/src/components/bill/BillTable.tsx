@@ -25,6 +25,7 @@ import { previewUrl } from './attachments';
 import EmptyState from '@/components/ui/EmptyState';
 import { PageModel, SortModel } from '@/hooks/useBillList';
 import { visuallyHidden } from '@/components/ui/visuallyHidden';
+import { displayFont } from '@/theme';
 
 export interface MobileRow {
   primary: ReactNode;
@@ -245,7 +246,9 @@ export default function BillTable<
                   <Typography
                     className="tabular"
                     sx={{
+                      fontFamily: displayFont,
                       fontWeight: 650,
+                      fontSize: '1.0625rem',
                       flexShrink: 0,
                     }}
                   >
