@@ -280,10 +280,12 @@ export default function Sidebar({
                   onClick={onNavigate}
                   sx={{ borderRadius: 2, mb: 0.25, py: 0.75 }}
                 >
-                  <ListItemIcon sx={{ minWidth: 42 }}>
+                  {/* the plates are of different widths: a gap, not a column */}
+                  <ListItemIcon sx={{ minWidth: 0, mr: 1.25 }}>
                     <CarAvatar
                       id={car.id}
                       name={car.name}
+                      licensePlate={car.licensePlate}
                       pictureId={car.pictureId}
                       size={28}
                     />
