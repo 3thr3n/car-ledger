@@ -166,12 +166,14 @@ export default function DriveList({
               textAlign: 'left',
               cursor: 'pointer',
               '& .line': {
-                bgcolor: checked ? 'primary.main' : 'text.disabled',
+                bgcolor: checked
+                  ? theme.vars.palette.primary.main
+                  : theme.vars.palette.text.disabled,
               },
               '&:hover': {
                 bgcolor: `rgba(${theme.vars.palette.primary.mainChannel} / ${checked ? 0.14 : 0.05})`,
               },
-              '&:hover .line': { bgcolor: 'primary.main' },
+              '&:hover .line': { bgcolor: theme.vars.palette.primary.main },
               '&:focus-visible': {
                 outline: `2px solid ${theme.vars.palette.primary.main}`,
                 outlineOffset: -2,
