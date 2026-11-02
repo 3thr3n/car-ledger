@@ -77,9 +77,7 @@ test.describe.serial('GPS track', () => {
         .getByRole('group', { name: 'Period' })
         .getByRole('button', { name: 'Last 3 days' }),
     ).toHaveAttribute('aria-pressed', 'true');
-    await expect(
-      page.getByText('0.1 km GPS distance in 1 section'),
-    ).toBeVisible();
+    await expect(page.getByTestId('track-distance')).toContainText('0.1 km');
     await expect(page.getByTestId('track-map').locator('canvas')).toBeVisible();
 
     const legend = page.getByTestId('speed-legend');
@@ -124,10 +122,8 @@ test.describe.serial('GPS track', () => {
     await expect(enter).toBeVisible();
     await expect(remove).toBeVisible();
     await expect
-      .poll(
-        async () => (await page.getByTestId('track-map').boundingBox())?.height,
-      )
-      .toBeLessThan(500);
+      .poll(async () => (await area.boundingBox())?.y)
+      .toBeGreaterThan(100);
 
     await enter.click();
     await page.getByRole('button', { name: 'Leave the fullscreen' }).click();
@@ -292,9 +288,7 @@ test.describe.serial('GPS track', () => {
       86_400_000;
     expect(Math.round(days)).toBe(7);
     await expect(week).toHaveAttribute('aria-pressed', 'true');
-    await expect(
-      page.getByText('0.1 km GPS distance in 1 section'),
-    ).toBeVisible();
+    await expect(page.getByTestId('track-distance')).toContainText('0.1 km');
 
     await page.getByRole('button', { name: 'Earlier' }).click();
     await expect(shortcuts.getByRole('button', { pressed: true })).toHaveCount(
@@ -305,9 +299,7 @@ test.describe.serial('GPS track', () => {
     const last3 = shortcuts.getByRole('button', { name: 'Last 3 days' });
     await last3.click();
     await expect(last3).toHaveAttribute('aria-pressed', 'true');
-    await expect(
-      page.getByText('0.1 km GPS distance in 1 section'),
-    ).toBeVisible();
+    await expect(page.getByTestId('track-distance')).toContainText('0.1 km');
   });
 
   test('shows the track of a trip next to its odometer distance', async () => {
@@ -361,9 +353,7 @@ test.describe.serial('GPS track', () => {
       .getByRole('group', { name: 'Period' })
       .getByRole('button', { name: 'Today' })
       .click();
-    await expect(
-      page.getByText('0.1 km GPS distance in 1 section'),
-    ).toBeVisible();
+    await expect(page.getByTestId('track-distance')).toContainText('0.1 km');
     await page.getByRole('button', { name: 'Delete this track' }).click();
 
     const dialog = page.getByRole('dialog', { name: /^Delete the track of/ });
@@ -435,19 +425,17 @@ test.describe.serial('Drives of the GPS track', () => {
     await page.goto(`/car/${carId}/track`);
     const list = page.getByTestId('track-drives');
     await expect(list).toContainText('2 drives');
-    await expect(
-      page.getByText('1.6 km GPS distance in 2 sections'),
-    ).toBeVisible();
+    await expect(page.getByTestId('track-distance')).toContainText('1.6 km');
 
-    // the newest first
+    // each day from the morning on
     const drives = list.getByTestId('track-drive');
     await expect(drives).toHaveCount(2);
+    // the route of the day: parked between there and back
+    await expect(list).toContainText(/parked (58|59|60) min/);
     await drives.first().getByRole('checkbox').click();
 
     await expect(list).toContainText('1 of 2 drives shown');
-    await expect(
-      page.getByText('0.7 km GPS distance in 1 section'),
-    ).toBeVisible();
+    await expect(page.getByTestId('track-distance')).toContainText('0.7 km');
     await expect(page).toHaveURL(/drives=/);
     await expect(drives.first().getByRole('checkbox')).toBeChecked();
   });
@@ -457,16 +445,12 @@ test.describe.serial('Drives of the GPS track', () => {
 
     const list = page.getByTestId('track-drives');
     await expect(list).toContainText('1 of 2 drives shown');
-    await expect(
-      page.getByText('0.7 km GPS distance in 1 section'),
-    ).toBeVisible();
+    await expect(page.getByTestId('track-distance')).toContainText('0.7 km');
 
     await list.getByRole('button', { name: 'Show all' }).click();
     await expect(list).toContainText('2 drives');
     await expect(page).not.toHaveURL(/drives=/);
-    await expect(
-      page.getByText('1.6 km GPS distance in 2 sections'),
-    ).toBeVisible();
+    await expect(page.getByTestId('track-distance')).toContainText('1.6 km');
   });
 
   test('adds a drive as trip, prefilled', async () => {

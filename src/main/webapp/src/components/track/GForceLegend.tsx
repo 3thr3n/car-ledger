@@ -12,15 +12,20 @@ import {
  * The g-force scale of the track: the same colors for both sources, each
  * harsh from its own value
  */
-export default function GForceLegend() {
+export default function GForceLegend({
+  stacked,
+}: {
+  /** below each other, e.g. in a panel on the map */
+  stacked?: boolean;
+}) {
   const { t } = useTranslation();
   const g = (value: number) => `${value.toFixed(2)} g`;
 
   return (
     <Stack
-      direction={{ xs: 'column', sm: 'row' }}
-      spacing={{ xs: 1, sm: 3 }}
-      sx={{ flexGrow: 1, alignItems: { sm: 'center' } }}
+      direction={stacked ? 'column' : { xs: 'column', sm: 'row' }}
+      spacing={stacked ? 1 : { xs: 1, sm: 3 }}
+      sx={{ flexGrow: 1, alignItems: stacked ? undefined : { sm: 'center' } }}
       data-testid="gforce-legend"
     >
       <ScaleLegend

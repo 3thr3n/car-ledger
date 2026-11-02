@@ -533,9 +533,9 @@ tracker:
 
 track:
   title: "GPS-Strecken"
-  subtitle: "Die Strecken der GPS-Tracker dieses Autos"
-  summary_one: "{{distance}} GPS-Strecke in {{count}} Abschnitt"
-  summary_other: "{{distance}} GPS-Strecke in {{count}} Abschnitten"
+  gpsDistance: "GPS-Strecke"
+  atTheWheel: "GPS-Strecke, {{duration}} am Steuer"
+  legend: "Legende der Karte"
   shortcuts:
     label: "Zeitraum"
     today: "Heute"
@@ -593,6 +593,8 @@ track:
     unnamed: "Unbenannter Ort"
     minutes_one: "{{count}} Min."
     minutes_other: "{{count}} Min."
+    hours: "{{hours}} Std. {{minutes}} Min."
+    parked: "{{duration}} geparkt"
     delete: "Fahrt löschen"
     deleteLabel: "Fahrt {{drive}} löschen"
     addTrip: "Ins Fahrtenbuch eintragen"

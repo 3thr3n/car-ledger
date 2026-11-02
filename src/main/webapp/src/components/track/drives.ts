@@ -52,3 +52,45 @@ export function deleteRange(
   const next = drives[drives.indexOf(drive) - 1];
   return { from: drive.start, to: next?.start ?? periodEnd };
 }
+
+/** a drive of a day as a part of its route */
+export interface Leg {
+  drive: TrackDrive;
+  /**
+   * the place it starts from is shown: the first drive of the day, or the one
+   * before it ended at another place, e.g. the tracker was off on the way
+   */
+  departure: boolean;
+  /** whole minutes parked at its end until the next drive of the day */
+  parked?: number;
+}
+
+/**
+ * The drives of a day as its route, from the morning on: from stop to stop,
+ * each stop with the time parked there
+ *
+ * @param drives of one day, newest first, as the API lists them
+ */
+export function legsOf(drives: TrackDrive[]): Leg[] {
+  const route = [...drives].reverse();
+  return route.map((drive, index) => {
+    const before = route[index - 1];
+    const after = route[index + 1];
+    return {
+      drive,
+      departure: !before || before.to !== drive.from,
+      parked: after
+        ? Math.max(
+            0,
+            Math.round(dayjs(after.start).diff(drive.end, 'second') / 60),
+          )
+        : undefined,
+    };
+  });
+}
+
+/** the minutes as hours and minutes, e.g. for 125: 2 h 5 min */
+export const hoursOf = (total: number) => ({
+  hours: Math.floor(total / 60),
+  minutes: total % 60,
+});
