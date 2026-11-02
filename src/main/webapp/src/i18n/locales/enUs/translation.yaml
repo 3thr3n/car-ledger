@@ -734,7 +734,6 @@ bill:
   add:
     button: "Add entry"
     title: "New entry"
-    subtitle: "Choose what kind of receipt you want to record."
     saveAgain: "Save and add another"
     saved: "Entry saved"
     describe:

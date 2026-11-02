@@ -1,4 +1,4 @@
-import { Box, ButtonBase, Card, Grid, Stack, Typography } from '@mui/material';
+import { Box, ButtonBase, Card, Typography } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { can } from '@/utils/carRole';
@@ -47,71 +47,66 @@ export default function AddBillPage({
 
   return (
     <Box id="AddBillPage" sx={{ maxWidth: 860 }}>
-      <PageHeader
-        title={t('bill.add.title')}
-        subtitle={t('bill.add.subtitle')}
-      />
+      <PageHeader title={t('bill.add.title')} />
 
-      <Grid container spacing={1.5} sx={{ mb: 3 }} role="radiogroup">
+      {/* one row of the kinds: the form starts high on a phone */}
+      <Box
+        role="radiogroup"
+        aria-label={t('bill.fields.type')}
+        sx={{
+          display: 'flex',
+          gap: 1,
+          flexWrap: { xs: 'nowrap', sm: 'wrap' },
+          overflowX: 'auto',
+          scrollbarWidth: 'none',
+          // the focus ring of the first one isn't cut off
+          p: '3px',
+          m: '-3px',
+          mb: 2.5,
+        }}
+      >
         {types.map((meta) => {
           const selected = meta.type === type;
           return (
-            <Grid
+            <ButtonBase
               key={meta.type}
-              size={{ xs: 6, sm: types.length > 4 ? 12 / 5 : 3 }}
+              role="radio"
+              aria-checked={selected}
+              onClick={() => onTypeChange(meta.type)}
+              sx={(theme) => ({
+                flexShrink: 0,
+                gap: 1,
+                minHeight: 44,
+                pl: 1.25,
+                pr: 2,
+                borderRadius: 22,
+                border: 1,
+                borderColor: selected
+                  ? theme.vars.palette[meta.color].main
+                  : theme.vars.palette.divider,
+                bgcolor: selected
+                  ? `rgba(${theme.vars.palette[meta.color].mainChannel} / 0.12)`
+                  : theme.vars.palette.background.paper,
+                fontWeight: 600,
+                transition: 'border-color .15s, background-color .15s',
+                '&:focus-visible': {
+                  outline: `2px solid ${theme.vars.palette.primary.main}`,
+                  outlineOffset: 2,
+                },
+                '& .kind': {
+                  display: 'flex',
+                  ...categoryInk(theme, meta.color),
+                },
+              })}
             >
-              <ButtonBase
-                role="radio"
-                aria-checked={selected}
-                onClick={() => onTypeChange(meta.type)}
-                sx={(theme) => ({
-                  width: '100%',
-                  justifyContent: 'flex-start',
-                  p: 1.5,
-                  borderRadius: 3,
-                  border: 1.5,
-                  borderColor: selected
-                    ? theme.vars.palette[meta.color].main
-                    : theme.vars.palette.divider,
-                  backgroundColor: selected
-                    ? `rgba(${theme.vars.palette[meta.color].mainChannel} / 0.08)`
-                    : theme.vars.palette.background.paper,
-                  transition: 'border-color .15s, background-color .15s',
-                })}
-              >
-                <Stack
-                  direction="row"
-                  spacing={1.25}
-                  sx={{
-                    alignItems: 'center',
-                  }}
-                >
-                  <Box
-                    sx={(theme) => ({
-                      display: 'grid',
-                      placeItems: 'center',
-                      width: 30,
-                      height: 30,
-                      borderRadius: 2,
-                      ...categoryInk(theme, meta.color),
-                      backgroundColor: `rgba(${theme.vars.palette[meta.color].mainChannel} / 0.14)`,
-                    })}
-                  >
-                    {meta.icon}
-                  </Box>
-                  <Typography
-                    sx={{
-                      fontWeight: 600,
-                    }}
-                  >
-                    {t(`bill.types.${meta.type}`)}
-                  </Typography>
-                </Stack>
-              </ButtonBase>
-            </Grid>
+              <span className="kind" aria-hidden>
+                {meta.icon}
+              </span>
+              {t(`bill.types.${meta.type}`)}
+            </ButtonBase>
           );
         })}
-      </Grid>
+      </Box>
 
       <Card sx={{ p: { xs: 2, sm: 3 } }}>
         <Typography
