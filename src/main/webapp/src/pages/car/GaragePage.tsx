@@ -92,8 +92,9 @@ export default function GaragePage() {
                   <CarAvatar
                     id={car.id}
                     name={car.name}
+                    licensePlate={car.licensePlate}
                     pictureId={car.pictureId}
-                    size={48}
+                    size={40}
                   />
                   <Box sx={{ minWidth: 0 }}>
                     <Typography variant="h6" noWrap>

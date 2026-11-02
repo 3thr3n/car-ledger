@@ -19,7 +19,7 @@ import { BackendError } from '@/utils/BackendError';
 import { BillType, Car } from '@/generated';
 import { can, CarAction, isShared } from '@/utils/carRole';
 import { billTypes, billTypesFor } from '@/utils/billTypes';
-import CarAvatar from '@/components/layout/CarAvatar';
+import CarAvatar, { CarPlate } from '@/components/layout/CarAvatar';
 import useTrackMap from '@/components/track/useTrackMap';
 import OdometerValue from '@/components/ui/OdometerValue';
 import {
@@ -176,16 +176,29 @@ export default function CarLayout({ id }: { id: number }) {
                   maxWidth: '100%',
                 }}
               >
-                <CarAvatar
-                  id={car?.id}
-                  name={car?.name}
-                  pictureId={car?.pictureId}
-                  size={52}
-                />
+                {/* the own picture; the plate is next to the name, the
+                    initials would only repeat it */}
+                {car?.pictureId != null && (
+                  <CarAvatar
+                    id={car.id}
+                    name={car.name}
+                    pictureId={car.pictureId}
+                    size={52}
+                  />
+                )}
                 <Box sx={{ minWidth: 0 }}>
-                  <Typography variant="h4" component="h1" noWrap>
-                    {isLoading ? <Skeleton width={220} /> : car?.name}
-                  </Typography>
+                  <Stack
+                    direction="row"
+                    spacing={1.5}
+                    sx={{ alignItems: 'center', minWidth: 0 }}
+                  >
+                    <Typography variant="h4" component="h1" noWrap>
+                      {isLoading ? <Skeleton width={220} /> : car?.name}
+                    </Typography>
+                    {car?.licensePlate && (
+                      <CarPlate id={car.id} text={car.licensePlate} size={34} />
+                    )}
+                  </Stack>
                   <Typography
                     sx={{
                       color: 'text.secondary',
@@ -198,7 +211,6 @@ export default function CarLayout({ id }: { id: number }) {
                         {car &&
                           isShared(car) &&
                           `${t('car.shared', { role: t(`car.roles.${car.role}`) })} · `}
-                        {car?.licensePlate && `${car.licensePlate} · `}
                         {car?.year &&
                           `${t('car.built', { year: car.year })} · `}
                         {car?.energyType &&

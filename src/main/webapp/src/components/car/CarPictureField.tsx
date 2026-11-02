@@ -69,8 +69,26 @@ export default function CarPictureField({
     <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
       {pending ? (
         <PendingPicture file={pending} name={name} />
-      ) : (
+      ) : pictureId != null ? (
         <CarAvatar id={carId} name={name} pictureId={pictureId} size={SIZE} />
+      ) : (
+        <Box
+          aria-hidden
+          sx={{
+            width: SIZE,
+            height: SIZE,
+            flexShrink: 0,
+            display: 'grid',
+            placeItems: 'center',
+            borderRadius: `${SIZE / 4}px`,
+            border: 1,
+            borderStyle: 'dashed',
+            borderColor: 'text.secondary',
+            color: 'text.secondary',
+          }}
+        >
+          <PhotoCameraRounded />
+        </Box>
       )}
       <Box>
         <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap' }}>

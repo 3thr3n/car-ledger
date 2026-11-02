@@ -58,7 +58,11 @@ test.describe.serial('car ledger', () => {
     await page.getByRole('button', { name: 'Save' }).click();
 
     await expect(page).toHaveURL(/\/car\/\d+$/);
-    await expect(page.getByText(/^M-E2E 42 · Built/)).toBeVisible();
+    // the plate next to the name, no longer in the line below it
+    await expect(
+      page.locator('#main').getByText('M-E2E 42', { exact: true }),
+    ).toBeVisible();
+    await expect(page.getByText(/^Built 20\d\d · /)).toBeVisible();
     const details = page.locator('.MuiCard-root', {
       hasText: 'Purchase price',
     });
