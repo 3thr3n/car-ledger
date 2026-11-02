@@ -31,6 +31,13 @@ import jakarta.persistence.TypedQuery;
 @ApplicationScoped
 public class OdometerService
 {
+	/** the average a day starts at a reading about this many days before */
+	static final int RATE_DAYS = 90;
+	/** the reading of the average is at least this many days before */
+	static final int MIN_RATE_DAYS = 30;
+	/** a car without data for longer is not driven further */
+	static final int MAX_ESTIMATED_DAYS = 60;
+
 	private final EntityManager entityManager;
 
 	@Inject
@@ -95,7 +102,7 @@ public class OdometerService
 		Map<Long, Odometer> odometers = new HashMap<>();
 		readings.forEach((id, carReadings) -> odometers.put(id,
 				calculate(carReadings, refueled.getOrDefault(id, Collections.emptyNavigableMap()),
-						charged.getOrDefault(id, Collections.emptyNavigableMap()))));
+						charged.getOrDefault(id, Collections.emptyNavigableMap()), LocalDate.now())));
 		return odometers;
 	}
 
@@ -124,7 +131,7 @@ public class OdometerService
 	 * counts the larger one, not both.
 	 */
 	static Odometer calculate(List<Reading> readings, NavigableMap<LocalDate, Driven> refueledPerDay,
-			NavigableMap<LocalDate, Driven> chargedPerDay)
+			NavigableMap<LocalDate, Driven> chargedPerDay, LocalDate today)
 	{
 		// latest by day, the higher one on the same day
 		Reading base = readings.stream()
@@ -135,7 +142,49 @@ public class OdometerService
 		int driven = Math.max(0,
 				Math.max(drivenSince(readings, base, refueledPerDay), drivenSince(readings, base, chargedPerDay)));
 
-		return new Odometer(Math.max(base.value() + driven, highest), base.value(), base.date(), driven);
+		int value = Math.max(base.value() + driven, highest);
+
+		// the day of the latest data: the reading or a refuel after it
+		LocalDate known = base.date();
+		for (NavigableMap<LocalDate, Driven> drivenPerDay : List.of(refueledPerDay, chargedPerDay))
+		{
+			NavigableMap<LocalDate, Driven> after = drivenPerDay.tailMap(base.date(), false);
+			if (!after.isEmpty() && after.lastKey().isAfter(known))
+			{
+				known = after.lastKey();
+			}
+		}
+		BigDecimal perDay = perDay(readings, value, known);
+		Integer estimatedToday = null;
+		if (perDay != null)
+		{
+			long days = Math.clamp(ChronoUnit.DAYS.between(known, today), 0, MAX_ESTIMATED_DAYS);
+			estimatedToday = value + perDay.multiply(BigDecimal.valueOf(days))
+					.setScale(0, RoundingMode.HALF_UP)
+					.intValue();
+		}
+
+		return new Odometer(value, base.value(), base.date(), driven, perDay, estimatedToday);
+	}
+
+	/**
+	 * The average km a day up to the latest data, from the reading closest to
+	 * {@link #RATE_DAYS} before it and at least {@link #MIN_RATE_DAYS} before it
+	 *
+	 * @param value
+	 *            the odometer on the day of the latest data
+	 * @return with one decimal, none without such a reading
+	 */
+	private static BigDecimal perDay(List<Reading> readings, int value, LocalDate known)
+	{
+		LocalDate target = known.minusDays(RATE_DAYS);
+		return readings.stream()
+				.filter(reading -> !reading.date().isAfter(known.minusDays(MIN_RATE_DAYS)))
+				.min(Comparator.comparingLong(reading -> Math.abs(ChronoUnit.DAYS.between(target, reading.date()))))
+				.map(start -> BigDecimal.valueOf(Math.max(0, value - start.value()))
+						.divide(BigDecimal.valueOf(ChronoUnit.DAYS.between(start.date(), known)), 1,
+								RoundingMode.HALF_UP))
+				.orElse(null);
 	}
 
 	/**
