@@ -70,7 +70,7 @@ function StatusLight({
           minHeight: 44,
           color: 'text.primary',
           borderRadius: 1,
-          '& .light': {
+          '& .lamp': {
             display: 'flex',
             color: 'text.disabled',
             ...(tone === 'warn' && {
@@ -85,7 +85,9 @@ function StatusLight({
           '&:hover .title': { textDecoration: 'underline' },
         })}
       >
-        <span className="light" aria-hidden>
+        {/* not "light": the class of the light color scheme, its colors would
+            apply in the dark theme */}
+        <span className="lamp" aria-hidden>
           {icon}
         </span>
         <Box component="span" sx={{ minWidth: 0 }}>
