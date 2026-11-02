@@ -1214,7 +1214,7 @@ trip:
     hint: "Nur ein Hinweis: Das Fahrtenbuch zählt die Kilometerstände."
   list:
     title: "Fahrtenbuch"
-    subtitle: "Gestartete und beendete Fahrten, neueste zuerst"
+    subtitle: "Begonnene und beendete Fahrten nach Tag, der letzte Tag zuerst"
     emptyTitle: "Noch keine Fahrten"
     emptyText: "Fahrten, die du startest und beendest, erscheinen hier."
     date: "Datum"
@@ -1222,6 +1222,7 @@ trip:
     distance: "Strecke"
     details: "Ziel / Zweck"
     open: "offen"
+    gap: "{{distance}} nicht im Fahrtenbuch"
     deleted: "Gelöscht am {{date}}: {{reason}}"
     restored: "Aus einer Sicherung wiederhergestellt"
     enteredLater: "Nachgetragen"

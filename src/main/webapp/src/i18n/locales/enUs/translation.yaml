@@ -1214,7 +1214,7 @@ trip:
     hint: "Only a hint: the trip log counts the odometer readings."
   list:
     title: "Trip log"
-    subtitle: "Started and finished trips, newest first"
+    subtitle: "Started and finished trips by day, the latest day first"
     emptyTitle: "No trips yet"
     emptyText: "Trips you start and finish are listed here."
     date: "Date"
@@ -1222,6 +1222,7 @@ trip:
     distance: "Distance"
     details: "Destination / purpose"
     open: "open"
+    gap: "{{distance}} not in the log"
     deleted: "Deleted on {{date}}: {{reason}}"
     restored: "Restored from a backup"
     enteredLater: "Entered later"

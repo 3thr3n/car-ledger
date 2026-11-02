@@ -99,7 +99,10 @@ test.describe.serial('Trips suggested from the GPS tracks', () => {
 
     await expect(page.getByText('Trip added')).toBeVisible();
     await expect(
-      page.getByTestId('trip-list').getByRole('row', { name: /50,008 km/ }),
+      page
+        .getByTestId('trip-list')
+        .getByTestId('trip')
+        .filter({ hasText: /50,008 km/ }),
     ).toContainText('Entered later');
     // the window starts after the new trip
     await expect(suggestions).toHaveCount(1);
