@@ -1,8 +1,81 @@
-import { Box, InputBase, Typography } from '@mui/material';
+import { Box, InputBase, Theme, Typography } from '@mui/material';
 import { ReactNode, useId } from 'react';
 import { useTranslation } from 'react-i18next';
 import { NumericFormat } from 'react-number-format';
 import { CLUSTER_AMBER, displayFont } from '@/theme';
+
+/** the dark glass of a pump, sunk into the panel; the ring in the color */
+const darkGlass = (ring: string, width = 1) => ({
+  bgcolor: '#0a1018',
+  borderColor: 'transparent',
+  boxShadow: `inset 0 2px 10px rgba(0 0 0 / 0.6), 0 0 0 ${width}px ${ring}`,
+});
+
+/** the glass of the display: a bordered panel, the dark glass in the dark */
+const glassSx = (theme: Theme) => ({
+  px: 2,
+  borderRadius: '10px',
+  border: 1,
+  borderColor: 'divider',
+  ...theme.applyStyles('dark', darkGlass(theme.vars.palette.divider)),
+});
+
+/** a line of the display, a rule between two */
+const lineSx = {
+  display: 'grid',
+  alignItems: 'center',
+  columnGap: 2,
+  '& + &': { borderTop: 1, borderColor: 'divider' },
+} as const;
+
+/** the figure of a line, lit amber in the dark */
+const figureSx = (theme: Theme) => ({
+  fontFamily: displayFont,
+  fontWeight: 700,
+  lineHeight: 1.2,
+  fontVariantNumeric: 'tabular-nums',
+  textAlign: 'right' as const,
+  ...theme.applyStyles('dark', { color: CLUSTER_AMBER }),
+});
+
+/** a line of a pump that only shows: what it counts and the figure */
+export function PumpReading({
+  label,
+  value,
+}: {
+  label: ReactNode;
+  value: ReactNode;
+}) {
+  return (
+    <Box
+      sx={{ ...lineSx, gridTemplateColumns: 'minmax(0, 1fr) auto', py: 0.75 }}
+    >
+      <Typography component="dt" sx={{ color: 'text.secondary' }}>
+        {label}
+      </Typography>
+      <Typography
+        component="dd"
+        sx={(theme) => ({
+          ...figureSx(theme),
+          m: 0,
+          fontSize: { xs: '1.5rem', sm: '1.75rem' },
+          whiteSpace: 'nowrap',
+        })}
+      >
+        {value}
+      </Typography>
+    </Box>
+  );
+}
+
+/** the display of a pump to read, its lines {@link PumpReading} */
+export function PumpReadings({ children }: { children: ReactNode }) {
+  return (
+    <Box component="dl" sx={(theme) => ({ ...glassSx(theme), m: 0, py: 0.75 })}>
+      {children}
+    </Box>
+  );
+}
 
 export interface PumpLineProps {
   label: string;
@@ -40,12 +113,9 @@ export function PumpLine({
   return (
     <Box
       sx={{
-        display: 'grid',
+        ...lineSx,
         gridTemplateColumns: 'minmax(0, auto) minmax(0, 1fr)',
-        alignItems: 'center',
-        columnGap: 2,
         py: 1,
-        '& + &': { borderTop: 1, borderColor: 'divider' },
       }}
     >
       <Typography
@@ -77,14 +147,9 @@ export function PumpLine({
         }}
         sx={(theme) => ({
           '& input': {
+            ...figureSx(theme),
             p: 0,
-            textAlign: 'right',
-            fontFamily: displayFont,
-            fontWeight: 700,
             fontSize: { xs: '1.625rem', sm: '1.875rem' },
-            lineHeight: 1.2,
-            fontVariantNumeric: 'tabular-nums',
-            ...theme.applyStyles('dark', { color: CLUSTER_AMBER }),
             '&::placeholder': {
               color: 'text.secondary',
               opacity: computed ? 0.85 : 0.4,
@@ -128,26 +193,26 @@ export default function Pump({
         role="group"
         aria-label={label}
         aria-describedby={error ? errorId : undefined}
-        sx={(theme) => ({
-          px: 2,
-          py: 0.5,
-          borderRadius: '10px',
-          border: 1,
-          borderColor: error ? 'error.main' : 'divider',
-          '&:focus-within': {
-            borderColor: error ? 'error.main' : 'primary.main',
-            boxShadow: `0 0 0 1px ${error ? theme.vars.palette.error.main : theme.vars.palette.primary.main}`,
-          },
-          // the glass of the pump, sunk into the panel
-          ...theme.applyStyles('dark', {
-            bgcolor: '#0a1018',
-            borderColor: error ? 'error.main' : 'transparent',
-            boxShadow: `inset 0 2px 10px rgba(0 0 0 / 0.6), 0 0 0 1px ${error ? theme.vars.palette.error.main : theme.vars.palette.divider}`,
+        sx={(theme) => {
+          const ring = error
+            ? theme.vars.palette.error.main
+            : theme.vars.palette.primary.main;
+          return {
+            ...glassSx(theme),
+            py: 0.5,
+            ...(error && { borderColor: 'error.main' }),
             '&:focus-within': {
-              boxShadow: `inset 0 2px 10px rgba(0 0 0 / 0.6), 0 0 0 2px ${error ? theme.vars.palette.error.main : theme.vars.palette.primary.main}`,
+              borderColor: ring,
+              boxShadow: `0 0 0 1px ${ring}`,
             },
-          }),
-        })}
+            // one block of the dark scheme: a second one would replace the
+            // glass of glassSx under the same selector
+            ...theme.applyStyles('dark', {
+              ...darkGlass(error ? ring : theme.vars.palette.divider),
+              '&:focus-within': darkGlass(ring, 2),
+            }),
+          };
+        }}
       >
         {children}
       </Box>

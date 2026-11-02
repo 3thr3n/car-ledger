@@ -1,10 +1,10 @@
 import { Box, Skeleton, Typography } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
-import { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BillType, DashboardStats } from '@/generated';
 import { getDashboardStatsOptions } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
+import { PumpReading, PumpReadings } from './Pump';
 import { hasValue, useFormat } from '@/utils/format';
 import { CLUSTER_AMBER, displayFont } from '@/theme';
 
@@ -13,42 +13,6 @@ export type SummaryType =
   | BillType.CHARGING
   | BillType.MAINTENANCE
   | BillType.MISCELLANEOUS;
-
-/** a line of the pump: what it counts and the figure, lit in the dark */
-function PumpLine({ label, value }: { label: ReactNode; value: ReactNode }) {
-  return (
-    <Box
-      sx={{
-        display: 'grid',
-        gridTemplateColumns: 'minmax(0, 1fr) auto',
-        alignItems: 'baseline',
-        columnGap: 2,
-        py: 0.75,
-        '& + &': { borderTop: 1, borderColor: 'divider' },
-      }}
-    >
-      <Typography component="dt" sx={{ color: 'text.secondary' }}>
-        {label}
-      </Typography>
-      <Typography
-        component="dd"
-        className="tabular"
-        sx={(theme) => ({
-          m: 0,
-          fontFamily: displayFont,
-          fontWeight: 700,
-          fontSize: { xs: '1.5rem', sm: '1.75rem' },
-          lineHeight: 1.15,
-          textAlign: 'right',
-          whiteSpace: 'nowrap',
-          ...theme.applyStyles('dark', { color: CLUSTER_AMBER }),
-        })}
-      >
-        {value}
-      </Typography>
-    </Box>
-  );
-}
 
 /**
  * What the entries of the list cost in the year shown, or in all years: for
@@ -137,25 +101,12 @@ export default function CostSummary({
           alignItems: 'center',
         }}
       >
-        <Box
-          component="dl"
-          sx={(theme) => ({
-            m: 0,
-            px: 2,
-            py: 0.75,
-            borderRadius: '10px',
-            border: 1,
-            borderColor: 'divider',
-            // the glass of a pump: sunk into the panel
-            ...theme.applyStyles('dark', {
-              border: 0,
-              bgcolor: '#0a1018',
-              boxShadow: `inset 0 2px 10px rgba(0 0 0 / 0.6), 0 0 0 1px ${theme.vars.palette.divider}`,
-            }),
-          })}
-        >
-          <PumpLine label={t('bill.summary.paid')} value={format.money(paid)} />
-          <PumpLine
+        <PumpReadings>
+          <PumpReading
+            label={t('bill.summary.paid')}
+            value={format.money(paid)}
+          />
+          <PumpReading
             label={
               fuel
                 ? t('bill.fields.unit', {
@@ -169,7 +120,7 @@ export default function CostSummary({
                 : format.unit(total.chargedUnit, 'kWh', 1)
             }
           />
-          <PumpLine
+          <PumpReading
             label={
               fuel
                 ? t('bill.summary.averagePrice', {
@@ -183,7 +134,7 @@ export default function CostSummary({
                 : format.unit(average.chargingPricePerUnit, 'ct/kWh', 1)
             }
           />
-        </Box>
+        </PumpReadings>
         <Box>
           <Typography
             sx={{ fontFamily: displayFont, fontWeight: 650, mb: 0.25 }}
