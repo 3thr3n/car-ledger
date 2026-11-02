@@ -1310,6 +1310,8 @@ modification:
   removedAt: "Removed {{when}}"
   registered: "Entered in the registration certificate"
   notRegistered: "Not entered in the registration certificate"
+  papersComplete: "Papers complete"
+  allComplete: "all papers complete"
   open:
     inspection: "Abnahme open"
     registration: "Not in the registration yet"
