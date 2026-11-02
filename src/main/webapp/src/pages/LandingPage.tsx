@@ -1,26 +1,4 @@
-import {
-  Alert,
-  Box,
-  Button,
-  Card,
-  Container,
-  Grid,
-  Stack,
-  Typography,
-} from '@mui/material';
-import { alpha } from '@mui/material/styles';
-import ArrowForwardRounded from '@mui/icons-material/ArrowForwardRounded';
-import UploadFileRounded from '@mui/icons-material/UploadFileRounded';
-import InsightsRounded from '@mui/icons-material/InsightsRounded';
-import TuneRounded from '@mui/icons-material/TuneRounded';
-import FactCheckRounded from '@mui/icons-material/FactCheckRounded';
-import PictureAsPdfRounded from '@mui/icons-material/PictureAsPdfRounded';
-import NotificationsActiveRounded from '@mui/icons-material/NotificationsActiveRounded';
-import RouteRounded from '@mui/icons-material/RouteRounded';
-import GpsFixedRounded from '@mui/icons-material/GpsFixedRounded';
-import InstallMobileRounded from '@mui/icons-material/InstallMobileRounded';
-import BackupRounded from '@mui/icons-material/BackupRounded';
-import GroupRounded from '@mui/icons-material/GroupRounded';
+import { Alert, Box, Button, Container, Typography } from '@mui/material';
 import { ReactNode, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import useMe from '@/hooks/useMe';
@@ -29,110 +7,222 @@ import {
   wasAccountDeleted,
 } from '@/utils/accountDeleted';
 import { baseUrl } from '@/utils/QueryClient';
+import { useFormat } from '@/utils/format';
+import { scaleOf } from '@/utils/gauge';
 import { RouterButton } from '@/components/ui/links';
-import { billTypes, BillPaletteKey, categoryInk } from '@/utils/billTypes';
-import { BillType } from '@/generated';
+import { CarPlate } from '@/components/layout/CarAvatar';
+import Gauge from '@/components/car/Gauge';
+import { BillPaletteKey } from '@/utils/billTypes';
+import { displayFont } from '@/theme';
 import { SOURCE_URL } from '@/utils/source';
 
-/** a color of its own, for light and dark mode */
-interface Hue {
-  light: string;
-  dark: string;
-}
-
-/** the colors of the cards beyond the entry types, so neighbors differ */
-const hues = {
-  cyan: { light: '#0891b2', dark: '#22d3ee' },
-  orange: { light: '#ea580c', dark: '#fb923c' },
-  sky: { light: '#0284c7', dark: '#38bdf8' },
-  red: { light: '#dc2626', dark: '#f87171' },
-  indigo: { light: '#4f46e5', dark: '#818cf8' },
-  teal: { light: '#0d9488', dark: '#2dd4bf' },
-  lime: { light: '#65a30d', dark: '#a3e635' },
-  rose: { light: '#e11d48', dark: '#fb7185' },
-  slate: { light: '#475569', dark: '#94a3b8' },
-  emerald: { light: '#059669', dark: '#34d399' },
-  violet: { light: '#7c3aed', dark: '#a78bfa' },
-} satisfies Record<string, Hue>;
+/** the amber of the total on the dark panel, as in the cluster of a car */
+const AMBER = '#f5a524';
 
 interface Feature {
   key: string;
-  icon: ReactNode;
-  /** an entry type has the color of its lists */
-  color: BillPaletteKey | Hue;
+  /** a kind of entry keeps the color of its lists */
+  color?: BillPaletteKey;
 }
 
-/** the costs first, then the papers of the car, the road and the data */
-const features: Feature[] = [
-  { key: 'fuel', icon: billTypes[BillType.FUEL].icon, color: 'fuel' },
+/** the features in the groups a driver thinks in */
+const groups: { key: string; features: Feature[] }[] = [
   {
-    key: 'charging',
-    icon: billTypes[BillType.CHARGING].icon,
-    color: 'charging',
-  },
-  {
-    key: 'maintenance',
-    icon: billTypes[BillType.MAINTENANCE].icon,
-    color: 'maintenance',
-  },
-  {
-    key: 'recurring',
-    icon: billTypes[BillType.RECURRING].icon,
-    color: 'recurring',
-  },
-  {
-    key: 'miscellaneous',
-    icon: billTypes[BillType.MISCELLANEOUS].icon,
-    color: 'miscellaneous',
-  },
-  {
-    key: 'stats',
-    icon: <InsightsRounded fontSize="small" />,
-    color: hues.cyan,
-  },
-  {
-    key: 'modifications',
-    icon: <TuneRounded fontSize="small" />,
-    color: hues.orange,
-  },
-  {
-    key: 'inspections',
-    icon: <FactCheckRounded fontSize="small" />,
-    color: hues.sky,
+    key: 'costs',
+    features: [
+      { key: 'fuel', color: 'fuel' },
+      { key: 'charging', color: 'charging' },
+      { key: 'maintenance', color: 'maintenance' },
+      { key: 'recurring', color: 'recurring' },
+      { key: 'miscellaneous', color: 'miscellaneous' },
+      { key: 'stats' },
+    ],
   },
   {
     key: 'papers',
-    icon: <PictureAsPdfRounded fontSize="small" />,
-    color: hues.red,
+    features: [
+      { key: 'inspections' },
+      { key: 'modifications' },
+      { key: 'papers' },
+      { key: 'reminders' },
+    ],
   },
   {
-    key: 'reminders',
-    icon: <NotificationsActiveRounded fontSize="small" />,
-    color: hues.indigo,
-  },
-  { key: 'trips', icon: <RouteRounded fontSize="small" />, color: hues.teal },
-  { key: 'gps', icon: <GpsFixedRounded fontSize="small" />, color: hues.lime },
-  {
-    key: 'sharing',
-    icon: <GroupRounded fontSize="small" />,
-    color: hues.rose,
+    key: 'road',
+    features: [{ key: 'trips' }, { key: 'gps' }, { key: 'sharing' }],
   },
   {
-    key: 'offline',
-    icon: <InstallMobileRounded fontSize="small" />,
-    color: hues.slate,
-  },
-  {
-    key: 'import',
-    icon: <UploadFileRounded fontSize="small" />,
-    color: hues.emerald,
-  },
-  {
-    key: 'backup',
-    icon: <BackupRounded fontSize="small" />,
-    color: hues.violet,
+    key: 'data',
+    features: [{ key: 'offline' }, { key: 'import' }, { key: 'backup' }],
   },
 ];
+
+/** an example car of a year, in the units and the currency shown */
+const example = {
+  total: 2589.76,
+  costPerKm: 13.93,
+  perMonth: 215.81,
+  consumption: { value: 6.01, low: 4.97, high: 7.35, last: 4.97 },
+  distance: { value: 1549, low: 1319, high: 2158, last: 1493 },
+};
+
+function Readout({ label, value }: { label: ReactNode; value: ReactNode }) {
+  return (
+    <Box sx={{ textAlign: 'center', minWidth: 0 }}>
+      <Typography
+        component="dt"
+        variant="body2"
+        sx={{ color: 'text.secondary' }}
+      >
+        {label}
+      </Typography>
+      <Typography
+        component="dd"
+        className="tabular"
+        sx={{
+          m: 0,
+          fontFamily: displayFont,
+          fontWeight: 650,
+          fontSize: '1.25rem',
+          whiteSpace: 'nowrap',
+        }}
+      >
+        {value}
+      </Typography>
+    </Box>
+  );
+}
+
+/**
+ * What the page of a car looks like: the cluster of an example car, built from
+ * the parts of the app
+ */
+function ExampleCluster() {
+  const { t } = useTranslation();
+  const format = useFormat();
+  const { consumption, distance } = example;
+  return (
+    <Box
+      component="figure"
+      sx={{ m: 0, minWidth: 0 }}
+      aria-labelledby="example-caption"
+    >
+      <Box
+        sx={(theme) => ({
+          p: { xs: 2.5, sm: 3 },
+          bgcolor: 'background.paper',
+          border: 1,
+          borderColor: 'divider',
+          borderRadius: '12px',
+          ...theme.applyStyles('dark', {
+            border: 0,
+            borderRadius: '28px',
+            background: `radial-gradient(120% 90% at 50% 0%, #1c2836 0%, ${theme.vars.palette.background.paper} 70%)`,
+            boxShadow: `inset 0 0 0 1px ${theme.vars.palette.divider}`,
+          }),
+        })}
+      >
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1.25,
+            mb: 2.5,
+          }}
+        >
+          <CarPlate id={1} text="M-OC 2019" size={28} />
+          <Typography sx={{ fontWeight: 600 }}>
+            {t('landing.example.car')}
+          </Typography>
+        </Box>
+        <Box sx={{ textAlign: 'center' }}>
+          <Typography sx={{ color: 'text.secondary' }}>
+            {t('car.cluster.spent')}
+          </Typography>
+          <Typography
+            component="p"
+            className="tabular"
+            sx={(theme) => ({
+              m: 0,
+              fontFamily: displayFont,
+              fontWeight: 700,
+              fontSize: 'clamp(2.5rem, 2rem + 2vw, 3.5rem)',
+              lineHeight: 1.05,
+              ...theme.applyStyles('dark', { color: AMBER }),
+            })}
+          >
+            {format.money(example.total)}
+          </Typography>
+          <Box
+            component="dl"
+            sx={{
+              m: 0,
+              mt: 1,
+              display: 'inline-grid',
+              gridTemplateColumns: 'repeat(2, auto)',
+              columnGap: 4,
+            }}
+          >
+            <Readout
+              label={t('dashboard.summary.costPerKm', {
+                context: format.units.distance.context,
+              })}
+              value={format.costPerDistance(example.costPerKm)}
+            />
+            <Readout
+              label={t('car.cluster.perMonth')}
+              value={format.money(example.perMonth)}
+            />
+          </Box>
+        </Box>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+            columnGap: 2,
+            mt: 2.5,
+          }}
+        >
+          <Gauge
+            {...scaleOf(
+              [consumption.low, consumption.high, consumption.value],
+              1,
+            )}
+            value={consumption.value}
+            low={consumption.low}
+            high={consumption.high}
+            last={consumption.last}
+            text={format.number(consumption.value, 2)}
+            unit="l/100km"
+            label={t('car.cluster.consumptionLabel', {
+              value: format.consumption(consumption.value),
+            })}
+          />
+          <Gauge
+            {...scaleOf([distance.low, distance.high, distance.value], 500)}
+            value={distance.value}
+            low={distance.low}
+            high={distance.high}
+            last={distance.last}
+            text={format.number(distance.value, 0)}
+            unit={t('car.cluster.perMonthUnit', { unit: 'km' })}
+            label={t('car.cluster.distanceLabel', {
+              value: format.distance(distance.value),
+            })}
+          />
+        </Box>
+      </Box>
+      <Typography
+        id="example-caption"
+        component="figcaption"
+        variant="body2"
+        sx={{ color: 'text.secondary', mt: 1.25, textAlign: 'center' }}
+      >
+        {t('landing.example.caption')}
+      </Typography>
+    </Box>
+  );
+}
 
 export default function LandingPage() {
   const { t } = useTranslation();
@@ -143,122 +233,147 @@ export default function LandingPage() {
   useEffect(forgetAccountDeleted, []);
 
   return (
-    <Box id="LandingPage" sx={{ py: { xs: 5, md: 10 } }}>
-      <Container maxWidth="md">
+    <Box id="LandingPage" sx={{ py: { xs: 4, md: 8 } }}>
+      <Container maxWidth="lg">
         {accountDeleted && !loggedIn && (
           <Alert severity="success" sx={{ mb: 4 }}>
             {t('settings.deleteAccount.done')}
           </Alert>
         )}
-        <Stack
-          spacing={3}
+
+        <Box
+          component="section"
           sx={{
-            alignItems: 'flex-start',
-            mb: { xs: 6, md: 9 },
+            display: 'grid',
+            gridTemplateColumns: {
+              xs: '1fr',
+              md: 'minmax(0, 1fr) minmax(0, 1.05fr)',
+            },
+            columnGap: 8,
+            rowGap: 5,
+            alignItems: 'center',
+            mb: { xs: 8, md: 12 },
           }}
         >
-          <Typography variant="overline" color="primary">
-            {t('landing.eyebrow')}
-          </Typography>
-          <Typography
-            variant="h2"
-            component="h1"
-            sx={{
-              fontSize: { xs: '2.25rem', md: '3.25rem' },
-              textWrap: 'balance',
-            }}
-          >
-            {t('landing.title')}
-          </Typography>
-          <Typography
-            variant="h6"
-            component="p"
-            sx={{
-              color: 'text.secondary',
-              fontWeight: 400,
-              maxWidth: 560,
-            }}
-          >
-            {t('landing.subtitle')}
-          </Typography>
-          {loggedIn ? (
-            <RouterButton
-              to="/dashboard"
-              variant="contained"
-              size="large"
-              endIcon={<ArrowForwardRounded />}
+          <Box sx={{ minWidth: 0 }}>
+            <Typography
+              variant="h2"
+              component="h1"
+              sx={{
+                fontSize: { xs: '2.5rem', md: '3.75rem' },
+                lineHeight: 1.05,
+                textWrap: 'balance',
+                mb: 3,
+              }}
             >
-              {t('landing.ctaDashboard')}
-            </RouterButton>
-          ) : (
-            <Button
-              href={`${baseUrl}/api/auth/login`}
-              variant="contained"
-              size="large"
-              endIcon={<ArrowForwardRounded />}
+              {t('landing.title')}
+            </Typography>
+            <Typography
+              sx={{
+                color: 'text.secondary',
+                fontSize: '1.125rem',
+                maxWidth: '34rem',
+                mb: 4,
+              }}
             >
-              {t('landing.cta')}
-            </Button>
-          )}
-        </Stack>
+              {t('landing.subtitle')}
+            </Typography>
+            {loggedIn ? (
+              <RouterButton to="/dashboard" variant="contained" size="large">
+                {t('landing.ctaDashboard')}
+              </RouterButton>
+            ) : (
+              <Button
+                href={`${baseUrl}/api/auth/login`}
+                variant="contained"
+                size="large"
+              >
+                {t('landing.cta')}
+              </Button>
+            )}
+            <Typography
+              variant="body2"
+              sx={{ color: 'text.secondary', mt: 2, maxWidth: '34rem' }}
+            >
+              {t('landing.selfHosted')}
+            </Typography>
+          </Box>
+          <ExampleCluster />
+        </Box>
 
-        <Grid container spacing={2}>
-          {features.map((feature) => (
-            <Grid key={feature.key} size={{ xs: 12, sm: 6, md: 4 }}>
-              <Card sx={{ p: 2.5, height: '100%' }}>
-                <Box
-                  sx={(theme) => ({
-                    display: 'grid',
-                    placeItems: 'center',
-                    width: 36,
-                    height: 36,
-                    borderRadius: 2.5,
-                    mb: 1.5,
-                    ...(typeof feature.color === 'string'
-                      ? {
-                          ...categoryInk(theme, feature.color),
-                          backgroundColor: `rgba(${theme.vars.palette[feature.color].mainChannel} / 0.12)`,
-                        }
-                      : {
-                          color: feature.color.light,
-                          backgroundColor: alpha(feature.color.light, 0.12),
-                          ...theme.applyStyles('dark', {
-                            color: feature.color.dark,
-                            backgroundColor: alpha(feature.color.dark, 0.16),
-                          }),
-                        }),
-                  })}
-                >
-                  {feature.icon}
-                </Box>
-                <Typography
-                  variant="subtitle1"
-                  component="h2"
-                  sx={{
-                    fontWeight: 650,
-                  }}
-                >
-                  {t(`landing.features.${feature.key}.title`)}
-                </Typography>
-                <Typography
-                  variant="body2"
-                  sx={{
-                    color: 'text.secondary',
-                  }}
-                >
-                  {t(`landing.features.${feature.key}.text`)}
-                </Typography>
-              </Card>
-            </Grid>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', md: 'repeat(2, minmax(0, 1fr))' },
+            columnGap: 8,
+            rowGap: 7,
+          }}
+        >
+          {groups.map((group) => (
+            <Box
+              component="section"
+              key={group.key}
+              aria-labelledby={`group-${group.key}`}
+              sx={{ minWidth: 0 }}
+            >
+              <Typography
+                id={`group-${group.key}`}
+                variant="h5"
+                component="h2"
+                sx={{ fontFamily: displayFont, fontWeight: 650, mb: 2.5 }}
+              >
+                {t(`landing.groups.${group.key}`)}
+              </Typography>
+              <Box
+                component="ul"
+                sx={{
+                  listStyle: 'none',
+                  m: 0,
+                  p: 0,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 2.25,
+                }}
+              >
+                {group.features.map((feature) => (
+                  <Box
+                    component="li"
+                    key={feature.key}
+                    sx={{
+                      pl: 2,
+                      borderLeft: 3,
+                      borderColor: feature.color
+                        ? `${feature.color}.main`
+                        : 'divider',
+                    }}
+                  >
+                    <Typography
+                      component="h3"
+                      sx={{ fontWeight: 650, mb: 0.25 }}
+                    >
+                      {t(`landing.features.${feature.key}.title`)}
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{ color: 'text.secondary', maxWidth: '36rem' }}
+                    >
+                      {t(`landing.features.${feature.key}.text`)}
+                    </Typography>
+                  </Box>
+                ))}
+              </Box>
+            </Box>
           ))}
-        </Grid>
+        </Box>
 
         <Typography
           variant="body2"
           sx={{
             color: 'text.secondary',
-            mt: 6,
-            textAlign: 'center',
+            mt: { xs: 8, md: 12 },
+            pt: 3,
+            borderTop: 1,
+            borderColor: 'divider',
           }}
         >
           {t('app.openSource')}{' '}

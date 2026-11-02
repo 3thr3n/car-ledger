@@ -56,11 +56,19 @@ common:
   allYears: "Alle Jahre"
 
 landing:
-  eyebrow: "Fahrzeugkosten im Blick"
   title: "Wisse, was dein Auto wirklich kostet."
   subtitle: "Erfasse Tankungen, Ladungen, Werkstattbesuche, Versicherung und alles andere und hab die Papiere deines Autos immer dabei. CarLedger macht aus deinen Belegen Kosten pro Kilometer, Verbrauch und Trends."
   cta: "Anmelden und loslegen"
   ctaDashboard: "Zum Dashboard"
+  selfHosted: "Läuft auf deinem eigenen Server: deine Belege und Strecken bleiben bei dir."
+  example:
+    car: "Octavia Combi, Benzin"
+    caption: "Ein Beispiel: die Seite eines Autos nach einem Jahr mit Einträgen."
+  groups:
+    costs: "Alle Kosten des Autos"
+    papers: "Papiere und Termine"
+    road: "Unterwegs"
+    data: "Deine Daten"
   features:
     fuel:
       title: "Tanken"

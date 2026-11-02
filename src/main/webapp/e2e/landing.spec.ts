@@ -27,7 +27,16 @@ test('shows all features on the landing page', async ({ page }) => {
     'Backup',
   ]) {
     await expect(
-      page.locator('.MuiCard-root').getByText(feature, { exact: true }),
+      page.getByRole('heading', { name: feature, exact: true, level: 3 }),
     ).toBeVisible();
   }
+  // the groups and the example of the page of a car
+  await expect(
+    page.getByRole('heading', { name: 'Every cost of the car', level: 2 }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('figure', {
+      name: 'An example: the page of a car after a year of entries.',
+    }),
+  ).toBeVisible();
 });
