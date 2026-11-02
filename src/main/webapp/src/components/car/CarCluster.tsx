@@ -183,6 +183,8 @@ export default function CarCluster({
   });
 
   const total = stats?.total ?? {};
+  // null in the JSON without enough readings
+  const estimatedToday = car.currentOdometer.estimatedToday ?? undefined;
   // the API sends 0 for an average without entries: shown as missing
   const average = Object.fromEntries(
     Object.entries(stats?.average ?? {}).filter(([, value]) => hasValue(value)),
@@ -395,6 +397,20 @@ export default function CarCluster({
               value: format.distance(car.currentOdometer.value),
             })}
           />
+          {/* a guess by the average a day, the wheels keep the recorded value */}
+          {estimatedToday !== undefined &&
+            estimatedToday > car.currentOdometer.value && (
+              <Typography
+                variant="body2"
+                data-testid="odometer-today"
+                sx={{ color: 'text.secondary', textAlign: 'center' }}
+              >
+                {t('car.cluster.estimatedToday', {
+                  value: format.distance(estimatedToday),
+                  perDay: format.distance(car.currentOdometer.perDay),
+                })}
+              </Typography>
+            )}
         </Box>
 
         <Box sx={{ gridArea: 'right', minWidth: 0 }}>

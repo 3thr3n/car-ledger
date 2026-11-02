@@ -676,6 +676,8 @@ export type Odometer = {
     reading: number;
     readingDate: LocalDate;
     driven: number;
+    perDay?: number;
+    estimatedToday?: number;
 };
 
 export type OffsetDateTime = string;

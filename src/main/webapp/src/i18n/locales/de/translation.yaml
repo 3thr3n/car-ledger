@@ -260,6 +260,7 @@ car:
     perMonth: "Pro Monat"
     perMonthUnit: "{{unit}} im Monat"
     odometer: "Kilometerstand {{value}}"
+    estimatedToday: "Heute etwa {{value}}, {{perDay}} am Tag"
     low: "Tief"
     high: "Hoch"
     consumptionLabel: "Verbrauch im Schnitt {{value}}"

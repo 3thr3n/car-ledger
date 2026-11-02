@@ -1804,6 +1804,13 @@
           "driven" : {
             "type" : "integer",
             "format" : "int32"
+          },
+          "perDay" : {
+            "type" : "number"
+          },
+          "estimatedToday" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         }
       },
