@@ -125,16 +125,17 @@ dashboard:
       last12: "Last 12 months"
       custom: "Custom"
   kpi:
-    fuelVolume: "{{value}} fuel"
     chargingConsumption: "{{value}} electric"
     chargedVolume: "{{value}} charged"
-    bothVolumes: "{{fuel}} fuel · {{charged}} charged"
   summary:
     label: "Summary of the period"
-    spent: "<b>{{total}}</b> spent"
-    perDistance: "<b>{{cost}}</b> over <b>{{distance}}</b> tracked"
-    distance: "Over <b>{{distance}}</b> tracked"
-    consumption: "{{value}} on average"
+    spent: "Spent"
+    costPerKm: "Cost per km"
+    costPerKm_miles: "Cost per mile"
+    distance: "Tracked distance"
+    consumption: "Avg. consumption"
+    fuel: "Fuel tanked"
+    charged: "Charged"
   split:
     title: "Cost breakdown"
     count_one: "{{count}} entry"
