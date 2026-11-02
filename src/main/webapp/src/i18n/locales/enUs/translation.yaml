@@ -889,9 +889,17 @@ backup:
 settings:
   title: "Settings"
   subtitle: "Preferences of your account, on every device."
-  entries: "Entries"
+  index: "Sections of the settings"
+  sections:
+    look: "Look"
+    entries: "Entries and units"
+    notifications: "Notifications"
+    app: "App"
+    backup: "Backup"
+    account: "Account"
+  entriesText: "How amounts, distances and new entries are shown, for every device of your account."
+  languageHelp: "The language of the menus and texts. Without a choice, the one of the browser."
   vatHelp: "Preselected for new entries, can be changed per entry"
-  display: "Display"
   currency: "Currency"
   currencyHelp: "Amounts are shown like {{example}}. Existing entries are not converted."
   units: "Units"
@@ -908,6 +916,13 @@ settings:
   saved: "Settings saved"
   appearance:
     title: "Appearance"
+    lookText: "Light like road signs, dark like the instruments at night, or automatic like the device. Only on this device."
+    look: "Look of the app"
+    modes:
+      light: "Light"
+      dark: "Dark"
+      system: "Automatic"
+    accent: "Accent color"
     text: "The accent color of buttons, links and highlights, saved with your account. The colors of the categories stay."
     accents:
       TEAL: "Teal"

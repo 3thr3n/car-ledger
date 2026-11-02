@@ -889,9 +889,17 @@ backup:
 settings:
   title: "Einstellungen"
   subtitle: "Vorgaben deines Kontos, auf allen Geräten."
-  entries: "Einträge"
+  index: "Bereiche der Einstellungen"
+  sections:
+    look: "Aussehen"
+    entries: "Einträge und Einheiten"
+    notifications: "Benachrichtigungen"
+    app: "App"
+    backup: "Sicherung"
+    account: "Konto"
+  entriesText: "Wie Beträge, Strecken und neue Einträge angezeigt werden, auf jedem Gerät deines Kontos."
+  languageHelp: "Die Sprache der Menüs und Texte. Ohne Auswahl die des Browsers."
   vatHelp: "Vorauswahl für neue Einträge, pro Eintrag änderbar"
-  display: "Anzeige"
   currency: "Währung"
   currencyHelp: "Beträge werden wie {{example}} angezeigt. Bestehende Einträge werden nicht umgerechnet."
   units: "Einheiten"
@@ -908,6 +916,13 @@ settings:
   saved: "Einstellungen gespeichert"
   appearance:
     title: "Darstellung"
+    lookText: "Hell wie Verkehrsschilder, dunkel wie die Instrumente bei Nacht oder automatisch wie das Gerät. Nur auf diesem Gerät."
+    look: "Aussehen der App"
+    modes:
+      light: "Hell"
+      dark: "Dunkel"
+      system: "Automatisch"
+    accent: "Akzentfarbe"
     text: "Die Akzentfarbe von Schaltflächen, Links und Hervorhebungen, gespeichert mit deinem Konto. Die Farben der Kategorien bleiben."
     accents:
       TEAL: "Petrol"

@@ -1,13 +1,6 @@
-import {
-  Alert,
-  Box,
-  Button,
-  Card,
-  Link,
-  Stack,
-  Typography,
-} from '@mui/material';
+import { Alert, Box, Button, Link, Stack, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
+import Section from '@/components/ui/Section';
 import { isStandalone, useInstallPrompt } from '@/utils/install';
 import InstallSteps from '@/components/install/InstallSteps';
 import useVersion from '@/hooks/useVersion';
@@ -22,18 +15,15 @@ export default function InstallSection() {
   const version = useVersion();
 
   return (
-    <Card sx={{ p: 3, mt: 3 }}>
+    <Section
+      id="app"
+      title={t('install.section.title')}
+      subtitle={t(
+        standalone ? 'install.section.installed' : 'install.section.text',
+      )}
+      sx={{ mb: 3 }}
+    >
       <Stack spacing={1.5}>
-        <Box>
-          <Typography sx={{ fontWeight: 600 }}>
-            {t('install.section.title')}
-          </Typography>
-          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-            {t(
-              standalone ? 'install.section.installed' : 'install.section.text',
-            )}
-          </Typography>
-        </Box>
         {!standalone &&
           (install ? (
             <Box>
@@ -76,6 +66,6 @@ export default function InstallSection() {
           )
         )}
       </Stack>
-    </Card>
+    </Section>
   );
 }
