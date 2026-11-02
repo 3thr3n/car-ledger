@@ -2,6 +2,7 @@ package de.codeflowwizardry.carledger.rest;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.math.BigDecimal;
@@ -201,6 +202,60 @@ class OdometerTest
 				.statusCode(200)
 				.body("currentOdometer.value", is(51_200))
 				.body("currentOdometer.driven", is(300));
+	}
+
+	@Test
+	void shouldEstimateTheOdometerOfToday()
+	{
+		LocalDate today = LocalDate.now();
+		// the start of the average, about 90 days before the latest data
+		maintenance(today.minusDays(95), 51_000);
+		// 2,550 km in the 85 days up to the refuel: 30 a day
+		refuel(today.minusDays(10), 2_550);
+
+		given()
+				.when()
+				.get("{id}", carId)
+				.then()
+				.statusCode(200)
+				.body("currentOdometer.value", is(53_550))
+				.body("currentOdometer.perDay", is(30.0f))
+				// 10 days since the refuel
+				.body("currentOdometer.estimatedToday", is(53_850));
+	}
+
+	@Test
+	void shouldStopTheEstimateAfter60Days()
+	{
+		LocalDate today = LocalDate.now();
+		maintenance(today.minusDays(250), 51_000);
+		// 3,000 km in 100 days, 150 days ago: only 60 of them count
+		maintenance(today.minusDays(150), 54_000);
+
+		given()
+				.when()
+				.get("{id}", carId)
+				.then()
+				.statusCode(200)
+				.body("currentOdometer.value", is(54_000))
+				.body("currentOdometer.perDay", is(30.0f))
+				.body("currentOdometer.estimatedToday", is(55_800));
+	}
+
+	@Test
+	void shouldNotEstimateWithoutAnOlderReading()
+	{
+		// the reading of the car becomes today's
+		given()
+				.contentType(ContentType.JSON)
+				.body(Map.of("name", "Peters car", "year", 2020, "odometer", 52_000))
+				.when()
+				.post("{id}", carId)
+				.then()
+				.statusCode(200)
+				.body("currentOdometer.value", is(52_000))
+				.body("currentOdometer.perDay", nullValue())
+				.body("currentOdometer.estimatedToday", nullValue());
 	}
 
 	@Test
