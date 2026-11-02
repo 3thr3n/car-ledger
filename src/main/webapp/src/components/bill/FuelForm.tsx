@@ -1,4 +1,4 @@
-import { Alert, Box, Grid, Stack } from '@mui/material';
+import { Alert, Grid, Stack } from '@mui/material';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import dayjs, { Dayjs } from 'dayjs';
 import { SubmitEvent, useState } from 'react';
@@ -17,7 +17,7 @@ import useVatCountry from '@/hooks/useVatCountry';
 import NumberField from './NumberField';
 import DateVatFields from './DateVatFields';
 import FormActions from './FormActions';
-import Pump, { PumpLine } from './Pump';
+import Pump, { PumpLine, PumpWithFields } from './Pump';
 import BillAttachments from './BillAttachments';
 import useSaveBill from './useSaveBill';
 import { isOfflineError, offlineQueue } from '@/offline';
@@ -204,108 +204,99 @@ export default function FuelForm({
   return (
     <Stack component="form" onSubmit={submit} noValidate spacing={2.5}>
       {/* the receipt first: what the pump showed */}
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: {
-            xs: 'minmax(0, 1fr)',
-            md: 'minmax(0, 1.2fr) minmax(0, 1fr)',
-          },
-          gap: 2.5,
-          alignItems: 'start',
-        }}
-      >
-        <Pump
-          label={t('bill.fuelHint', { context: units.volume.context })}
-          error={touched ? errors.amounts : undefined}
-        >
-          <PumpLine
-            label={t('bill.fields.total')}
-            value={form.total}
-            onChange={(total) => set({ total })}
-            suffix={` ${format.currencySymbol}`}
-            max={MAX}
-            computed={
-              derived.total !== undefined
-                ? format.money(derived.total)
-                : undefined
-            }
-            helperText={
-              derived.total !== undefined
-                ? t('bill.computed', { value: format.money(derived.total) })
-                : undefined
-            }
-          />
-          <PumpLine
-            label={t('bill.fields.unit', { context: units.volume.context })}
-            value={form.unit}
-            onChange={(value) => set({ unit: value })}
-            suffix={` ${units.volume.label}`}
-            max={MAX}
-            computed={
-              derived.unit !== undefined
-                ? format.unit(derived.unit, units.volume.label, 2)
-                : undefined
-            }
-            helperText={computed(derived.unit, units.volume.label)}
-          />
-          <PumpLine
-            label={t('bill.fields.pricePerUnit', {
-              context: units.volume.context,
-            })}
-            value={form.pricePerUnit}
-            onChange={(pricePerUnit) => set({ pricePerUnit })}
-            suffix={` ${priceLabel}`}
-            decimalScale={units.fuelPrice.digits}
-            max={MAX}
-            computed={
-              derived.pricePerUnit !== undefined
-                ? format.unit(
-                    derived.pricePerUnit,
-                    priceLabel,
-                    units.fuelPrice.digits,
-                  )
-                : undefined
-            }
-            helperText={computed(
-              derived.pricePerUnit,
-              priceLabel,
-              units.fuelPrice.digits,
-            )}
-          />
-        </Pump>
-        <Grid container spacing={2}>
-          <Grid size={12}>
-            <NumberField
-              label={t('bill.fields.distance')}
-              value={form.distance}
-              onChange={(distance) => set({ distance })}
-              suffix={` ${units.distance.label}`}
-              decimalScale={1}
+      <PumpWithFields
+        pump={
+          <Pump
+            label={t('bill.fuelHint', { context: units.volume.context })}
+            error={touched ? errors.amounts : undefined}
+          >
+            <PumpLine
+              label={t('bill.fields.total')}
+              value={form.total}
+              onChange={(total) => set({ total })}
+              suffix={` ${format.currencySymbol}`}
               max={MAX}
+              computed={
+                derived.total !== undefined
+                  ? `${format.number(derived.total, 2)} ${format.currencySymbol}`
+                  : undefined
+              }
               helperText={
-                consumption !== undefined
-                  ? t('bill.consumption', {
-                      value: format.consumption(consumption),
-                    })
-                  : t('bill.distanceHelp', { context: units.distance.context })
+                derived.total !== undefined
+                  ? t('bill.computed', { value: format.money(derived.total) })
+                  : undefined
               }
             />
-          </Grid>
-          <Grid size={12}>
-            <NumberField
-              label={t('bill.fields.estimateConsumption')}
-              value={form.estimateConsumption}
-              onChange={(estimateConsumption) => set({ estimateConsumption })}
-              suffix={` ${units.consumption.label}`}
-              decimalScale={1}
-              // l/100km or mpg
-              max={1000}
-              helperText={t('bill.estimateHelp')}
+            <PumpLine
+              label={t('bill.fields.unit', { context: units.volume.context })}
+              value={form.unit}
+              onChange={(value) => set({ unit: value })}
+              suffix={` ${units.volume.label}`}
+              max={MAX}
+              computed={
+                derived.unit !== undefined
+                  ? format.unit(derived.unit, units.volume.label, 2)
+                  : undefined
+              }
+              helperText={computed(derived.unit, units.volume.label)}
             />
-          </Grid>
+            <PumpLine
+              label={t('bill.fields.pricePerUnit', {
+                context: units.volume.context,
+              })}
+              value={form.pricePerUnit}
+              onChange={(pricePerUnit) => set({ pricePerUnit })}
+              suffix={` ${priceLabel}`}
+              decimalScale={units.fuelPrice.digits}
+              max={MAX}
+              computed={
+                derived.pricePerUnit !== undefined
+                  ? format.unit(
+                      derived.pricePerUnit,
+                      priceLabel,
+                      units.fuelPrice.digits,
+                    )
+                  : undefined
+              }
+              helperText={computed(
+                derived.pricePerUnit,
+                priceLabel,
+                units.fuelPrice.digits,
+              )}
+            />
+          </Pump>
+        }
+      >
+        <Grid size={12}>
+          <NumberField
+            label={t('bill.fields.distance')}
+            value={form.distance}
+            onChange={(distance) => set({ distance })}
+            suffix={` ${units.distance.label}`}
+            decimalScale={1}
+            max={MAX}
+            helperText={
+              consumption !== undefined
+                ? t('bill.consumption', {
+                    value: format.consumption(consumption),
+                  })
+                : t('bill.distanceHelp', { context: units.distance.context })
+            }
+          />
         </Grid>
-      </Box>
+        <Grid size={12}>
+          <NumberField
+            label={t('bill.fields.estimateConsumption')}
+            value={form.estimateConsumption}
+            onChange={(estimateConsumption) => set({ estimateConsumption })}
+            suffix={` ${units.consumption.label}`}
+            decimalScale={1}
+            // l/100km or mpg
+            max={1000}
+            helperText={t('bill.estimateHelp')}
+          />
+        </Grid>
+      </PumpWithFields>
 
       {overTank && (
         <Alert severity="warning" variant="outlined">
