@@ -91,7 +91,9 @@ test.describe.serial('car ledger', () => {
 
     await expect(page).toHaveURL(/\/car\/\d+$/);
     await expect(page.getByText(/· Plug-in hybrid ·/)).toBeVisible();
-    const details = page.locator('.MuiCard-root', { hasText: 'Battery' });
+    const details = page.locator('.MuiCard-root', {
+      has: page.getByRole('heading', { name: 'Details' }),
+    });
     await expect(details).toContainText('Tank50.0 l');
     await expect(details).toContainText('Battery10.4 kWh');
   });

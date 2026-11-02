@@ -9,15 +9,14 @@ import { useTranslation } from 'react-i18next';
 import {
   getAllRecurringBillsOptions,
   getMyCarOptions,
-  getMyCarOverviewOptions,
+  getDashboardStatsOptions,
+  getMonthlyStatsOptions,
   getRemindersOptions,
 } from '@/generated/@tanstack/react-query.gen';
 import { baseUrl, localClient } from '@/utils/QueryClient';
 import { BillType, RecurringBillSort } from '@/generated';
-import { toApiDate, useFormat } from '@/utils/format';
-import { hasBattery, hasTank } from '@/utils/energy';
+import { num, toApiDate, useFormat } from '@/utils/format';
 import useBillList from '@/hooks/useBillList';
-import StatTile from '@/components/ui/StatTile';
 import Section from '@/components/ui/Section';
 import YearFilter from '@/components/ui/YearFilter';
 import EmptyState from '@/components/ui/EmptyState';
@@ -29,6 +28,8 @@ import MonthlyChart from '@/components/dashboard/LazyMonthlyChart';
 import ReminderList from '@/components/reminder/ReminderList';
 import CarDetails from '@/components/car/CarDetails';
 import PapersSummary from '@/components/car/PapersSummary';
+import CarCluster from '@/components/car/CarCluster';
+import TripComputer from '@/components/car/TripComputer';
 import { can } from '@/utils/carRole';
 
 /** the chart of the overview shows the current and the 11 months before */
@@ -42,8 +43,16 @@ export default function CarOverviewPage({ id }: { id: number }) {
   const format = useFormat();
   const params = { id: `${id}` };
 
-  const { data: overview, isLoading } = useQuery(
-    getMyCarOverviewOptions({ client: localClient, path: { id } }),
+  // the whole time of the car, and the months of the chart for the dials
+  const { data: stats, isLoading } = useQuery(
+    getDashboardStatsOptions({ client: localClient, path: { carId: id } }),
+  );
+  const { data: months } = useQuery(
+    getMonthlyStatsOptions({
+      client: localClient,
+      path: { carId: id },
+      query: lastTwelveMonths(),
+    }),
   );
 
   // loaded by the layout of the car already
@@ -75,80 +84,32 @@ export default function CarOverviewPage({ id }: { id: number }) {
     getRemindersOptions({ client: localClient, path: { carId: id } }),
   );
 
-  const fuelTiles = [
-    {
-      key: 'avgConsumption',
-      color: 'fuel',
-      value: format.consumption(overview?.avgConsumption),
-    },
-    {
-      key: 'refuels',
-      color: 'fuel',
-      value: overview?.totalRefuels ?? 0,
-    },
-  ] as const;
-  const chargingTiles = [
-    {
-      key: 'avgChargingConsumption',
-      color: 'charging',
-      value: format.chargingConsumption(overview?.avgChargingConsumption),
-    },
-    {
-      key: 'charges',
-      color: 'charging',
-      value: overview?.totalCharges ?? 0,
-    },
-  ] as const;
-
-  const tiles = [
-    {
-      key: 'totalCost',
-      value: format.money(overview?.totalCost),
-    },
-    ...(hasTank(car?.energyType) ? fuelTiles : []),
-    ...(hasBattery(car?.energyType) ? chargingTiles : []),
-    {
-      key: 'maintenance',
-      color: 'maintenance',
-      value: overview?.totalMaintenanceEvents ?? 0,
-    },
-    {
-      key: 'miscellaneous',
-      color: 'miscellaneous',
-      value: overview?.totalMiscellaneousEvents ?? 0,
-    },
-  ] as const;
-
   return (
     <Stack spacing={3}>
-      <Grid container spacing={2}>
-        {tiles.map((tile, index) => (
-          <Grid
-            key={tile.key}
-            // a plug-in hybrid has 7 tiles, too many for one row
-            size={{
-              xs: index === 0 ? 12 : 6,
-              sm: 4,
-              lg: tiles.length > 5 ? 3 : 'grow',
-            }}
-          >
-            <StatTile
-              loading={isLoading}
-              emphasis={index === 0}
-              color={'color' in tile ? tile.color : undefined}
-              label={t(`car.overview.${tile.key}`)}
-              value={tile.value}
-            />
-          </Grid>
-        ))}
-      </Grid>
+      {car && (
+        <CarCluster
+          car={car}
+          stats={stats}
+          months={months}
+          reminders={reminders}
+          running={running?.data}
+          loading={isLoading}
+        />
+      )}
 
-      <MonthlyChart
-        carId={id}
-        {...lastTwelveMonths()}
-        energyTypes={car && [car.energyType]}
-        subtitle={t('dashboard.filter.period.last12')}
-      />
+      <Grid container spacing={3}>
+        <Grid size={{ xs: 12, lg: 8 }}>
+          <MonthlyChart
+            carId={id}
+            {...lastTwelveMonths()}
+            energyTypes={car && [car.energyType]}
+            subtitle={t('dashboard.filter.period.last12')}
+          />
+        </Grid>
+        <Grid size={{ xs: 12, lg: 4 }}>
+          {car && <TripComputer car={car} stats={stats} loading={isLoading} />}
+        </Grid>
+      </Grid>
 
       <Grid container spacing={3}>
         <Grid size={{ xs: 12, lg: 8 }}>
@@ -340,7 +301,9 @@ export default function CarOverviewPage({ id }: { id: number }) {
                 />
               )}
             </Section>
-            {car && <CarDetails car={car} totalCost={overview?.totalCost} />}
+            {car && (
+              <CarDetails car={car} totalCost={num(stats?.total?.total)} />
+            )}
           </Stack>
         </Grid>
       </Grid>
