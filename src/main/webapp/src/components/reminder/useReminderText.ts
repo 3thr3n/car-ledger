@@ -8,28 +8,39 @@ export default function useReminderText() {
   const format = useFormat();
   const km = (value: number) => format.distance(value);
 
-  const dateText = (reminder: Reminder) => {
+  /** when by the date: the date and how far it is from today */
+  const dateParts = (reminder: Reminder) => {
     if (!reminder.dueDate || reminder.daysLeft == null) return undefined;
     const days = reminder.daysLeft;
-    const relative =
-      days < 0
-        ? t('reminder.due.daysOverdue', { count: -days })
-        : days === 0
-          ? t('reminder.due.today')
-          : t('reminder.due.inDays', { count: days });
-    return `${format.date(reminder.dueDate)} · ${relative}`;
+    return {
+      absolute: format.date(reminder.dueDate),
+      relative:
+        days < 0
+          ? t('reminder.due.daysOverdue', { count: -days })
+          : days === 0
+            ? t('reminder.due.today')
+            : t('reminder.due.inDays', { count: days }),
+    };
   };
 
-  const odometerText = (reminder: Reminder) => {
+  /** when by the mileage: the odometer and how far it is from now */
+  const odometerParts = (reminder: Reminder) => {
     if (reminder.dueOdometer == null || reminder.kmLeft == null)
       return undefined;
     const left = reminder.kmLeft;
-    const relative =
-      left <= 0
-        ? t('reminder.due.kmOverdue', { km: km(-left) })
-        : t('reminder.due.kmLeft', { km: km(left) });
-    return `${t('reminder.due.at', { km: km(reminder.dueOdometer) })} · ${relative}`;
+    return {
+      absolute: t('reminder.due.at', { km: km(reminder.dueOdometer) }),
+      relative:
+        left <= 0
+          ? t('reminder.due.kmOverdue', { km: km(-left) })
+          : t('reminder.due.kmLeft', { km: km(left) }),
+    };
   };
+
+  const joined = (parts?: { absolute: string; relative: string }) =>
+    parts && `${parts.absolute} · ${parts.relative}`;
+  const dateText = (reminder: Reminder) => joined(dateParts(reminder));
+  const odometerText = (reminder: Reminder) => joined(odometerParts(reminder));
 
   const repeatText = (reminder: Reminder) => {
     const parts = [
@@ -42,5 +53,5 @@ export default function useReminderText() {
       : undefined;
   };
 
-  return { dateText, odometerText, repeatText };
+  return { dateText, odometerText, dateParts, odometerParts, repeatText };
 }
