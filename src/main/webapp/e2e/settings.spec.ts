@@ -129,6 +129,25 @@ test.describe.serial('settings', () => {
     await expect(save).toHaveCSS('background-color', 'rgb(190, 18, 60)');
   });
 
+  test('switches between light and dark on this device', async ({ page }) => {
+    await page.goto('/settings');
+    const look = page.getByRole('radiogroup', { name: 'Look of the app' });
+    // the tiles are the labels of the radios
+    const choose = async (name: string) => {
+      await look.getByText(name, { exact: true }).click();
+      await expect(look.getByRole('radio', { name })).toBeChecked();
+    };
+    await choose('Dark');
+    await expect(page.locator('html')).toHaveClass(/dark/);
+    await choose('Light');
+    await expect(page.locator('html')).not.toHaveClass(/dark/);
+
+    // automatic follows the device
+    await page.emulateMedia({ colorScheme: 'dark' });
+    await choose('Automatic');
+    await expect(page.locator('html')).toHaveClass(/dark/);
+  });
+
   test('shows why no notifications can be sent', async ({ page }) => {
     // the users of the Keycloak dev service have no address, and the dev server
     // has no service worker for push

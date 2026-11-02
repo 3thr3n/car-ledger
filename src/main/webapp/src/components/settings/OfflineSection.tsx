@@ -1,6 +1,7 @@
-import { Box, Button, Card, Stack, Typography } from '@mui/material';
+import { Box, Button, Stack } from '@mui/material';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import Section from '@/components/ui/Section';
 import { offlineQueue } from '@/offline';
 import { useOthersQueued } from '@/offline/useQueued';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
@@ -17,16 +18,12 @@ export default function OfflineSection() {
   if (others.length === 0) return null;
 
   return (
-    <Card sx={{ p: 3, mt: 3 }} data-testid="offline-others">
-      <Stack spacing={1.5}>
-        <Box>
-          <Typography sx={{ fontWeight: 600 }}>
-            {t('offline.others.title')}
-          </Typography>
-          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-            {t('offline.others.text', { count: others.length })}
-          </Typography>
-        </Box>
+    <Section
+      title={t('offline.others.title')}
+      subtitle={t('offline.others.text', { count: others.length })}
+      sx={{ mb: 3 }}
+    >
+      <Stack spacing={1.5} data-testid="offline-others">
         <Box>
           <Button
             variant="outlined"
@@ -47,6 +44,6 @@ export default function OfflineSection() {
           others.forEach((entry) => void offlineQueue.discard(entry.id))
         }
       />
-    </Card>
+    </Section>
   );
 }

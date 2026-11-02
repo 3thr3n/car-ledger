@@ -1,9 +1,10 @@
-import { Box, Button, Card, Stack, Typography } from '@mui/material';
+import { Button, Stack, Typography } from '@mui/material';
 import FileDownloadRounded from '@mui/icons-material/FileDownloadRounded';
 import RestoreRounded from '@mui/icons-material/RestoreRounded';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { ChangeEvent, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import Section from '@/components/ui/Section';
 import { toast } from 'react-toastify';
 import {
   getMyCarsOptions,
@@ -63,14 +64,13 @@ export default function BackupSection() {
   };
 
   return (
-    <Card sx={{ p: 3, mt: 3 }}>
+    <Section
+      id="backup"
+      title={t('backup.title')}
+      subtitle={t('backup.text')}
+      sx={{ mb: 3 }}
+    >
       <Stack spacing={2}>
-        <Box>
-          <Typography sx={{ fontWeight: 600 }}>{t('backup.title')}</Typography>
-          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-            {t('backup.text')}
-          </Typography>
-        </Box>
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
           <Button
             href={backupUrl}
@@ -101,6 +101,6 @@ export default function BackupSection() {
         onChange={pick}
         data-testid="backup-input"
       />
-    </Card>
+    </Section>
   );
 }

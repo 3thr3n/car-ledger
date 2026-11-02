@@ -33,7 +33,7 @@ declare module '@mui/material/styles' {
  * cluster (Barlow Semi Condensed and Barlow). Both are CSS variables of the color
  * scheme, so a component names the role, not the face.
  */
-const fonts = {
+export const fonts = {
   light: {
     text: `"Inter Variable", "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif`,
     display: `"Overpass Variable", "Inter Variable", system-ui, sans-serif`,
