@@ -1,4 +1,4 @@
-import { Alert, Grid, MenuItem, Stack, TextField } from '@mui/material';
+import { Alert, Box, Grid, MenuItem, Stack, TextField } from '@mui/material';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import dayjs, { Dayjs } from 'dayjs';
 import { SubmitEvent, useState } from 'react';
@@ -17,6 +17,7 @@ import useVatCountry from '@/hooks/useVatCountry';
 import NumberField from './NumberField';
 import DateVatFields from './DateVatFields';
 import FormActions from './FormActions';
+import Pump, { PumpLine } from './Pump';
 import BillAttachments from './BillAttachments';
 import useSaveBill from './useSaveBill';
 import { isOfflineError, offlineQueue } from '@/offline';
@@ -182,106 +183,117 @@ export default function ChargingForm({
 
   return (
     <Stack component="form" onSubmit={submit} noValidate spacing={2.5}>
-      <Grid container spacing={2}>
-        <DateVatFields
-          date={form.date}
-          onDateChange={(date) => set({ date })}
-          vat={vat}
-          error={touched ? errors.date : undefined}
-        />
-      </Grid>
-
-      <Alert
-        severity={touched && errors.amounts ? 'error' : 'info'}
-        variant="outlined"
+      {/* the receipt first: what the charger showed */}
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: {
+            xs: 'minmax(0, 1fr)',
+            md: 'minmax(0, 1.2fr) minmax(0, 1fr)',
+          },
+          gap: 2.5,
+          alignItems: 'start',
+        }}
       >
-        {t('bill.chargingHint')}
-      </Alert>
-
-      <Grid container spacing={2}>
-        <Grid size={{ xs: 12, sm: 4 }}>
-          <NumberField
+        <Pump
+          label={t('bill.chargingHint')}
+          error={touched ? errors.amounts : undefined}
+        >
+          <PumpLine
             label={t('bill.fields.total')}
             value={form.total}
             onChange={(total) => set({ total })}
             suffix={` ${format.currencySymbol}`}
             max={MAX}
+            computed={
+              derived.total !== undefined
+                ? format.money(derived.total)
+                : undefined
+            }
             helperText={
               derived.total !== undefined
                 ? t('bill.computed', { value: format.money(derived.total) })
                 : undefined
             }
           />
-        </Grid>
-        <Grid size={{ xs: 12, sm: 4 }}>
-          <NumberField
+          <PumpLine
             label={t('bill.fields.chargedUnit')}
             value={form.unit}
             onChange={(value) => set({ unit: value })}
             suffix=" kWh"
             max={MAX}
+            computed={
+              derived.unit !== undefined
+                ? format.unit(derived.unit, 'kWh', 2)
+                : undefined
+            }
             helperText={computed(derived.unit, 'kWh')}
           />
-        </Grid>
-        <Grid size={{ xs: 12, sm: 4 }}>
-          <NumberField
+          <PumpLine
             label={t('bill.fields.chargingPricePerUnit')}
             value={form.pricePerUnit}
             onChange={(pricePerUnit) => set({ pricePerUnit })}
             suffix=" ct/kWh"
             decimalScale={1}
             max={MAX}
+            computed={
+              derived.pricePerUnit !== undefined
+                ? format.unit(derived.pricePerUnit, 'ct/kWh', 1)
+                : undefined
+            }
             helperText={computed(derived.pricePerUnit, 'ct/kWh', 1)}
           />
+        </Pump>
+        <Grid container spacing={2}>
+          <Grid size={12}>
+            <NumberField
+              label={t('bill.fields.distance')}
+              value={form.distance}
+              onChange={(distance) => set({ distance })}
+              suffix={` ${units.distance.label}`}
+              decimalScale={1}
+              max={MAX}
+              helperText={
+                consumption !== undefined
+                  ? t('bill.consumption', {
+                      value: format.chargingConsumption(consumption),
+                    })
+                  : t('bill.chargingDistanceHelp', {
+                      context: units.distance.context,
+                    })
+              }
+            />
+          </Grid>
+          <Grid size={12}>
+            <TextField
+              select
+              label={t('bill.fields.location')}
+              value={form.location}
+              onChange={(e) =>
+                set({ location: e.target.value as ChargingLocation | '' })
+              }
+            >
+              <MenuItem value="">{t('bill.locations.none')}</MenuItem>
+              {Object.values(ChargingLocation).map((location) => (
+                <MenuItem key={location} value={location}>
+                  {t(`bill.locations.${location}`)}
+                </MenuItem>
+              ))}
+            </TextField>
+          </Grid>
+          <Grid size={12}>
+            <NumberField
+              label={t('bill.fields.stateOfCharge')}
+              value={form.stateOfCharge}
+              onChange={(stateOfCharge) => set({ stateOfCharge })}
+              suffix=" %"
+              decimalScale={0}
+              max={100}
+              helperText={t('bill.stateOfChargeHelp')}
+            />
+          </Grid>
         </Grid>
-        <Grid size={{ xs: 12, sm: 4 }}>
-          <NumberField
-            label={t('bill.fields.distance')}
-            value={form.distance}
-            onChange={(distance) => set({ distance })}
-            suffix={` ${units.distance.label}`}
-            decimalScale={1}
-            max={MAX}
-            helperText={
-              consumption !== undefined
-                ? t('bill.consumption', {
-                    value: format.chargingConsumption(consumption),
-                  })
-                : t('bill.chargingDistanceHelp', {
-                    context: units.distance.context,
-                  })
-            }
-          />
-        </Grid>
-        <Grid size={{ xs: 12, sm: 4 }}>
-          <TextField
-            select
-            label={t('bill.fields.location')}
-            value={form.location}
-            onChange={(e) =>
-              set({ location: e.target.value as ChargingLocation | '' })
-            }
-          >
-            <MenuItem value="">{t('bill.locations.none')}</MenuItem>
-            {Object.values(ChargingLocation).map((location) => (
-              <MenuItem key={location} value={location}>
-                {t(`bill.locations.${location}`)}
-              </MenuItem>
-            ))}
-          </TextField>
-        </Grid>
-        <Grid size={{ xs: 12, sm: 4 }}>
-          <NumberField
-            label={t('bill.fields.stateOfCharge')}
-            value={form.stateOfCharge}
-            onChange={(stateOfCharge) => set({ stateOfCharge })}
-            suffix=" %"
-            decimalScale={0}
-            max={100}
-            helperText={t('bill.stateOfChargeHelp')}
-          />
-        </Grid>
-      </Grid>
+      </Box>
 
       {overBattery && (
         <Alert severity="warning" variant="outlined">
@@ -291,6 +303,16 @@ export default function ChargingForm({
           })}
         </Alert>
       )}
+
+      <Grid container spacing={2}>
+        {/* today and the country of the account fit most receipts */}
+        <DateVatFields
+          date={form.date}
+          onDateChange={(date) => set({ date })}
+          vat={vat}
+          error={touched ? errors.date : undefined}
+        />
+      </Grid>
 
       <BillAttachments {...save.attachments} />
 

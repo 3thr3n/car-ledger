@@ -734,7 +734,6 @@ bill:
   add:
     button: "Eintrag erfassen"
     title: "Neuer Eintrag"
-    subtitle: "Wähle, welche Art von Beleg du erfassen möchtest."
     saveAgain: "Speichern und weiteren erfassen"
     saved: "Eintrag gespeichert"
     describe:
