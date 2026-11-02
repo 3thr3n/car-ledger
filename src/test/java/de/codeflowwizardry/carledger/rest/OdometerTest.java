@@ -158,10 +158,49 @@ class OdometerTest
 				.get()
 				.then()
 				.statusCode(200)
-				.body("[0].currentOdometer.value", is(51_500))
+				// 50,600 at the refuel of February, 500 km since: 100 of them after the
+				// maintenance
+				.body("[0].currentOdometer.value", is(51_100))
 				.body("[0].currentOdometer.reading", is(51_000))
 				.body("[0].currentOdometer.readingDate", is("2026-02-15"))
-				.body("[0].currentOdometer.driven", is(500));
+				.body("[0].currentOdometer.driven", is(100));
+	}
+
+	@Test
+	void shouldNotCountTheDistanceBeforeAReadingTwice()
+	{
+		// at 50,600 km after the refuel of February
+		refuel(LocalDate.of(2026, 2, 1), 600);
+		// 300 km later a reading, e.g. the end of a trip
+		maintenance(LocalDate.of(2026, 2, 15), 50_900);
+		// 600 km since the refuel of February: at 51,200 km, 300 of them before the
+		// reading
+		refuel(LocalDate.of(2026, 3, 1), 600);
+
+		given()
+				.when()
+				.get("{id}", carId)
+				.then()
+				.statusCode(200)
+				.body("currentOdometer.value", is(51_200));
+	}
+
+	@Test
+	void shouldCountThePartAfterTheReadingByTheDays()
+	{
+		// without its distance, the odometer at this refuel is unknown
+		refuel(LocalDate.of(2026, 2, 1), null);
+		maintenance(LocalDate.of(2026, 2, 15), 50_900);
+		// 600 km in 28 days, the reading after 14 of them: 300 km count
+		refuel(LocalDate.of(2026, 3, 1), 600);
+
+		given()
+				.when()
+				.get("{id}", carId)
+				.then()
+				.statusCode(200)
+				.body("currentOdometer.value", is(51_200))
+				.body("currentOdometer.driven", is(300));
 	}
 
 	@Test
