@@ -16,6 +16,7 @@ import useVatCountry from '@/hooks/useVatCountry';
 import NumberField from './NumberField';
 import DateVatFields from './DateVatFields';
 import FormActions from './FormActions';
+import Pump, { PumpLine, PumpWithFields } from './Pump';
 import BillAttachments from './BillAttachments';
 import useSaveBill from './useSaveBill';
 
@@ -127,14 +128,49 @@ export default function MaintenanceForm({
 
   return (
     <Stack component="form" onSubmit={submit} noValidate spacing={2.5}>
-      <Grid container spacing={2}>
-        <DateVatFields
-          date={form.date}
-          onDateChange={(date) => set({ date })}
-          vat={vat}
-          error={touched ? errors.date : undefined}
-        />
-        <Grid size={{ xs: 12, sm: 6 }}>
+      {/* the bill of the workshop first: what it came to */}
+      <PumpWithFields
+        pump={
+          <Pump
+            label={t('bill.totalHelp')}
+            error={touched ? errors.total : undefined}
+          >
+            <PumpLine
+              label={t('bill.fields.laborCost')}
+              value={form.laborCost}
+              onChange={(laborCost) => set({ laborCost })}
+              suffix={` ${format.currencySymbol}`}
+              max={MAX}
+            />
+            <PumpLine
+              label={t('bill.fields.partsCost')}
+              value={form.partsCost}
+              onChange={(partsCost) => set({ partsCost })}
+              suffix={` ${format.currencySymbol}`}
+              max={MAX}
+            />
+            <PumpLine
+              label={t('bill.fields.total')}
+              value={form.total}
+              onChange={(value) => set({ total: value })}
+              suffix={` ${format.currencySymbol}`}
+              max={MAX}
+              required
+              computed={
+                form.total === undefined && partSum !== undefined
+                  ? `${format.number(partSum, 2)} ${format.currencySymbol}`
+                  : undefined
+              }
+              helperText={
+                form.total === undefined && partSum !== undefined
+                  ? t('bill.computed', { value: format.money(partSum) })
+                  : t('bill.totalHelp')
+              }
+            />
+          </Pump>
+        }
+      >
+        <Grid size={12}>
           <TextField
             label={t('bill.fields.workshop')}
             value={form.workshop}
@@ -142,7 +178,7 @@ export default function MaintenanceForm({
             slotProps={{ htmlInput: { maxLength: 100 } }}
           />
         </Grid>
-        <Grid size={{ xs: 12, sm: 6 }}>
+        <Grid size={12}>
           <NumberField
             label={t('bill.fields.odometer')}
             value={form.odometer}
@@ -169,40 +205,16 @@ export default function MaintenanceForm({
             slotProps={{ htmlInput: { maxLength: 1000 } }}
           />
         </Grid>
-        <Grid size={{ xs: 12, sm: 4 }}>
-          <NumberField
-            label={t('bill.fields.laborCost')}
-            value={form.laborCost}
-            onChange={(laborCost) => set({ laborCost })}
-            suffix={` ${format.currencySymbol}`}
-            max={MAX}
-          />
-        </Grid>
-        <Grid size={{ xs: 12, sm: 4 }}>
-          <NumberField
-            label={t('bill.fields.partsCost')}
-            value={form.partsCost}
-            onChange={(partsCost) => set({ partsCost })}
-            suffix={` ${format.currencySymbol}`}
-            max={MAX}
-          />
-        </Grid>
-        <Grid size={{ xs: 12, sm: 4 }}>
-          <NumberField
-            label={t('bill.fields.total')}
-            value={form.total}
-            onChange={(value) => set({ total: value })}
-            suffix={` ${format.currencySymbol}`}
-            max={MAX}
-            required
-            error={touched ? errors.total : undefined}
-            helperText={
-              form.total === undefined && partSum !== undefined
-                ? t('bill.computed', { value: format.money(partSum) })
-                : t('bill.totalHelp')
-            }
-          />
-        </Grid>
+      </PumpWithFields>
+
+      <Grid container spacing={2}>
+        {/* today and the country of the account fit most receipts */}
+        <DateVatFields
+          date={form.date}
+          onDateChange={(date) => set({ date })}
+          vat={vat}
+          error={touched ? errors.date : undefined}
+        />
       </Grid>
 
       <BillAttachments {...save.attachments} />

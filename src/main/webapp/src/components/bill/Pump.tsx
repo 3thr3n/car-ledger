@@ -1,4 +1,4 @@
-import { Box, InputBase, Theme, Typography } from '@mui/material';
+import { Box, Grid, InputBase, Theme, Typography } from '@mui/material';
 import { ReactNode, useId } from 'react';
 import { useTranslation } from 'react-i18next';
 import { NumericFormat } from 'react-number-format';
@@ -89,6 +89,7 @@ export interface PumpLineProps {
   computed?: string;
   /** below the figure, e.g. "Calculated: 175.0 ct/l" */
   helperText?: ReactNode;
+  required?: boolean;
 }
 
 /**
@@ -105,6 +106,7 @@ export function PumpLine({
   max,
   computed,
   helperText,
+  required,
 }: PumpLineProps) {
   const { i18n } = useTranslation();
   const german = i18n.language === 'DE';
@@ -144,6 +146,7 @@ export function PumpLine({
         inputMode="decimal"
         inputProps={{
           'aria-describedby': helperText ? `${id}-help` : undefined,
+          'aria-required': required || undefined,
         }}
         sx={(theme) => ({
           '& input': {
@@ -226,6 +229,38 @@ export default function Pump({
           {error}
         </Typography>
       )}
+    </Box>
+  );
+}
+
+/**
+ * The pump with the fields of the entry next to it from a tablet on, below it
+ * on a phone: the amounts of the receipt first
+ */
+export function PumpWithFields({
+  pump,
+  children,
+}: {
+  pump: ReactNode;
+  /** items of a grid, each of the full width */
+  children: ReactNode;
+}) {
+  return (
+    <Box
+      sx={{
+        display: 'grid',
+        gridTemplateColumns: {
+          xs: 'minmax(0, 1fr)',
+          md: 'minmax(0, 1.2fr) minmax(0, 1fr)',
+        },
+        gap: 2.5,
+        alignItems: 'start',
+      }}
+    >
+      {pump}
+      <Grid container spacing={2}>
+        {children}
+      </Grid>
     </Box>
   );
 }
