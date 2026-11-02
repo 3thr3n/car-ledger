@@ -6,6 +6,7 @@ import {
   Grid,
   Skeleton,
   Stack,
+  Theme,
   Typography,
 } from '@mui/material';
 import AddRounded from '@mui/icons-material/AddRounded';
@@ -16,11 +17,12 @@ import OrphanedEntries from '@/components/offline/OrphanedEntries';
 import { isShared, ownCars } from '@/utils/carRole';
 import { getMyCarsOptions } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
-import OdometerValue from '@/components/ui/OdometerValue';
 import useMe from '@/hooks/useMe';
 import Page from '@/components/layout/Page';
 import PageHeader from '@/components/ui/PageHeader';
 import CarAvatar from '@/components/layout/CarAvatar';
+import OdometerWheels from '@/components/car/OdometerWheels';
+import { useFormat } from '@/utils/format';
 import { RouterCardActionArea } from '@/components/ui/links';
 import ErrorPage from '@/pages/ErrorPage';
 import useCarRequest from '@/hooks/useCarRequest';
@@ -28,9 +30,40 @@ import CarRequestDialog from '@/components/request/CarRequestDialog';
 import CarRequestOutcome from '@/components/request/CarRequestOutcome';
 import InvitationList from '@/components/car/access/InvitationList';
 
+/** a car as a panel of the cluster: lit a little in the middle in the dark */
+const panelSx = (theme: Theme) =>
+  theme.applyStyles('dark', {
+    borderRadius: '20px',
+    background: `radial-gradient(120% 90% at 50% 0%, #1c2836 0%, ${theme.vars.palette.background.paper} 70%)`,
+    boxShadow: `inset 0 0 0 1px ${theme.vars.palette.divider}`,
+  });
+
+/** the plate of the next car: still blank, dashed */
+function EmptyPlate({ disabled }: { disabled?: boolean }) {
+  return (
+    <Box
+      aria-hidden
+      sx={{
+        display: 'grid',
+        placeItems: 'center',
+        width: 168,
+        height: 44,
+        borderRadius: '6px',
+        border: '2px dashed',
+        borderColor: disabled ? 'text.disabled' : 'text.secondary',
+        color: disabled ? 'text.disabled' : 'primary.main',
+      }}
+    >
+      <AddRounded />
+    </Box>
+  );
+}
+
 export default function GaragePage() {
   const { t } = useTranslation();
   const { maxCars } = useMe();
+  const format = useFormat();
+  const { units } = format;
   const carRequest = useCarRequest();
   const [requesting, setRequesting] = useState(false);
 
@@ -75,85 +108,92 @@ export default function GaragePage() {
 
         {cars?.map((car) => (
           <Grid key={car.id} size={{ xs: 12, sm: 6, lg: 4 }}>
-            <Card sx={{ height: '100%' }}>
+            <Card sx={[panelSx, { height: '100%' }]}>
               <RouterCardActionArea
                 to="/car/$id"
                 params={{ id: `${car.id}` }}
-                sx={{ p: 2.5, height: '100%' }}
+                sx={{
+                  p: 2.5,
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'stretch',
+                  gap: 2,
+                }}
               >
+                {/* the plate is the face of the car, the picture next to it */}
                 <Stack
                   direction="row"
-                  spacing={2}
-                  sx={{
-                    alignItems: 'center',
-                    mb: 2.5,
-                  }}
+                  spacing={1.5}
+                  sx={{ alignItems: 'center', justifyContent: 'space-between' }}
                 >
+                  {/* without a registration, a plate with the initials */}
                   <CarAvatar
                     id={car.id}
                     name={car.name}
                     licensePlate={car.licensePlate}
-                    pictureId={car.pictureId}
-                    size={40}
+                    size={44}
                   />
-                  <Box sx={{ minWidth: 0 }}>
-                    <Typography variant="h6" noWrap>
-                      {car.name}
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        color: 'text.secondary',
-                      }}
-                    >
-                      {[
-                        isShared(car) &&
-                          t('car.shared', { role: t(`car.roles.${car.role}`) }),
-                        car.year && t('car.built', { year: car.year }),
-                        t(`car.energyTypes.${car.energyType}`),
-                      ]
-                        .filter(Boolean)
-                        .join(' · ')}
-                    </Typography>
-                  </Box>
+                  {car.pictureId != null && (
+                    <CarAvatar
+                      id={car.id}
+                      name={car.name}
+                      pictureId={car.pictureId}
+                      size={44}
+                    />
+                  )}
                 </Stack>
-                <Stack direction="row" spacing={4}>
-                  <Box>
+                <Box sx={{ minWidth: 0 }}>
+                  <Typography variant="h6" component="h2" noWrap>
+                    {car.name}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                    {[
+                      isShared(car) &&
+                        t('car.shared', { role: t(`car.roles.${car.role}`) }),
+                      car.year && t('car.built', { year: car.year }),
+                      t(`car.energyTypes.${car.energyType}`),
+                    ]
+                      .filter(Boolean)
+                      .join(' · ')}
+                  </Typography>
+                </Box>
+                <Stack
+                  direction="row"
+                  spacing={1.5}
+                  sx={{
+                    mt: 'auto',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                  }}
+                >
+                  <Stack
+                    direction="row"
+                    spacing={0.75}
+                    sx={{ alignItems: 'center' }}
+                  >
+                    <OdometerWheels
+                      size="small"
+                      value={units.distance.fromKm(car.currentOdometer.value)}
+                      label={t('car.cluster.odometer', {
+                        value: format.distance(car.currentOdometer.value),
+                      })}
+                    />
                     <Typography
-                      variant="caption"
-                      sx={{
-                        color: 'text.secondary',
-                      }}
+                      aria-hidden
+                      variant="body2"
+                      sx={{ color: 'text.secondary' }}
                     >
-                      {t('car.odometer')}
+                      {units.distance.label}
                     </Typography>
-                    <Typography
-                      className="tabular"
-                      sx={{
-                        fontWeight: 600,
-                      }}
-                    >
-                      <OdometerValue odometer={car.currentOdometer} />
-                    </Typography>
-                  </Box>
-                  <Box>
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: 'text.secondary',
-                      }}
-                    >
-                      {t('garage.entriesLabel')}
-                    </Typography>
-                    <Typography
-                      className="tabular"
-                      sx={{
-                        fontWeight: 600,
-                      }}
-                    >
-                      {car.amountBills ?? 0}
-                    </Typography>
-                  </Box>
+                  </Stack>
+                  <Typography
+                    variant="body2"
+                    className="tabular"
+                    sx={{ color: 'text.secondary', whiteSpace: 'nowrap' }}
+                  >
+                    {t('garage.entries', { count: car.amountBills ?? 0 })}
+                  </Typography>
                 </Stack>
               </RouterCardActionArea>
             </Card>
@@ -165,10 +205,12 @@ export default function GaragePage() {
             <Card
               sx={{
                 height: '100%',
-                minHeight: 156,
+                minHeight: 196,
                 borderStyle: 'dashed',
                 bgcolor: 'transparent',
               }}
+              // dark cards have no border: this one keeps its dashes
+              style={{ borderColor: 'var(--mui-palette-divider)' }}
             >
               {canAdd ? (
                 <RouterCardActionArea
@@ -177,25 +219,19 @@ export default function GaragePage() {
                     height: '100%',
                     display: 'grid',
                     placeItems: 'center',
-                    color: 'text.secondary',
+                    p: 2.5,
                   }}
                 >
-                  <Stack
-                    spacing={0.5}
-                    sx={{
-                      alignItems: 'center',
-                    }}
-                  >
-                    <AddRounded />
-                    <Typography
-                      sx={{
-                        fontWeight: 600,
-                      }}
-                    >
+                  <Stack spacing={1.5} sx={{ alignItems: 'center' }}>
+                    <EmptyPlate />
+                    <Typography sx={{ fontWeight: 600 }}>
                       {t('garage.add')}
                     </Typography>
                     {used === 0 && (
-                      <Typography variant="body2">
+                      <Typography
+                        variant="body2"
+                        sx={{ color: 'text.secondary' }}
+                      >
                         {t('garage.emptyHint')}
                       </Typography>
                     )}
@@ -203,6 +239,7 @@ export default function GaragePage() {
                 </RouterCardActionArea>
               ) : (
                 <Stack
+                  spacing={1.5}
                   sx={{
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -210,18 +247,15 @@ export default function GaragePage() {
                     p: 3,
                   }}
                 >
+                  <EmptyPlate disabled />
                   <Typography
                     variant="body2"
-                    sx={{
-                      color: 'text.secondary',
-                      textAlign: 'center',
-                    }}
+                    sx={{ color: 'text.secondary', textAlign: 'center' }}
                   >
                     {t('garage.limitReached')}
                   </Typography>
                   {carRequest.isOpen ? (
                     <Chip
-                      sx={{ mt: 1.5 }}
                       color="info"
                       variant="outlined"
                       label={t('carRequest.pending', {
@@ -231,7 +265,6 @@ export default function GaragePage() {
                   ) : (
                     !carRequest.isLoading && (
                       <Button
-                        sx={{ mt: 1.5 }}
                         variant="outlined"
                         size="small"
                         onClick={() => setRequesting(true)}

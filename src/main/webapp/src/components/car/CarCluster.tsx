@@ -27,6 +27,7 @@ import useReminderText from '@/components/reminder/useReminderText';
 import { RouterLink } from '@/components/ui/links';
 import { scaleOf } from '@/utils/gauge';
 import Gauge from './Gauge';
+import OdometerWheels from './OdometerWheels';
 
 /** a tracker that sent within this time is online */
 const ONLINE_MINUTES = 15;
@@ -114,44 +115,6 @@ function StatusLight({
           </Typography>
         </Box>
       </RouterLink>
-    </Box>
-  );
-}
-
-/** the odometer as a row of digit wheels */
-function Odometer({ value, label }: { value: number; label: string }) {
-  const digits = String(Math.round(value)).padStart(6, '0').split('');
-  return (
-    <Box
-      role="img"
-      aria-label={label}
-      sx={{ display: 'flex', gap: '3px', alignItems: 'center' }}
-    >
-      {digits.map((digit, index) => (
-        <Box
-          // the places of the digits stay
-          key={index}
-          component="span"
-          aria-hidden
-          sx={(theme) => ({
-            width: 22,
-            height: 32,
-            display: 'grid',
-            placeItems: 'center',
-            borderRadius: '4px',
-            bgcolor: 'action.hover',
-            fontFamily: displayFont,
-            fontWeight: 600,
-            fontSize: 20,
-            ...theme.applyStyles('dark', {
-              bgcolor: '#0a1018',
-              boxShadow: 'inset 0 -8px 10px -6px #000',
-            }),
-          })}
-        >
-          {digit}
-        </Box>
-      ))}
     </Box>
   );
 }
@@ -426,7 +389,7 @@ export default function CarCluster({
               value={format.money(costPerMonth)}
             />
           </Box>
-          <Odometer
+          <OdometerWheels
             value={units.distance.fromKm(car.currentOdometer.value)}
             label={t('car.cluster.odometer', {
               value: format.distance(car.currentOdometer.value),
