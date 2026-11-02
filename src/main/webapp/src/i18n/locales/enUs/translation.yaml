@@ -44,6 +44,10 @@ nav:
   notifications: "Notifications"
   settings: "Settings"
   admin: "Administration"
+  shortcuts: "Shortcuts"
+  refuel: "Refuel"
+  charge: "Charge"
+  inbox: "Inbox"
   signedInAs: "Signed in as"
 
 common:

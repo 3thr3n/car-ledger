@@ -17,3 +17,11 @@ code {
 .Toastify .Toastify__toast {
   font-family: inherit;
 }
+
+/* phones and tablets: the toasts above the bar at the bottom (64 px), the
+   breakpoint md of the theme */
+@media (max-width: 899.98px) {
+  .Toastify__toast-container--bottom-right {
+    bottom: calc(64px + env(safe-area-inset-bottom) + 8px);
+  }
+}

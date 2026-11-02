@@ -17,6 +17,7 @@ import { ReactNode, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import useUnreadNotifications from '@/hooks/useUnreadNotifications';
 import Sidebar from '@/components/layout/Sidebar';
+import BottomBar, { BOTTOM_BAR_HEIGHT } from '@/components/layout/BottomBar';
 import useMe from '@/hooks/useMe';
 import useOnline from '@/hooks/useOnline';
 import useOpenCarRequests from '@/hooks/useOpenCarRequests';
@@ -56,7 +57,9 @@ export default function AppShell({ children }: { children: ReactNode }) {
   // units: rendered once the account is loaded, or known to be missing. Not
   // when it is fetched again, a query with an error is fetched again whenever
   // a page mounts it.
-  const { isFetched } = useMe();
+  const { isFetched, loggedIn } = useMe();
+  // phones and tablets: the main places in a bar at the bottom, with the menu
+  const bottomBar = !isDesktop && loggedIn;
   // the sidebar is behind the menu on phones: a dot shows the open requests and
   // the unread notifications
   const openRequests = useOpenCarRequests();
@@ -124,32 +127,36 @@ export default function AppShell({ children }: { children: ReactNode }) {
             })}
           >
             <Toolbar sx={{ gap: 1 }}>
-              <IconButton
-                edge="start"
-                onClick={() => setOpen(true)}
-                aria-label={t('app.menu')}
-              >
-                <Badge
-                  variant="dot"
-                  color="error"
-                  invisible={openRequests === 0 && unread === 0}
-                  slotProps={{
-                    badge: {
-                      'aria-label': [
-                        openRequests > 0 &&
-                          t('admin.requests.openCount', {
-                            count: openRequests,
-                          }),
-                        unread > 0 && t('inbox.unreadCount', { count: unread }),
-                      ]
-                        .filter(Boolean)
-                        .join(', '),
-                    },
-                  }}
+              {/* the menu is in the bottom bar on phones */}
+              {!bottomBar && (
+                <IconButton
+                  edge="start"
+                  onClick={() => setOpen(true)}
+                  aria-label={t('app.menu')}
                 >
-                  <MenuRounded />
-                </Badge>
-              </IconButton>
+                  <Badge
+                    variant="dot"
+                    color="error"
+                    invisible={openRequests === 0 && unread === 0}
+                    slotProps={{
+                      badge: {
+                        'aria-label': [
+                          openRequests > 0 &&
+                            t('admin.requests.openCount', {
+                              count: openRequests,
+                            }),
+                          unread > 0 &&
+                            t('inbox.unreadCount', { count: unread }),
+                        ]
+                          .filter(Boolean)
+                          .join(', '),
+                      },
+                    }}
+                  >
+                    <MenuRounded />
+                  </Badge>
+                </IconButton>
+              )}
               <Box
                 component="img"
                 src={productLogo}
@@ -184,6 +191,10 @@ export default function AppShell({ children }: { children: ReactNode }) {
           flexGrow: 1,
           minWidth: 0,
           pt: beside ? 0 : 7,
+          // the bar at the bottom covers no content, with the safe area below it
+          pb: bottomBar
+            ? `calc(${BOTTOM_BAR_HEIGHT}px + env(safe-area-inset-bottom))`
+            : 0,
           display: 'flex',
           flexDirection: 'column',
         }}
@@ -204,6 +215,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
           children
         )}
       </Box>
+      {bottomBar && <BottomBar onMenu={() => setOpen(true)} />}
     </Box>
   );
 }
