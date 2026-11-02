@@ -100,6 +100,9 @@ test.describe.serial('modifications', () => {
     );
     await expect(modification('Coilovers')).toContainText('Abnahme open');
     await expect(modification('Coilovers')).toContainText('80,000 km');
+    await expect(page.getByTestId('papers-state')).toHaveText(
+      '1 installed modification, 1 Abnahme open',
+    );
 
     // what is open shows on the overview of the car
     await page.getByRole('tab', { name: 'Overview' }).click();
@@ -134,6 +137,10 @@ test.describe.serial('modifications', () => {
     await dialog.getByRole('button', { name: 'Save' }).click();
     await expect(modification('Coilovers')).not.toContainText(
       'Not in the registration yet',
+    );
+    await expect(modification('Coilovers')).toContainText('Papers complete');
+    await expect(page.getByTestId('papers-state')).toHaveText(
+      '1 installed modification, all papers complete',
     );
   });
 

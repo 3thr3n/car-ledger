@@ -1310,6 +1310,8 @@ modification:
   removedAt: "Ausgebaut {{when}}"
   registered: "In der Zulassungsbescheinigung eingetragen"
   notRegistered: "Nicht in der Zulassungsbescheinigung eingetragen"
+  papersComplete: "Papiere vollständig"
+  allComplete: "alle Papiere vollständig"
   open:
     inspection: "Abnahme offen"
     registration: "Noch nicht eingetragen"

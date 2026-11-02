@@ -4,6 +4,7 @@ import {
   Stack,
   ToggleButton,
   ToggleButtonGroup,
+  Typography,
   useMediaQuery,
   useTheme,
 } from '@mui/material';
@@ -30,6 +31,8 @@ import ModificationList from '@/components/modification/ModificationList';
 import ModificationDialog from '@/components/modification/ModificationDialog';
 import RemoveModificationDialog from '@/components/modification/RemoveModificationDialog';
 import OfflineDocumentsPanel from '@/components/offline/OfflineDocumentsPanel';
+import { registrationOpen } from '@/components/modification/approval';
+import { CLUSTER_AMBER } from '@/theme';
 
 type Shown =
   typeof ModificationState.INSTALLED | typeof ModificationState.REMOVED;
@@ -89,6 +92,10 @@ export default function ModificationsPage({ carId }: { carId: number }) {
   );
 
   const installed = shown === ModificationState.INSTALLED;
+  const open = {
+    inspection: modifications.filter((each) => each.inspectionOpen).length,
+    registration: modifications.filter(registrationOpen).length,
+  };
 
   const papersButton = (
     <Button
@@ -133,6 +140,42 @@ export default function ModificationsPage({ carId }: { carId: number }) {
             {t('modification.shown.REMOVED')}
           </ToggleButton>
         </ToggleButtonGroup>
+        {/* what a roadside check would find, of the installed parts */}
+        {installed && modifications.length > 0 && (
+          <Typography
+            data-testid="papers-state"
+            sx={(theme) => ({
+              fontWeight: 600,
+              ...(open.inspection + open.registration === 0
+                ? {
+                    color: '#15803d',
+                    ...theme.applyStyles('dark', { color: '#4ade80' }),
+                  }
+                : {
+                    color: theme.vars.palette.warning.main,
+                    ...theme.applyStyles('dark', { color: CLUSTER_AMBER }),
+                  }),
+            })}
+          >
+            {[
+              t('car.overview.papers.installed', {
+                count: modifications.length,
+              }),
+              open.inspection > 0 &&
+                t('car.overview.papers.inspectionOpen', {
+                  count: open.inspection,
+                }),
+              open.registration > 0 &&
+                t('car.overview.papers.unregistered', {
+                  count: open.registration,
+                }),
+              open.inspection + open.registration === 0 &&
+                t('modification.allComplete'),
+            ]
+              .filter(Boolean)
+              .join(', ')}
+          </Typography>
+        )}
         {!isLoading && modifications.length === 0 ? (
           <EmptyState
             icon={<BuildRounded />}

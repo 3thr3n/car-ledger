@@ -1,11 +1,11 @@
 import {
   Box,
   Button,
-  Chip,
   Collapse,
   Divider,
   IconButton,
   Stack,
+  Theme,
   Tooltip,
   Typography,
 } from '@mui/material';
@@ -15,9 +15,13 @@ import EditOutlined from '@mui/icons-material/EditOutlined';
 import EventRounded from '@mui/icons-material/EventRounded';
 import ExpandMoreRounded from '@mui/icons-material/ExpandMoreRounded';
 import LogoutRounded from '@mui/icons-material/LogoutRounded';
+import TaskAltRounded from '@mui/icons-material/TaskAltRounded';
+import ReportProblemRounded from '@mui/icons-material/ReportProblemRounded';
+import InfoOutlined from '@mui/icons-material/InfoOutlined';
 import { Fragment, ReactNode, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Modification } from '@/generated';
+import { CLUSTER_AMBER, displayFont } from '@/theme';
 import { useFormat } from '@/utils/format';
 import ModificationDocuments from './ModificationDocuments';
 import { billText, needsInspection, registrationOpen } from './approval';
@@ -44,6 +48,33 @@ function Detail({ label, children }: { label: string; children: ReactNode }) {
     </Box>
   );
 }
+
+type Papers = 'complete' | 'inspection' | 'registration' | 'removed';
+
+/** what is still open for the papers of a part */
+const papersOf = (modification: Modification): Papers =>
+  !modification.installed
+    ? 'removed'
+    : modification.inspectionOpen
+      ? 'inspection'
+      : registrationOpen(modification)
+        ? 'registration'
+        : 'complete';
+
+/** the light of the papers: amber for the Abnahme, blue for the entry */
+const lampSx = (papers: Papers) => (theme: Theme) =>
+  ({
+    complete: {
+      color: '#15803d',
+      ...theme.applyStyles('dark', { color: '#4ade80' }),
+    },
+    inspection: {
+      color: theme.vars.palette.warning.main,
+      ...theme.applyStyles('dark', { color: CLUSTER_AMBER }),
+    },
+    registration: { color: theme.vars.palette.info.main },
+    removed: { color: theme.vars.palette.text.secondary },
+  })[papers];
 
 /**
  * The modifications with their approval and what is still open; the details
@@ -80,6 +111,7 @@ export default function ModificationList({
           modification.removedOdometer,
         );
         const inspection = needsInspection(modification.approvalType);
+        const papers = papersOf(modification);
 
         return (
           <Fragment key={modification.id}>
@@ -90,56 +122,83 @@ export default function ModificationList({
                 spacing={1.5}
                 sx={{ alignItems: 'flex-start' }}
               >
+                {/* whether its papers would pass a roadside check */}
+                <Box
+                  aria-hidden
+                  sx={[lampSx(papers), { display: 'flex', pt: 0.25 }]}
+                >
+                  {papers === 'complete' ? (
+                    <TaskAltRounded />
+                  ) : papers === 'inspection' ? (
+                    <ReportProblemRounded />
+                  ) : papers === 'registration' ? (
+                    <InfoOutlined />
+                  ) : (
+                    <LogoutRounded />
+                  )}
+                </Box>
                 <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-                  <Stack
-                    direction="row"
-                    spacing={1}
-                    useFlexGap
-                    sx={{ alignItems: 'center', flexWrap: 'wrap', mb: 0.5 }}
-                  >
-                    <Typography sx={{ fontWeight: 600 }}>
-                      {modification.part}
-                    </Typography>
+                  <Typography sx={{ fontWeight: 600 }}>
+                    {modification.part}
                     {modification.manufacturer && (
-                      <Typography sx={{ color: 'text.secondary' }}>
+                      <Typography
+                        component="span"
+                        sx={{ color: 'text.secondary', fontWeight: 400 }}
+                      >
+                        {' '}
                         {modification.manufacturer}
                       </Typography>
                     )}
-                  </Stack>
-                  <Stack
-                    direction="row"
-                    spacing={1}
-                    useFlexGap
-                    sx={{ alignItems: 'center', flexWrap: 'wrap' }}
+                  </Typography>
+                  {modification.installed && (
+                    <Typography
+                      variant="body2"
+                      sx={[lampSx(papers), { fontWeight: 600 }]}
+                    >
+                      {t(
+                        papers === 'inspection'
+                          ? 'modification.open.inspection'
+                          : papers === 'registration'
+                            ? 'modification.open.registration'
+                            : 'modification.papersComplete',
+                      )}
+                    </Typography>
+                  )}
+                  {/* the approval like the marking stamped on the part */}
+                  <Box
+                    component="span"
+                    className="tabular"
+                    sx={{
+                      display: 'inline-block',
+                      maxWidth: '100%',
+                      mt: 0.75,
+                      px: 0.75,
+                      py: 0.125,
+                      border: 1.5,
+                      borderColor: 'text.secondary',
+                      borderRadius: '4px',
+                      fontFamily: displayFont,
+                      fontWeight: 650,
+                      fontSize: '0.875rem',
+                      letterSpacing: '0.04em',
+                      color: 'text.secondary',
+                    }}
                   >
-                    <Chip
-                      size="small"
-                      variant="outlined"
-                      label={
-                        modification.approvalNumber
-                          ? `${t(`modification.approvalTypes.${modification.approvalType}`)} · ${modification.approvalNumber}`
-                          : t(
-                              `modification.approvalTypes.${modification.approvalType}`,
-                            )
-                      }
-                    />
-                    {modification.inspectionOpen && (
-                      <Chip
-                        size="small"
-                        color="warning"
-                        label={t('modification.open.inspection')}
-                        sx={{ fontWeight: 600 }}
-                      />
+                    {/* a break only between the type and the number */}
+                    <Box component="span" sx={{ whiteSpace: 'nowrap' }}>
+                      {t(
+                        `modification.approvalTypes.${modification.approvalType}`,
+                      )}
+                    </Box>
+                    {modification.approvalNumber && (
+                      <>
+                        {' · '}
+                        <Box component="span" sx={{ whiteSpace: 'nowrap' }}>
+                          {modification.approvalNumber}
+                        </Box>
+                      </>
                     )}
-                    {registrationOpen(modification) && (
-                      <Chip
-                        size="small"
-                        color="info"
-                        variant="outlined"
-                        label={t('modification.open.registration')}
-                      />
-                    )}
-                  </Stack>
+                  </Box>
                   <Stack spacing={0.25} sx={{ mt: 0.75 }}>
                     {installed && (
                       <Stack
