@@ -110,7 +110,8 @@ export default function PeriodSummary({
   ].filter(Boolean);
 
   const figure = { fontWeight: 650, color: 'text.primary' };
-  const shown = parts.filter((part) => part.amount > 0);
+  // the recurring part is a difference of sums: a rest below a cent is none
+  const shown = parts.filter((part) => part.amount >= 0.005);
 
   return (
     <Box

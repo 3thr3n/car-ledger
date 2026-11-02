@@ -1049,6 +1049,16 @@
   resolved "https://registry.yarnpkg.com/@fontsource-variable/overpass/-/overpass-5.3.0.tgz#2ec9618c2f231400d347042d8dc2cdbcc9870f25"
   integrity sha512-HviVvVvKCwhXjxM61GjnCW2cKoeEWFkoBANaArzIHliC+7mV4lmKKIBAa0O7E5ISHnkV3sihgOHXxzpnsbP3Xg==
 
+"@fontsource/barlow-semi-condensed@5":
+  version "5.3.0"
+  resolved "https://registry.yarnpkg.com/@fontsource/barlow-semi-condensed/-/barlow-semi-condensed-5.3.0.tgz#ebacc8620c862f92a487156b2d9cbe3ced8dd5b3"
+  integrity sha512-EdpQ1GlLMofGqDsQhEw+g6DonNKmzt21p8y/oNbTl4BFzEkqYkFyE2fj25YGxmZBL/LZZGAxe74FlvEWcgc31w==
+
+"@fontsource/barlow@5":
+  version "5.3.0"
+  resolved "https://registry.yarnpkg.com/@fontsource/barlow/-/barlow-5.3.0.tgz#a0dba34af073385c3deea92fc9b84eb0da40654a"
+  integrity sha512-tGR0y6QObRtKv71MOth44222+mdNFM/ZWFWDV1VLzNbG4oK9PNRlyJzmkck4vHAi9ibHBXgt4SlY51amFP55CA==
+
 "@hey-api/codegen-core@0.9.1":
   version "0.9.1"
   resolved "https://registry.yarnpkg.com/@hey-api/codegen-core/-/codegen-core-0.9.1.tgz#e66bcc294ee16c4dcb8b8750b70e62d3b53f5fea"
