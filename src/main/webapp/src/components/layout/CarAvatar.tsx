@@ -45,8 +45,10 @@ export default function CarAvatar({
         fontSize: size * 0.4,
         fontWeight: 700,
         borderRadius: size / 4,
-        color: `hsl(${hue} 70% 32%)`,
-        backgroundColor: `hsl(${hue} 70% 88%)`,
+        // darker text and a lighter ground than before: each hue reaches
+        // 4.5:1, at 32% and 88% the teal, green and yellow did not
+        color: `hsl(${hue} 70% 27%)`,
+        backgroundColor: `hsl(${hue} 70% 90%)`,
         '.dark &': {
           color: `hsl(${hue} 80% 80%)`,
           backgroundColor: `hsl(${hue} 45% 22%)`,

@@ -2,6 +2,7 @@ import {
   Box,
   ToggleButton,
   ToggleButtonGroup,
+  useColorScheme,
   useMediaQuery,
   useTheme,
 } from '@mui/material';
@@ -113,6 +114,11 @@ export default function MonthlyChart({
   const format = useFormat();
   const theme = useTheme();
   const isPhone = useMediaQuery(theme.breakpoints.down('sm'));
+  // the charts draw with color values, not CSS variables: the palette of the
+  // scheme shown, theme.palette holds the light one only
+  const { mode, systemMode } = useColorScheme();
+  const scheme = (mode === 'system' ? systemMode : mode) ?? 'light';
+  const palette = theme.colorSchemes[scheme]?.palette ?? theme.palette;
   const [view, setView] = useState<View>('costs');
 
   const { data: months = [], isLoading } = useQuery(
@@ -267,7 +273,7 @@ export default function MonthlyChart({
             dataKey: part.key,
             stack: 'total',
             label: t(`bill.types.${part.type}`),
-            color: theme.palette[billTypes[part.type].color].main,
+            color: palette[billTypes[part.type].color].main,
             valueFormatter: (value: number | null) =>
               value ? format.money(value) : null,
           }))}
@@ -304,7 +310,7 @@ export default function MonthlyChart({
               dataKey: 'pricePerUnit',
               yAxisId: 'price',
               label: t(`dashboard.monthly.pricePerUnit.${shown}`),
-              color: theme.palette[energy.color].main,
+              color: palette[energy.color].main,
               connectNulls: true,
               valueFormatter: energy.formatPrice,
             },
@@ -312,7 +318,7 @@ export default function MonthlyChart({
               dataKey: 'consumption',
               yAxisId: 'consumption',
               label: t('dashboard.monthly.consumption'),
-              color: theme.palette.primary.main,
+              color: palette.primary.main,
               connectNulls: true,
               valueFormatter: energy.formatConsumption,
             },

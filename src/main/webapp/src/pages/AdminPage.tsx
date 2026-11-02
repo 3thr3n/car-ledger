@@ -18,14 +18,7 @@ import {
 import SearchRounded from '@mui/icons-material/SearchRounded';
 import EditOutlined from '@mui/icons-material/EditOutlined';
 import DeleteOutlineRounded from '@mui/icons-material/DeleteOutlineRounded';
-import PeopleRounded from '@mui/icons-material/PeopleRounded';
-import HowToRegRounded from '@mui/icons-material/HowToRegRounded';
-import DirectionsCarRounded from '@mui/icons-material/DirectionsCarRounded';
-import ReceiptLongRounded from '@mui/icons-material/ReceiptLongRounded';
-import EventRepeatRounded from '@mui/icons-material/EventRepeatRounded';
 import LockRounded from '@mui/icons-material/LockRounded';
-import MarkEmailUnreadRounded from '@mui/icons-material/MarkEmailUnreadRounded';
-import AttachFileRounded from '@mui/icons-material/AttachFileRounded';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { deDE } from '@mui/x-data-grid/locales';
 import { keepPreviousData, useMutation, useQuery } from '@tanstack/react-query';
@@ -101,27 +94,23 @@ function AdminStats() {
   );
 
   const tiles = [
-    { key: 'accounts', icon: <PeopleRounded />, value: data?.accounts },
+    { key: 'accounts', value: data?.accounts },
     {
       key: 'activeAccounts',
-      icon: <HowToRegRounded />,
       value: data?.activeAccounts,
     },
-    { key: 'cars', icon: <DirectionsCarRounded />, value: data?.cars },
-    { key: 'bills', icon: <ReceiptLongRounded />, value: data?.bills },
+    { key: 'cars', value: data?.cars },
+    { key: 'bills', value: data?.bills },
     {
       key: 'recurringBills',
-      icon: <EventRepeatRounded />,
       value: data?.recurringBills,
     },
     {
       key: 'openRequests',
-      icon: <MarkEmailUnreadRounded />,
       value: data?.openRequests,
     },
     {
       key: 'files',
-      icon: <AttachFileRounded />,
       value: data?.files.reduce((sum, storage) => sum + storage.files, 0),
       // per storage, e.g. "Database: 120 (300 MB) · S3: 5 (2 MB)"
       hint:
@@ -147,7 +136,6 @@ function AdminStats() {
         <Grid key={tile.key} size={{ xs: 6, sm: 4, lg: 'grow' }}>
           <StatTile
             loading={isLoading}
-            icon={tile.icon}
             label={t(`admin.stats.${tile.key}`)}
             value={tile.value ?? 0}
             hint={tile.hint}

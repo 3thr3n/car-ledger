@@ -96,7 +96,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
       </Box>
       {beside ? (
         <Box
-          sx={{
+          sx={(theme) => ({
             width: SIDEBAR_WIDTH,
             flexShrink: 0,
             position: 'sticky',
@@ -105,7 +105,9 @@ export default function AppShell({ children }: { children: ReactNode }) {
             borderRight: 1,
             borderColor: 'divider',
             bgcolor: 'background.paper',
-          }}
+            // dark: the menu stays on the ground, only the panels are lit
+            ...theme.applyStyles('dark', { bgcolor: 'background.default' }),
+          })}
         >
           <Sidebar onHide={() => hide(true)} />
         </Box>
@@ -114,11 +116,12 @@ export default function AppShell({ children }: { children: ReactNode }) {
           <AppBar
             position="fixed"
             color="inherit"
-            sx={{
+            sx={(theme) => ({
               borderBottom: 1,
               borderColor: 'divider',
               bgcolor: 'background.paper',
-            }}
+              ...theme.applyStyles('dark', { bgcolor: 'background.default' }),
+            })}
           >
             <Toolbar sx={{ gap: 1 }}>
               <IconButton

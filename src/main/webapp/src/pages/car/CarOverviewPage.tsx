@@ -1,12 +1,5 @@
 import { Box, Button, Divider, Grid, Stack, Typography } from '@mui/material';
 import FileDownloadRounded from '@mui/icons-material/FileDownloadRounded';
-import PaymentsRounded from '@mui/icons-material/PaymentsRounded';
-import LocalGasStationRounded from '@mui/icons-material/LocalGasStationRounded';
-import BuildRounded from '@mui/icons-material/BuildRounded';
-import ReceiptLongRounded from '@mui/icons-material/ReceiptLongRounded';
-import WaterDropRounded from '@mui/icons-material/WaterDropRounded';
-import EvStationRounded from '@mui/icons-material/EvStationRounded';
-import BoltRounded from '@mui/icons-material/BoltRounded';
 import ArrowForwardRounded from '@mui/icons-material/ArrowForwardRounded';
 import { useQuery } from '@tanstack/react-query';
 import dayjs from 'dayjs';
@@ -85,13 +78,11 @@ export default function CarOverviewPage({ id }: { id: number }) {
   const fuelTiles = [
     {
       key: 'avgConsumption',
-      icon: <WaterDropRounded />,
       color: 'fuel',
       value: format.consumption(overview?.avgConsumption),
     },
     {
       key: 'refuels',
-      icon: <LocalGasStationRounded />,
       color: 'fuel',
       value: overview?.totalRefuels ?? 0,
     },
@@ -99,13 +90,11 @@ export default function CarOverviewPage({ id }: { id: number }) {
   const chargingTiles = [
     {
       key: 'avgChargingConsumption',
-      icon: <BoltRounded />,
       color: 'charging',
       value: format.chargingConsumption(overview?.avgChargingConsumption),
     },
     {
       key: 'charges',
-      icon: <EvStationRounded />,
       color: 'charging',
       value: overview?.totalCharges ?? 0,
     },
@@ -114,21 +103,17 @@ export default function CarOverviewPage({ id }: { id: number }) {
   const tiles = [
     {
       key: 'totalCost',
-      icon: <PaymentsRounded />,
-      color: 'primary',
       value: format.money(overview?.totalCost),
     },
     ...(hasTank(car?.energyType) ? fuelTiles : []),
     ...(hasBattery(car?.energyType) ? chargingTiles : []),
     {
       key: 'maintenance',
-      icon: <BuildRounded />,
       color: 'maintenance',
       value: overview?.totalMaintenanceEvents ?? 0,
     },
     {
       key: 'miscellaneous',
-      icon: <ReceiptLongRounded />,
       color: 'miscellaneous',
       value: overview?.totalMiscellaneousEvents ?? 0,
     },
@@ -150,8 +135,7 @@ export default function CarOverviewPage({ id }: { id: number }) {
             <StatTile
               loading={isLoading}
               emphasis={index === 0}
-              icon={tile.icon}
-              color={tile.color}
+              color={'color' in tile ? tile.color : undefined}
               label={t(`car.overview.${tile.key}`)}
               value={tile.value}
             />
