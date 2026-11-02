@@ -121,16 +121,17 @@ dashboard:
       last12: "Letzte 12 Monate"
       custom: "Zeitraum"
   kpi:
-    fuelVolume: "{{value}} Kraftstoff"
     chargingConsumption: "{{value}} elektrisch"
     chargedVolume: "{{value}} geladen"
-    bothVolumes: "{{fuel}} Kraftstoff · {{charged}} geladen"
   summary:
     label: "Übersicht des Zeitraums"
-    spent: "<b>{{total}}</b> ausgegeben"
-    perDistance: "<b>{{cost}}</b> auf <b>{{distance}}</b> erfasster Strecke"
-    distance: "Auf <b>{{distance}}</b> erfasster Strecke"
-    consumption: "Ø {{value}}"
+    spent: "Ausgegeben"
+    costPerKm: "Kosten pro km"
+    costPerKm_miles: "Kosten pro Meile"
+    distance: "Erfasste Strecke"
+    consumption: "Ø Verbrauch"
+    fuel: "Getankt"
+    charged: "Geladen"
   split:
     title: "Kostenaufteilung"
     count_one: "{{count}} Eintrag"
