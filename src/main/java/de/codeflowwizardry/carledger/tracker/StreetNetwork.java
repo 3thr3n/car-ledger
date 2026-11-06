@@ -73,7 +73,7 @@ final class StreetNetwork
 
 	private final Duration gap;
 	private final long gapMillis;
-	private final Map<Long, Cell> cells = new HashMap<>();
+	private final LongMap<Cell> cells = new LongMap<>();
 	/**
 	 * the steps of the paths, the smaller key first, and how many drives took them
 	 */
