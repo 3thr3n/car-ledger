@@ -94,6 +94,10 @@ carLedger:
     # further origins the style loads tiles, glyphs or sprites from, e.g. ["https://tiles.example.com"];
     # the origin of the styleUrl is allowed anyway
     sources: []
+    # Valhalla that snaps the tracks to the roads, e.g. of the chart map-matching: http://map-matching:8002. In the
+    # stack chart set by global.mapMatching.enabled. Without it the map shows the shared line of the drives
+    # (docs/GPS_TRACKER.md#map-matching)
+    matchingUrl: ""
   # GPS trackers (see docs/GPS_TRACKER.md)
   tracker:
     # release of the tracker firmware (manifest.json and the files it lists), the users flash it from the
@@ -177,6 +181,15 @@ carLedger:
     failureThreshold: 3
     periodSeconds: 20
     timeoutSeconds: 2
+  # metrics for Prometheus on the management port (/q/metrics), see docs/DEPLOYMENT.md#metrics
+  metrics:
+    # a ServiceMonitor of the Prometheus Operator, its CRD has to exist; open the port to Prometheus with
+    # networkPolicy.managementFrom
+    serviceMonitor:
+      enabled: false
+      interval: 30s
+      # e.g. the label the Prometheus selects its ServiceMonitors by
+      labels: {}
   readinessProbe:
     failureThreshold: 3
     periodSeconds: 5
@@ -224,12 +237,62 @@ carledgerpostgres:
       cpu: 500m
       memory: 512Mi
 
-# only the app reaches its PostgreSQL and Infinispan; needs a network plugin that enforces NetworkPolicies
+# Backups of the whole database (pg_dump, custom format) by a CronJob, off by default. The backup in the settings of
+# the app is per account; this one protects against a failed migration, a wrong delete or a lost volume. Restore: see
+# docs/DEPLOYMENT.md#database-backups. It dumps the database of carLedger.postgres, also an external one
+backup:
+  enabled: false
+  # cron, in the time zone of the cluster (or timeZone)
+  schedule: "0 3 * * *"
+  timeZone: ""
+  # the dumps kept in the volume, the oldest is deleted
+  keep: 7
+  # PostgreSQL of the dump: its pg_dump has to be at least the version of the server, the image of
+  # carledgerpostgres by default
+  image:
+    repository: ""
+    tag: ""
+  # a volume of its own for the dumps; off: only into S3
+  persistence:
+    enabled: true
+    size: 8Gi
+    storageClass:
+  # also into an S3 compatible storage when a bucket is set, off the cluster: its own bucket or prefix, not the one of
+  # the attachments. Only uploads, a lifecycle rule of the bucket deletes old dumps
+  s3:
+    bucket: ""
+    prefix: car-ledger-backup/
+    # empty for AWS, e.g. https://s3.example.com for others
+    endpoint: ""
+    region: us-east-1
+    # bucket in the path of the URL instead of the host name, needed by most storages besides AWS
+    pathStyle: true
+    # secret with the access key, without one the default chain of AWS is used (e.g. IRSA)
+    existingSecret: ""
+    accessKeyIdKey: accessKeyId
+    secretAccessKeyKey: secretAccessKey
+    image:
+      repository: docker.io/amazon/aws-cli
+      tag: "2.38.0"
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
+
+# only the app reaches its PostgreSQL and Infinispan, the app takes HTTP from everywhere; needs a network plugin that
+# enforces NetworkPolicies
 networkPolicy:
   enabled: true
-  # further sources, e.g. a backup tool: entries of NetworkPolicy ingress "from"
+  # further sources for PostgreSQL and Infinispan, e.g. a backup tool: entries of NetworkPolicy ingress "from"
   # (- podSelector: {matchLabels: {app: pg-backup}})
   extraFrom: []
+  # sources for the management port of the app (9000: /q/health, /q/metrics), e.g. Prometheus: entries of
+  # NetworkPolicy ingress "from" (- namespaceSelector: {matchLabels: {kubernetes.io/metadata.name: monitoring}}).
+  # The probes of the kubelet are always allowed
+  managementFrom: []
 
 infinispan:
   enabled: true

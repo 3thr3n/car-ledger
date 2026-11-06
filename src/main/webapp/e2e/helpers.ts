@@ -17,7 +17,32 @@ export async function aliceApi(): Promise<APIRequestContext> {
   });
 }
 
-/** The account can only have one car, tests start without one */
+/**
+ * Every spec starts with new accounts of alice and bob, as if they logged in
+ * for the first time: the accounts in the app are deleted with their cars,
+ * inbox, invitations, requests and settings, so nothing leaks from an earlier
+ * spec. The logins at Keycloak stay, the next request of alice creates her
+ * account again with the same session; bob logs in in his own specs.
+ */
+export async function resetAccounts() {
+  const api = await aliceApi();
+  // bob first: deleting another account needs alice as administrator
+  const accounts = await api.get('/api/admin/accounts?search=bob');
+  expect(accounts.ok()).toBeTruthy();
+  const { data } = (await accounts.json()) as {
+    data: { id: number; name: string }[];
+  };
+  for (const account of data.filter((a) => a.name === 'bob')) {
+    expect(
+      (await api.delete(`/api/admin/accounts/${account.id}`)).status(),
+    ).toBe(204);
+  }
+  expect((await api.delete('/api/user/me')).status()).toBe(204);
+  expect((await api.get('/api/user/me')).ok()).toBeTruthy();
+  await api.dispose();
+}
+
+/** The account can only have one car, e.g. for a second one in the same spec */
 export async function deleteAllCars() {
   const api = await aliceApi();
   const cars = await api.get('/api/car/my');

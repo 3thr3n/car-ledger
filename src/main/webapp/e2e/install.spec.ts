@@ -1,4 +1,7 @@
 import { devices, expect, test } from '@playwright/test';
+import { resetAccounts } from './helpers';
+
+test.beforeAll(resetAccounts);
 
 // without defaultBrowserType, which can only be set for the whole file
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

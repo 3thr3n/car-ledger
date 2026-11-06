@@ -18,6 +18,7 @@ import {
 } from '@/components/bill/columns';
 import useDeleteBill from '@/components/bill/useDeleteBill';
 import QueuedEntries from '@/components/bill/QueuedEntries';
+import CostSummary from '@/components/bill/CostSummary';
 import { baseUrl } from '@/utils/QueryClient';
 import { billTypes } from '@/utils/billTypes';
 
@@ -107,6 +108,10 @@ export default function BillListPage({
             </Button>
           )}
         </Stack>
+        {/* a driver sees only the own entries, the sums are of all */}
+        {role('READ') && (
+          <CostSummary carId={carId} type={type} year={list.year} />
+        )}
         <BillTable
           carId={carId}
           rows={list.rows}

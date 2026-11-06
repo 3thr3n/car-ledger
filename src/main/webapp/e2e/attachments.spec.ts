@@ -1,6 +1,8 @@
 import { APIRequestContext, expect, Page, test } from '@playwright/test';
-import { aliceApi, deleteAllCars } from './helpers';
+import { aliceApi, resetAccounts } from './helpers';
 import { API_URL } from '../playwright.config';
+
+test.beforeAll(resetAccounts);
 
 /** 1×1 PNG */
 const PNG = Buffer.from(
@@ -15,7 +17,6 @@ test.describe.serial('attachments', () => {
   let carId: number;
 
   test.beforeAll(async ({ browser }) => {
-    await deleteAllCars();
     api = await aliceApi();
     await api.put('/api/car/my', {
       data: { name: 'E2E Polo', year: 2020, odometer: 1000 },
@@ -29,7 +30,6 @@ test.describe.serial('attachments', () => {
   test.afterAll(async () => {
     await page.close();
     await api.dispose();
-    await deleteAllCars();
   });
 
   const input = () => page.getByTestId('attachment-input');

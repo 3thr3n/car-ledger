@@ -5,7 +5,9 @@ import {
   Page,
   test,
 } from '@playwright/test';
-import { aliceApi, deleteAllCars } from './helpers';
+import { aliceApi, resetAccounts } from './helpers';
+
+test.beforeAll(resetAccounts);
 
 interface Trip {
   id: string;
@@ -32,7 +34,6 @@ test.describe.serial('trips', () => {
   let carId: number;
 
   test.beforeAll(async () => {
-    await deleteAllCars();
     api = await aliceApi();
     await api.put('/api/car/my', {
       data: { name: 'E2E Trips', year: 2021, odometer: 20000 },
@@ -44,7 +45,6 @@ test.describe.serial('trips', () => {
 
   test.afterAll(async () => {
     await api.dispose();
-    await deleteAllCars();
   });
 
   const trips = async () =>
@@ -146,9 +146,10 @@ test.describe.serial('trips', () => {
 
     await expect(page.getByText('Trip finished')).toBeVisible();
     await expect(current).toContainText('No trip is open');
-    const row = page.getByTestId('trip-list').getByRole('row', {
-      name: /Office/,
-    });
+    const row = page
+      .getByTestId('trip-list')
+      .getByTestId('trip')
+      .filter({ hasText: /Office/ });
     await expect(row).toContainText('42 km');
     await expect(row).toContainText('Meeting');
 
@@ -267,7 +268,8 @@ test.describe.serial('trips', () => {
     await openTrips(page);
     const row = page
       .getByTestId('trip-list')
-      .getByRole('row', { name: /20,180 km/ });
+      .getByTestId('trip')
+      .filter({ hasText: /20,180 km/ });
     await row.getByRole('button', { name: 'Delete trip' }).click();
 
     const dialog = page.getByRole('dialog');
@@ -329,7 +331,8 @@ test.describe.serial('trips', () => {
     await expect(page.getByText('Trip added')).toBeVisible();
     const row = page
       .getByTestId('trip-list')
-      .getByRole('row', { name: /19,950 km/ });
+      .getByTestId('trip')
+      .filter({ hasText: /19,950 km/ });
     await expect(row).toContainText('50 km');
     await expect(row).toContainText('Entered later');
     const added = (await trips()).find((trip) => trip.startOdometer === 19900);

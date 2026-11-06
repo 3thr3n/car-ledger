@@ -1,6 +1,8 @@
 import { expect, test } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
-import { aliceApi, deleteAllCars } from './helpers';
+import { aliceApi, resetAccounts } from './helpers';
+
+test.beforeAll(resetAccounts);
 
 const PDF = Buffer.from('%PDF-1.4\n1 0 obj<<>>endobj\ntrailer<<>>\n%%EOF');
 /** 1×1 PNG */
@@ -13,7 +15,6 @@ test.describe('papers', () => {
   let carId: number;
 
   test.beforeAll(async () => {
-    await deleteAllCars();
     const api = await aliceApi();
     await api.put('/api/car/my', {
       data: {
@@ -70,10 +71,6 @@ test.describe('papers', () => {
       },
     });
     await api.dispose();
-  });
-
-  test.afterAll(async () => {
-    await deleteAllCars();
   });
 
   test('downloads the modifications and the HU as PDF', async ({ page }) => {

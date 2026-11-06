@@ -1,4 +1,7 @@
 import { expect, test } from '@playwright/test';
+import { resetAccounts } from './helpers';
+
+test.beforeAll(resetAccounts);
 
 test('hides the sidebar on a large screen and keeps it open again', async ({
   page,

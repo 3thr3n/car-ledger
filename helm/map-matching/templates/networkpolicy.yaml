@@ -1,0 +1,27 @@
+{{- /*
+Only CarLedger (in the same namespace, and what networkPolicy.extraFrom allows) reaches Valhalla; the probes of the
+kubelet are always allowed. Needs a network plugin that enforces NetworkPolicies, ignored by the others.
+*/}}
+{{- if .Values.networkPolicy.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "mapMatching.name" . }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: map-matching
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  policyTypes: [ Ingress ]
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: car-ledger
+        {{- with .Values.networkPolicy.extraFrom }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      ports:
+        - port: 8002
+          protocol: TCP
+{{- end }}

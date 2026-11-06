@@ -17,6 +17,7 @@ import useVatCountry from '@/hooks/useVatCountry';
 import NumberField from './NumberField';
 import DateVatFields from './DateVatFields';
 import FormActions from './FormActions';
+import Pump, { PumpLine, PumpWithFields } from './Pump';
 import BillAttachments from './BillAttachments';
 import useSaveBill from './useSaveBill';
 import { isOfflineError, offlineQueue } from '@/offline';
@@ -182,59 +183,61 @@ export default function ChargingForm({
 
   return (
     <Stack component="form" onSubmit={submit} noValidate spacing={2.5}>
-      <Grid container spacing={2}>
-        <DateVatFields
-          date={form.date}
-          onDateChange={(date) => set({ date })}
-          vat={vat}
-          error={touched ? errors.date : undefined}
-        />
-      </Grid>
-
-      <Alert
-        severity={touched && errors.amounts ? 'error' : 'info'}
-        variant="outlined"
+      {/* the receipt first: what the charger showed */}
+      <PumpWithFields
+        pump={
+          <Pump
+            label={t('bill.chargingHint')}
+            error={touched ? errors.amounts : undefined}
+          >
+            <PumpLine
+              label={t('bill.fields.total')}
+              value={form.total}
+              onChange={(total) => set({ total })}
+              suffix={` ${format.currencySymbol}`}
+              max={MAX}
+              computed={
+                derived.total !== undefined
+                  ? `${format.number(derived.total, 2)} ${format.currencySymbol}`
+                  : undefined
+              }
+              helperText={
+                derived.total !== undefined
+                  ? t('bill.computed', { value: format.money(derived.total) })
+                  : undefined
+              }
+            />
+            <PumpLine
+              label={t('bill.fields.chargedUnit')}
+              value={form.unit}
+              onChange={(value) => set({ unit: value })}
+              suffix=" kWh"
+              max={MAX}
+              computed={
+                derived.unit !== undefined
+                  ? format.unit(derived.unit, 'kWh', 2)
+                  : undefined
+              }
+              helperText={computed(derived.unit, 'kWh')}
+            />
+            <PumpLine
+              label={t('bill.fields.chargingPricePerUnit')}
+              value={form.pricePerUnit}
+              onChange={(pricePerUnit) => set({ pricePerUnit })}
+              suffix=" ct/kWh"
+              decimalScale={1}
+              max={MAX}
+              computed={
+                derived.pricePerUnit !== undefined
+                  ? format.unit(derived.pricePerUnit, 'ct/kWh', 1)
+                  : undefined
+              }
+              helperText={computed(derived.pricePerUnit, 'ct/kWh', 1)}
+            />
+          </Pump>
+        }
       >
-        {t('bill.chargingHint')}
-      </Alert>
-
-      <Grid container spacing={2}>
-        <Grid size={{ xs: 12, sm: 4 }}>
-          <NumberField
-            label={t('bill.fields.total')}
-            value={form.total}
-            onChange={(total) => set({ total })}
-            suffix={` ${format.currencySymbol}`}
-            max={MAX}
-            helperText={
-              derived.total !== undefined
-                ? t('bill.computed', { value: format.money(derived.total) })
-                : undefined
-            }
-          />
-        </Grid>
-        <Grid size={{ xs: 12, sm: 4 }}>
-          <NumberField
-            label={t('bill.fields.chargedUnit')}
-            value={form.unit}
-            onChange={(value) => set({ unit: value })}
-            suffix=" kWh"
-            max={MAX}
-            helperText={computed(derived.unit, 'kWh')}
-          />
-        </Grid>
-        <Grid size={{ xs: 12, sm: 4 }}>
-          <NumberField
-            label={t('bill.fields.chargingPricePerUnit')}
-            value={form.pricePerUnit}
-            onChange={(pricePerUnit) => set({ pricePerUnit })}
-            suffix=" ct/kWh"
-            decimalScale={1}
-            max={MAX}
-            helperText={computed(derived.pricePerUnit, 'ct/kWh', 1)}
-          />
-        </Grid>
-        <Grid size={{ xs: 12, sm: 4 }}>
+        <Grid size={12}>
           <NumberField
             label={t('bill.fields.distance')}
             value={form.distance}
@@ -253,7 +256,7 @@ export default function ChargingForm({
             }
           />
         </Grid>
-        <Grid size={{ xs: 12, sm: 4 }}>
+        <Grid size={12}>
           <TextField
             select
             label={t('bill.fields.location')}
@@ -270,7 +273,7 @@ export default function ChargingForm({
             ))}
           </TextField>
         </Grid>
-        <Grid size={{ xs: 12, sm: 4 }}>
+        <Grid size={12}>
           <NumberField
             label={t('bill.fields.stateOfCharge')}
             value={form.stateOfCharge}
@@ -281,7 +284,7 @@ export default function ChargingForm({
             helperText={t('bill.stateOfChargeHelp')}
           />
         </Grid>
-      </Grid>
+      </PumpWithFields>
 
       {overBattery && (
         <Alert severity="warning" variant="outlined">
@@ -291,6 +294,16 @@ export default function ChargingForm({
           })}
         </Alert>
       )}
+
+      <Grid container spacing={2}>
+        {/* today and the country of the account fit most receipts */}
+        <DateVatFields
+          date={form.date}
+          onDateChange={(date) => set({ date })}
+          vat={vat}
+          error={touched ? errors.date : undefined}
+        />
+      </Grid>
 
       <BillAttachments {...save.attachments} />
 

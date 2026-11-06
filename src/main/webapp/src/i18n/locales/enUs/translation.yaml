@@ -1,4 +1,6 @@
 app:
+  skipToContent: "Skip to content"
+  menu: "Menu"
   title: "CarLedger"
   loading: "Loading"
   hideSidebar: "Hide the sidebar"
@@ -35,24 +37,38 @@ button:
   logout: "Log out"
 
 nav:
+  label: "Main menu"
   dashboard: "Dashboard"
   garage: "Garage"
   yourCars: "Your cars"
   notifications: "Notifications"
   settings: "Settings"
   admin: "Administration"
+  shortcuts: "Shortcuts"
+  refuel: "Refuel"
+  charge: "Charge"
+  inbox: "Inbox"
   signedInAs: "Signed in as"
 
 common:
+  actions: "Actions"
   all: "See all"
   allYears: "All years"
 
 landing:
-  eyebrow: "Car cost tracking"
   title: "Know what your car really costs."
   subtitle: "Log refuels, charges, workshop visits, insurance and everything else, and keep the papers of your car at hand. CarLedger turns your receipts into cost per kilometer, consumption and trends."
   cta: "Log in to start"
   ctaDashboard: "Open dashboard"
+  selfHosted: "Runs on your own server: your receipts and your routes stay with you."
+  example:
+    car: "Octavia Combi, petrol"
+    caption: "An example: the page of a car after a year of entries."
+  groups:
+    costs: "Every cost of the car"
+    papers: "Papers and dates"
+    road: "On the road"
+    data: "Your data"
   features:
     fuel:
       title: "Refuels"
@@ -92,7 +108,7 @@ landing:
       text: "Start and finish trips with the odometer, deleted ones stay with their reason, export as PDF or CSV."
     gps:
       title: "GPS tracking"
-      text: "A tracker in the car sends its route: the map by speed or by how often you drove it, forgotten trips suggested."
+      text: "A tracker in the car sends its route: the map by speed, g-forces or how often you drove it, a drive becomes a trip."
     sharing:
       title: "Sharing"
       text: "Invite your household or your drivers to a car as editor, viewer or driver, also for a period."
@@ -117,18 +133,19 @@ dashboard:
       last12: "Last 12 months"
       custom: "Custom"
   kpi:
-    total: "Total spent"
-    costPerKm: "Cost per km"
-    costPerKm_miles: "Cost per mile"
-    consumption: "Avg. consumption"
-    distance: "Tracked distance"
-    fuelVolume: "{{value}} fuel"
     chargingConsumption: "{{value}} electric"
     chargedVolume: "{{value}} charged"
-    bothVolumes: "{{fuel}} fuel · {{charged}} charged"
+  summary:
+    label: "Summary of the period"
+    spent: "Spent"
+    costPerKm: "Cost per km"
+    costPerKm_miles: "Cost per mile"
+    distance: "Tracked distance"
+    consumption: "Avg. consumption"
+    fuel: "Fuel tanked"
+    charged: "Charged"
   split:
     title: "Cost breakdown"
-    subtitle: "Share of each kind of expense"
     count_one: "{{count}} entry"
     count_other: "{{count}} entries"
   average:
@@ -144,6 +161,9 @@ dashboard:
   range:
     title: "Lowest and highest"
     subtitle: "Spread across single entries"
+    lowest: "Lowest"
+    highest: "Highest"
+    metric: "Value"
     pricePerUnit: "Fuel price"
     consumption: "Consumption"
     fuelCostPerKm: "Fuel cost per km"
@@ -166,6 +186,7 @@ dashboard:
     pricePerUnit:
       fuel: "Fuel price"
       charging: "Electricity price"
+    month: "Month"
     consumption: "Consumption"
     tooltipTotal: "{{month}} · Total {{total}}"
     empty:
@@ -233,12 +254,31 @@ car:
     reminders: "Reminders"
     modifications: "Modifications"
     inspections: "HU"
+  cluster:
+    label: "Instrument cluster"
+    spent: "Spent"
+    perMonth: "Per month"
+    perMonthUnit: "{{unit}} a month"
+    odometer: "Odometer {{value}}"
+    estimatedToday: "About {{value}} today, {{perDay}} a day"
+    low: "Low"
+    high: "High"
+    consumptionLabel: "Consumption {{value}} on average"
+    distanceLabel: "{{value}} a month on average"
+    noConsumption: "No consumption yet"
+    noDistance: "No distance yet"
+    status: "Status"
+    hu: "Next HU"
+    nextPayment: "{{amount}}, next {{date}}"
+    tracker: "Tracker"
+    trackerOnline: "Tracker online"
+    lastPoint: "Last point {{date}}"
+    noPoint: "No point yet"
+    tripComputer: "Trip computer"
+    rangePerTank: "Range per tank"
+    rangePerBattery: "Range per battery"
   overview:
-    totalCost: "Total cost"
-    avgConsumption: "Avg. consumption"
     refuels: "Refuels"
-    maintenance: "Maintenance"
-    miscellaneous: "Miscellaneous"
     ledger: "Ledger"
     ledgerSubtitle: "All entries of this car, newest first"
     toDashboard: "Statistics"
@@ -251,7 +291,6 @@ car:
     runningEmpty: "No running recurring costs"
     addRecurring: "Add recurring cost"
     nextDue: "Next due {{date}}"
-    avgChargingConsumption: "Avg. consumption (electric)"
     charges: "Charges"
     papers:
       title: "HU and modifications"
@@ -495,9 +534,9 @@ tracker:
 
 track:
   title: "GPS tracks"
-  subtitle: "The tracks of the GPS trackers of this car"
-  summary_one: "{{distance}} GPS distance in {{count}} section"
-  summary_other: "{{distance}} GPS distance in {{count}} sections"
+  gpsDistance: "GPS distance"
+  atTheWheel: "GPS distance, {{duration}} at the wheel"
+  legend: "Legend of the map"
   shortcuts:
     label: "Period"
     today: "Today"
@@ -513,6 +552,7 @@ track:
   tooLong: "Please choose at most {{days}} days."
   speed: "Speed ({{unit}})"
   legendLabel: "Speed from {{from}} {{unit}} (light) to {{to}} {{unit}} (dark)"
+  mapLabel: "Map of the GPS track, the distance and the drives are listed with it"
   noSpeed: "No speed"
   frequency: "Times driven"
   frequencyLabel: "Driven from 1× (light, thin) to {{to}}× (dark, wide)"
@@ -523,6 +563,21 @@ track:
     label: "Color the track by"
     speed: "Speed"
     frequency: "Frequency"
+    gforce: "G-forces"
+  gforce:
+    title: "G-force: the largest of accelerating, braking and cornering"
+    legendLabel: "G-force from calm (blue) to harsh (red): from {{imu}} of the IMU, from {{gps}} of the GPS"
+    calm: "Calm"
+    harsh: "Harsh"
+    hint: "Harsh from {{imu}} of the IMU, from {{gps}} of the GPS: it only averages over a second, its values are lower."
+    none: "No g-forces"
+    value: "{{g}} g {{kind}} ({{source}})"
+    imu: "IMU"
+    gps: "GPS"
+    kinds:
+      accel: "accelerating"
+      brake: "braking"
+      lateral: "cornering"
   notSetUp: "The map is not set up"
   notSetUpText: "The operator of CarLedger sets up a map server, see docs/GPS_TRACKER.md."
   deletePeriod: "Delete this track"
@@ -539,8 +594,12 @@ track:
     unnamed: "Unnamed place"
     minutes_one: "{{count}} min"
     minutes_other: "{{count}} min"
+    hours: "{{hours}} h {{minutes}} min"
+    parked: "parked {{duration}}"
     delete: "Delete drive"
     deleteLabel: "Delete the drive {{drive}}"
+    addTrip: "Add as trip"
+    addTripLabel: "Add the drive {{drive}} as trip"
     deleteTitle: "Delete the drive of {{drive}}?"
     deleteText: "Its points ({{distance}}) and those of the stop after it, up to the next drive, are deleted and can't be restored. The other drives, the places, trips and odometers stay as they are."
     deleted_one: "{{count}} point deleted"
@@ -617,6 +676,28 @@ bill:
   status:
     running: "Running"
     finished: "Finished"
+  summary:
+    label: "Summary of the list"
+    year: "In {{year}}"
+    allYears: "In all years"
+    paid: "Paid"
+    averagePrice: "Price per liter"
+    averagePrice_gallons: "Price per gallon"
+    averageChargingPrice: "Price per kWh"
+    refuels_one: "{{count}} refuel"
+    refuels_other: "{{count}} refuels"
+    charges_one: "{{count}} charge"
+    charges_other: "{{count}} charges"
+    consumption: "{{value}} on average"
+    distance: "{{value}} per refuel"
+    costs_one: "{{period}} for {{count}} entry"
+    costs_other: "{{period}} for {{count}} entries"
+    costs_maintenance_one: "{{period}} for {{count}} maintenance"
+    costs_maintenance_other: "{{period}} for {{count}} maintenances"
+    average: "{{value}} on average"
+    perMonth_one: "a month for {{count}} running cost"
+    perMonth_other: "a month for {{count}} running costs"
+    next: "Next: {{name}}, {{amount}} on {{date}}"
   fields:
     type: "Type"
     date: "Date"
@@ -654,7 +735,6 @@ bill:
   add:
     button: "Add entry"
     title: "New entry"
-    subtitle: "Choose what kind of receipt you want to record."
     saveAgain: "Save and add another"
     saved: "Entry saved"
     describe:
@@ -841,9 +921,17 @@ backup:
 settings:
   title: "Settings"
   subtitle: "Preferences of your account, on every device."
-  entries: "Entries"
+  index: "Sections of the settings"
+  sections:
+    look: "Look"
+    entries: "Entries and units"
+    notifications: "Notifications"
+    app: "App"
+    backup: "Backup"
+    account: "Account"
+  entriesText: "How amounts, distances and new entries are shown, for every device of your account."
+  languageHelp: "The language of the menus and texts. Without a choice, the one of the browser."
   vatHelp: "Preselected for new entries, can be changed per entry"
-  display: "Display"
   currency: "Currency"
   currencyHelp: "Amounts are shown like {{example}}. Existing entries are not converted."
   units: "Units"
@@ -860,6 +948,13 @@ settings:
   saved: "Settings saved"
   appearance:
     title: "Appearance"
+    lookText: "Light like road signs, dark like the instruments at night, or automatic like the device. Only on this device."
+    look: "Look of the app"
+    modes:
+      light: "Light"
+      dark: "Dark"
+      system: "Automatic"
+    accent: "Accent color"
     text: "The accent color of buttons, links and highlights, saved with your account. The colors of the categories stay."
     accents:
       TEAL: "Teal"
@@ -1119,7 +1214,7 @@ trip:
     hint: "Only a hint: the trip log counts the odometer readings."
   list:
     title: "Trip log"
-    subtitle: "Started and finished trips, newest first"
+    subtitle: "Started and finished trips by day, the latest day first"
     emptyTitle: "No trips yet"
     emptyText: "Trips you start and finish are listed here."
     date: "Date"
@@ -1127,6 +1222,7 @@ trip:
     distance: "Distance"
     details: "Destination / purpose"
     open: "open"
+    gap: "{{distance}} not in the log"
     deleted: "Deleted on {{date}}: {{reason}}"
     restored: "Restored from a backup"
     enteredLater: "Entered later"
@@ -1215,6 +1311,8 @@ modification:
   removedAt: "Removed {{when}}"
   registered: "Entered in the registration certificate"
   notRegistered: "Not entered in the registration certificate"
+  papersComplete: "Papers complete"
+  allComplete: "all papers complete"
   open:
     inspection: "Abnahme open"
     registration: "Not in the registration yet"
@@ -1302,6 +1400,13 @@ inspection:
   details: "Details"
   nextDue: "Next HU {{month}}"
   nextDueHint: "The reminder of the HU moves to this month."
+  sticker: "HU sticker, due in {{month}}"
+  due:
+    thisMonth: "Due this month"
+    inMonths_one: "In {{count}} month"
+    inMonths_other: "In {{count}} months"
+    overdue_one: "{{count}} month overdue"
+    overdue_other: "{{count}} months overdue"
   fields:
     date: "Date"
     odometer: "Odometer"

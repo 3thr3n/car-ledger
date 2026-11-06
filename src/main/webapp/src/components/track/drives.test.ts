@@ -1,10 +1,19 @@
 import { describe, expect, it } from 'vitest';
-import { byDay, deleteRange, driveAt, interval, minutes } from './drives';
+import {
+  byDay,
+  deleteRange,
+  driveAt,
+  hoursOf,
+  interval,
+  legsOf,
+  minutes,
+} from './drives';
 
 const drive = (start: string, end: string) => ({
   start,
   end,
   distance: 1,
+  trip: false,
 });
 
 /** newest first, at noon so the local day is the same in every time zone */
@@ -52,5 +61,23 @@ describe('drives', () => {
       from: EVENING.start,
       to: end,
     });
+  });
+
+  it('lays out the drives of a day as a route from the morning on', () => {
+    const home = { ...MORNING, from: 'Home', to: 'Office' };
+    const back = { ...EVENING, from: 'Office', to: 'Home' };
+
+    expect(legsOf([back, home])).toEqual([
+      { drive: home, departure: true, parked: 90 },
+      { drive: back, departure: false, parked: undefined },
+    ]);
+    // ended elsewhere than the next one starts, e.g. the tracker was off
+    const elsewhere = { ...back, from: 'Shop' };
+    expect(legsOf([elsewhere, home])[1].departure).toBe(true);
+  });
+
+  it('splits minutes into hours and minutes', () => {
+    expect(hoursOf(125)).toEqual({ hours: 2, minutes: 5 });
+    expect(hoursOf(45)).toEqual({ hours: 0, minutes: 45 });
   });
 });

@@ -1,7 +1,7 @@
 # CarLedger stack
 
 CarLedger and the charts next to it in one release: the app (`helm/car-ledger`), the identity provider
-(`helm/keycloak` or `helm/authentik`). Every part is switched on with one value, the host names, URLs and secrets
+(`helm/keycloak` or `helm/authentik`) and the map matching (`helm/map-matching`). Every part is switched on with one value, the host names, URLs and secrets
 between them are set up by the stack:
 
 | Enabled                         | Set up                                                                                                        |
@@ -9,6 +9,7 @@ between them are set up by the stack:
 | always                          | CarLedger at `car-ledger.<global.host>`                                                                       |
 | `global.authentik.enabled=true` | authentik at `authentik.<global.host>` with CarLedger as application; the app logs in there with the client `car-ledger` and the generated secret `car-ledger-oidc` |
 | `global.keycloak.enabled=true`  | Keycloak at `keycloak.<global.host>` with the realm `car-ledger` imported; the app logs in there with the client `carLedger` and the generated secret `keycloak` |
+| `global.mapMatching.enabled=true` | Valhalla as `car-ledger-map-matching`, builds its tiles of Germany, Austria and Switzerland on the first start; the app snaps the GPS tracks to the roads with it ([GPS_TRACKER.md](../../docs/GPS_TRACKER.md#map-matching)) |
 
 Without an identity provider, the app uses an existing one, see `app.carLedger.auth.*` and
 [DEPLOYMENT.md](../../docs/DEPLOYMENT.md#identity-provider).
@@ -23,7 +24,7 @@ helm install car-ledger oci://ghcr.io/3thr3n/car-ledger/stack \
   --set global.authentik.enabled=true
 ```
 
-The stack has the version of the app: the release `0.10.0` runs the image `0.10.0` and contains the other charts of the
+The stack has the version of the app: the release `0.11.0` runs the image `0.11.0` and contains the other charts of the
 same commit. Builds of `develop` are published as prereleases like the app chart (`--devel`).
 
 Name the release `car-ledger` and install it once per namespace: the names of the resources are fixed (e.g. the
@@ -76,7 +77,7 @@ With the Gateway API instead of an ingress, switch each chart: `app.ingress.enab
 ## From the repository
 
 ```bash
-for chart in car-ledger keycloak authentik stack; do helm dependency update helm/$chart; done
+for chart in car-ledger keycloak authentik map-matching stack; do helm dependency update helm/$chart; done
 helm install car-ledger helm/stack --set global.host=example.com ...
 ```
 

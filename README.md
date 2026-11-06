@@ -40,7 +40,9 @@ authentik or any other provider).
 - **Units:** metric, US (miles, gallons, mpg) or UK (miles, liters, mpg) per account. They are stored in km and liters,
   the API always uses those.
 - **Statistics:** totals, averages and the consumption over time per car and for all cars.
-- **Accent colors:** one of five presets per account, in light and dark mode.
+- **Two looks:** road signs in the light theme, an instrument cluster in the dark one: a car opens with its gauges
+  (consumption, km per month, the odometer of today estimated from the average a day), a refuel is typed into the
+  display of a pump. One of five accent colors per account; the main pages follow WCAG 2.1 AA.
 - **Modifications:** the parts of a tuned car with their ABE, Teiletypgenehmigung, Teilegutachten or Einzelabnahme, the
   conditions, the Abnahme and the entry in the registration certificate, with the documents; removed parts stay as the
   history of the car.
@@ -58,8 +60,9 @@ authentik or any other provider).
 - **Trip log (Fahrtenbuch):** start and finish trips with the odometer, enter forgotten ones, delete with a reason
   (they stay in the log), export as PDF or CSV.
 - **GPS tracking:** a tracker in the car (e.g. an ESP32) sends its points, the app shows the tracks on a map colored
-  by speed or by how often a road was driven and the track of a trip, single drives and in fullscreen, names the
-  places the car stops at often and suggests forgotten trips from the drives; it keeps the g-forces of the points;
+  by speed, by the g-forces or by how often a road was driven and the track of a trip, single drives and in
+  fullscreen, names the places the car stops at often, suggests forgotten trips from the drives and adds a drive of
+  the map as a trip; optionally the tracks are snapped to the roads (a self-hosted Valhalla);
   the owner chooses how long the points are kept, sees the status of the tracker (firmware, storage, last upload) and
   updates only its firmware with the settings kept, see [docs/GPS_TRACKER.md](docs/GPS_TRACKER.md).
 - **Reminders and notifications:** due reminders, invitations to cars and the answers to requests in the inbox of the
@@ -80,6 +83,8 @@ authentik or any other provider).
 - **Service accounts:** scripts use the API with tokens of the identity provider, e.g. to decide car requests, see
   [Service accounts](docs/DEPLOYMENT.md#service-accounts).
 - **Administration:** usage statistics, all accounts with their cars, the car limit per account, deleting accounts.
+- **Operations:** metrics for Prometheus and nightly backups of the whole database (into a volume and S3), both
+  from the chart, see [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md#metrics).
 
 ## Installation
 
@@ -109,6 +114,7 @@ the identity providers and the upgrades.
 | `car-ledger` | The app, its PostgreSQL and Infinispan (the login sessions, shared by all replicas)                       | [values](helm/car-ledger/values.yaml)        |
 | `keycloak`   | Keycloak with its PostgreSQL, the realm of CarLedger imported                                             | [DEPLOYMENT.md](docs/DEPLOYMENT.md#fresh-install-with-keycloak) |
 | `authentik`  | authentik with its PostgreSQL, CarLedger set up as application                                            | [README](helm/authentik/README.md)           |
+| `map-matching` | Valhalla, snaps the GPS tracks to the roads (optional)                                                  | [GPS_TRACKER.md](docs/GPS_TRACKER.md#map-matching) |
 
 For a new installation, use the `stack`. The single charts are for an existing identity provider, separate namespaces or
 your own umbrella chart.
@@ -215,16 +221,20 @@ described in [values.yaml](helm/car-ledger/values.yaml), the options in [docs/DE
 
 ### Versions
 
-A [release](https://github.com/3thr3n/car-ledger/releases) (e.g. `0.10.0`) publishes the image
-`ghcr.io/3thr3n/car-ledger:0.10.0` and the charts `car-ledger` and `stack` in the same version, which run that image.
+A [release](https://github.com/3thr3n/car-ledger/releases) (e.g. `0.11.0`) publishes the image
+`ghcr.io/3thr3n/car-ledger:0.11.0` and the charts `car-ledger` and `stack` in the same version, which run that image.
 `keycloak` and `authentik` have their own versions, the release notes name them. Without `--version`, Helm installs the
 latest release.
 
-Every build of `develop` is published as a prerelease, `<next release>-dev.<run number>` (e.g. `0.11.0-dev.123`): `--devel`
-installs the latest one, a version range takes them only with a prerelease suffix (`>=0.11.0-0`). Leave
+Every build of `develop` is published as a prerelease, `<next release>-dev.<run number>` (e.g. `1.0.0-dev.123`): `--devel`
+installs the latest one, a version range takes them only with a prerelease suffix (`>=1.0.0-0`). Leave
 `carLedger.image.tag` empty, the chart runs the image of its own build.
 
 Up to 0.3.x the app chart was `oci://ghcr.io/3thr3n/car-ledger/helm`, since 0.4.0 it is `car-ledger`.
+
+What stays stable within 1.x (the API, backups, the CSV formats, upgrades, the values of the charts, the device API
+of the trackers)
+is written down in [docs/STABILITY.md](docs/STABILITY.md).
 
 ### Upgrading
 
@@ -332,12 +342,13 @@ yarn dev
 cd src/main/webapp && yarn test
 
 # end-to-end tests, start Quarkus (with dev services, needs Docker) and Vite themselves,
-# running servers are reused
+# running servers are reused. Each spec starts with new accounts of alice and bob (resetAccounts in
+# e2e/helpers.ts), so one runs alone too: yarn test:e2e e2e/trips.spec.ts
 cd src/main/webapp && npx playwright install chromium && yarn test:e2e
 
 # charts: the template tests of helm/<chart>/tests (plugin helm-unittest) and the rendered
 # resources against the schemas of Kubernetes (kubeconform), after helm dependency update
-helm unittest --with-subchart=false helm/car-ledger helm/keycloak helm/authentik helm/stack
+helm unittest --with-subchart=false helm/car-ledger helm/keycloak helm/authentik helm/map-matching helm/stack
 helm/validate-manifests.sh
 ```
 

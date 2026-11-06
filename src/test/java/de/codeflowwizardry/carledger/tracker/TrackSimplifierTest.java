@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
+import de.codeflowwizardry.carledger.rest.car.track.GForces;
 import de.codeflowwizardry.carledger.rest.car.track.TrackPoint;
 
 class TrackSimplifierTest
@@ -41,6 +42,24 @@ class TrackSimplifierTest
 		List<TrackPoint> points = straight(100);
 
 		assertEquals(List.of(points.getFirst(), points.getLast()), TrackSimplifier.simplify(points, 5, 10));
+	}
+
+	@Test
+	void shouldPassTheGForcesOfThePointsLeftOutToTheNextKeptOne()
+	{
+		List<TrackPoint> points = new ArrayList<>();
+		for (TrackPoint point : straight(100))
+		{
+			points.add(point.with(new GForces(0.1, 0.0, 0.1, false)));
+		}
+		// a hard braking and a curve to the left on the way, from the IMU
+		points.set(40, points.get(40).with(new GForces(0.0, 0.7, null, true)));
+		points.set(60, points.get(60).with(new GForces(0.2, 0.1, -0.5, true)));
+
+		List<TrackPoint> kept = TrackSimplifier.simplify(points, 5, 10);
+		assertEquals(2, kept.size());
+		assertEquals(new GForces(0.1, 0.0, 0.1, false), kept.getFirst().g());
+		assertEquals(new GForces(0.2, 0.7, -0.5, true), kept.getLast().g());
 	}
 
 	@Test

@@ -1,10 +1,8 @@
 import {
   Box,
   Button,
-  Card,
   Divider,
   FormControlLabel,
-  FormHelperText,
   Stack,
   Switch,
   Typography,
@@ -12,6 +10,8 @@ import {
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import Section from '@/components/ui/Section';
+import SettingRow from '@/components/settings/SettingRow';
 import { toast } from 'react-toastify';
 import { NotificationSettings } from '@/generated';
 import {
@@ -98,18 +98,14 @@ export default function NotificationSection() {
   );
 
   return (
-    <Card sx={{ p: 3, mt: 3 }}>
+    <Section
+      id="notifications"
+      title={t('notifications.title')}
+      subtitle={t('notifications.inbox')}
+      sx={{ mb: 3 }}
+    >
       <Stack spacing={2}>
-        <Box>
-          <Typography sx={{ fontWeight: 600 }}>
-            {t('notifications.title')}
-          </Typography>
-          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-            {t('notifications.inbox')}
-          </Typography>
-        </Box>
-
-        <Box>
+        <SettingRow help={mailHint}>
           <FormControlLabel
             control={
               <Switch
@@ -122,10 +118,19 @@ export default function NotificationSection() {
             }
             label={t('notifications.byMail')}
           />
-          <FormHelperText sx={{ mt: 0 }}>{mailHint}</FormHelperText>
-        </Box>
+        </SettingRow>
 
-        <Box>
+        <SettingRow
+          help={
+            <span data-testid="push-hint">
+              {pushBusy && push.state === 'off'
+                ? t('notifications.push.turningOn')
+                : t(`notifications.push.${push.state}`, {
+                    count: push.browsers,
+                  })}
+            </span>
+          }
+        >
           <FormControlLabel
             control={
               <Switch
@@ -136,11 +141,6 @@ export default function NotificationSection() {
             }
             label={t('notifications.push.label')}
           />
-          <FormHelperText sx={{ mt: 0 }} data-testid="push-hint">
-            {pushBusy && push.state === 'off'
-              ? t('notifications.push.turningOn')
-              : t(`notifications.push.${push.state}`, { count: push.browsers })}
-          </FormHelperText>
           {push.state === 'on' && (
             <Button
               size="small"
@@ -151,7 +151,7 @@ export default function NotificationSection() {
               {t('notifications.push.test')}
             </Button>
           )}
-        </Box>
+        </SettingRow>
 
         <Divider />
 
@@ -168,6 +168,6 @@ export default function NotificationSection() {
           </Stack>
         </Box>
       </Stack>
-    </Card>
+    </Section>
   );
 }

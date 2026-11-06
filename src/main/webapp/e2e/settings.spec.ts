@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test';
-import { aliceApi } from './helpers';
+import { aliceApi, resetAccounts } from './helpers';
+
+test.beforeAll(resetAccounts);
 
 /** as the server has it */
 async function accentOfTheAccount() {
@@ -12,16 +14,20 @@ async function accentOfTheAccount() {
 }
 
 test.describe.serial('settings', () => {
-  test.afterAll(async () => {
-    // back to the defaults, the other tests expect them
+  test('changes the currency of all amounts', async ({ page }) => {
+    // an empty dashboard shows no amounts
     const api = await aliceApi();
-    await api.put('/api/user/me/settings', {
-      data: { vatCountry: 'DE', currency: 'EUR', accent: 'TEAL' },
+    await api.put('/api/car/my', {
+      data: { name: 'E2E Polo', year: 2020, odometer: 10000 },
+    });
+    const [car] = (await (await api.get('/api/car/my')).json()) as {
+      id: number;
+    }[];
+    await api.put(`/api/bill/${car.id}/miscellaneous`, {
+      data: { date: '2026-01-15', vatRate: 19, total: 12.5 },
     });
     await api.dispose();
-  });
 
-  test('changes the currency of all amounts', async ({ page }) => {
     await page.goto('/dashboard');
     await page.getByRole('link', { name: 'Settings' }).click();
     await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible();
@@ -35,7 +41,7 @@ test.describe.serial('settings', () => {
     await expect(page.getByText('Settings saved')).toBeVisible();
 
     await page.goto('/dashboard');
-    await expect(page.getByText('$0.00').first()).toBeVisible();
+    await expect(page.getByText('$12.50').first()).toBeVisible();
   });
 
   test('keeps the settings after a reload', async ({ page }) => {
@@ -54,6 +60,8 @@ test.describe.serial('settings', () => {
     await expect(
       page.getByRole('heading', { name: 'Einstellungen' }),
     ).toBeVisible();
+    // screen readers read the page in its language
+    await expect(page.locator('html')).toHaveAttribute('lang', 'de');
 
     // the language is part of the account, not only of this browser
     await page.evaluate(() => localStorage.clear());
@@ -66,6 +74,7 @@ test.describe.serial('settings', () => {
     await page.getByRole('option', { name: 'English' }).click();
     await page.getByRole('button', { name: 'Speichern' }).click();
     await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible();
+    await expect(page.locator('html')).toHaveAttribute('lang', 'en');
   });
 
   test('colors the app with the chosen accent', async ({ page }) => {
@@ -118,6 +127,25 @@ test.describe.serial('settings', () => {
     await context.setOffline(false);
     await expect.poll(accentOfTheAccount).toBe('ROSE');
     await expect(save).toHaveCSS('background-color', 'rgb(190, 18, 60)');
+  });
+
+  test('switches between light and dark on this device', async ({ page }) => {
+    await page.goto('/settings');
+    const look = page.getByRole('radiogroup', { name: 'Look of the app' });
+    // the tiles are the labels of the radios
+    const choose = async (name: string) => {
+      await look.getByText(name, { exact: true }).click();
+      await expect(look.getByRole('radio', { name })).toBeChecked();
+    };
+    await choose('Dark');
+    await expect(page.locator('html')).toHaveClass(/dark/);
+    await choose('Light');
+    await expect(page.locator('html')).not.toHaveClass(/dark/);
+
+    // automatic follows the device
+    await page.emulateMedia({ colorScheme: 'dark' });
+    await choose('Automatic');
+    await expect(page.locator('html')).toHaveClass(/dark/);
   });
 
   test('shows why no notifications can be sent', async ({ page }) => {

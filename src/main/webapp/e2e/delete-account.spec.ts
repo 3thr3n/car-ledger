@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test';
-import { keycloakLogin } from './helpers';
+import { keycloakLogin, resetAccounts } from './helpers';
+
+test.beforeAll(resetAccounts);
 
 // bob in his own session, the account of alice is shared by the other tests
 test.use({ storageState: { cookies: [], origins: [] } });

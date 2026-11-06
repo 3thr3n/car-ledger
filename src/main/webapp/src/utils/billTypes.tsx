@@ -5,6 +5,7 @@ import EvStationRounded from '@mui/icons-material/EvStationRounded';
 import BuildRounded from '@mui/icons-material/BuildRounded';
 import ReceiptLongRounded from '@mui/icons-material/ReceiptLongRounded';
 import EventRepeatRounded from '@mui/icons-material/EventRepeatRounded';
+import type { Theme } from '@mui/material/styles';
 import { ReactElement } from 'react';
 
 export type BillPaletteKey =
@@ -91,3 +92,15 @@ export function isBillType(value: unknown): value is BillType {
     (Object.values(BillType) as string[]).includes(value)
   );
 }
+
+/**
+ * A category color as text or icon on its own tint: the darker shade in light
+ * mode, the lighter main color in dark mode, both at least 4.5:1
+ */
+export const categoryInk = (
+  theme: Theme,
+  color: BillPaletteKey | 'primary',
+) => ({
+  color: theme.vars.palette[color].dark,
+  ...theme.applyStyles('dark', { color: theme.vars.palette[color].main }),
+});

@@ -1,5 +1,7 @@
 import { APIRequestContext, expect, test } from '@playwright/test';
-import { aliceApi, deleteAllCars } from './helpers';
+import { aliceApi, resetAccounts } from './helpers';
+
+test.beforeAll(resetAccounts);
 
 /**
  * Miles and gallons: the API keeps km and liters, the app shows and takes the
@@ -10,7 +12,6 @@ test.describe.serial('units', () => {
   let carId: number;
 
   test.beforeAll(async () => {
-    await deleteAllCars();
     api = await aliceApi();
     await api.put('/api/car/my', {
       data: { name: 'E2E Mustang', year: 2020, odometer: 1000, tankSize: 60 },
@@ -31,16 +32,7 @@ test.describe.serial('units', () => {
   });
 
   test.afterAll(async () => {
-    // back to the defaults, the other tests expect them
-    await api.put('/api/user/me/settings', {
-      data: {
-        vatCountry: 'DE',
-        currency: 'EUR',
-        unitSystem: 'METRIC',
-      },
-    });
     await api.dispose();
-    await deleteAllCars();
   });
 
   test('shows the refuels in miles, gallons and mpg', async ({ page }) => {

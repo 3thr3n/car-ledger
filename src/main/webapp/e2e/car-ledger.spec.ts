@@ -1,6 +1,8 @@
 import { expect, Page, test } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
-import { deleteAllCars, money } from './helpers';
+import { money, resetAccounts } from './helpers';
+
+test.beforeAll(resetAccounts);
 
 /**
  * One journey through the app, the steps build on each other
@@ -10,7 +12,6 @@ test.describe.serial('car ledger', () => {
   let carUrl: string;
 
   test.beforeAll(async ({ browser }) => {
-    await deleteAllCars();
     page = await browser.newPage();
   });
 
@@ -57,7 +58,14 @@ test.describe.serial('car ledger', () => {
     await page.getByRole('button', { name: 'Save' }).click();
 
     await expect(page).toHaveURL(/\/car\/\d+$/);
-    await expect(page.getByText(/^M-E2E 42 · Built/)).toBeVisible();
+    // the preview of the form shows the plate too, until the form is gone
+    await expect(page.getByTestId('car-preview')).toHaveCount(0);
+    // the plate next to the name, no longer in the line below it
+    const header = page
+      .getByRole('heading', { level: 1, name: 'E2E Golf' })
+      .locator('..');
+    await expect(header.getByText('M-E2E 42', { exact: true })).toBeVisible();
+    await expect(page.getByText(/^Built 20\d\d · /)).toBeVisible();
     const details = page.locator('.MuiCard-root', {
       hasText: 'Purchase price',
     });
@@ -86,7 +94,9 @@ test.describe.serial('car ledger', () => {
 
     await expect(page).toHaveURL(/\/car\/\d+$/);
     await expect(page.getByText(/· Plug-in hybrid ·/)).toBeVisible();
-    const details = page.locator('.MuiCard-root', { hasText: 'Battery' });
+    const details = page.locator('.MuiCard-root', {
+      has: page.getByRole('heading', { name: 'Details' }),
+    });
     await expect(details).toContainText('Tank50.0 l');
     await expect(details).toContainText('Battery10.4 kWh');
   });
@@ -390,15 +400,20 @@ test.describe.serial('car ledger', () => {
       page.getByText(`January 2026 · Total ${money(71.75)}`),
     ).toBeVisible();
     await chart.getByRole('button', { name: 'Fuel', exact: true }).click();
-    await expect(chart.getByText('Fuel price')).toBeVisible();
+    // the legend, the table for screen readers has the same names
+    await expect(chart.getByRole('list').getByText('Fuel price')).toBeVisible();
     await expect(chart.getByText('No refuels in this period')).toHaveCount(0);
     await chart.getByRole('button', { name: 'Charging', exact: true }).click();
-    await expect(chart.getByText('Electricity price')).toBeVisible();
+    await expect(
+      chart.getByRole('list').getByText('Electricity price'),
+    ).toBeVisible();
   });
 
   test('deletes an entry from the ledger', async () => {
     await page.goto(carUrl);
-    const row = page.getByRole('row', { name: /Maintenance/ });
+    // of the ledger, the chart has a table for screen readers as well
+    const ledger = page.getByRole('grid');
+    const row = ledger.getByRole('row', { name: /Maintenance/ });
     await row.getByRole('button', { name: 'Delete' }).click();
     await page
       .getByRole('dialog')
@@ -406,7 +421,9 @@ test.describe.serial('car ledger', () => {
       .click();
 
     await expect(page.getByText('Entry deleted')).toBeVisible();
-    await expect(page.getByRole('row', { name: /Maintenance/ })).toHaveCount(0);
+    await expect(ledger.getByRole('row', { name: /Maintenance/ })).toHaveCount(
+      0,
+    );
   });
 
   test('deletes the car with its entries', async () => {

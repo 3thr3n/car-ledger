@@ -3,7 +3,7 @@ name: keycloak
 description: Keycloak for CarLedger, with its own PostgreSQL
 type: application
 
-version: 0.5.2
+version: 0.6.0
 appVersion: "26.8.1"
 
 dependencies:

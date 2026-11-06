@@ -1,6 +1,8 @@
 import { expect, Page, test } from '@playwright/test';
 import { API_URL } from '../playwright.config';
-import { aliceApi, deleteAllCars, keycloakLogin } from './helpers';
+import { aliceApi, keycloakLogin, resetAccounts } from './helpers';
+
+test.beforeAll(resetAccounts);
 
 /**
  * What bob sees of the car of alice by his role: a viewer everything without
@@ -12,7 +14,6 @@ test.describe.serial('car roles', () => {
   let carId: number;
 
   test.beforeAll(async ({ browser }) => {
-    await deleteAllCars();
     const api = await aliceApi();
     await api.put('/api/car/my', {
       data: { name: 'E2E Polo', year: 2021, odometer: 12000, tripLog: true },
@@ -42,7 +43,6 @@ test.describe.serial('car roles', () => {
 
   test.afterAll(async () => {
     await bob.context().close();
-    await deleteAllCars();
   });
 
   /** alice gives bob the role, bob accepts it */

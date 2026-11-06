@@ -1,6 +1,8 @@
 {{- /*
-Only keycloak reaches its PostgreSQL (and what networkPolicy.extraFrom allows). keycloak itself is not restricted. Needs a
-network plugin that enforces NetworkPolicies, ignored by the others.
+Only keycloak reaches its PostgreSQL (and what networkPolicy.extraFrom allows). keycloak takes HTTP from everywhere (the
+ingress, CarLedger), everything from its other replicas (the cache), the management port with the health and the metrics
+only from networkPolicy.managementFrom; the probes of the kubelet are always allowed. Needs a network plugin that enforces
+NetworkPolicies, ignored by the others.
 */}}
 {{- if .Values.networkPolicy.enabled }}
 apiVersion: networking.k8s.io/v1
@@ -26,4 +28,31 @@ spec:
       ports:
         - port: 5432
           protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "carLedgerKeycloak.prefix" . }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: keycloak
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  policyTypes: [ Ingress ]
+  ingress:
+    - ports:
+        - port: 8080
+          protocol: TCP
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: keycloak
+              app.kubernetes.io/instance: {{ .Release.Name }}
+    {{- with .Values.networkPolicy.managementFrom }}
+    - from:
+        {{- toYaml . | nindent 8 }}
+      ports:
+        - port: 9000
+          protocol: TCP
+    {{- end }}
 {{- end }}

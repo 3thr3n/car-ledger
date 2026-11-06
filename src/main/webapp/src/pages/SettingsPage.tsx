@@ -1,16 +1,15 @@
 import {
   Box,
   Button,
-  Card,
   Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
   DialogTitle,
+  Link,
   MenuItem,
   Stack,
   TextField,
-  Typography,
 } from '@mui/material';
 import FileDownloadRounded from '@mui/icons-material/FileDownloadRounded';
 import { useMutation } from '@tanstack/react-query';
@@ -33,6 +32,8 @@ import AppearanceSection from '@/components/settings/AppearanceSection';
 import NotificationSection from '@/components/settings/NotificationSection';
 import InstallSection from '@/components/install/InstallSection';
 import PageHeader from '@/components/ui/PageHeader';
+import Section from '@/components/ui/Section';
+import SettingRow from '@/components/settings/SettingRow';
 import { offlineQueue, offlineStore } from '@/offline';
 import { forgetQueries } from '@/offline/persist';
 import VatCountrySelect from '@/components/bill/VatCountrySelect';
@@ -57,24 +58,78 @@ const currencies = [
 const BROWSER = 'browser';
 const languages = [BROWSER, 'EN', 'DE'];
 
+/** the sections of the page, in their order, for the index beside them */
+const sections = [
+  'look',
+  'entries',
+  'notifications',
+  'app',
+  'backup',
+  'account',
+] as const;
+
 export default function SettingsPage() {
   const { t } = useTranslation();
   const { account } = useMe();
 
   return (
-    <Page id="SettingsPage" maxWidth="sm">
+    <Page id="SettingsPage" maxWidth="lg">
       <PageHeader
         title={t('settings.title')}
         subtitle={t('settings.subtitle')}
       />
-      {/* keyed, so the form starts with the loaded settings */}
-      {account && <SettingsForm key={account.name} account={account} />}
-      {account && <AppearanceSection account={account} />}
-      {account && <NotificationSection />}
-      {account && <InstallSection />}
-      {account && <BackupSection />}
-      {account && <OfflineSection />}
-      {account?.name && <DeleteAccount name={account.name} />}
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: { xs: '1fr', md: '13rem minmax(0, 1fr)' },
+          columnGap: 4,
+          alignItems: 'start',
+        }}
+      >
+        <Box
+          component="nav"
+          aria-label={t('settings.index')}
+          sx={{
+            display: { xs: 'none', md: 'block' },
+            position: 'sticky',
+            top: 24,
+          }}
+        >
+          <Box component="ul" sx={{ listStyle: 'none', m: 0, p: 0 }}>
+            {sections.map((section) => (
+              <li key={section}>
+                <Link
+                  href={`#${section}`}
+                  underline="none"
+                  sx={{
+                    display: 'block',
+                    py: 0.75,
+                    px: 1.5,
+                    borderRadius: 1,
+                    color: 'text.secondary',
+                    '&:hover': {
+                      color: 'text.primary',
+                      bgcolor: 'action.hover',
+                    },
+                  }}
+                >
+                  {t(`settings.sections.${section}`)}
+                </Link>
+              </li>
+            ))}
+          </Box>
+        </Box>
+        <Box sx={{ minWidth: 0, maxWidth: 880 }}>
+          {account && <AppearanceSection account={account} />}
+          {/* keyed, so the form starts with the loaded settings */}
+          {account && <SettingsForm key={account.name} account={account} />}
+          {account && <NotificationSection />}
+          {account && <InstallSection />}
+          {account && <BackupSection />}
+          {account && <OfflineSection />}
+          {account?.name && <DeleteAccount name={account.name} />}
+        </Box>
+      </Box>
     </Page>
   );
 }
@@ -127,103 +182,77 @@ function SettingsForm({ account }: { account: Account }) {
   }).format(1234.5);
 
   return (
-    <Card component="form" onSubmit={submit} sx={{ p: 3 }}>
-      <Stack spacing={3}>
-        <Box>
-          <Typography
-            variant="subtitle1"
-            sx={{
-              fontWeight: 650,
-              mb: 1.5,
-            }}
-          >
-            {t('settings.entries')}
-          </Typography>
+    <Box component="form" onSubmit={submit} sx={{ mb: 3 }}>
+      <Section
+        id="entries"
+        title={t('settings.sections.entries')}
+        subtitle={t('settings.entriesText')}
+      >
+        <SettingRow help={t('settings.vatHelp')}>
           <VatCountrySelect
             value={vatCountry}
             onChange={setVatCountry}
-            helperText={t('settings.vatHelp')}
+            helperText=""
           />
-        </Box>
-
-        <Box>
-          <Typography
-            variant="subtitle1"
-            sx={{
-              fontWeight: 650,
-              mb: 1.5,
-            }}
+        </SettingRow>
+        <SettingRow help={t('settings.currencyHelp', { example })}>
+          <TextField
+            select
+            label={t('settings.currency')}
+            value={currency}
+            onChange={(e) => setCurrency(e.target.value)}
           >
-            {t('settings.display')}
-          </Typography>
-          <Stack spacing={2.5}>
-            <TextField
-              select
-              label={t('settings.currency')}
-              value={currency}
-              onChange={(e) => setCurrency(e.target.value)}
-              helperText={t('settings.currencyHelp', { example })}
-            >
-              {currencies.map((code) => (
-                <MenuItem key={code} value={code}>
-                  <Box
-                    sx={{
-                      display: 'grid',
-                      gridTemplateColumns: '48px 1fr auto',
-                      width: '100%',
-                      columnGap: 1,
-                    }}
-                  >
-                    <Box
-                      component="span"
-                      sx={{
-                        fontWeight: 600,
-                      }}
-                    >
-                      {code}
-                    </Box>
-                    <span>{currencyName(code)}</span>
-                    <Box component="span" sx={{ color: 'text.secondary' }}>
-                      {currencySymbol(format.locale, code)}
-                    </Box>
+            {currencies.map((code) => (
+              <MenuItem key={code} value={code}>
+                <Box
+                  sx={{
+                    display: 'grid',
+                    gridTemplateColumns: '48px 1fr auto',
+                    width: '100%',
+                    columnGap: 1,
+                  }}
+                >
+                  <Box component="span" sx={{ fontWeight: 600 }}>
+                    {code}
                   </Box>
-                </MenuItem>
-              ))}
-            </TextField>
-            <TextField
-              select
-              label={t('settings.units')}
-              value={unitSystem}
-              onChange={(e) => setUnitSystem(e.target.value as UnitSystem)}
-              helperText={t('settings.unitsHelp')}
-            >
-              {Object.values(UnitSystem).map((system) => (
-                <MenuItem key={system} value={system}>
-                  {t(`settings.unitSystems.${system}`)}
-                </MenuItem>
-              ))}
-            </TextField>
-            <TextField
-              select
-              label={t('settings.language')}
-              value={language}
-              onChange={(e) => setLanguage(e.target.value)}
-            >
-              {languages.map((code) => (
-                <MenuItem key={code} value={code}>
-                  {t(`settings.languages.${code}`)}
-                </MenuItem>
-              ))}
-            </TextField>
-          </Stack>
-        </Box>
-
-        <Stack
-          direction="row"
-          sx={{
-            justifyContent: 'flex-end',
-          }}
-        >
+                  <span>{currencyName(code)}</span>
+                  <Box component="span" sx={{ color: 'text.secondary' }}>
+                    {currencySymbol(format.locale, code)}
+                  </Box>
+                </Box>
+              </MenuItem>
+            ))}
+          </TextField>
+        </SettingRow>
+        <SettingRow help={t('settings.unitsHelp')}>
+          <TextField
+            select
+            label={t('settings.units')}
+            value={unitSystem}
+            onChange={(e) => setUnitSystem(e.target.value as UnitSystem)}
+          >
+            {Object.values(UnitSystem).map((system) => (
+              <MenuItem key={system} value={system}>
+                {t(`settings.unitSystems.${system}`)}
+              </MenuItem>
+            ))}
+          </TextField>
+        </SettingRow>
+        <SettingRow help={t('settings.languageHelp')}>
+          <TextField
+            select
+            label={t('settings.language')}
+            value={language}
+            onChange={(e) => setLanguage(e.target.value)}
+          >
+            {languages.map((code) => (
+              <MenuItem key={code} value={code}>
+                {t(`settings.languages.${code}`)}
+              </MenuItem>
+            ))}
+          </TextField>
+        </SettingRow>
+        <Stack direction="row" sx={{ justifyContent: 'flex-end', pt: 1 }}>
           <Button
             type="submit"
             variant="contained"
@@ -232,8 +261,8 @@ function SettingsForm({ account }: { account: Account }) {
             {t('button.save')}
           </Button>
         </Stack>
-      </Stack>
-    </Card>
+      </Section>
+    </Box>
   );
 }
 
@@ -263,41 +292,12 @@ function DeleteAccount({ name }: { name: string }) {
   };
 
   return (
-    <Card sx={{ p: 3, mt: 3, borderColor: 'error.main' }}>
-      <Stack
-        direction={{ xs: 'column', sm: 'row' }}
-        spacing={2}
-        sx={{
-          alignItems: { sm: 'center' },
-          justifyContent: 'space-between',
-        }}
-      >
-        <Box>
-          <Typography
-            sx={{
-              fontWeight: 600,
-            }}
-          >
-            {t('settings.deleteAccount.title')}
-          </Typography>
-          <Typography
-            variant="body2"
-            sx={{
-              color: 'text.secondary',
-            }}
-          >
-            {t('settings.deleteAccount.text')}
-          </Typography>
-        </Box>
-        <Button
-          color="error"
-          variant="outlined"
-          onClick={() => setOpen(true)}
-          sx={{ flexShrink: 0 }}
-        >
+    <Section id="account" title={t('settings.sections.account')}>
+      <SettingRow help={t('settings.deleteAccount.text')}>
+        <Button color="error" variant="outlined" onClick={() => setOpen(true)}>
           {t('settings.deleteAccount.button')}
         </Button>
-      </Stack>
+      </SettingRow>
       <Dialog open={open} onClose={close} maxWidth="xs" fullWidth>
         <DialogTitle>{t('settings.deleteAccount.confirmTitle')}</DialogTitle>
         <DialogContent>
@@ -339,6 +339,6 @@ function DeleteAccount({ name }: { name: string }) {
           </Button>
         </DialogActions>
       </Dialog>
-    </Card>
+    </Section>
   );
 }

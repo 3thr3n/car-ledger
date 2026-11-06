@@ -6,10 +6,12 @@ import {
   IconButton,
   Stack,
   Switch,
+  Theme,
   ToggleButton,
   ToggleButtonGroup,
   Tooltip,
   Typography,
+  useMediaQuery,
 } from '@mui/material';
 import ChevronLeftRounded from '@mui/icons-material/ChevronLeftRounded';
 import ChevronRightRounded from '@mui/icons-material/ChevronRightRounded';
@@ -23,13 +25,15 @@ import { toast } from 'react-toastify';
 import {
   deleteTracksMutation,
   getMapSettingsOptions,
+  getMyCarOptions,
   getPlacesOptions,
   getTrackDrivesOptions,
   getTrackFrequencyOptions,
   getTrackOptions,
+  getTripSuggestionForDriveOptions,
 } from '@/generated/@tanstack/react-query.gen';
 import useCarRole from '@/hooks/useCarRole';
-import { invalidateCar, localClient } from '@/utils/QueryClient';
+import queryClient, { invalidateCar, localClient } from '@/utils/QueryClient';
 import { errorMessage } from '@/utils/BackendError';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import { toApiDate, useFormat } from '@/utils/format';
@@ -39,6 +43,7 @@ import DateRangeFields from '@/components/dashboard/DateRangeFields';
 import LazyTrackMap from '@/components/track/LazyTrackMap';
 import SpeedLegend from '@/components/track/SpeedLegend';
 import FrequencyLegend from '@/components/track/FrequencyLegend';
+import GForceLegend from '@/components/track/GForceLegend';
 import PlaceDialog from '@/components/track/PlaceDialog';
 import {
   Range,
@@ -48,13 +53,30 @@ import {
 } from '@/components/track/periods';
 import useFullscreen, { fullscreenSx } from '@/components/track/useFullscreen';
 import DriveList from '@/components/track/DriveList';
-import { deleteRange, driveAt, interval } from '@/components/track/drives';
-import { Place, TrackDrive } from '@/generated';
+import useDuration from '@/components/track/useDuration';
+import {
+  deleteRange,
+  driveAt,
+  interval,
+  minutes,
+} from '@/components/track/drives';
+import TripPastDialog from '@/components/trip/TripPastDialog';
+import { Place, TrackDrive, TripSuggestion } from '@/generated';
+import { visuallyHidden } from '@/components/ui/visuallyHidden';
+import { CLUSTER_AMBER, displayFont } from '@/theme';
 
 /** the server returns at most this many days */
 export const MAX_DAYS = 31;
 
-type Mode = 'speed' | 'frequency';
+type Mode = 'speed' | 'frequency' | 'gforce';
+
+/** a panel over the map: the switch of the mode, the legend */
+const overlaySx = (theme: Theme) => ({
+  bgcolor: `rgba(${theme.vars.palette.background.paperChannel} / 0.94)`,
+  backdropFilter: 'blur(6px)',
+  borderRadius: '10px',
+  boxShadow: `0 0 0 1px ${theme.vars.palette.divider}, 0 2px 8px rgba(0 0 0 / 0.12)`,
+});
 
 /** in the URL, so a reload or a shared link shows the same */
 export interface TrackSearch {
@@ -80,6 +102,8 @@ export default function TrackPage({
 }) {
   const { t } = useTranslation();
   const format = useFormat();
+  const duration = useDuration();
+  const wide = useMediaQuery((theme: Theme) => theme.breakpoints.up('sm'));
   // the last days by default: a drive yesterday evening still shows
   const [range, setRangeState] = useState<Range>(() =>
     search.from && search.to
@@ -122,8 +146,12 @@ export default function TrackPage({
   const [toName, setToName] = useState<Place>();
   const [hovered, setHovered] = useState<TrackDrive>();
   const [toDelete, setToDelete] = useState<TrackDrive>();
+  const [addingTrip, setAddingTrip] = useState<TripSuggestion>();
+  const { data: car } = useQuery(
+    getMyCarOptions({ client: localClient, path: { id: carId } }),
+  );
 
-  const { data: drives } = useQuery({
+  const { data: drives, error: drivesError } = useQuery({
     ...getTrackDrivesOptions({
       client: localClient,
       path: { carId },
@@ -142,11 +170,16 @@ export default function TrackPage({
   // the selection needs the ends of its drives
   const ready = valid && !!settings?.styleUrl && (!selected.length || !!drives);
 
-  const { data: track, isPlaceholderData } = useQuery({
+  const {
+    data: track,
+    isPlaceholderData,
+    error: trackError,
+  } = useQuery({
     ...getTrackOptions({
       client: localClient,
       path: { carId },
-      query: selection,
+      // only for the mode: they make a busy month larger
+      query: mode === 'gforce' ? { ...selection, gforces: true } : selection,
     }),
     enabled: ready,
     // the old track stays on the map while the next one loads
@@ -199,6 +232,23 @@ export default function TrackPage({
         : [...selected, drive.start],
     );
 
+  /** prefilled like a trip suggestion, with the odometers known before it */
+  const addTrip = async (drive: TrackDrive) => {
+    try {
+      setAddingTrip(
+        await queryClient.query(
+          getTripSuggestionForDriveOptions({
+            client: localClient,
+            path: { carId },
+            query: { start: drive.start, end: drive.end },
+          }),
+        ),
+      );
+    } catch (e) {
+      toast.error(errorMessage(e, t('errors.backend')));
+    }
+  };
+
   /** a click on the track picks its drive */
   const pick = (ts: string) => {
     const drive = driveAt(drives ?? [], ts);
@@ -224,6 +274,7 @@ export default function TrackPage({
       value={mode}
       onChange={(_, value: Mode | null) => value && setMode(value)}
       aria-label={t('track.mode.label')}
+      sx={overlaySx}
     >
       <ToggleButton value="speed" sx={{ px: 1.5 }}>
         {t('track.mode.speed')}
@@ -231,7 +282,34 @@ export default function TrackPage({
       <ToggleButton value="frequency" sx={{ px: 1.5 }}>
         {t('track.mode.frequency')}
       </ToggleButton>
+      <ToggleButton value="gforce" sx={{ px: 1.5 }}>
+        {t('track.mode.gforce')}
+      </ToggleButton>
     </ToggleButtonGroup>
+  );
+
+  // on the map from a tablet on, below it on a phone, where it would cover it
+  const legend = (
+    <Stack spacing={1} role="group" aria-label={t('track.legend')}>
+      {mode === 'speed' && <SpeedLegend stacked />}
+      {mode === 'frequency' && (
+        <FrequencyLegend maxPasses={frequency?.maxPasses ?? 0} />
+      )}
+      {mode === 'gforce' && <GForceLegend stacked />}
+      <Tooltip title={t('track.places.showHint')}>
+        <FormControlLabel
+          control={
+            <Switch
+              size="small"
+              checked={showPlaces}
+              onChange={(_, checked) => setShowPlaces(checked)}
+            />
+          }
+          label={t('track.places.show')}
+          sx={{ mr: 0, ml: -0.5, whiteSpace: 'nowrap', alignSelf: 'start' }}
+        />
+      </Tooltip>
+    </Stack>
   );
 
   if (settings && !settings.styleUrl) {
@@ -246,144 +324,260 @@ export default function TrackPage({
     );
   }
 
+  // the drives of the distance, of the selection or all
+  const driven = selectedDrives.length ? selectedDrives : (drives ?? []);
+  const atTheWheel = driven.reduce((sum, drive) => sum + minutes(drive), 0);
+  const empty = !!track && valid && track.points === 0;
+
   return (
-    <Section
-      title={t('track.title')}
-      subtitle={
-        track && valid
-          ? t('track.summary', {
-              distance: format.distance(track.distance, 1),
-              count: track.segments.length,
-            })
-          : t('track.subtitle')
-      }
-      // the fullscreen covers only the area below: there the switch is in it
-      action={!fullscreen && modeSwitch}
-    >
-      <Stack
-        spacing={2}
+    <>
+      <Box
         data-testid="track-area"
-        sx={fullscreen ? fullscreenSx : undefined}
+        sx={[
+          {
+            display: 'grid',
+            gridTemplateColumns: {
+              xs: 'minmax(0, 1fr)',
+              md: 'minmax(0, 1fr) 24rem',
+            },
+            gap: { xs: 2.5, md: 3 },
+            alignItems: 'start',
+          },
+          ...(fullscreen
+            ? [
+                fullscreenSx,
+                { display: 'grid', gridTemplateRows: { md: 'minmax(0, 1fr)' } },
+              ]
+            : []),
+        ]}
       >
-        <Stack
-          direction="row"
+        <Box
           sx={{
-            flexWrap: 'wrap',
-            gap: 1,
-            alignItems: 'center',
-            justifyContent: 'space-between',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 1.5,
+            // the map stays while the drives next to it scroll
+            ...(fullscreen
+              ? { height: { xs: '70vh', md: '100%' } }
+              : {
+                  position: { md: 'sticky' },
+                  top: { md: 24 },
+                  height: { xs: '60vh', md: 'calc(100dvh - 48px)' },
+                  minHeight: 360,
+                }),
           }}
         >
-          <ToggleButtonGroup
-            size="small"
-            exclusive
-            value={shortcutOf(range) ?? null}
-            onChange={(_, shortcut) => shortcut && setRange(rangeOf(shortcut))}
-            aria-label={t('track.shortcuts.label')}
-            sx={{ flexWrap: 'wrap' }}
+          <Box
+            sx={(theme) => ({
+              position: 'relative',
+              flex: 1,
+              minHeight: 0,
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden',
+              borderRadius: '10px',
+              border: 1,
+              borderColor: 'divider',
+              '& [data-testid="track-map"]': { borderRadius: 0 },
+              // the controls of MapLibre lit like the panels of the cluster
+              ...theme.applyStyles('dark', {
+                borderRadius: '20px',
+                '& .maplibregl-ctrl-group': {
+                  bgcolor: 'background.paper',
+                  boxShadow: `0 0 0 1px ${theme.vars.palette.divider}`,
+                },
+                '& .maplibregl-ctrl-group button + button': {
+                  borderTopColor: theme.vars.palette.divider,
+                },
+                '& .maplibregl-ctrl-icon, & .maplibregl-ctrl-attrib-button': {
+                  filter: 'invert(1)',
+                },
+                '& .maplibregl-ctrl-attrib.maplibregl-compact, & .maplibregl-ctrl-attrib':
+                  {
+                    bgcolor: `rgba(${theme.vars.palette.background.paperChannel} / 0.85)`,
+                    color: 'text.secondary',
+                    '& a': { color: 'inherit' },
+                  },
+              }),
+            })}
           >
-            {SHORTCUTS.map((shortcut) => (
-              <ToggleButton key={shortcut} value={shortcut} sx={{ px: 1.5 }}>
-                {t(`track.shortcuts.${shortcut}`)}
-              </ToggleButton>
-            ))}
-          </ToggleButtonGroup>
-          {fullscreen && modeSwitch}
-        </Stack>
-        <Stack
-          direction="row"
-          spacing={1}
-          sx={{ alignItems: 'center', maxWidth: 640 }}
-        >
-          <Tooltip title={t('track.earlier')}>
-            <span>
-              <IconButton
-                aria-label={t('track.earlier')}
-                onClick={() => shift(-1)}
-                disabled={!valid}
-              >
-                <ChevronLeftRounded />
-              </IconButton>
-            </span>
-          </Tooltip>
-          <DateRangeFields
-            from={range.from}
-            to={range.to}
-            onChange={setRange}
-            stacked
-          />
-          <Tooltip title={t('track.later')}>
-            <span>
-              <IconButton
-                aria-label={t('track.later')}
-                onClick={() => shift(1)}
-                disabled={!valid || !to || !to.isBefore(dayjs(), 'day')}
-              >
-                <ChevronRightRounded />
-              </IconButton>
-            </span>
-          </Tooltip>
-        </Stack>
-        {days > MAX_DAYS && (
-          <Alert severity="info">
-            {t('track.tooLong', { days: MAX_DAYS })}
-          </Alert>
-        )}
-        {settings?.styleUrl && track && valid && track.points === 0 && (
-          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-            {t('track.empty')}
-          </Typography>
-        )}
-        {settings?.styleUrl && (
-          <LazyTrackMap
-            styleUrl={settings.styleUrl}
-            track={track ?? { segments: [], distance: 0, points: 0 }}
-            frequency={
-              mode === 'frequency'
-                ? (frequency ?? { lines: [], maxPasses: 0 })
-                : undefined
-            }
-            places={showPlaces ? places : undefined}
-            onPlaceClick={role('WRITE') ? setToName : undefined}
-            highlight={hovered}
-            onTrackClick={pick}
-            fill={fullscreen}
-            fullscreen={fullscreen}
-            onFullscreen={toggle}
-          />
-        )}
-        <Stack
-          direction={{ xs: 'column', sm: 'row' }}
-          spacing={1}
-          sx={{
-            alignItems: { sm: 'center' },
-            justifyContent: 'space-between',
-          }}
-        >
-          <Stack
-            direction={{ xs: 'column', md: 'row' }}
-            spacing={{ xs: 1, md: 3 }}
-            sx={{ flexGrow: 1, alignItems: { md: 'center' } }}
-          >
-            {mode === 'speed' ? (
-              <SpeedLegend />
-            ) : (
-              <FrequencyLegend maxPasses={frequency?.maxPasses ?? 0} />
-            )}
-            <Tooltip title={t('track.places.showHint')}>
-              <FormControlLabel
-                control={
-                  <Switch
-                    size="small"
-                    checked={showPlaces}
-                    onChange={(_, checked) => setShowPlaces(checked)}
-                  />
+            {settings?.styleUrl && (
+              <LazyTrackMap
+                styleUrl={settings.styleUrl}
+                track={track ?? { segments: [], distance: 0, points: 0 }}
+                frequency={
+                  mode === 'frequency'
+                    ? (frequency ?? { lines: [], maxPasses: 0 })
+                    : undefined
                 }
-                label={t('track.places.show')}
-                sx={{ mr: 0, whiteSpace: 'nowrap' }}
+                // the track of the speeds stays until the one with them is loaded
+                gForces={mode === 'gforce' && !isPlaceholderData}
+                places={showPlaces ? places : undefined}
+                onPlaceClick={role('WRITE') ? setToName : undefined}
+                highlight={hovered}
+                onTrackClick={pick}
+                fill
+                fullscreen={fullscreen}
+                onFullscreen={toggle}
               />
-            </Tooltip>
+            )}
+            <Box sx={{ position: 'absolute', top: 10, left: 10 }}>
+              {modeSwitch}
+            </Box>
+            {wide && (
+              <Box
+                sx={[
+                  overlaySx,
+                  {
+                    position: 'absolute',
+                    left: 10,
+                    bottom: 10,
+                    width: 300,
+                    px: 1.75,
+                    pt: 1.25,
+                    pb: 0.75,
+                  },
+                ]}
+              >
+                {legend}
+              </Box>
+            )}
+          </Box>
+          {!wide && legend}
+        </Box>
+
+        <Stack
+          component="section"
+          aria-labelledby="track-title"
+          spacing={3}
+          sx={
+            fullscreen ? { minHeight: 0, overflowY: { md: 'auto' } } : undefined
+          }
+        >
+          <Typography id="track-title" variant="h6" sx={visuallyHidden}>
+            {t('track.title')}
+          </Typography>
+          <Stack spacing={1.5}>
+            <ToggleButtonGroup
+              size="small"
+              exclusive
+              fullWidth
+              value={shortcutOf(range) ?? null}
+              onChange={(_, shortcut) =>
+                shortcut && setRange(rangeOf(shortcut))
+              }
+              aria-label={t('track.shortcuts.label')}
+            >
+              {SHORTCUTS.map((shortcut) => (
+                <ToggleButton
+                  key={shortcut}
+                  value={shortcut}
+                  sx={{ px: 1, lineHeight: 1.2 }}
+                >
+                  {t(`track.shortcuts.${shortcut}`)}
+                </ToggleButton>
+              ))}
+            </ToggleButtonGroup>
+            <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center' }}>
+              <Tooltip title={t('track.earlier')}>
+                <span>
+                  <IconButton
+                    aria-label={t('track.earlier')}
+                    onClick={() => shift(-1)}
+                    disabled={!valid}
+                    sx={{ ml: -1 }}
+                  >
+                    <ChevronLeftRounded />
+                  </IconButton>
+                </span>
+              </Tooltip>
+              {/* the fields shrink to the column next to the map */}
+              <Box
+                sx={{
+                  flex: 1,
+                  minWidth: 0,
+                  display: 'flex',
+                  '& .MuiStack-root, & .MuiFormControl-root, & .MuiPickersInputBase-root, & .MuiPickersSectionList-root':
+                    { minWidth: 0 },
+                }}
+              >
+                <DateRangeFields
+                  from={range.from}
+                  to={range.to}
+                  onChange={setRange}
+                  stacked
+                />
+              </Box>
+              <Tooltip title={t('track.later')}>
+                <span>
+                  <IconButton
+                    aria-label={t('track.later')}
+                    onClick={() => shift(1)}
+                    disabled={!valid || !to || !to.isBefore(dayjs(), 'day')}
+                    sx={{ mr: -1 }}
+                  >
+                    <ChevronRightRounded />
+                  </IconButton>
+                </span>
+              </Tooltip>
+            </Stack>
           </Stack>
+
+          {days > MAX_DAYS && (
+            <Alert severity="info">
+              {t('track.tooLong', { days: MAX_DAYS })}
+            </Alert>
+          )}
+          {/* inline: the period stays changeable */}
+          {valid && !!(drivesError ?? trackError) && (
+            <Alert severity="error">
+              {errorMessage(drivesError ?? trackError, t('errors.backend'))}
+            </Alert>
+          )}
+
+          {empty && (
+            <Typography sx={{ color: 'text.secondary' }}>
+              {t('track.empty')}
+            </Typography>
+          )}
+          {track && valid && !empty && (
+            <Box data-testid="track-distance">
+              <Typography
+                className="tabular"
+                sx={(theme) => ({
+                  fontFamily: displayFont,
+                  fontWeight: 700,
+                  fontSize: '2.75rem',
+                  lineHeight: 1.05,
+                  ...theme.applyStyles('dark', { color: CLUSTER_AMBER }),
+                })}
+              >
+                {format.distance(track.distance, 1)}
+              </Typography>
+              <Typography sx={{ color: 'text.secondary' }}>
+                {atTheWheel
+                  ? t('track.atTheWheel', { duration: duration(atTheWheel) })
+                  : t('track.gpsDistance')}
+              </Typography>
+            </Box>
+          )}
+
+          {drives && valid && (
+            <DriveList
+              drives={drives}
+              selected={selectedDrives.map((drive) => drive.start)}
+              onToggle={toggleDrive}
+              onShowAll={() => select([])}
+              onHover={setHovered}
+              onDelete={role('MANAGE') ? setToDelete : undefined}
+              onAddTrip={
+                car?.tripLog && role('WRITE')
+                  ? (drive) => void addTrip(drive)
+                  : undefined
+              }
+            />
+          )}
+
           {/* not while the track of another period is loading, and not in
               the fullscreen, which is for looking at the map */}
           {track &&
@@ -392,31 +586,27 @@ export default function TrackPage({
             !isPlaceholderData &&
             !fullscreen &&
             role('MANAGE') && (
-              <Button
-                color="error"
-                size="small"
-                startIcon={<DeleteOutlineRounded />}
-                onClick={() => setDeleting(true)}
-                disabled={remove.isPending}
-                sx={{ alignSelf: { xs: 'flex-start', sm: 'center' } }}
-              >
-                {t('track.deletePeriod')}
-              </Button>
+              <Box sx={{ pt: 1, borderTop: 1, borderColor: 'divider' }}>
+                <Button
+                  color="error"
+                  size="small"
+                  startIcon={<DeleteOutlineRounded />}
+                  onClick={() => setDeleting(true)}
+                  disabled={remove.isPending}
+                  sx={{ ml: -1 }}
+                >
+                  {t('track.deletePeriod')}
+                </Button>
+              </Box>
             )}
         </Stack>
-      </Stack>
-      {drives && valid && (
-        <Box sx={{ mt: 3 }}>
-          <DriveList
-            drives={drives}
-            selected={selectedDrives.map((drive) => drive.start)}
-            onToggle={toggleDrive}
-            onShowAll={() => select([])}
-            onHover={setHovered}
-            onDelete={role('MANAGE') ? setToDelete : undefined}
-          />
-        </Box>
-      )}
+      </Box>
+      <TripPastDialog
+        carId={carId}
+        open={addingTrip !== undefined}
+        initial={addingTrip}
+        onClose={() => setAddingTrip(undefined)}
+      />
       <PlaceDialog
         carId={carId}
         place={toName}
@@ -450,6 +640,6 @@ export default function TrackPage({
           })
         }
       />
-    </Section>
+    </>
   );
 }

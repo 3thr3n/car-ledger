@@ -1,0 +1,40 @@
+suite: ServiceMonitor of the app
+templates:
+  - templates/car-ledger/servicemonitor.yaml
+release:
+  name: car-ledger
+  namespace: car-ledger
+set:
+  ingress.host: example.com
+tests:
+  - it: is off by default
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: scrapes the management port of the app
+    set:
+      carLedger.metrics.serviceMonitor.enabled: true
+      carLedger.metrics.serviceMonitor.labels:
+        release: prometheus
+    asserts:
+      - isKind:
+          of: ServiceMonitor
+      - equal:
+          path: metadata.labels
+          value:
+            app: car-ledger
+            release: prometheus
+      - equal:
+          path: spec.selector.matchLabels
+          value:
+            app: car-ledger
+      - equal:
+          path: spec.namespaceSelector.matchNames
+          value: [ car-ledger ]
+      - equal:
+          path: spec.endpoints
+          value:
+            - port: management
+              path: /q/metrics
+              interval: 30s

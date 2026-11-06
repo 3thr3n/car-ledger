@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 
+import de.codeflowwizardry.carledger.rest.car.track.GForces;
 import de.codeflowwizardry.carledger.rest.car.track.TrackPoint;
 
 /**
@@ -25,7 +26,8 @@ public final class TrackSimplifier
 	 * than the tolerance from the line of the kept ones around it. Then a point is
 	 * kept as well where the speed differs by more than the threshold from the last
 	 * kept point, so braking and accelerating on a straight road stay visible, and
-	 * the lowest and highest speed in between.
+	 * the lowest and highest speed in between. The g-forces of a point left out go
+	 * to the next kept one, the peaks of the line to it.
 	 *
 	 * @param tolerance
 	 *            meters
@@ -96,11 +98,17 @@ public final class TrackSimplifier
 		keepSpeedExtremes(points, keep, speedThreshold);
 
 		List<TrackPoint> kept = new ArrayList<>();
+		GForces left = null;
 		for (int i = 0; i < size; i++)
 		{
+			TrackPoint point = points.get(i);
 			if (keep[i])
 			{
-				kept.add(points.get(i));
+				kept.add(left == null ? point : point.with(GForces.merge(left, point.g())));
+				left = null;
+			} else
+			{
+				left = GForces.merge(left, point.g());
 			}
 		}
 		return kept;

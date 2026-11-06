@@ -4,12 +4,7 @@ import {
   Chip,
   IconButton,
   Stack,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
   TablePagination,
-  TableRow,
   Tooltip,
   Typography,
 } from '@mui/material';
@@ -18,10 +13,10 @@ import FileDownloadRounded from '@mui/icons-material/FileDownloadRounded';
 import RestoreRounded from '@mui/icons-material/RestoreRounded';
 import RouteRounded from '@mui/icons-material/RouteRounded';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import { Fragment, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import useCarRole from '@/hooks/useCarRole';
-import { Trip } from '@/generated';
+import { Trip, TripType } from '@/generated';
 import {
   getTripsOptions,
   getTripYearsOptions,
@@ -36,11 +31,10 @@ import TripExportDialog from './TripExportDialog';
 import TripTrack from './TripTrack';
 import useTrackMap from '@/components/track/useTrackMap';
 import CreatorHint from '@/components/ui/CreatorHint';
+import { CLUSTER_AMBER, displayFont } from '@/theme';
+import { logDays } from './tripLog';
 
 const PAGE_SIZES = [10, 25, 50];
-
-/** hidden on phones, the row shows them below the date instead */
-const wide = { display: { xs: 'none', md: 'table-cell' } };
 
 /** the odometers of a deleted trip don't count */
 const struck = (trip: Trip) =>
@@ -61,7 +55,6 @@ function Details({ trip }: { trip: Trip }) {
           })}
         </Typography>
       )}
-      {trip.destination && <Box>{trip.destination}</Box>}
       {(trip.purpose || trip.businessPartner) && (
         <Typography variant="body2" sx={{ color: 'text.secondary' }}>
           {[trip.purpose, trip.businessPartner].filter(Boolean).join(' · ')}
@@ -96,6 +89,217 @@ function Details({ trip }: { trip: Trip }) {
   );
 }
 
+/** the column of the times, the one of the line, the text */
+const COLUMNS = '4.75rem 1.5rem minmax(0, 1fr)';
+
+/** the line of a trip by its type: business in the accent */
+const lineColor = (type: TripType) =>
+  ({
+    [TripType.BUSINESS]: 'primary.main',
+    [TripType.COMMUTE]: 'text.secondary',
+    [TripType.PRIVATE]: 'text.disabled',
+  })[type];
+
+/** kilometers between two trips that no trip covers: a dotted warning */
+function Gap({ km }: { km: number }) {
+  const { t } = useTranslation();
+  const format = useFormat();
+  return (
+    <Box
+      data-testid="trip-gap"
+      sx={(theme) => ({
+        display: 'grid',
+        gridTemplateColumns: COLUMNS,
+        alignItems: 'center',
+        minHeight: 36,
+        color: theme.vars.palette.warning.main,
+        ...theme.applyStyles('dark', { color: CLUSTER_AMBER }),
+      })}
+    >
+      <Box
+        aria-hidden
+        sx={{
+          gridColumn: 2,
+          justifySelf: 'center',
+          alignSelf: 'stretch',
+          borderLeft: '3px dotted currentColor',
+        }}
+      />
+      <Typography
+        variant="body2"
+        sx={{ gridColumn: 3, pl: 1, fontWeight: 600, color: 'inherit' }}
+      >
+        {t('trip.list.gap', { distance: format.distance(km) })}
+      </Typography>
+    </Box>
+  );
+}
+
+/** a trip as a part of the route of its day */
+function Leg({
+  trip,
+  routeShown,
+  onRoute,
+  onDelete,
+}: {
+  trip: Trip;
+  routeShown: boolean;
+  /** shows or hides the GPS track below it, with a map only */
+  onRoute?: () => void;
+  onDelete?: () => void;
+}) {
+  const { t } = useTranslation();
+  const format = useFormat();
+  return (
+    <Box
+      sx={{
+        display: 'grid',
+        gridTemplateColumns: COLUMNS,
+        alignItems: 'stretch',
+        minHeight: 64,
+      }}
+    >
+      <Box
+        className="tabular"
+        sx={{
+          pl: 0.5,
+          py: 0.75,
+          fontFamily: displayFont,
+          lineHeight: 1.2,
+          whiteSpace: 'nowrap',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+        }}
+      >
+        <Box component="span" sx={{ fontWeight: 650 }}>
+          {format.time(trip.startedAt)}
+        </Box>
+        <Box component="span" sx={{ color: 'text.secondary' }}>
+          {trip.endedAt ? format.time(trip.endedAt) : t('trip.list.open')}
+        </Box>
+      </Box>
+      <Box
+        aria-hidden
+        sx={{
+          justifySelf: 'center',
+          my: 0.5,
+          width: 6,
+          borderRadius: 3,
+          ...(trip.deletedAt
+            ? {
+                borderLeft: '3px dotted',
+                borderColor: 'text.disabled',
+                width: 0,
+              }
+            : { bgcolor: lineColor(trip.type) }),
+        }}
+      />
+      {/* next to each other from a tablet on, wrapped below the text on a phone */}
+      <Box
+        sx={{
+          pl: 1,
+          py: 0.75,
+          minWidth: 0,
+          display: 'flex',
+          flexWrap: { xs: 'wrap', sm: 'nowrap' },
+          alignItems: 'flex-start',
+          columnGap: 1.5,
+        }}
+      >
+        <Box sx={{ flex: '1 1 14rem', minWidth: 0 }}>
+          <Typography sx={{ fontWeight: 600 }}>
+            {trip.destination ?? t(`trip.types.${trip.type}`)}
+            <Typography
+              component="span"
+              variant="body2"
+              sx={{ color: 'text.secondary', fontWeight: 400 }}
+            >
+              {trip.destination && ` · ${t(`trip.types.${trip.type}`)}`}
+            </Typography>
+            <CreatorHint name={trip.driver} />
+            {trip.restored && (
+              <Tooltip title={t('trip.list.restored')}>
+                <RestoreRounded
+                  fontSize="small"
+                  color="action"
+                  aria-label={t('trip.list.restored')}
+                  sx={{ verticalAlign: 'middle', ml: 0.5 }}
+                />
+              </Tooltip>
+            )}
+          </Typography>
+          <Details trip={trip} />
+        </Box>
+        <Box
+          sx={{
+            textAlign: { xs: 'left', sm: 'right' },
+            whiteSpace: 'nowrap',
+            ...struck(trip),
+          }}
+        >
+          <Typography
+            className="tabular"
+            sx={{
+              fontFamily: displayFont,
+              fontWeight: 700,
+              fontSize: '1.25rem',
+              lineHeight: 1.2,
+              color: 'inherit',
+            }}
+          >
+            {trip.distance == null
+              ? t('trip.list.open')
+              : format.distance(trip.distance)}
+          </Typography>
+          <Typography
+            className="tabular"
+            variant="body2"
+            sx={{ color: trip.deletedAt ? 'inherit' : 'text.secondary' }}
+          >
+            {format.distance(trip.startOdometer)} →{' '}
+            {trip.endOdometer == null
+              ? t('trip.list.open')
+              : format.distance(trip.endOdometer)}
+          </Typography>
+        </Box>
+        <Stack
+          direction="row"
+          sx={{
+            alignItems: 'center',
+            justifyContent: 'flex-end',
+            // the same place for the distance with and without the buttons
+            width: { sm: 80 },
+            ml: { xs: 'auto', sm: 0 },
+            flexShrink: 0,
+          }}
+        >
+          {onRoute && (
+            <IconButton
+              aria-label={t('trip.track.button')}
+              title={t('trip.track.button')}
+              aria-expanded={routeShown}
+              color={routeShown ? 'primary' : 'default'}
+              onClick={onRoute}
+            >
+              <RouteRounded fontSize="small" />
+            </IconButton>
+          )}
+          {onDelete && (
+            <IconButton
+              aria-label={t('trip.delete.button')}
+              title={t('trip.delete.button')}
+              onClick={onDelete}
+            >
+              <DeleteOutlineRounded fontSize="small" />
+            </IconButton>
+          )}
+        </Stack>
+      </Box>
+    </Box>
+  );
+}
+
 /** The trips of the car, the latest first, paged and filtered by year */
 export default function TripList({ carId }: { carId: number }) {
   const { t } = useTranslation();
@@ -122,6 +326,13 @@ export default function TripList({ carId }: { carId: number }) {
     placeholderData: keepPreviousData,
   });
   const trips = data?.data ?? [];
+  const dayName = (day: string) =>
+    new Intl.DateTimeFormat(format.locale, {
+      weekday: 'long',
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric',
+    }).format(new Date(`${day}T12:00:00`));
   const total = data?.total ?? 0;
 
   return (
@@ -159,123 +370,62 @@ export default function TripList({ carId }: { carId: number }) {
         />
       ) : (
         <>
-          <Box sx={{ overflowX: 'auto' }}>
-            <Table size="small" data-testid="trip-list">
-              <TableHead>
-                <TableRow>
-                  <TableCell>{t('trip.list.date')}</TableCell>
-                  <TableCell sx={wide}>{t('trip.fields.type')}</TableCell>
-                  <TableCell sx={wide}>{t('trip.list.route')}</TableCell>
-                  <TableCell align="right">{t('trip.list.distance')}</TableCell>
-                  <TableCell sx={wide}>{t('trip.list.details')}</TableCell>
-                  <TableCell padding="checkbox" />
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {trips.map((trip) => (
-                  <Fragment key={trip.id}>
-                    <TableRow>
-                      <TableCell>
-                        <Stack
-                          direction="row"
-                          spacing={0.5}
-                          sx={{ alignItems: 'center' }}
-                        >
-                          <span>{format.dateTime(trip.startedAt)}</span>
-                          <CreatorHint name={trip.driver} />
-                          {trip.restored && (
-                            <Tooltip title={t('trip.list.restored')}>
-                              <RestoreRounded
-                                fontSize="small"
-                                color="action"
-                                aria-label={t('trip.list.restored')}
-                              />
-                            </Tooltip>
-                          )}
-                        </Stack>
-                        <Box sx={{ display: { md: 'none' } }}>
-                          <Typography
-                            variant="body2"
-                            sx={{ color: 'text.secondary' }}
-                          >
-                            {t(`trip.types.${trip.type}`)}
-                          </Typography>
-                          <Details trip={trip} />
-                        </Box>
-                      </TableCell>
-                      <TableCell sx={wide}>
-                        {t(`trip.types.${trip.type}`)}
-                      </TableCell>
-                      <TableCell
-                        sx={{ ...wide, ...struck(trip), whiteSpace: 'nowrap' }}
-                        className="tabular"
-                      >
-                        {format.distance(trip.startOdometer)} →{' '}
-                        {trip.endOdometer == null
-                          ? t('trip.list.open')
-                          : format.distance(trip.endOdometer)}
-                      </TableCell>
-                      <TableCell
-                        align="right"
-                        className="tabular"
-                        sx={struck(trip)}
-                      >
-                        {trip.distance == null
-                          ? t('trip.list.open')
-                          : format.distance(trip.distance)}
-                      </TableCell>
-                      <TableCell sx={wide}>
-                        <Details trip={trip} />
-                      </TableCell>
-                      <TableCell padding="checkbox">
-                        <Stack direction="row">
-                          {styleUrl && (
-                            <IconButton
-                              size="small"
-                              aria-label={t('trip.track.button')}
-                              title={t('trip.track.button')}
-                              aria-expanded={routeOf === trip.id}
-                              color={
-                                routeOf === trip.id ? 'primary' : 'default'
-                              }
-                              onClick={() =>
+          <Stack
+            spacing={3}
+            data-testid="trip-list"
+            sx={{ px: 2.5, pt: 1, pb: 1 }}
+          >
+            {logDays(trips).map(({ day, entries }) => (
+              <Box component="section" key={day} aria-label={dayName(day)}>
+                <Typography
+                  component="h3"
+                  sx={{
+                    fontFamily: displayFont,
+                    fontWeight: 650,
+                    pb: 0.75,
+                    mb: 0.5,
+                    borderBottom: 1,
+                    borderColor: 'divider',
+                  }}
+                >
+                  {dayName(day)}
+                </Typography>
+                <Box component="ol" sx={{ listStyle: 'none', m: 0, p: 0 }}>
+                  {entries.map(({ trip, gap }) => (
+                    <Box component="li" key={trip.id} data-testid="trip">
+                      {gap !== undefined && <Gap km={gap} />}
+                      <Leg
+                        trip={trip}
+                        routeShown={routeOf === trip.id}
+                        onRoute={
+                          styleUrl
+                            ? () =>
                                 setRouteOf(
                                   routeOf === trip.id ? undefined : trip.id,
                                 )
-                              }
-                            >
-                              <RouteRounded fontSize="small" />
-                            </IconButton>
-                          )}
-                          {!trip.deletedAt && role('WRITE') && (
-                            <IconButton
-                              size="small"
-                              aria-label={t('trip.delete.button')}
-                              title={t('trip.delete.button')}
-                              onClick={() => setToDelete(trip)}
-                            >
-                              <DeleteOutlineRounded fontSize="small" />
-                            </IconButton>
-                          )}
-                        </Stack>
-                      </TableCell>
-                    </TableRow>
-                    {styleUrl && routeOf === trip.id && (
-                      <TableRow>
-                        <TableCell colSpan={6} sx={{ py: 2 }}>
+                            : undefined
+                        }
+                        onDelete={
+                          !trip.deletedAt && role('WRITE')
+                            ? () => setToDelete(trip)
+                            : undefined
+                        }
+                      />
+                      {styleUrl && routeOf === trip.id && (
+                        <Box sx={{ py: 2 }}>
                           <TripTrack
                             carId={carId}
                             trip={trip}
                             styleUrl={styleUrl}
                           />
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </Fragment>
-                ))}
-              </TableBody>
-            </Table>
-          </Box>
+                        </Box>
+                      )}
+                    </Box>
+                  ))}
+                </Box>
+              </Box>
+            ))}
+          </Stack>
           <TablePagination
             component="div"
             count={total}

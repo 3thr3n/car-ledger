@@ -227,6 +227,24 @@ tests:
             name: CARLEDGER_MAP_SOURCES
             value: https://tiles.example.com,https://glyphs.example.com
 
+  - it: snaps the tracks to the roads with a matching service
+    set:
+      carLedger.map.matchingUrl: http://map-matching.maps:8002
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: CARLEDGER_MAP_MATCHING_URL
+            value: http://map-matching.maps:8002
+
+  - it: matches nothing without a service
+    asserts:
+      - notContains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: CARLEDGER_MAP_MATCHING_URL
+          any: true
+
   - it: hides the map without a style
     asserts:
       - notContains:

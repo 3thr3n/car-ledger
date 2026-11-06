@@ -27,7 +27,7 @@ jobs:
 
       - name: Dependencies
         run: |
-          for chart in car-ledger keycloak authentik stack; do
+          for chart in car-ledger keycloak authentik map-matching stack; do
             helm dependency update "helm/$chart"
           done
 
@@ -36,7 +36,9 @@ jobs:
           helm lint helm/car-ledger --set ingress.host=example.com
           helm lint helm/keycloak --set keycloak.hostname=keycloak.example.com
           helm lint helm/authentik --set hostname=authentik.example.com --set carLedger.hostname=car-ledger.example.com
-          for providers in "" "--set global.keycloak.enabled=true" "--set global.authentik.enabled=true"; do
+          helm lint helm/map-matching
+          for providers in "" "--set global.keycloak.enabled=true" "--set global.authentik.enabled=true" \
+            "--set global.mapMatching.enabled=true"; do
             helm lint helm/stack --set global.host=example.com $providers
           done
 
@@ -59,13 +61,13 @@ jobs:
 
       # what the values render: helm/<chart>/tests, the subcharts of the stack with its own tests
       - name: Template tests
-        run: helm unittest --with-subchart=false helm/car-ledger helm/keycloak helm/authentik helm/stack
+        run: helm unittest --with-subchart=false helm/car-ledger helm/keycloak helm/authentik helm/map-matching helm/stack
 
       # the rendered resources against the schemas of Kubernetes
       - name: Schemas
         run: helm/validate-manifests.sh
 
-      # a changed chart keycloak or authentik needs a new version to be published. Not for the updates of
+      # a changed chart keycloak, authentik or map-matching needs a new version to be published. Not for the updates of
       # dependabot, raise the version before the release (which checks it as well)
       - name: Versions
         if: ${{ github.actor != 'dependabot[bot]' }}

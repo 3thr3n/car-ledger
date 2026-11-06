@@ -3,6 +3,7 @@ package de.codeflowwizardry.carledger.notification;
 import java.time.Duration;
 import java.util.List;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,12 +26,14 @@ public class MailSender
 
 	private final ReactiveMailer mailer;
 	private final MailConfig config;
+	private final MeterRegistry registry;
 
 	@Inject
-	public MailSender(ReactiveMailer mailer, MailConfig config)
+	public MailSender(ReactiveMailer mailer, MailConfig config, MeterRegistry registry)
 	{
 		this.mailer = mailer;
 		this.config = config;
+		this.registry = registry;
 	}
 
 	void onMails(@Observes(during = TransactionPhase.AFTER_SUCCESS) OutgoingMails outgoing)
@@ -65,8 +68,20 @@ public class MailSender
 					.atMost(config.retries());
 		}
 		sending.subscribe().with(
-				ignored -> LOG.debug("Mail {} sent to {}", event, masked(mail.getTo())),
-				error -> LOG.warn("Mail {} to {} not sent after {} attempts: {}", event, masked(mail.getTo()),
-						config.retries() + 1, error.toString()));
+				ignored -> {
+					LOG.debug("Mail {} sent to {}", event, masked(mail.getTo()));
+					count(event, "sent");
+				},
+				error -> {
+					LOG.warn("Mail {} to {} not sent after {} attempts: {}", event, masked(mail.getTo()),
+							config.retries() + 1, error.toString());
+					count(event, "failed");
+				});
+	}
+
+	/** carledger_mails_total, see docs/DEPLOYMENT.md#metrics */
+	private void count(String event, String result)
+	{
+		registry.counter("carledger.mails", "event", event, "result", result).increment();
 	}
 }

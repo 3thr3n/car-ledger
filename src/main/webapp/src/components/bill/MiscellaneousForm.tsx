@@ -11,9 +11,9 @@ import {
 import { localClient } from '@/utils/QueryClient';
 import { toApiDate, useFormat } from '@/utils/format';
 import useVatCountry from '@/hooks/useVatCountry';
-import NumberField from './NumberField';
 import DateVatFields from './DateVatFields';
 import FormActions from './FormActions';
+import Pump, { PumpLine, PumpWithFields } from './Pump';
 import BillAttachments from './BillAttachments';
 import useSaveBill from './useSaveBill';
 
@@ -95,14 +95,24 @@ export default function MiscellaneousForm({
 
   return (
     <Stack component="form" onSubmit={submit} noValidate spacing={2.5}>
-      <Grid container spacing={2}>
-        <DateVatFields
-          date={form.date}
-          onDateChange={(date) => set({ date })}
-          vat={vat}
-          error={touched ? errors.date : undefined}
-        />
-        <Grid size={{ xs: 12, sm: 8 }}>
+      <PumpWithFields
+        pump={
+          <Pump
+            label={t('bill.fields.total')}
+            error={touched ? errors.total : undefined}
+          >
+            <PumpLine
+              label={t('bill.fields.total')}
+              value={form.total}
+              onChange={(total) => set({ total })}
+              suffix={` ${format.currencySymbol}`}
+              max={1_000_000}
+              required
+            />
+          </Pump>
+        }
+      >
+        <Grid size={12}>
           <TextField
             label={t('bill.fields.description')}
             placeholder={t('bill.miscellaneousPlaceholder')}
@@ -111,17 +121,16 @@ export default function MiscellaneousForm({
             slotProps={{ htmlInput: { maxLength: 1000 } }}
           />
         </Grid>
-        <Grid size={{ xs: 12, sm: 4 }}>
-          <NumberField
-            label={t('bill.fields.total')}
-            value={form.total}
-            onChange={(total) => set({ total })}
-            suffix={` ${format.currencySymbol}`}
-            max={1_000_000}
-            required
-            error={touched ? errors.total : undefined}
-          />
-        </Grid>
+      </PumpWithFields>
+
+      <Grid container spacing={2}>
+        {/* today and the country of the account fit most receipts */}
+        <DateVatFields
+          date={form.date}
+          onDateChange={(date) => set({ date })}
+          vat={vat}
+          error={touched ? errors.date : undefined}
+        />
       </Grid>
 
       <BillAttachments {...save.attachments} />

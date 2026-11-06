@@ -2,6 +2,7 @@ import {
   Box,
   ToggleButton,
   ToggleButtonGroup,
+  useColorScheme,
   useMediaQuery,
   useTheme,
 } from '@mui/material';
@@ -20,6 +21,7 @@ import { Formatter, num, useFormat } from '@/utils/format';
 import { monthlyParts } from '@/utils/monthlyChart';
 import Section from '@/components/ui/Section';
 import EmptyState from '@/components/ui/EmptyState';
+import ChartTable from '@/components/ui/ChartTable';
 
 export interface MonthlyChartProps {
   /** -1 for all cars */
@@ -112,6 +114,11 @@ export default function MonthlyChart({
   const format = useFormat();
   const theme = useTheme();
   const isPhone = useMediaQuery(theme.breakpoints.down('sm'));
+  // the charts draw with color values, not CSS variables: the palette of the
+  // scheme shown, theme.palette holds the light one only
+  const { mode, systemMode } = useColorScheme();
+  const scheme = (mode === 'system' ? systemMode : mode) ?? 'light';
+  const palette = theme.colorSchemes[scheme]?.palette ?? theme.palette;
   const [view, setView] = useState<View>('costs');
 
   const { data: months = [], isLoading } = useQuery(
@@ -175,6 +182,34 @@ export default function MonthlyChart({
     shown === 'costs' ? !hasCosts : shown === 'fuel' ? !hasFuel : !hasCharging;
   const energy = shown === 'costs' ? undefined : energyViews(format)[shown];
 
+  // the chart for screen readers
+  const table = energy
+    ? {
+        columns: [
+          t(`dashboard.monthly.pricePerUnit.${shown}`),
+          t('dashboard.monthly.consumption'),
+        ],
+        rows: months.map((month) => ({
+          label: label(month.month, true),
+          values: [
+            energy.formatPrice(inUnits(month[energy.price], energy.toPrice)),
+            energy.formatConsumption(
+              inUnits(month[energy.consumption], energy.toConsumption),
+            ),
+          ],
+        })),
+      }
+    : {
+        columns: shownCostParts.map((part) => t(`bill.types.${part.type}`)),
+        rows: months.map((month) => {
+          const row = costRow(month);
+          return {
+            label: label(month.month, true),
+            values: shownCostParts.map((part) => format.money(row[part.key])),
+          };
+        }),
+      };
+
   const compactMoney = new Intl.NumberFormat(format.locale, {
     style: 'currency',
     currency: format.currency,
@@ -215,7 +250,14 @@ export default function MonthlyChart({
             title={t(`dashboard.monthly.empty.${shown}`)}
           />
         </Box>
-      ) : !energy ? (
+      ) : (
+        <ChartTable
+          caption={t(`dashboard.monthly.${shown}`)}
+          rowHeader={t('dashboard.monthly.month')}
+          {...table}
+        />
+      )}
+      {!isLoading && isEmpty ? null : !energy ? (
         <BarChart
           height={HEIGHT}
           loading={isLoading}
@@ -231,7 +273,7 @@ export default function MonthlyChart({
             dataKey: part.key,
             stack: 'total',
             label: t(`bill.types.${part.type}`),
-            color: theme.palette[billTypes[part.type].color].main,
+            color: palette[billTypes[part.type].color].main,
             valueFormatter: (value: number | null) =>
               value ? format.money(value) : null,
           }))}
@@ -268,7 +310,7 @@ export default function MonthlyChart({
               dataKey: 'pricePerUnit',
               yAxisId: 'price',
               label: t(`dashboard.monthly.pricePerUnit.${shown}`),
-              color: theme.palette[energy.color].main,
+              color: palette[energy.color].main,
               connectNulls: true,
               valueFormatter: energy.formatPrice,
             },
@@ -276,7 +318,7 @@ export default function MonthlyChart({
               dataKey: 'consumption',
               yAxisId: 'consumption',
               label: t('dashboard.monthly.consumption'),
-              color: theme.palette.primary.main,
+              color: palette.primary.main,
               connectNulls: true,
               valueFormatter: energy.formatConsumption,
             },

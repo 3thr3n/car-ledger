@@ -1,0 +1,121 @@
+suite: backups of the database
+templates:
+  - templates/backup/cronjob.yaml
+  - templates/backup/pvc.yaml
+release:
+  name: car-ledger
+  namespace: car-ledger
+set:
+  ingress.host: example.com
+tests:
+  - it: is off by default
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: dumps the database into its own volume, which outlives an uninstall
+    set:
+      backup.enabled: true
+    asserts:
+      - isKind:
+          of: CronJob
+        template: templates/backup/cronjob.yaml
+      - equal:
+          path: spec.concurrencyPolicy
+          value: Forbid
+        template: templates/backup/cronjob.yaml
+      - equal:
+          path: spec.jobTemplate.spec.template.spec.containers[0].image
+          value: docker.io/library/postgres:17-bookworm
+        template: templates/backup/cronjob.yaml
+      - contains:
+          path: spec.jobTemplate.spec.template.spec.containers[0].env
+          content:
+            name: PGHOST
+            value: car-ledger-postgresql
+        template: templates/backup/cronjob.yaml
+      - notExists:
+          path: spec.jobTemplate.spec.template.spec.initContainers
+        template: templates/backup/cronjob.yaml
+      - equal:
+          path: spec.jobTemplate.spec.template.spec.volumes[0].persistentVolumeClaim.claimName
+          value: car-ledger-backup
+        template: templates/backup/cronjob.yaml
+      - equal:
+          path: metadata.annotations
+          value:
+            helm.sh/hook: pre-install,pre-upgrade
+            helm.sh/resource-policy: keep
+        template: templates/backup/pvc.yaml
+
+  - it: runs hardened
+    set:
+      backup.enabled: true
+    template: templates/backup/cronjob.yaml
+    asserts:
+      - equal:
+          path: spec.jobTemplate.spec.template.spec.securityContext.runAsNonRoot
+          value: true
+      - equal:
+          path: spec.jobTemplate.spec.template.spec.automountServiceAccountToken
+          value: false
+      - equal:
+          path: spec.jobTemplate.spec.template.spec.containers[0].securityContext
+          value:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: [ "ALL" ]
+            readOnlyRootFilesystem: true
+
+  - it: uploads to S3 after the dump, with the key of the secret
+    set:
+      backup.enabled: true
+      backup.s3.bucket: backups
+      backup.s3.endpoint: https://s3.example.com
+      backup.s3.existingSecret: backup-s3
+    template: templates/backup/cronjob.yaml
+    asserts:
+      - equal:
+          path: spec.jobTemplate.spec.template.spec.initContainers[0].name
+          value: dump
+      - equal:
+          path: spec.jobTemplate.spec.template.spec.containers[0].name
+          value: upload
+      - contains:
+          path: spec.jobTemplate.spec.template.spec.containers[0].env
+          content:
+            name: AWS_ACCESS_KEY_ID
+            valueFrom:
+              secretKeyRef:
+                name: backup-s3
+                key: accessKeyId
+      - contains:
+          path: spec.jobTemplate.spec.template.spec.containers[0].env
+          content:
+            name: ENDPOINT
+            value: https://s3.example.com
+
+  - it: only into S3 without the volume
+    set:
+      backup.enabled: true
+      backup.persistence.enabled: false
+      backup.s3.bucket: backups
+    asserts:
+      - hasDocuments:
+          count: 0
+        template: templates/backup/pvc.yaml
+      - equal:
+          path: spec.jobTemplate.spec.template.spec.volumes[0]
+          value:
+            name: backup
+            emptyDir: { }
+        template: templates/backup/cronjob.yaml
+
+  - it: keeps at least one dump
+    set:
+      backup.enabled: true
+      backup.keep: 0
+    template: templates/backup/cronjob.yaml
+    asserts:
+      - failedTemplate:
+          errorMessage: backup.keep must be at least 1

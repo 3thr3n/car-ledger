@@ -17,6 +17,7 @@ import { ReactNode, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import useUnreadNotifications from '@/hooks/useUnreadNotifications';
 import Sidebar from '@/components/layout/Sidebar';
+import BottomBar, { BOTTOM_BAR_HEIGHT } from '@/components/layout/BottomBar';
 import useMe from '@/hooks/useMe';
 import useOnline from '@/hooks/useOnline';
 import useOpenCarRequests from '@/hooks/useOpenCarRequests';
@@ -56,7 +57,9 @@ export default function AppShell({ children }: { children: ReactNode }) {
   // units: rendered once the account is loaded, or known to be missing. Not
   // when it is fetched again, a query with an error is fetched again whenever
   // a page mounts it.
-  const { isFetched } = useMe();
+  const { isFetched, loggedIn } = useMe();
+  // phones and tablets: the main places in a bar at the bottom, with the menu
+  const bottomBar = !isDesktop && loggedIn;
   // the sidebar is behind the menu on phones: a dot shows the open requests and
   // the unread notifications
   const openRequests = useOpenCarRequests();
@@ -72,10 +75,31 @@ export default function AppShell({ children }: { children: ReactNode }) {
       }}
     >
       <OfflineSync />
+      {/* the first stop of the keyboard: past the menu to the page */}
+      <Box
+        component="a"
+        href="#main"
+        sx={{
+          position: 'fixed',
+          zIndex: (theme) => theme.zIndex.tooltip,
+          top: 8,
+          left: 8,
+          px: 2,
+          py: 1,
+          borderRadius: 2,
+          bgcolor: 'primary.main',
+          color: 'primary.contrastText',
+          fontWeight: 600,
+          textDecoration: 'none',
+          transform: 'translateY(-200%)',
+          '&:focus': { transform: 'none' },
+        }}
+      >
+        {t('app.skipToContent')}
+      </Box>
       {beside ? (
         <Box
-          component="nav"
-          sx={{
+          sx={(theme) => ({
             width: SIDEBAR_WIDTH,
             flexShrink: 0,
             position: 'sticky',
@@ -84,7 +108,9 @@ export default function AppShell({ children }: { children: ReactNode }) {
             borderRight: 1,
             borderColor: 'divider',
             bgcolor: 'background.paper',
-          }}
+            // dark: the menu stays on the ground, only the panels are lit
+            ...theme.applyStyles('dark', { bgcolor: 'background.default' }),
+          })}
         >
           <Sidebar onHide={() => hide(true)} />
         </Box>
@@ -93,46 +119,51 @@ export default function AppShell({ children }: { children: ReactNode }) {
           <AppBar
             position="fixed"
             color="inherit"
-            sx={{
+            sx={(theme) => ({
               borderBottom: 1,
               borderColor: 'divider',
               bgcolor: 'background.paper',
-            }}
+              ...theme.applyStyles('dark', { bgcolor: 'background.default' }),
+            })}
           >
             <Toolbar sx={{ gap: 1 }}>
-              <IconButton
-                edge="start"
-                onClick={() => setOpen(true)}
-                aria-label="menu"
-              >
-                <Badge
-                  variant="dot"
-                  color="error"
-                  invisible={openRequests === 0 && unread === 0}
-                  slotProps={{
-                    badge: {
-                      'aria-label': [
-                        openRequests > 0 &&
-                          t('admin.requests.openCount', {
-                            count: openRequests,
-                          }),
-                        unread > 0 && t('inbox.unreadCount', { count: unread }),
-                      ]
-                        .filter(Boolean)
-                        .join(', '),
-                    },
-                  }}
+              {/* the menu is in the bottom bar on phones */}
+              {!bottomBar && (
+                <IconButton
+                  edge="start"
+                  onClick={() => setOpen(true)}
+                  aria-label={t('app.menu')}
                 >
-                  <MenuRounded />
-                </Badge>
-              </IconButton>
+                  <Badge
+                    variant="dot"
+                    color="error"
+                    invisible={openRequests === 0 && unread === 0}
+                    slotProps={{
+                      badge: {
+                        'aria-label': [
+                          openRequests > 0 &&
+                            t('admin.requests.openCount', {
+                              count: openRequests,
+                            }),
+                          unread > 0 &&
+                            t('inbox.unreadCount', { count: unread }),
+                        ]
+                          .filter(Boolean)
+                          .join(', '),
+                      },
+                    }}
+                  >
+                    <MenuRounded />
+                  </Badge>
+                </IconButton>
+              )}
               <Box
                 component="img"
                 src={productLogo}
                 alt=""
                 sx={{ height: 26 }}
               />
-              <Typography variant="h6" sx={{ fontWeight: 750 }}>
+              <Typography variant="h6" component="div" sx={{ fontWeight: 750 }}>
                 {t('app.title')}
               </Typography>
             </Toolbar>
@@ -152,10 +183,18 @@ export default function AppShell({ children }: { children: ReactNode }) {
 
       <Box
         component="main"
+        id="main"
+        // reachable by the skip link, not by tab
+        tabIndex={-1}
         sx={{
+          outline: 'none',
           flexGrow: 1,
           minWidth: 0,
           pt: beside ? 0 : 7,
+          // the bar at the bottom covers no content, with the safe area below it
+          pb: bottomBar
+            ? `calc(${BOTTOM_BAR_HEIGHT}px + env(safe-area-inset-bottom))`
+            : 0,
           display: 'flex',
           flexDirection: 'column',
         }}
@@ -176,6 +215,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
           children
         )}
       </Box>
+      {bottomBar && <BottomBar onMenu={() => setOpen(true)} />}
     </Box>
   );
 }

@@ -1,0 +1,25 @@
+{{- /*
+The volume of the backups, created once before the release (a hook): Helm doesn't wait for a hook, and a claim of a
+storage class with WaitForFirstConsumer stays Pending until the first backup, so helm --wait would time out. A hook is
+not deleted by helm uninstall either, the backups outlive it; delete the claim by hand.
+*/}}
+{{- $name := printf "%s-backup" .Release.Name }}
+{{- if and .Values.backup.enabled .Values.backup.persistence.enabled (not (lookup "v1" "PersistentVolumeClaim" .Release.Namespace $name)) }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ $name }}
+  labels:
+    app: car-ledger-backup
+  annotations:
+    helm.sh/hook: pre-install,pre-upgrade
+    helm.sh/resource-policy: keep
+spec:
+  accessModes: [ "ReadWriteOnce" ]
+  {{- with .Values.backup.persistence.storageClass }}
+  storageClassName: {{ . }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.backup.persistence.size }}
+{{- end }}

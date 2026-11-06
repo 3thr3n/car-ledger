@@ -21,6 +21,7 @@ import CarPapersDialog from '@/components/papers/CarPapersDialog';
 import OfflineDocumentsPanel from '@/components/offline/OfflineDocumentsPanel';
 import InspectionList from '@/components/inspection/InspectionList';
 import InspectionDialog from '@/components/inspection/InspectionDialog';
+import NextHu from '@/components/inspection/NextHu';
 
 /** the HUs of the car with their reports, the latest first */
 export default function InspectionsPage({ carId }: { carId: number }) {
@@ -106,13 +107,19 @@ export default function InspectionsPage({ carId }: { carId: number }) {
           text={t('inspection.empty.text')}
         />
       ) : (
-        <InspectionList
-          readOnly={!canChange}
-          carId={carId}
-          inspections={inspections}
-          onEdit={openForm}
-          onDelete={setToDelete}
-        />
+        <>
+          {/* the latest HU sets the next one */}
+          {inspections[0]?.nextDue && (
+            <NextHu nextDue={inspections[0].nextDue} />
+          )}
+          <InspectionList
+            readOnly={!canChange}
+            carId={carId}
+            inspections={inspections}
+            onEdit={openForm}
+            onDelete={setToDelete}
+          />
+        </>
       )}
 
       <Stack sx={{ mt: 2 }}>

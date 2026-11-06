@@ -11,7 +11,7 @@ export const ALICE = 'e2e/.auth/alice.json';
  */
 export default defineConfig({
   testDir: './e2e',
-  // the tests share one account, which can only have one car
+  // the specs share the accounts alice and bob, each one resets them first
   workers: 1,
   fullyParallel: false,
   retries: CI ? 1 : 0,

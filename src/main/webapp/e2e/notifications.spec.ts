@@ -1,5 +1,7 @@
 import { expect, Page, test } from '@playwright/test';
-import { aliceApi, deleteAllCars, keycloakLogin } from './helpers';
+import { aliceApi, keycloakLogin, resetAccounts } from './helpers';
+
+test.beforeAll(resetAccounts);
 
 /**
  * alice invites bob to a car: the invitation waits in his notifications, also
@@ -9,7 +11,6 @@ test.describe.serial('Notifications', () => {
   let bob: Page;
 
   test.beforeAll(async ({ browser }) => {
-    await deleteAllCars();
     bob = await (
       await browser.newContext({ storageState: undefined })
     ).newPage();
@@ -34,7 +35,6 @@ test.describe.serial('Notifications', () => {
 
   test.afterAll(async () => {
     await bob.context().close();
-    await deleteAllCars();
   });
 
   const entry = () =>

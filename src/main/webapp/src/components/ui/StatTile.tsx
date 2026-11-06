@@ -1,13 +1,14 @@
 import { Box, Card, Skeleton, Stack, Typography } from '@mui/material';
 import { ReactNode } from 'react';
 import { BillPaletteKey } from '@/utils/billTypes';
+import { displayFont } from '@/theme';
 
 export interface StatTileProps {
   label: ReactNode;
   value: ReactNode;
   hint?: ReactNode;
-  icon?: ReactNode;
-  color?: BillPaletteKey | 'primary';
+  /** the kind of entries counted, shown as a stripe next to the label */
+  color?: BillPaletteKey;
   loading?: boolean;
   /** larger value, used for the headline numbers */
   emphasis?: boolean;
@@ -17,8 +18,7 @@ export default function StatTile({
   label,
   value,
   hint,
-  icon,
-  color = 'primary',
+  color,
   loading,
   emphasis,
 }: StatTileProps) {
@@ -29,24 +29,20 @@ export default function StatTile({
         spacing={1}
         sx={{
           alignItems: 'center',
-          mb: 1.25,
+          mb: 0.75,
         }}
       >
-        {icon && (
+        {color && (
           <Box
-            sx={(theme) => ({
-              display: 'grid',
-              placeItems: 'center',
-              width: 28,
-              height: 28,
-              borderRadius: 2,
-              color: theme.vars.palette[color].main,
-              backgroundColor: `rgba(${theme.vars.palette[color].mainChannel} / 0.12)`,
-              '& svg': { fontSize: 17 },
-            })}
-          >
-            {icon}
-          </Box>
+            aria-hidden
+            sx={{
+              width: 3,
+              height: 14,
+              flexShrink: 0,
+              borderRadius: 1,
+              bgcolor: `${color}.main`,
+            }}
+          />
         )}
         <Typography
           variant="body2"
@@ -60,9 +56,13 @@ export default function StatTile({
       </Stack>
       <Typography
         className="tabular"
-        variant={emphasis ? 'h4' : 'h5'}
         component="div"
-        sx={{ fontWeight: 700 }}
+        sx={{
+          fontFamily: displayFont,
+          fontWeight: 650,
+          fontSize: emphasis ? '2rem' : '1.625rem',
+          lineHeight: 1.15,
+        }}
       >
         {loading ? <Skeleton width="60%" /> : value}
       </Typography>
@@ -72,6 +72,7 @@ export default function StatTile({
           component="div"
           sx={{
             color: 'text.secondary',
+            mt: 0.5,
           }}
         >
           {loading ? <Skeleton width="40%" /> : hint}

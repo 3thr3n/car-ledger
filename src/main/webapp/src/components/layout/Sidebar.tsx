@@ -123,6 +123,7 @@ export default function Sidebar({
         <Box component="img" src={productLogo} alt="" sx={{ height: 30 }} />
         <Typography
           variant="h6"
+          component="div"
           sx={{ fontWeight: 750, letterSpacing: '-0.02em' }}
         >
           {t('app.title')}
@@ -154,10 +155,15 @@ export default function Sidebar({
         )}
       </Stack>
 
-      <Box sx={{ flexGrow: 1, overflowY: 'auto', px: 1.5 }}>
+      {/* links, not list items: a list may only hold <li> */}
+      <Box
+        component="nav"
+        aria-label={t('nav.label')}
+        sx={{ flexGrow: 1, overflowY: 'auto', px: 1.5 }}
+      >
         {loggedIn && (
           <>
-            <List dense disablePadding>
+            <List component="div" dense disablePadding>
               <RouterListItemButton
                 to="/dashboard"
                 selected={pathname.startsWith('/dashboard')}
@@ -246,11 +252,13 @@ export default function Sidebar({
             </List>
 
             <List
+              component="div"
               dense
               disablePadding
               sx={{ mt: 2 }}
               subheader={
                 <ListSubheader
+                  component="div"
                   disableSticky
                   sx={{
                     bgcolor: 'transparent',
@@ -272,10 +280,12 @@ export default function Sidebar({
                   onClick={onNavigate}
                   sx={{ borderRadius: 2, mb: 0.25, py: 0.75 }}
                 >
-                  <ListItemIcon sx={{ minWidth: 42 }}>
+                  {/* the plates are of different widths: a gap, not a column */}
+                  <ListItemIcon sx={{ minWidth: 0, mr: 1.25 }}>
                     <CarAvatar
                       id={car.id}
                       name={car.name}
+                      licensePlate={car.licensePlate}
                       pictureId={car.pictureId}
                       size={28}
                     />

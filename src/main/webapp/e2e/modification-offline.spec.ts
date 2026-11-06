@@ -1,5 +1,7 @@
 import { expect, Page, test } from '@playwright/test';
-import { aliceApi, deleteAllCars } from './helpers';
+import { aliceApi, resetAccounts } from './helpers';
+
+test.beforeAll(resetAccounts);
 
 const PDF = Buffer.from('%PDF-1.4\n1 0 obj<<>>endobj\ntrailer<<>>\n%%EOF');
 /** 1×1 PNG */
@@ -18,7 +20,6 @@ test.describe.serial('modification documents offline', () => {
   let carId: number;
 
   test.beforeAll(async ({ browser }) => {
-    await deleteAllCars();
     const api = await aliceApi();
     await api.put('/api/car/my', {
       data: { name: 'E2E Golf', year: 2018, odometer: 80000 },
@@ -66,7 +67,6 @@ test.describe.serial('modification documents offline', () => {
   test.afterAll(async () => {
     await page.context().setOffline(false);
     await page.close();
-    await deleteAllCars();
   });
 
   const panel = () => page.getByTestId('offline-documents');

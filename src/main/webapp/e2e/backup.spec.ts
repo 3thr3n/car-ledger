@@ -1,6 +1,8 @@
 import { expect, test } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
-import { aliceApi, deleteAllCars } from './helpers';
+import { aliceApi, deleteAllCars, resetAccounts } from './helpers';
+
+test.beforeAll(resetAccounts);
 
 test('downloads a backup and restores it into the empty account', async ({
   page,

@@ -138,6 +138,16 @@ public class TripRepository implements PanacheRepositoryBase<TripEntity, UUID>
 	}
 
 	/**
+	 * @return the trips of the car on the road in the time, like
+	 *         {@link #overlaps}, an open one until now
+	 */
+	public List<TripEntity> overlapping(CarEntity car, OffsetDateTime start, OffsetDateTime end)
+	{
+		return list("car = :car and deletedAt is null and startedAt < :end and (endedAt is null or endedAt > :start)",
+				Map.of("car", car, "start", start, "end", end));
+	}
+
+	/**
 	 * @param end
 	 *            the same as the start to check only the start
 	 * @return whether another trip of the car is on the road in the time, an open

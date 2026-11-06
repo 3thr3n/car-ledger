@@ -676,6 +676,8 @@ export type Odometer = {
     reading: number;
     readingDate: LocalDate;
     driven: number;
+    perDay?: number;
+    estimatedToday?: number;
 };
 
 export type OffsetDateTime = string;
@@ -871,6 +873,7 @@ export type TrackDrive = {
     distance: number;
     from?: string;
     to?: string;
+    trip: boolean;
 };
 
 export type TrackFrequency = {
@@ -3685,6 +3688,10 @@ export type GetTrackData = {
          */
         from: OffsetDateTime;
         /**
+         * The g-forces in the points as well
+         */
+        gforces?: boolean;
+        /**
          * End of the range, exclusive
          */
         to: OffsetDateTime;
@@ -4218,6 +4225,46 @@ export type DismissTripSuggestionResponses = {
 };
 
 export type DismissTripSuggestionResponse = DismissTripSuggestionResponses[keyof DismissTripSuggestionResponses];
+
+export type GetTripSuggestionForDriveData = {
+    body?: never;
+    path: {
+        carId: number;
+    };
+    query: {
+        /**
+         * End of the drive, inclusive
+         */
+        end: OffsetDateTime;
+        /**
+         * Start of the drive
+         */
+        start: OffsetDateTime;
+    };
+    url: '/api/trip/{carId}/suggestions/drive';
+};
+
+export type GetTripSuggestionForDriveErrors = {
+    /**
+     * Times missing, the end before the start or longer than 31 days
+     */
+    400: Array<unknown>;
+    /**
+     * Car is not for your user.
+     */
+    404: unknown;
+};
+
+export type GetTripSuggestionForDriveError = GetTripSuggestionForDriveErrors[keyof GetTripSuggestionForDriveErrors];
+
+export type GetTripSuggestionForDriveResponses = {
+    /**
+     * OK
+     */
+    200: TripSuggestion;
+};
+
+export type GetTripSuggestionForDriveResponse = GetTripSuggestionForDriveResponses[keyof GetTripSuggestionForDriveResponses];
 
 export type GetTripYearsData = {
     body?: never;

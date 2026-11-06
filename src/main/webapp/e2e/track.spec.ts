@@ -1,6 +1,8 @@
 import { expect, Page, request, test } from '@playwright/test';
 import { API_URL } from '../playwright.config';
-import { aliceApi, deleteAllCars } from './helpers';
+import { aliceApi, deleteAllCars, resetAccounts } from './helpers';
+
+test.beforeAll(resetAccounts);
 
 /** degrees of latitude per meter */
 const LAT_PER_METER = 1 / 111_195;
@@ -13,7 +15,6 @@ test.describe.serial('GPS track', () => {
   let token: string;
 
   test.beforeAll(async ({ browser }) => {
-    await deleteAllCars();
     const api = await aliceApi();
     const created = await api.put('/api/car/my', {
       data: { name: 'E2E Polo', year: 2020, odometer: 50000, tripLog: true },
@@ -29,7 +30,6 @@ test.describe.serial('GPS track', () => {
 
   test.afterAll(async () => {
     await page.close();
-    await deleteAllCars();
   });
 
   test('shows the map tab only with a tracker', async () => {
@@ -45,7 +45,8 @@ test.describe.serial('GPS track', () => {
     token = ((await tracker.json()) as { token: string }).token;
     await api.dispose();
 
-    // 11 points in the last minute, 10 m apart to the north, faster and faster
+    // 11 points in the last minute, 10 m apart to the north, faster and faster,
+    // accelerating harder and harder by the IMU
     start = Date.now() - 60_000;
     const device = await request.newContext({ baseURL: API_URL });
     const sent = await device.post('/api/device/points', {
@@ -55,6 +56,10 @@ test.describe.serial('GPS track', () => {
         lat: 50 + i * 10 * LAT_PER_METER,
         lon: 10,
         speed: i * 15,
+        accel: i * 0.05,
+        brake: 0,
+        lateral: 0,
+        gsource: 'imu',
       })),
     });
     expect(sent.status()).toBe(200);
@@ -72,9 +77,7 @@ test.describe.serial('GPS track', () => {
         .getByRole('group', { name: 'Period' })
         .getByRole('button', { name: 'Last 3 days' }),
     ).toHaveAttribute('aria-pressed', 'true');
-    await expect(
-      page.getByText('0.1 km GPS distance in 1 section'),
-    ).toBeVisible();
+    await expect(page.getByTestId('track-distance')).toContainText('0.1 km');
     await expect(page.getByTestId('track-map').locator('canvas')).toBeVisible();
 
     const legend = page.getByTestId('speed-legend');
@@ -119,10 +122,8 @@ test.describe.serial('GPS track', () => {
     await expect(enter).toBeVisible();
     await expect(remove).toBeVisible();
     await expect
-      .poll(
-        async () => (await page.getByTestId('track-map').boundingBox())?.height,
-      )
-      .toBeLessThan(500);
+      .poll(async () => (await area.boundingBox())?.y)
+      .toBeGreaterThan(100);
 
     await enter.click();
     await page.getByRole('button', { name: 'Leave the fullscreen' }).click();
@@ -147,6 +148,31 @@ test.describe.serial('GPS track', () => {
       'aria-label',
       'Driven from 1× (light, thin) to 2× (dark, wide)',
     );
+    await expect(page.getByTestId('speed-legend')).toHaveCount(0);
+
+    await page.getByRole('button', { name: 'Speed' }).click();
+    await expect(page.getByTestId('speed-legend')).toBeVisible();
+  });
+
+  test('colors the track by its g-forces', async () => {
+    const withGForces = page.waitForResponse(
+      (response) =>
+        /\/api\/track\/\d+\?.*gforces=true/.test(response.url()) &&
+        response.ok(),
+    );
+    await page.getByRole('button', { name: 'G-forces' }).click();
+
+    const track = (await (await withGForces).json()) as {
+      segments: { points: (number | null)[][] }[];
+    };
+    // the peak of the last second, from the IMU
+    expect(track.segments[0].points.at(-1)?.slice(4)).toEqual([0.5, 0, 0, 1]);
+    const legend = page.getByTestId('gforce-legend');
+    await expect(legend).toContainText('G-force');
+    await expect(legend).toContainText(
+      'Harsh from 0.50 g of the IMU, from 0.30 g of the GPS',
+    );
+    await expect(legend).toContainText('No g-forces');
     await expect(page.getByTestId('speed-legend')).toHaveCount(0);
 
     await page.getByRole('button', { name: 'Speed' }).click();
@@ -262,9 +288,7 @@ test.describe.serial('GPS track', () => {
       86_400_000;
     expect(Math.round(days)).toBe(7);
     await expect(week).toHaveAttribute('aria-pressed', 'true');
-    await expect(
-      page.getByText('0.1 km GPS distance in 1 section'),
-    ).toBeVisible();
+    await expect(page.getByTestId('track-distance')).toContainText('0.1 km');
 
     await page.getByRole('button', { name: 'Earlier' }).click();
     await expect(shortcuts.getByRole('button', { pressed: true })).toHaveCount(
@@ -275,9 +299,7 @@ test.describe.serial('GPS track', () => {
     const last3 = shortcuts.getByRole('button', { name: 'Last 3 days' });
     await last3.click();
     await expect(last3).toHaveAttribute('aria-pressed', 'true');
-    await expect(
-      page.getByText('0.1 km GPS distance in 1 section'),
-    ).toBeVisible();
+    await expect(page.getByTestId('track-distance')).toContainText('0.1 km');
   });
 
   test('shows the track of a trip next to its odometer distance', async () => {
@@ -331,9 +353,7 @@ test.describe.serial('GPS track', () => {
       .getByRole('group', { name: 'Period' })
       .getByRole('button', { name: 'Today' })
       .click();
-    await expect(
-      page.getByText('0.1 km GPS distance in 1 section'),
-    ).toBeVisible();
+    await expect(page.getByTestId('track-distance')).toContainText('0.1 km');
     await page.getByRole('button', { name: 'Delete this track' }).click();
 
     const dialog = page.getByRole('dialog', { name: /^Delete the track of/ });
@@ -368,10 +388,11 @@ test.describe.serial('Drives of the GPS track', () => {
     }));
 
   test.beforeAll(async ({ browser }) => {
+    // the car of the drives above
     await deleteAllCars();
     const api = await aliceApi();
     await api.put('/api/car/my', {
-      data: { name: 'E2E Golf', year: 2021, odometer: 1000 },
+      data: { name: 'E2E Golf', year: 2021, odometer: 1000, tripLog: true },
     });
     carId = (
       (await (await api.get('/api/car/my')).json()) as { id: number }[]
@@ -398,26 +419,23 @@ test.describe.serial('Drives of the GPS track', () => {
 
   test.afterAll(async () => {
     await page.close();
-    await deleteAllCars();
   });
 
   test('lists the drives and shows only the selected ones', async () => {
     await page.goto(`/car/${carId}/track`);
     const list = page.getByTestId('track-drives');
     await expect(list).toContainText('2 drives');
-    await expect(
-      page.getByText('1.6 km GPS distance in 2 sections'),
-    ).toBeVisible();
+    await expect(page.getByTestId('track-distance')).toContainText('1.6 km');
 
-    // the newest first
+    // each day from the morning on
     const drives = list.getByTestId('track-drive');
     await expect(drives).toHaveCount(2);
+    // the route of the day: parked between there and back
+    await expect(list).toContainText(/parked (58|59|60) min/);
     await drives.first().getByRole('checkbox').click();
 
     await expect(list).toContainText('1 of 2 drives shown');
-    await expect(
-      page.getByText('0.7 km GPS distance in 1 section'),
-    ).toBeVisible();
+    await expect(page.getByTestId('track-distance')).toContainText('0.7 km');
     await expect(page).toHaveURL(/drives=/);
     await expect(drives.first().getByRole('checkbox')).toBeChecked();
   });
@@ -427,15 +445,38 @@ test.describe.serial('Drives of the GPS track', () => {
 
     const list = page.getByTestId('track-drives');
     await expect(list).toContainText('1 of 2 drives shown');
-    await expect(
-      page.getByText('0.7 km GPS distance in 1 section'),
-    ).toBeVisible();
+    await expect(page.getByTestId('track-distance')).toContainText('0.7 km');
 
     await list.getByRole('button', { name: 'Show all' }).click();
     await expect(list).toContainText('2 drives');
     await expect(page).not.toHaveURL(/drives=/);
+    await expect(page.getByTestId('track-distance')).toContainText('1.6 km');
+  });
+
+  test('adds a drive as trip, prefilled', async () => {
+    const drives = page.getByTestId('track-drives').getByTestId('track-drive');
+    const addTrip = /^Add the drive .* as trip$/;
+    await drives.first().getByRole('button', { name: addTrip }).click();
+
+    const dialog = page.getByRole('dialog', { name: 'Add a past trip' });
+    await expect(dialog).toContainText('Prefilled from the GPS track');
     await expect(
-      page.getByText('1.6 km GPS distance in 2 sections'),
+      dialog.getByRole('textbox', { name: /Odometer at the start/ }),
+    ).toHaveValue(/1,000/);
+    await expect(
+      dialog.getByRole('textbox', { name: /Odometer at the finish/ }),
+    ).toHaveValue(/1,001/);
+    await page.getByRole('combobox', { name: 'Type' }).click();
+    await page.getByRole('option', { name: 'Private' }).click();
+    await dialog.getByRole('button', { name: 'Add trip' }).click();
+
+    await expect(page.getByText('Trip added')).toBeVisible();
+    // the drive has its trip now, the other one not
+    await expect(
+      drives.first().getByRole('button', { name: addTrip }),
+    ).toHaveCount(0);
+    await expect(
+      drives.last().getByRole('button', { name: addTrip }),
     ).toBeVisible();
   });
 

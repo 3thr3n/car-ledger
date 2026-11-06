@@ -191,7 +191,7 @@ final class SharedLine
 		double mx = px + ox - along * ux;
 		double my = py + oy - along * uy;
 		return new TrackPoint(point.ts(), Math.toDegrees(my / TrackSimplifier.EARTH_RADIUS) + lat0,
-				Math.toDegrees(mx / (TrackSimplifier.EARTH_RADIUS * cosLat)) + lon0, point.speed());
+				Math.toDegrees(mx / (TrackSimplifier.EARTH_RADIUS * cosLat)) + lon0, point.speed(), point.g());
 	}
 
 	private void sample(double x, double y, int axis, OffsetDateTime ts)

@@ -31,6 +31,13 @@ i18n
     },
   });
 
+// the language of the page for screen readers and hyphenation, "de" or "en"
+const setPageLanguage = (lng: string) => {
+  document.documentElement.lang = lng.toLowerCase();
+};
+setPageLanguage(i18n.resolvedLanguage ?? 'EN');
+i18n.on('languageChanged', setPageLanguage);
+
 // country names, used by the VAT country selection
 countries.registerLocale(enCountries);
 countries.registerLocale(deCountries);

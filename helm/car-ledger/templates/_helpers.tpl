@@ -66,3 +66,10 @@ domain, global.authentik.enabled switches the defaults of the login to the chart
         path: {{ printf "%d-%s" $index $key }}
 {{- end }}
 {{- end }}
+
+{{/* Valhalla of the map matching: carLedger.map.matchingUrl, else the one of the stack chart when it is enabled */}}
+{{- define "carLedger.matchingUrl" -}}
+{{- if .Values.carLedger.map.matchingUrl }}{{ .Values.carLedger.map.matchingUrl }}
+{{- else if ((.Values.global).mapMatching).enabled }}http://{{ .Release.Name }}-map-matching:8002
+{{- end }}
+{{- end }}

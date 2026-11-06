@@ -1,12 +1,13 @@
 import { APIRequestContext, expect, test } from '@playwright/test';
-import { aliceApi, day, deleteAllCars } from './helpers';
+import { aliceApi, day, resetAccounts } from './helpers';
+
+test.beforeAll(resetAccounts);
 
 test.describe.serial('odometer', () => {
   let api: APIRequestContext;
   let carId: number;
 
   test.beforeAll(async () => {
-    await deleteAllCars();
     api = await aliceApi();
     await api.put('/api/car/my', {
       data: { name: 'E2E Corsa', year: 2019, odometer: 30000 },
@@ -18,7 +19,6 @@ test.describe.serial('odometer', () => {
 
   test.afterAll(async () => {
     await api.dispose();
-    await deleteAllCars();
   });
 
   test('adds the refuels since the latest reading', async ({ page }) => {
@@ -63,12 +63,16 @@ test.describe.serial('odometer', () => {
     // the refuel and the maintenance of the test before are the costs
     await page.goto(`/car/${carId}`);
     const chart = page.locator('.MuiCard-root', { hasText: 'Costs per month' });
-    await expect(chart.getByText('Maintenance', { exact: true })).toBeVisible();
-    await expect(chart.getByText('Charging', { exact: true })).toHaveCount(0);
+    // the legend, the table for screen readers has the same names
+    const legend = chart.getByRole('list');
+    await expect(
+      legend.getByText('Maintenance', { exact: true }),
+    ).toBeVisible();
+    await expect(legend.getByText('Charging', { exact: true })).toHaveCount(0);
 
     await page.goto('/dashboard');
-    const split = page.locator('.MuiCard-root', { hasText: 'Cost breakdown' });
-    await expect(split.getByText('Fuel', { exact: false })).toBeVisible();
+    const split = page.getByRole('region', { name: 'Summary of the period' });
+    await expect(split.getByText('Fuel', { exact: true })).toBeVisible();
     await expect(split.getByText(/^Charging/)).toHaveCount(0);
   });
 

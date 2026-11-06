@@ -276,9 +276,67 @@ class TripSuggestionTest
 		suggestions().body("", empty());
 	}
 
+	/** start and end of the drives of the map, newest first */
+	private List<Map<String, String>> drivesOfTheMap(OffsetDateTime from)
+	{
+		return given().basePath("/api/track/{carId}").pathParam("carId", carId)
+				.queryParam("from", from.toString()).queryParam("to", from.plusHours(1).toString())
+				.when().get("drives").then().statusCode(200).extract().path("");
+	}
+
+	private ValidatableResponse forDrive(Map<String, String> drive)
+	{
+		return given().pathParam("carId", carId)
+				.queryParam("start", drive.get("start")).queryParam("end", drive.get("end"))
+				.when().get("suggestions/drive").then();
+	}
+
+	@Test
+	void shouldSuggestAPickedDriveFromTheOdometerBeforeIt()
+	{
+		drives(start);
+		addPast(start.minusHours(2), 50_100, start.minusHours(1), 50_110);
+
+		// the second drive alone: not after the first, its odometers aren't known
+		forDrive(drivesOfTheMap(start).get(0)).statusCode(200)
+				.body("startOdometer", is(50_110))
+				.body("endOdometer", is(50_114))
+				.body("distance", about(4.2F));
+	}
+
+	@Test
+	void shouldSuggestADriveOlderThanTheWindowAndADismissedOne()
+	{
+		OffsetDateTime old = start.minusDays(10);
+		drives(old);
+		Map<String, String> first = drivesOfTheMap(old).get(1);
+		given().contentType(ContentType.JSON).pathParam("carId", carId)
+				.body(Map.of("startedAt", first.get("start"), "endedAt", first.get("end")))
+				.when().post("suggestions/dismiss").then().statusCode(204);
+
+		forDrive(first).statusCode(200)
+				.body("startedAt", is(first.get("start")))
+				.body("startOdometer", is(50_000))
+				.body("endOdometer", is(50_008))
+				.body("distance", about(8.4F));
+	}
+
+	@Test
+	void shouldValidateThePickedDrive()
+	{
+		forDrive(Map.of("start", start.toString(), "end", start.toString())).statusCode(400)
+				.body("", contains("End time must be after the start time!"));
+		forDrive(Map.of("start", start.toString())).statusCode(400);
+		forDrive(Map.of("start", start.toString(), "end", start.plusDays(32).toString())).statusCode(400)
+				.body("", contains("The drive must not be longer than 31 days!"));
+	}
+
 	@Test
 	void shouldNotSuggestTheDrivesOfAnotherCar()
 	{
+		given().pathParam("carId", otherCarId).queryParam("start", start.toString())
+				.queryParam("end", start.plusMinutes(5).toString())
+				.when().get("suggestions/drive").then().statusCode(404);
 		given().pathParam("carId", otherCarId).when().get("suggestions").then().statusCode(404);
 		given().contentType(ContentType.JSON).pathParam("carId", otherCarId)
 				.body(Map.of("startedAt", start.toString(), "endedAt", start.plusMinutes(5).toString()))

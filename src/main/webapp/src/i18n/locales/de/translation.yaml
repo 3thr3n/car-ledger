@@ -1,4 +1,6 @@
 app:
+  skipToContent: "Zum Inhalt springen"
+  menu: "Menü"
   title: "CarLedger"
   loading: "Wird geladen"
   hideSidebar: "Seitenleiste ausblenden"
@@ -35,24 +37,38 @@ button:
   logout: "Abmelden"
 
 nav:
+  label: "Hauptmenü"
   dashboard: "Dashboard"
   garage: "Garage"
   yourCars: "Deine Fahrzeuge"
   notifications: "Benachrichtigungen"
   settings: "Einstellungen"
   admin: "Verwaltung"
+  shortcuts: "Schnellzugriff"
+  refuel: "Tanken"
+  charge: "Laden"
+  inbox: "Eingang"
   signedInAs: "Angemeldet als"
 
 common:
+  actions: "Aktionen"
   all: "Alle anzeigen"
   allYears: "Alle Jahre"
 
 landing:
-  eyebrow: "Fahrzeugkosten im Blick"
   title: "Wisse, was dein Auto wirklich kostet."
   subtitle: "Erfasse Tankungen, Ladungen, Werkstattbesuche, Versicherung und alles andere und hab die Papiere deines Autos immer dabei. CarLedger macht aus deinen Belegen Kosten pro Kilometer, Verbrauch und Trends."
   cta: "Anmelden und loslegen"
   ctaDashboard: "Zum Dashboard"
+  selfHosted: "Läuft auf deinem eigenen Server: deine Belege und Strecken bleiben bei dir."
+  example:
+    car: "Octavia Combi, Benzin"
+    caption: "Ein Beispiel: die Seite eines Autos nach einem Jahr mit Einträgen."
+  groups:
+    costs: "Alle Kosten des Autos"
+    papers: "Papiere und Termine"
+    road: "Unterwegs"
+    data: "Deine Daten"
   features:
     fuel:
       title: "Tanken"
@@ -92,7 +108,7 @@ landing:
       text: "Fahrten mit Kilometerstand beginnen und beenden, gelöschte bleiben mit Grund, Export als PDF oder CSV."
     gps:
       title: "GPS-Tracking"
-      text: "Ein Tracker im Auto sendet die Strecke: die Karte nach Tempo oder Häufigkeit, vergessene Fahrten vorgeschlagen."
+      text: "Ein Tracker im Auto sendet die Strecke: die Karte nach Tempo, g-Kräften oder Häufigkeit, eine Fahrt wird ein Eintrag im Fahrtenbuch."
     sharing:
       title: "Teilen"
       text: "Lade deinen Haushalt oder deine Fahrer zu einem Auto ein, als Bearbeiter, Betrachter oder Fahrer, auch für einen Zeitraum."
@@ -117,18 +133,19 @@ dashboard:
       last12: "Letzte 12 Monate"
       custom: "Zeitraum"
   kpi:
-    total: "Ausgaben gesamt"
-    costPerKm: "Kosten pro km"
-    costPerKm_miles: "Kosten pro Meile"
-    consumption: "Ø Verbrauch"
-    distance: "Erfasste Strecke"
-    fuelVolume: "{{value}} Kraftstoff"
     chargingConsumption: "{{value}} elektrisch"
     chargedVolume: "{{value}} geladen"
-    bothVolumes: "{{fuel}} Kraftstoff · {{charged}} geladen"
+  summary:
+    label: "Übersicht des Zeitraums"
+    spent: "Ausgegeben"
+    costPerKm: "Kosten pro km"
+    costPerKm_miles: "Kosten pro Meile"
+    distance: "Erfasste Strecke"
+    consumption: "Ø Verbrauch"
+    fuel: "Getankt"
+    charged: "Geladen"
   split:
     title: "Kostenaufteilung"
-    subtitle: "Anteil jeder Kostenart"
     count_one: "{{count}} Eintrag"
     count_other: "{{count}} Einträge"
   average:
@@ -144,6 +161,9 @@ dashboard:
   range:
     title: "Tiefst- und Höchstwerte"
     subtitle: "Spanne über einzelne Einträge"
+    lowest: "Tiefstwert"
+    highest: "Höchstwert"
+    metric: "Wert"
     pricePerUnit: "Kraftstoffpreis"
     consumption: "Verbrauch"
     fuelCostPerKm: "Kraftstoffkosten pro km"
@@ -166,6 +186,7 @@ dashboard:
     pricePerUnit:
       fuel: "Kraftstoffpreis"
       charging: "Strompreis"
+    month: "Monat"
     consumption: "Verbrauch"
     tooltipTotal: "{{month}} · Gesamt {{total}}"
     empty:
@@ -233,12 +254,31 @@ car:
     reminders: "Erinnerungen"
     modifications: "Umbauten"
     inspections: "HU"
+  cluster:
+    label: "Kombiinstrument"
+    spent: "Ausgegeben"
+    perMonth: "Pro Monat"
+    perMonthUnit: "{{unit}} im Monat"
+    odometer: "Kilometerstand {{value}}"
+    estimatedToday: "Heute etwa {{value}}, {{perDay}} am Tag"
+    low: "Tief"
+    high: "Hoch"
+    consumptionLabel: "Verbrauch im Schnitt {{value}}"
+    distanceLabel: "Im Schnitt {{value}} im Monat"
+    noConsumption: "Noch kein Verbrauch"
+    noDistance: "Noch keine Strecke"
+    status: "Status"
+    hu: "Nächste HU"
+    nextPayment: "{{amount}}, nächste am {{date}}"
+    tracker: "Tracker"
+    trackerOnline: "Tracker online"
+    lastPoint: "Letzter Punkt {{date}}"
+    noPoint: "Noch kein Punkt"
+    tripComputer: "Bordcomputer"
+    rangePerTank: "Reichweite pro Tank"
+    rangePerBattery: "Reichweite pro Akku"
   overview:
-    totalCost: "Gesamtkosten"
-    avgConsumption: "Ø Verbrauch"
     refuels: "Tankfüllungen"
-    maintenance: "Wartungen"
-    miscellaneous: "Sonstiges"
     ledger: "Kassenbuch"
     ledgerSubtitle: "Alle Einträge dieses Fahrzeugs, neueste zuerst"
     toDashboard: "Statistik"
@@ -251,7 +291,6 @@ car:
     runningEmpty: "Keine laufenden Kosten"
     addRecurring: "Laufende Kosten anlegen"
     nextDue: "Nächste Fälligkeit {{date}}"
-    avgChargingConsumption: "Ø Verbrauch (elektrisch)"
     charges: "Ladungen"
     papers:
       title: "HU und Umbauten"
@@ -495,9 +534,9 @@ tracker:
 
 track:
   title: "GPS-Strecken"
-  subtitle: "Die Strecken der GPS-Tracker dieses Autos"
-  summary_one: "{{distance}} GPS-Strecke in {{count}} Abschnitt"
-  summary_other: "{{distance}} GPS-Strecke in {{count}} Abschnitten"
+  gpsDistance: "GPS-Strecke"
+  atTheWheel: "GPS-Strecke, {{duration}} am Steuer"
+  legend: "Legende der Karte"
   shortcuts:
     label: "Zeitraum"
     today: "Heute"
@@ -513,6 +552,7 @@ track:
   tooLong: "Bitte wähle höchstens {{days}} Tage."
   speed: "Geschwindigkeit ({{unit}})"
   legendLabel: "Geschwindigkeit von {{from}} {{unit}} (hell) bis {{to}} {{unit}} (dunkel)"
+  mapLabel: "Karte der GPS-Strecke, die Entfernung und die Fahrten stehen dabei"
   noSpeed: "Keine Geschwindigkeit"
   frequency: "Wie oft gefahren"
   frequencyLabel: "Gefahren von 1× (hell, schmal) bis {{to}}× (dunkel, breit)"
@@ -523,6 +563,21 @@ track:
     label: "Strecke einfärben nach"
     speed: "Geschwindigkeit"
     frequency: "Häufigkeit"
+    gforce: "G-Kräfte"
+  gforce:
+    title: "G-Kraft: die größte aus Beschleunigen, Bremsen und Kurven"
+    legendLabel: "G-Kraft von ruhig (blau) bis heftig (rot): ab {{imu}} der IMU, ab {{gps}} des GPS"
+    calm: "Ruhig"
+    harsh: "Heftig"
+    hint: "Heftig ab {{imu}} der IMU, ab {{gps}} des GPS: es mittelt nur über eine Sekunde, seine Werte sind niedriger."
+    none: "Keine G-Kräfte"
+    value: "{{g}} g {{kind}} ({{source}})"
+    imu: "IMU"
+    gps: "GPS"
+    kinds:
+      accel: "Beschleunigen"
+      brake: "Bremsen"
+      lateral: "Kurve"
   notSetUp: "Die Karte ist nicht eingerichtet"
   notSetUpText: "Der Betreiber von CarLedger richtet einen Kartenserver ein, siehe docs/GPS_TRACKER.md."
   deletePeriod: "Diese Strecke löschen"
@@ -539,8 +594,12 @@ track:
     unnamed: "Unbenannter Ort"
     minutes_one: "{{count}} Min."
     minutes_other: "{{count}} Min."
+    hours: "{{hours}} Std. {{minutes}} Min."
+    parked: "{{duration}} geparkt"
     delete: "Fahrt löschen"
     deleteLabel: "Fahrt {{drive}} löschen"
+    addTrip: "Ins Fahrtenbuch eintragen"
+    addTripLabel: "Fahrt {{drive}} ins Fahrtenbuch eintragen"
     deleteTitle: "Fahrt vom {{drive}} löschen?"
     deleteText: "Ihre Punkte ({{distance}}) und die des Halts danach, bis zur nächsten Fahrt, werden gelöscht und können nicht wiederhergestellt werden. Die anderen Fahrten, die Orte, das Fahrtenbuch und die Kilometerstände bleiben, wie sie sind."
     deleted_one: "{{count}} Punkt gelöscht"
@@ -617,6 +676,28 @@ bill:
   status:
     running: "Läuft"
     finished: "Beendet"
+  summary:
+    label: "Zusammenfassung der Liste"
+    year: "Im Jahr {{year}}"
+    allYears: "In allen Jahren"
+    paid: "Bezahlt"
+    averagePrice: "Preis pro Liter"
+    averagePrice_gallons: "Preis pro Gallone"
+    averageChargingPrice: "Preis pro kWh"
+    refuels_one: "{{count}} Tankfüllung"
+    refuels_other: "{{count}} Tankfüllungen"
+    charges_one: "{{count}} Ladung"
+    charges_other: "{{count}} Ladungen"
+    consumption: "im Schnitt {{value}}"
+    distance: "{{value}} pro Tankfüllung"
+    costs_one: "{{period}} für {{count}} Eintrag"
+    costs_other: "{{period}} für {{count}} Einträge"
+    costs_maintenance_one: "{{period}} für {{count}} Wartung"
+    costs_maintenance_other: "{{period}} für {{count}} Wartungen"
+    average: "im Schnitt {{value}}"
+    perMonth_one: "im Monat für {{count}} laufenden Posten"
+    perMonth_other: "im Monat für {{count}} laufende Posten"
+    next: "Als Nächstes: {{name}}, {{amount}} am {{date}}"
   fields:
     type: "Art"
     date: "Datum"
@@ -654,7 +735,6 @@ bill:
   add:
     button: "Eintrag erfassen"
     title: "Neuer Eintrag"
-    subtitle: "Wähle, welche Art von Beleg du erfassen möchtest."
     saveAgain: "Speichern und weiteren erfassen"
     saved: "Eintrag gespeichert"
     describe:
@@ -841,9 +921,17 @@ backup:
 settings:
   title: "Einstellungen"
   subtitle: "Vorgaben deines Kontos, auf allen Geräten."
-  entries: "Einträge"
+  index: "Bereiche der Einstellungen"
+  sections:
+    look: "Aussehen"
+    entries: "Einträge und Einheiten"
+    notifications: "Benachrichtigungen"
+    app: "App"
+    backup: "Sicherung"
+    account: "Konto"
+  entriesText: "Wie Beträge, Strecken und neue Einträge angezeigt werden, auf jedem Gerät deines Kontos."
+  languageHelp: "Die Sprache der Menüs und Texte. Ohne Auswahl die des Browsers."
   vatHelp: "Vorauswahl für neue Einträge, pro Eintrag änderbar"
-  display: "Anzeige"
   currency: "Währung"
   currencyHelp: "Beträge werden wie {{example}} angezeigt. Bestehende Einträge werden nicht umgerechnet."
   units: "Einheiten"
@@ -860,6 +948,13 @@ settings:
   saved: "Einstellungen gespeichert"
   appearance:
     title: "Darstellung"
+    lookText: "Hell wie Verkehrsschilder, dunkel wie die Instrumente bei Nacht oder automatisch wie das Gerät. Nur auf diesem Gerät."
+    look: "Aussehen der App"
+    modes:
+      light: "Hell"
+      dark: "Dunkel"
+      system: "Automatisch"
+    accent: "Akzentfarbe"
     text: "Die Akzentfarbe von Schaltflächen, Links und Hervorhebungen, gespeichert mit deinem Konto. Die Farben der Kategorien bleiben."
     accents:
       TEAL: "Petrol"
@@ -1119,7 +1214,7 @@ trip:
     hint: "Nur ein Hinweis: Das Fahrtenbuch zählt die Kilometerstände."
   list:
     title: "Fahrtenbuch"
-    subtitle: "Gestartete und beendete Fahrten, neueste zuerst"
+    subtitle: "Begonnene und beendete Fahrten nach Tag, der letzte Tag zuerst"
     emptyTitle: "Noch keine Fahrten"
     emptyText: "Fahrten, die du startest und beendest, erscheinen hier."
     date: "Datum"
@@ -1127,6 +1222,7 @@ trip:
     distance: "Strecke"
     details: "Ziel / Zweck"
     open: "offen"
+    gap: "{{distance}} nicht im Fahrtenbuch"
     deleted: "Gelöscht am {{date}}: {{reason}}"
     restored: "Aus einer Sicherung wiederhergestellt"
     enteredLater: "Nachgetragen"
@@ -1215,6 +1311,8 @@ modification:
   removedAt: "Ausgebaut {{when}}"
   registered: "In der Zulassungsbescheinigung eingetragen"
   notRegistered: "Nicht in der Zulassungsbescheinigung eingetragen"
+  papersComplete: "Papiere vollständig"
+  allComplete: "alle Papiere vollständig"
   open:
     inspection: "Abnahme offen"
     registration: "Noch nicht eingetragen"
@@ -1302,6 +1400,13 @@ inspection:
   details: "Details"
   nextDue: "Nächste HU {{month}}"
   nextDueHint: "Die Erinnerung an die HU wird auf diesen Monat verschoben."
+  sticker: "HU-Plakette, fällig im {{month}}"
+  due:
+    thisMonth: "Fällig in diesem Monat"
+    inMonths_one: "In {{count}} Monat"
+    inMonths_other: "In {{count}} Monaten"
+    overdue_one: "{{count}} Monat überfällig"
+    overdue_other: "{{count}} Monate überfällig"
   fields:
     date: "Datum"
     odometer: "Kilometerstand"

@@ -17,12 +17,15 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
  *            name of the named place it left from, missing without one
  * @param to
  *            name of the named place it arrived at, missing without one
+ * @param trip
+ *            whether a trip of the trip log was on the road in its time
  */
 public record TrackDrive(
 		@Schema(required = true) OffsetDateTime start,
 		@Schema(required = true) OffsetDateTime end,
 		@Schema(required = true) double distance,
 		String from,
-		String to)
+		String to,
+		@Schema(required = true) boolean trip)
 {
 }

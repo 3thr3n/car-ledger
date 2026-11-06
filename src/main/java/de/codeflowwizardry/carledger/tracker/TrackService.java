@@ -23,6 +23,8 @@ import de.codeflowwizardry.carledger.rest.car.track.TrackDrive;
 import de.codeflowwizardry.carledger.rest.car.track.TrackFrequency;
 import de.codeflowwizardry.carledger.rest.car.track.TrackPoint;
 import de.codeflowwizardry.carledger.rest.car.track.TrackSegment;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -36,6 +38,11 @@ public class TrackService
 {
 	/** longest range of one query */
 	public static final Duration MAX_RANGE = Duration.ofDays(31);
+	/**
+	 * whole local days are an hour longer over the end of summer time, e.g. all
+	 * of October in Europe
+	 */
+	static final Duration DST_SHIFT = Duration.ofHours(1);
 	/** a longer time without a point starts a new segment */
 	public static final Duration GAP = Duration.ofMinutes(5);
 	/** a point is kept where the speed changes by more than this, km/h */
@@ -51,11 +58,14 @@ public class TrackService
 	private final TripRepository tripRepository;
 	private final PlaceRepository placeRepository;
 	private final TrackerConfig config;
+	private final MeterRegistry registry;
 
 	@Inject
 	public TrackService(CarRepository carRepository, TrackPointRepository trackPointRepository,
-			TripRepository tripRepository, PlaceRepository placeRepository, TrackerConfig config)
+			TripRepository tripRepository, PlaceRepository placeRepository, TrackerConfig config,
+			MeterRegistry registry)
 	{
+		this.registry = registry;
 		this.carRepository = carRepository;
 		this.trackPointRepository = trackPointRepository;
 		this.tripRepository = tripRepository;
@@ -72,9 +82,13 @@ public class TrackService
 	 *            exclusive
 	 * @param selection
 	 *            the drives to show, each a segment of its own
+	 * @param gForces
+	 *            the g-forces in the points as well, only for the map that shows
+	 *            them: a busy month is some hundred KB
 	 */
 	@Transactional
-	public Track track(long carId, OffsetDateTime from, OffsetDateTime to, Selection selection, String username)
+	public Track track(long carId, OffsetDateTime from, OffsetDateTime to, Selection selection, boolean gForces,
+			String username)
 	{
 		Utils.requireValid(validate(from, to));
 		if (carRepository.findById(carId, username, Action.READ) == null)
@@ -82,9 +96,12 @@ public class TrackService
 			throw new WrongUserException();
 		}
 
+		Timer.Sample sample = Timer.start(registry);
 		SharedLine shared = new SharedLine(GAP);
-		trackPointRepository.forEach(carId, from, to, selection.filter(shared::add, shared::cut));
-		return collect(carId, from, to, selection, shared);
+		trackPointRepository.forEach(carId, from, to, true, selection.filter(shared::add, shared::cut));
+		Track track = collect(carId, from, to, selection, shared, gForces);
+		sample.stop(timer("track"));
+		return track;
 	}
 
 	/**
@@ -107,10 +124,23 @@ public class TrackService
 		}
 
 		// the network needs all drives at once: a month is some ten thousand points
+		Timer.Sample sample = Timer.start(registry);
 		Segments segments = new Segments();
-		trackPointRepository.forEach(carId, from, to, selection.filter(segments::add, segments::finish));
+		trackPointRepository.forEach(carId, from, to, true, selection.filter(segments::add, segments::finish));
 		segments.finish();
-		return StreetNetwork.frequency(segments.all, GAP, TOLERANCE);
+		TrackFrequency frequency = StreetNetwork.frequency(segments.all, GAP, TOLERANCE);
+		sample.stop(timer("frequency"));
+		return frequency;
+	}
+
+	/** carledger_track_seconds of the map, see docs/DEPLOYMENT.md#metrics */
+	private Timer timer(String kind)
+	{
+		// a few buckets, a busy month takes about a second
+		return Timer.builder("carledger.track").tag("kind", kind)
+				.serviceLevelObjectives(Duration.ofMillis(100), Duration.ofMillis(250), Duration.ofMillis(500),
+						Duration.ofSeconds(1), Duration.ofMillis(2500), Duration.ofSeconds(5))
+				.register(registry);
 	}
 
 	/**
@@ -136,15 +166,24 @@ public class TrackService
 
 		DriveDetector detector = new DriveDetector(config.stop(), Places.MIN_DRIVE_METERS, Places.MIN_DRIVE_DURATION,
 				null);
-		trackPointRepository.forEach(carId, from, to, detector::add);
+		trackPointRepository.forEach(carId, from, to, true, detector::add);
 		List<PlaceEntity> named = placeRepository.list(car);
+		List<TripEntity> trips = car.isTripLog() ? tripRepository.overlapping(car, from, to) : List.of();
 		List<TrackDrive> drives = new ArrayList<>();
 		for (Drive drive : detector.drives(OffsetDateTime.MAX))
 		{
 			drives.add(new TrackDrive(drive.start(), drive.end(), Math.round(drive.meters() / 10) / 100.0,
-					name(named, drive.departure()), name(named, drive.arrival())));
+					name(named, drive.departure()), name(named, drive.arrival()), hasTrip(trips, drive)));
 		}
 		return drives.reversed();
+	}
+
+	/** like {@link TripRepository#overlaps}: the drive ends with its last point */
+	private static boolean hasTrip(List<TripEntity> trips, Drive drive)
+	{
+		return trips.stream().anyMatch(trip -> (trip.getStartedAt().isBefore(drive.end())
+				|| trip.getStartedAt().isEqual(drive.start()))
+				&& (trip.getEndedAt() == null || trip.getEndedAt().isAfter(drive.start())));
 	}
 
 	/**
@@ -185,7 +224,7 @@ public class TrackService
 		{
 			to = from.plus(MAX_RANGE);
 		}
-		return collect(carId, from, to, Selection.ALL, null);
+		return collect(carId, from, to, Selection.ALL, null, false);
 	}
 
 	/**
@@ -194,10 +233,12 @@ public class TrackService
 	 *            points
 	 */
 	private Track collect(long carId, OffsetDateTime from, OffsetDateTime to, Selection selection,
-			SharedLine shared)
+			SharedLine shared, boolean gForces)
 	{
-		Collector collector = new Collector(TOLERANCE, shared);
-		trackPointRepository.forEach(carId, from, to, selection.filter(collector::add, collector::finish));
+		Collector collector = new Collector(TOLERANCE, shared, gForces);
+		// the map on the roads, the track of a trip as the GPS sent it
+		trackPointRepository.forEach(carId, from, to, shared != null,
+				selection.filter(collector::add, collector::finish));
 		collector.finish();
 		return new Track(collector.segments, Math.round(collector.meters / 10) / 100.0, collector.count);
 	}
@@ -211,7 +252,7 @@ public class TrackService
 		} else if (!to.isAfter(from))
 		{
 			errors.add("To must be after from!");
-		} else if (Duration.between(from, to).compareTo(MAX_RANGE) > 0)
+		} else if (Duration.between(from, to).compareTo(MAX_RANGE.plus(DST_SHIFT)) > 0)
 		{
 			errors.add("The range must not be longer than " + MAX_RANGE.toDays() + " days!");
 		}
@@ -226,15 +267,17 @@ public class TrackService
 	{
 		private final double tolerance;
 		private final SharedLine shared;
+		private final boolean gForces;
 		private final List<TrackSegment> segments = new ArrayList<>();
 		private List<TrackPoint> current = new ArrayList<>();
 		private double meters;
 		private int count;
 
-		Collector(double tolerance, SharedLine shared)
+		Collector(double tolerance, SharedLine shared, boolean gForces)
 		{
 			this.tolerance = tolerance;
 			this.shared = shared;
+			this.gForces = gForces;
 		}
 
 		void add(TrackPoint point)
@@ -259,7 +302,7 @@ public class TrackService
 			if (!current.isEmpty())
 			{
 				List<TrackPoint> points = shared == null ? current : shared.apply(current);
-				segments.add(TrackSegment.of(TrackSimplifier.simplify(points, tolerance, SPEED_THRESHOLD)));
+				segments.add(TrackSegment.of(TrackSimplifier.simplify(points, tolerance, SPEED_THRESHOLD), gForces));
 				current = new ArrayList<>();
 			}
 		}

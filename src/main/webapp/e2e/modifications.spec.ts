@@ -1,5 +1,7 @@
 import { expect, Page, test } from '@playwright/test';
-import { aliceApi, deleteAllCars } from './helpers';
+import { aliceApi, resetAccounts } from './helpers';
+
+test.beforeAll(resetAccounts);
 
 const PDF = Buffer.from('%PDF-1.4\n1 0 obj<<>>endobj\ntrailer<<>>\n%%EOF');
 
@@ -8,7 +10,6 @@ test.describe.serial('modifications', () => {
   let carId: number;
 
   test.beforeAll(async ({ browser }) => {
-    await deleteAllCars();
     const api = await aliceApi();
     await api.put('/api/car/my', {
       data: { name: 'E2E Golf', year: 2018, odometer: 80000 },
@@ -40,7 +41,6 @@ test.describe.serial('modifications', () => {
 
   test.afterAll(async () => {
     await page.close();
-    await deleteAllCars();
   });
 
   const modification = (part: string) =>
@@ -100,6 +100,9 @@ test.describe.serial('modifications', () => {
     );
     await expect(modification('Coilovers')).toContainText('Abnahme open');
     await expect(modification('Coilovers')).toContainText('80,000 km');
+    await expect(page.getByTestId('papers-state')).toHaveText(
+      '1 installed modification, 1 Abnahme open',
+    );
 
     // what is open shows on the overview of the car
     await page.getByRole('tab', { name: 'Overview' }).click();
@@ -134,6 +137,10 @@ test.describe.serial('modifications', () => {
     await dialog.getByRole('button', { name: 'Save' }).click();
     await expect(modification('Coilovers')).not.toContainText(
       'Not in the registration yet',
+    );
+    await expect(modification('Coilovers')).toContainText('Papers complete');
+    await expect(page.getByTestId('papers-state')).toHaveText(
+      '1 installed modification, all papers complete',
     );
   });
 

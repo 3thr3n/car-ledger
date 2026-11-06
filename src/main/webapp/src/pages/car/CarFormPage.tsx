@@ -33,6 +33,8 @@ import {
   MAX_TANK_SIZE,
 } from '@/utils/energy';
 import CarPictureField from '@/components/car/CarPictureField';
+import OdometerWheels from '@/components/car/OdometerWheels';
+import CarAvatar from '@/components/layout/CarAvatar';
 import { uploadCarPicture } from '@/components/car/carPicture';
 import {
   deleteMyCarMutation,
@@ -259,8 +261,58 @@ function CarForm({
   };
 
   return (
-    <Card component="form" onSubmit={submit} noValidate sx={{ p: 3 }}>
-      <Stack spacing={2.5}>
+    <Card component="form" onSubmit={submit} noValidate>
+      {/* the car as it will show: its plate, name and odometer */}
+      <Box
+        aria-hidden
+        data-testid="car-preview"
+        sx={(theme) => ({
+          px: 3,
+          py: 2.5,
+          display: 'flex',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          gap: 2,
+          borderBottom: 1,
+          borderColor: 'divider',
+          bgcolor: 'action.hover',
+          ...theme.applyStyles('dark', {
+            background: `radial-gradient(120% 90% at 50% 0%, #1c2836 0%, ${theme.vars.palette.background.paper} 70%)`,
+          }),
+        })}
+      >
+        <CarAvatar
+          id={id}
+          // without a name yet a blank plate, not the initials of the hint
+          name={name}
+          licensePlate={licensePlate.trim() || undefined}
+          size={44}
+        />
+        <Box sx={{ minWidth: 0, flex: '1 1 8rem' }}>
+          <Typography
+            variant="h6"
+            component="p"
+            noWrap
+            sx={{ color: name ? 'text.primary' : 'text.disabled' }}
+          >
+            {name || t('car.form.namePlaceholder')}
+          </Typography>
+          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+            {[
+              year && t('car.built', { year }),
+              t(`car.energyTypes.${energyType}`),
+            ]
+              .filter(Boolean)
+              .join(' · ')}
+          </Typography>
+        </Box>
+        <OdometerWheels
+          size="small"
+          value={odometer ?? 0}
+          label={format.distance(odometerToApi(units, odometer))}
+        />
+      </Box>
+      <Stack spacing={2.5} sx={{ p: 3 }}>
         <CarPictureField
           carId={id}
           name={name}
@@ -268,17 +320,30 @@ function CarForm({
           pending={picture}
           onPendingChange={setPicture}
         />
-        <TextField
-          autoFocus
-          label={t('car.form.name')}
-          placeholder={t('car.form.namePlaceholder')}
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          error={touched && !!errors.name}
-          helperText={touched && errors.name}
-          required
-          slotProps={{ htmlInput: { maxLength: 100 } }}
-        />
+        <Grid container spacing={2}>
+          <Grid size={{ xs: 12, sm: 7 }}>
+            <TextField
+              autoFocus
+              label={t('car.form.name')}
+              placeholder={t('car.form.namePlaceholder')}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              error={touched && !!errors.name}
+              helperText={touched && errors.name}
+              required
+              slotProps={{ htmlInput: { maxLength: 100 } }}
+            />
+          </Grid>
+          <Grid size={{ xs: 12, sm: 5 }}>
+            <TextField
+              label={t('car.form.licensePlate')}
+              placeholder={t('car.form.licensePlatePlaceholder')}
+              value={licensePlate}
+              onChange={(e) => setLicensePlate(e.target.value)}
+              slotProps={{ htmlInput: { maxLength: 20 } }}
+            />
+          </Grid>
+        </Grid>
         <NumberField
           label={t('car.form.year')}
           value={year}
@@ -355,6 +420,7 @@ function CarForm({
         <Box>
           <Typography
             variant="subtitle1"
+            component="h2"
             sx={{
               fontWeight: 650,
             }}
@@ -371,16 +437,7 @@ function CarForm({
             {t('car.form.detailsHelp')}
           </Typography>
           <Grid container spacing={2}>
-            <Grid size={{ xs: 12, sm: 5 }}>
-              <TextField
-                label={t('car.form.licensePlate')}
-                placeholder={t('car.form.licensePlatePlaceholder')}
-                value={licensePlate}
-                onChange={(e) => setLicensePlate(e.target.value)}
-                slotProps={{ htmlInput: { maxLength: 20 } }}
-              />
-            </Grid>
-            <Grid size={{ xs: 12, sm: 7 }}>
+            <Grid size={12}>
               <TextField
                 label={t('car.form.vin')}
                 value={vin}

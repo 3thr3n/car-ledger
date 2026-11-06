@@ -17,6 +17,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import de.codeflowwizardry.carledger.TripService;
 import de.codeflowwizardry.carledger.data.AccountEntity;
 import de.codeflowwizardry.carledger.data.CarEntity;
 import de.codeflowwizardry.carledger.data.TripType;
@@ -24,6 +25,7 @@ import de.codeflowwizardry.carledger.data.repository.AccountRepository;
 import de.codeflowwizardry.carledger.data.repository.CarAccess.Action;
 import de.codeflowwizardry.carledger.data.repository.CarRepository;
 import de.codeflowwizardry.carledger.data.repository.TrackPointRepository;
+import de.codeflowwizardry.carledger.rest.car.trip.TripPastInput;
 import de.codeflowwizardry.carledger.rest.car.tracker.DeviceInput;
 import de.codeflowwizardry.carledger.rest.device.TrackPointInput;
 import de.codeflowwizardry.carledger.tracker.DeviceService;
@@ -63,6 +65,9 @@ class TrackResourceTest
 
 	@Inject
 	EntityManager entityManager;
+
+	@Inject
+	TripService tripService;
 
 	long carId;
 	long otherCarId;
@@ -152,6 +157,64 @@ class TrackResourceTest
 				.body("segments[0].points", hasSize(2))
 				.body("segments[0].points[0]", contains(10.0f, 50.0f, 0.0f, 36.0f))
 				.body("segments[0].points[1][2]", is(100.0f));
+	}
+
+	/**
+	 * 1 km straight to the north at 36 km/h, with calm g-forces of the source,
+	 * braking at second 50 and a curve to the left at second 30
+	 */
+	private void lineWithGForces(String source)
+	{
+		List<TrackPointInput> points = new ArrayList<>();
+		for (int second = 0; second <= 100; second++)
+		{
+			points.add(new TrackPointInput(START.plusSeconds(second), 50 + second * 10 * LAT_PER_METER, 10.0, 36.0,
+					null, null, 0.05, second == 50 ? 0.62 : 0.0, second == 30 ? -0.4 : 0.1, source));
+		}
+		QuarkusTransaction.requiringNew().run(() -> trackPointRepository.insert(deviceId, carId, points));
+	}
+
+	@Test
+	void shouldKeepThePeaksOfTheGForcesOfThePointsLeftOut()
+	{
+		lineWithGForces("imu");
+
+		// only the ends are kept, the last one carries the peaks of the line to it
+		range().queryParam("gforces", true).when().get().then()
+				.statusCode(200)
+				.body("segments[0].points", hasSize(2))
+				.body("segments[0].points[0]", contains(10.0f, 50.0f, 0.0f, 36.0f, 0.05f, 0.0f, 0.1f, 1.0f))
+				.body("segments[0].points[1]", contains(10.0f, 50.00899f, 100.0f, 36.0f, 0.05f, 0.62f, -0.4f, 1.0f));
+	}
+
+	@Test
+	void shouldSendTheGForcesOnlyWhenAsked()
+	{
+		lineWithGForces("gps");
+
+		range().when().get().then().body("segments[0].points[1]", hasSize(4));
+		range().queryParam("gforces", true).when().get().then()
+				.body("segments[0].points[1][7]", is(0.0f));
+	}
+
+	@Test
+	void shouldSendNoGForcesOfAnOlderFirmware()
+	{
+		line(0, 0, 1000);
+
+		range().queryParam("gforces", true).when().get().then()
+				.body("segments[0].points[1]", contains(10.0f, 50.00899f, 100.0f, 36.0f, null, null, null, null));
+	}
+
+	@Test
+	void shouldNotWaitForTheMapMatchingWithoutAService()
+	{
+		line(0, 0, 100);
+
+		// none of them in the index of the waiting points
+		assertEquals(0, QuarkusTransaction.requiringNew().call(() -> ((Number) entityManager
+				.createNativeQuery("SELECT count(*) FROM track_point WHERE tk_match IS NOT NULL")
+				.getSingleResult()).intValue()));
 	}
 
 	@Test
@@ -258,12 +321,26 @@ class TrackResourceTest
 	}
 
 	@Test
+	void shouldAcceptAMonthOverTheEndOfSummerTime()
+	{
+		// all of October in Berlin: 31 days and the hour of the 25th
+		given()
+				.pathParam("carId", carId)
+				.queryParam("from", "2026-09-30T22:00:00Z")
+				.queryParam("to", "2026-10-31T23:00:00Z")
+				.when()
+				.get()
+				.then()
+				.statusCode(200);
+	}
+
+	@Test
 	void shouldRejectAnInvalidRange()
 	{
 		given()
 				.pathParam("carId", carId)
 				.queryParam("from", START.toString())
-				.queryParam("to", START.plusDays(31).plusSeconds(1).toString())
+				.queryParam("to", START.plusDays(31).plusHours(1).plusSeconds(1).toString())
 				.when()
 				.get()
 				.then()
@@ -640,6 +717,23 @@ class TrackResourceTest
 				.body("[1].start", is("2026-10-20T08:00:03Z"))
 				.body("[1].end", is("2026-10-20T08:01:40Z"))
 				.body("[1].distance", is(0.97f));
+	}
+
+	@Test
+	void shouldMarkTheDrivesWithATrip()
+	{
+		commute();
+		// a trip during the way there, its times a little off the ones of the GPS
+		tripService.addPast(carId, UUID.randomUUID(), new TripPastInput(TripType.PRIVATE, 0,
+				START.plusSeconds(10), 1, START.plusMinutes(2), null, null, null), "peter");
+
+		range().when().get("drives").then()
+				.body("trip", contains(false, true));
+
+		QuarkusTransaction.requiringNew()
+				.run(() -> carRepository.findById(carId, "peter", Action.MANAGE).setTripLog(false));
+		range().when().get("drives").then()
+				.body("trip", contains(false, false));
 	}
 
 	@Test

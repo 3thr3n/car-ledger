@@ -1,6 +1,8 @@
 import { expect, test } from '@playwright/test';
 import { API_URL } from '../playwright.config';
-import { keycloakLogin } from './helpers';
+import { keycloakLogin, resetAccounts } from './helpers';
+
+test.beforeAll(resetAccounts);
 
 // own sessions, not the shared one of the other tests
 test.use({ storageState: { cookies: [], origins: [] } });
@@ -15,7 +17,7 @@ test('returns to the requested page after the login', async ({ page }) => {
   await keycloakLogin(page);
 
   await expect(page).toHaveURL(new RegExp(`${deepLink.replace('?', '\\?')}$`));
-  await expect(page.getByText('Cost per km', { exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible();
 });
 
 test('logs out and invalidates the session', async ({ page, request }) => {

@@ -21,6 +21,7 @@ import BillTable from '@/components/bill/BillTable';
 import { useRecurringColumns } from '@/components/bill/columns';
 import useDeleteBill from '@/components/bill/useDeleteBill';
 import EndRecurringDialog from '@/components/bill/EndRecurringDialog';
+import RecurringSummary from '@/components/bill/RecurringSummary';
 import useCarRole from '@/hooks/useCarRole';
 
 export default function RecurringListPage({ carId }: { carId: number }) {
@@ -51,6 +52,7 @@ export default function RecurringListPage({ carId }: { carId: number }) {
 
   return (
     <Section flush>
+      <RecurringSummary carId={carId} />
       <Stack
         direction={{ xs: 'column', sm: 'row' }}
         spacing={1}

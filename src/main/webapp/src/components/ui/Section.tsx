@@ -8,6 +8,8 @@ export interface SectionProps {
   children: ReactNode;
   /** remove the content padding, e.g. for tables */
   flush?: boolean;
+  /** the anchor of the section, e.g. for an index of the page */
+  id?: string;
   sx?: SxProps<Theme>;
 }
 
@@ -17,10 +19,14 @@ export default function Section({
   action,
   children,
   flush,
+  id,
   sx,
 }: SectionProps) {
   return (
-    <Card sx={sx}>
+    <Card
+      id={id}
+      sx={[{ scrollMarginTop: 80 }, ...(Array.isArray(sx) ? sx : [sx])]}
+    >
       {(title || action) && (
         <Stack
           direction="row"

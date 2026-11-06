@@ -38,7 +38,7 @@ Content-Type: application/json
   braking, both 0 or more; `lateral` the peak sideways acceleration, + turning right, - turning left. `gsource` says
   where they come from: `imu` (real peaks) or `gps` (averages over a second, noticeably lower for the same drive);
   without it, values come from the GPS (firmware before the IMU), another source is stored as `unknown`. A firmware
-  before the g-forces sends none of them. They are only stored for now, the map doesn't show them yet.
+  before the g-forces sends none of them. The map shows them, see [Map](#map).
 - At most 500 points per request (the firmware sends 200).
 - A point sent again (same tracker and `ts`) is stored once, so a batch can be sent again safely.
 - Invalid points are skipped, not rejected: a time more than 5 minutes in the future or before 2020, a position outside
@@ -209,10 +209,11 @@ for good, also when it is found a little differently later. Dismissed drives are
   or a trip; the one of the car without any) or the end of the suggestion before, the end with the start and the GPS
   distance rounded to km. Start and end are a few seconds off: the drift radius delays them.
 
-| Request                                      | Answer                                                                |
-|----------------------------------------------|-----------------------------------------------------------------------|
-| `GET /api/trip/{carId}/suggestions`          | the drives with `startedAt`, `endedAt`, `distance` and the odometers  |
-| `POST /api/trip/{carId}/suggestions/dismiss` | 204, `{"startedAt":…,"endedAt":…}` of the drive                       |
+| Request                                                   | Answer                                                               |
+|-----------------------------------------------------------|----------------------------------------------------------------------|
+| `GET /api/trip/{carId}/suggestions`                       | the drives with `startedAt`, `endedAt`, `distance` and the odometers |
+| `POST /api/trip/{carId}/suggestions/dismiss`              | 204, `{"startedAt":…,"endedAt":…}` of the drive                      |
+| `GET /api/trip/{carId}/suggestions/drive?start=…&end=…`   | one drive of the map as a suggestion, see [Drives](#drives)          |
 
 ## Map
 
@@ -227,17 +228,30 @@ than 5 minutes: standing or a jam doesn't add a pass, the way back after a stop 
 passes change, e.g. where a drive turned in. Small detours of the grid (up to 40 m) are left out, a roundabout stays.
 Streets closer than about 10 m may merge. A busy month is about 80 streets, 30 KB, in about a second.
 
+*G-forces* colors the track by the largest of the [g-forces](#sending-points) of each piece: forward acceleration,
+braking and cornering to either side, from calm (blue) over yellow to harsh (red). The g-forces of a point are the
+peaks since the point before, so they color the piece to it. The IMU measures real peaks, the GPS only averages over a
+second, noticeably lower for the same drive: each source has its own range of the same colors, harsh from 0.5 g of the
+IMU and from 0.3 g of the GPS (a guess, to tune with real drives), so a period with both doesn't look calmer because of
+the GPS. Pieces without g-forces (a firmware before them) are gray. Hovering the track shows the g-force there, its
+kind and source. Like the speeds, the drives are drawn on their shared line, also in fullscreen and for picked drives.
+
 A street driven more than once shows as one line, in both views: the GPS drifts by a few meters from drive to drive
 and the two directions use different lanes. CarLedger lays the drives of the period on a grid of 8 m and moves each
 point sideways onto the average of the drives around it in about the same direction (both directions count as one, a
 crossing street doesn't pull). The more often a street is driven, the steadier its line; one driven once stays as it
 is. Streets closer than about 10 m may merge. Only the map is changed: the stored points, the trips, the suggestions,
-the places and the backup use the points as the tracker sent them, and so does the track of a single trip.
+the places and the backup use the points as the tracker sent them, and so does the track of a single trip. With
+[map matching](#map-matching) the points are on the roads before, the shared line only moves the ones without a road.
 
-The server simplifies the lines only by 1 m and sends them compact (`[lon, lat, seconds, speed]` per point, gzip); the
+The server simplifies the lines only by 1 m and sends them compact (`[lon, lat, seconds, speed]` per point, gzip; for
+*G-forces* also `[accel, brake, lateral, imu]`, imu 1 or 0, all `null` without, only in that mode so the others stay as
+small); the
 map simplifies further by its zoom, so the drives of a street stay together at every zoom (a simplification per drive
-by the length of the period took them apart again by up to 50 m, #526). The speeds are drawn as lines of the same band
-of 10 km/h. A busy month (about 2000 km, a point every 2 s) is about 940 KB, 320 KB with gzip.
+by the length of the period took them apart again by up to 50 m, #526). A point left out passes its g-forces on to the
+next one kept, so the peaks stay: the highest acceleration and braking and the strongest cornering of the points in
+between. The speeds are drawn as lines of the same band of 10 km/h, the g-forces of a tenth of the range of their
+source, each line with the highest of its pieces, so a short harsh braking isn't averaged away. A busy month (about 2000 km, a point every 2 s) is about 940 KB, 320 KB with gzip.
 
 It appears for cars with a tracker once a map is set up:
 
@@ -260,6 +274,62 @@ Examples (check the terms of use of the provider):
 
 The public tile servers of OpenStreetMap (`tile.openstreetmap.org`) aren't meant for apps like this and provide no
 MapLibre style.
+
+## Map matching
+
+Optional: a self-hosted [Valhalla](https://valhalla.github.io/valhalla/) snaps the tracks to the roads of
+OpenStreetMap, so all drives of a street lie on exactly the same line, and cut corners and gaps in tunnels follow the
+road. Without it (the default) everything stays as before: the map shows the shared line of the drives. It has to be
+self-hosted: a public service would get the positions of the users.
+
+**Set up** with the stack chart, `global.mapMatching.enabled=true`: the chart `map-matching` runs Valhalla as
+`car-ledger-map-matching` and the app uses it by itself. On the first start Valhalla downloads the extracts of
+`mapMatching.extracts` (Germany, Austria and Switzerland of [Geofabrik](https://download.geofabrik.de) by default) and
+builds its routing tiles into its volume (`mapMatching.persistence.size`, 40Gi): about an hour and up to 8 GB of
+memory (`mapMatching.resources`), the startup probe waits up to 12 hours. Later starts use the tiles of a
+finished build, a failed one (`valhalla_build_tiles failed` in the log) is built again. Outside of the
+stack, install `helm/map-matching` and set `carLedger.map.matchingUrl` (e.g. `http://map-matching.maps:8002`) and
+`networkPolicy.extraFrom` of the chart for the namespace of the app. Its NetworkPolicy lets only the app in.
+
+**How**: the points that arrive while a service is set up wait for the matching. Every 2 minutes the app takes the
+finished drives (no point of the car for 5 minutes) and sends each, in parts of at most 2000 points, to
+`trace_attributes` with `map_snap`. The position on the road is stored next to the one of the GPS, which stays. A
+point Valhalla leaves out, one more than 50 m from its road (a parking lot) and a drive without a road near it (off-road,
+a new road) keep the position of the GPS, the shared line of the map applies to them. Without a reachable service the
+points wait and are matched once it is back. `carledger_map_matching_points_total{result=matched|unmatched}` counts
+them ([Metrics](DEPLOYMENT.md#metrics)).
+
+**Where**: the map (speeds, g-forces, frequency), the distances of its drives and the distance of the
+[suggested trips](#suggested-trips) use the positions on the roads. The trip log keeps its odometers, the track of a
+single trip, the stops of the places and the backup use the points of the GPS; restored points are matched again.
+
+**Older points** (sent before the service was set up) aren't matched by themselves. To match them, e.g. of the last
+year:
+
+```bash
+kubectl exec car-ledger-postgresql-0 -- psql -U postgres car-ledger -c \
+  "UPDATE track_point SET tk_match = 'P' WHERE tk_match IS NULL AND tk_ts > now() - interval '1 year'"
+```
+
+**New map data** is loaded by hand, e.g. every few months: delete the extracts and the tiles, then the pod downloads
+and builds them again on its start (the map matching waits meanwhile), and match the points again if wanted:
+
+```bash
+kubectl exec car-ledger-map-matching-0 -- sh -c \
+  'rm -rf /custom_files/*.osm.pbf /custom_files/valhalla_tiles /custom_files/valhalla_tiles.tar /custom_files/file_hashes.txt'
+kubectl delete pod car-ledger-map-matching-0
+# once it is ready again
+kubectl exec car-ledger-postgresql-0 -- psql -U postgres car-ledger -c \
+  "UPDATE track_point SET tk_match = 'P' WHERE tk_match IS NOT NULL"
+```
+
+| Property                              | Helm value                  | Meaning                                                     |
+|---------------------------------------|-----------------------------|-------------------------------------------------------------|
+| `carledger.map.matching.url`          | `carLedger.map.matchingUrl` | base URL of Valhalla; without it nothing is matched         |
+| `carledger.map.matching.max-distance` |                             | meters, a position further from its road keeps the GPS (50) |
+| `carledger.map.matching.every`        |                             | how often the finished drives are matched (`2m`, `off`)     |
+| `carledger.map.matching.timeout`      |                             | of a request (`60s`)                                        |
+| `carledger.map.matching.max-points`   |                             | points of one request, a longer drive is split (2000)       |
 
 ## Places
 
@@ -295,11 +365,16 @@ next drive (or the end of the period). Only the points of the drive would leave 
 apart after a short drive, and the map would join them with a straight line, a drive again. The other drives, the
 places and the trips stay.
 
-| Request                                                      | Answer                                                           |
-|--------------------------------------------------------------|------------------------------------------------------------------|
-| `GET /api/track/{carId}/drives?from=…&to=…`                  | the drives with `start`, `end`, `distance` (km), `from` and `to` |
-| `GET /api/track/{carId}?from=…&to=…&drive=start/end&drive=…` | the track of only these drives, each a segment of its own        |
-| `GET /api/track/{carId}/frequency?…&drive=start/end`         | the passes of only these drives                                  |
+With the trip log on, who may add trips (owner, editor) adds a drive without a trip as a past trip: *Add as trip* opens
+it prefilled like a [suggestion](#suggested-trips), also for a drive that was dismissed or is older than 7 days. Its
+start odometer is the highest one known before the drive, not the end of the drive before: only the suggestions follow
+each other. A drive that a trip overlaps (`trip` in the list) has no button.
+
+| Request                                                      | Answer                                                                   |
+|--------------------------------------------------------------|--------------------------------------------------------------------------|
+| `GET /api/track/{carId}/drives?from=…&to=…`                  | the drives with `start`, `end`, `distance` (km), `from`, `to` and `trip` |
+| `GET /api/track/{carId}?from=…&to=…&drive=start/end&drive=…` | the track of only these drives, each a segment of its own                |
+| `GET /api/track/{carId}/frequency?…&drive=start/end`         | the passes of only these drives                                          |
 
 ## Not in the OpenAPI spec
 

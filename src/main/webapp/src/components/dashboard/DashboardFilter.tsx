@@ -101,6 +101,7 @@ export default function DashboardFilter({
                 <CarAvatar
                   id={car.id}
                   name={car.name}
+                  licensePlate={car.licensePlate}
                   pictureId={car.pictureId}
                   size={20}
                 />

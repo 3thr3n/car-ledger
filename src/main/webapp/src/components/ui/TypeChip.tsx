@@ -1,7 +1,7 @@
 import { Box } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { BillType } from '@/generated';
-import { billTypes } from '@/utils/billTypes';
+import { billTypes, categoryInk } from '@/utils/billTypes';
 
 export default function TypeChip({ type }: { type?: BillType }) {
   const { t } = useTranslation();
@@ -21,7 +21,7 @@ export default function TypeChip({ type }: { type?: BillType }) {
         fontSize: 12.5,
         fontWeight: 600,
         lineHeight: 1.6,
-        color: theme.vars.palette[meta.color].main,
+        ...categoryInk(theme, meta.color),
         backgroundColor: `rgba(${theme.vars.palette[meta.color].mainChannel} / 0.12)`,
         '& svg': { fontSize: 14 },
       })}

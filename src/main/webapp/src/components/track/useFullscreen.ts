@@ -51,7 +51,7 @@ export default function useFullscreen() {
 }
 
 /** the area covers the window, the map takes the height left */
-export const fullscreenSx: SxProps<Theme> = {
+export const fullscreenSx = {
   position: 'fixed',
   inset: 0,
   zIndex: (theme) => theme.zIndex.modal,
@@ -60,4 +60,4 @@ export const fullscreenSx: SxProps<Theme> = {
   overflowY: 'auto',
   display: 'flex',
   flexDirection: 'column',
-};
+} satisfies SxProps<Theme>;

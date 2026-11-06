@@ -16,8 +16,8 @@ import {
 } from '@/generated/@tanstack/react-query.gen';
 import { localClient } from '@/utils/QueryClient';
 import { toApiDate, useFormat } from '@/utils/format';
-import NumberField from './NumberField';
 import FormActions from './FormActions';
+import Pump, { PumpLine, PumpWithFields } from './Pump';
 import BillAttachments from './BillAttachments';
 import useSaveBill from './useSaveBill';
 
@@ -139,8 +139,25 @@ export default function RecurringForm({
 
   return (
     <Stack component="form" onSubmit={submit} noValidate spacing={2.5}>
-      <Grid container spacing={2}>
-        <Grid size={{ xs: 12, sm: 6 }}>
+      <PumpWithFields
+        pump={
+          <Pump
+            label={t('bill.fields.amount')}
+            error={touched ? errors.amount : undefined}
+          >
+            <PumpLine
+              label={t('bill.fields.amount')}
+              value={form.amount}
+              onChange={(amount) => set({ amount })}
+              suffix={` ${format.currencySymbol}`}
+              max={1_000_000}
+              required
+              helperText={t('bill.amountHelp')}
+            />
+          </Pump>
+        }
+      >
+        <Grid size={12}>
           <TextField
             label={t('bill.fields.name')}
             placeholder={t('bill.recurringPlaceholder')}
@@ -152,27 +169,7 @@ export default function RecurringForm({
             helperText={touched && errors.name}
           />
         </Grid>
-        <Grid size={{ xs: 12, sm: 6 }}>
-          <NumberField
-            label={t('bill.fields.amount')}
-            value={form.amount}
-            onChange={(amount) => set({ amount })}
-            suffix={` ${format.currencySymbol}`}
-            max={1_000_000}
-            required
-            error={touched ? errors.amount : undefined}
-            helperText={t('bill.amountHelp')}
-          />
-        </Grid>
-        <Grid size={12}>
-          <TextField
-            label={t('bill.fields.description')}
-            value={form.description}
-            onChange={(e) => set({ description: e.target.value })}
-            slotProps={{ htmlInput: { maxLength: 1000 } }}
-          />
-        </Grid>
-        <Grid size={{ xs: 12, sm: 6 }}>
+        <Grid size={{ xs: 12, sm: 6, md: 12 }}>
           <TextField
             select
             label={t('bill.fields.category')}
@@ -187,7 +184,7 @@ export default function RecurringForm({
             ))}
           </TextField>
         </Grid>
-        <Grid size={{ xs: 12, sm: 6 }}>
+        <Grid size={{ xs: 12, sm: 6, md: 12 }}>
           <TextField
             select
             label={t('bill.fields.interval')}
@@ -201,6 +198,17 @@ export default function RecurringForm({
               </MenuItem>
             ))}
           </TextField>
+        </Grid>
+      </PumpWithFields>
+
+      <Grid container spacing={2}>
+        <Grid size={12}>
+          <TextField
+            label={t('bill.fields.description')}
+            value={form.description}
+            onChange={(e) => set({ description: e.target.value })}
+            slotProps={{ htmlInput: { maxLength: 1000 } }}
+          />
         </Grid>
         <Grid size={{ xs: 12, sm: 6 }}>
           <DatePicker
