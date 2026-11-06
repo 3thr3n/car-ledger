@@ -20,8 +20,8 @@ scripts with a [service account](DEPLOYMENT.md#service-accounts). Within 1.x it 
 A client ignores the fields it doesn't know and expects new enum values. `/api` keeps its paths without a version;
 the rule replaces an `/api/v1`.
 
-A security fix can reject input that was accepted before (e.g. a length limit) in a minor release, the release notes
-name it.
+A security fix can reject input that was accepted before (e.g. a length limit) in a minor release,
+[CHANGELOG.md](../CHANGELOG.md) names it under **Security**.
 
 ## Backup
 
@@ -31,7 +31,7 @@ still restore the older ones.
 
 The backups of before 1.0.0 are not guaranteed, but every one since 0.5.0 should be restorable as well, like the
 upgrades. `BackupTest#shouldRestoreABackupOf050` restores a backup in the shape of 0.5.0 and stays as it is; a change
-that makes it fail needs a reason in the release notes.
+that makes it fail needs a reason in [CHANGELOG.md](../CHANGELOG.md).
 
 ## CSV
 
@@ -52,9 +52,11 @@ Keycloak 26.0/26.1 database, which needs Keycloak 26.6 first.
 ## Charts
 
 The values of the charts (`car-ledger`, `stack`, `keycloak`, `authentik`) are stable within 1.x. A value that is
-renamed or removed in a minor release keeps working for at least one more minor release, with a warning in the notes
-of the chart (e.g. renamed in 1.2, still read in 1.3, gone in 1.4 at the earliest). New values have defaults that keep
-the behaviour of an existing installation, unless a release note says otherwise (e.g. a security default).
+renamed or removed in a minor release keeps working for at least one more minor release, listed under **Deprecated**
+in [CHANGELOG.md](../CHANGELOG.md) and with a warning in the notes of the chart (e.g. renamed in 1.2, still read in
+1.3, gone in 1.4 at the earliest). New values have defaults that keep the behaviour of an existing installation,
+unless the changelog says otherwise (e.g. a security default). The same goes for the API, which only deprecates within
+1.x: a deprecated endpoint or field is listed there and stays until 2.0.
 
 Up to 1.0.0 the only values that went away were `carLedger.webhook.*`, removed with the webhooks in 0.9.0.
 
