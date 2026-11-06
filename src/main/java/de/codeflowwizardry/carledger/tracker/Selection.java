@@ -117,6 +117,12 @@ public final class Selection
 		};
 	}
 
+	/** whether a point of the time is selected */
+	boolean contains(OffsetDateTime ts)
+	{
+		return isAll() || indexOf(ts) >= 0;
+	}
+
 	private int indexOf(OffsetDateTime ts)
 	{
 		for (int i = 0; i < ranges.size(); i++)

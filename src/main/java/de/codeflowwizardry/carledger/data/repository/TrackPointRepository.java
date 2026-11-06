@@ -46,10 +46,14 @@ public class TrackPointRepository
 			WHERE tk_car_id = ? AND tk_ts >= ? AND tk_ts < ?
 			ORDER BY tk_ts, id""";
 
-	/** the same, a matched point at its position on the road */
+	/**
+	 * the same, a matched point at its position on the road, with the road from
+	 * the point before
+	 */
 	private static final String SELECT_MATCHED = SELECT.replace("SELECT tk_ts, tk_lat, tk_lon,",
 			"SELECT tk_ts, CASE WHEN tk_match = 'M' THEN tk_match_lat ELSE tk_lat END,"
-					+ " CASE WHEN tk_match = 'M' THEN tk_match_lon ELSE tk_lon END,");
+					+ " CASE WHEN tk_match = 'M' THEN tk_match_lon ELSE tk_lon END,")
+			.replace(" FROM track_point", ", CASE WHEN tk_match = 'M' THEN tk_match_road END FROM track_point");
 
 	/** waiting for the matching: P, see V1.37.0__map_matching.sql */
 	public static final String PENDING = "P";
@@ -134,6 +138,36 @@ public class TrackPointRepository
 	public void forEach(long carId, OffsetDateTime from, OffsetDateTime to, boolean matched,
 			Consumer<TrackPoint> consumer)
 	{
+		read(carId, from, to, matched, (point, road) -> consumer.accept(point));
+	}
+
+	/** a point and the road to it */
+	@FunctionalInterface
+	public interface OnRoad
+	{
+		/**
+		 * @param road
+		 *            the vertices of the road from the point before, an encoded
+		 *            polyline; <code>null</code> without
+		 */
+		void accept(TrackPoint point, String road);
+	}
+
+	/**
+	 * The matched points at their position on the road, as
+	 * {@link #forEach(long, OffsetDateTime, OffsetDateTime, boolean, Consumer)},
+	 * with the road to each from the point before
+	 *
+	 * @param to
+	 *            exclusive
+	 */
+	public void forEachOnRoad(long carId, OffsetDateTime from, OffsetDateTime to, OnRoad consumer)
+	{
+		read(carId, from, to, true, consumer);
+	}
+
+	private void read(long carId, OffsetDateTime from, OffsetDateTime to, boolean matched, OnRoad consumer)
+	{
 		try (Connection connection = dataSource.getConnection();
 				PreparedStatement statement = connection.prepareStatement(matched ? SELECT_MATCHED : SELECT))
 		{
@@ -148,7 +182,8 @@ public class TrackPointRepository
 					consumer.accept(new TrackPoint(result.getObject(1, OffsetDateTime.class), result.getDouble(2),
 							result.getDouble(3), result.getObject(4, Double.class),
 							GForces.of(result.getObject(5, Double.class), result.getObject(6, Double.class),
-									result.getObject(7, Double.class), result.getString(8))));
+									result.getObject(7, Double.class), result.getString(8))),
+							matched ? result.getString(9) : null);
 				}
 			}
 		}
@@ -167,8 +202,11 @@ public class TrackPointRepository
 	 * @param state
 	 *            {@link #MATCHED} with the position on the road, else
 	 *            {@link #UNMATCHED}
+	 * @param road
+	 *            of a matched point, the vertices of the road from the point
+	 *            before as an encoded polyline; <code>null</code> without
 	 */
-	public record Match(long id, String state, Double lat, Double lon)
+	public record Match(long id, String state, Double lat, Double lon, String road)
 	{
 	}
 
@@ -262,14 +300,16 @@ public class TrackPointRepository
 	{
 		try (Connection connection = dataSource.getConnection();
 				PreparedStatement statement = connection.prepareStatement("UPDATE track_point"
-						+ " SET tk_match = ?, tk_match_lat = ?, tk_match_lon = ? WHERE id = ? AND tk_match = 'P'"))
+						+ " SET tk_match = ?, tk_match_lat = ?, tk_match_lon = ?, tk_match_road = ?"
+						+ " WHERE id = ? AND tk_match = 'P'"))
 		{
 			for (Match match : matches)
 			{
 				statement.setString(1, match.state());
 				statement.setObject(2, match.lat(), Types.DOUBLE);
 				statement.setObject(3, match.lon(), Types.DOUBLE);
-				statement.setLong(4, match.id());
+				statement.setString(4, match.road());
+				statement.setLong(5, match.id());
 				statement.addBatch();
 			}
 			statement.executeBatch();

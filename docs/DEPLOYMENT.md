@@ -519,6 +519,7 @@ Use the image of a release (a git tag of `main`) or a dev build of `develop`. On
 | 1.35.0    | The latest status a GPS tracker reported (0.10.0)                                                                    |
 | 1.36.0    | Inbox of the notifications of an account, kept for 90 days (0.10.0)                                                  |
 | 1.37.0    | The position of a track point on the road, of the map matching (0.11.0)                                              |
+| 1.38.0    | The road between a matched track point and the one before; the matched points are matched again (1.0.0)              |
 
 An older image refuses to start on the migrated database, as Flyway finds migrations it does not know. To go back,
 restore the backup. Without the backup, the older image runs on the migrated database (the new columns have defaults)
@@ -628,6 +629,10 @@ kubectl set env deployment/car-ledger QUARKUS_FLYWAY_IGNORE_FUTURE_MIGRATIONS=tr
   still has the three, delete them and their tiles as for [new map data](GPS_TRACKER.md#map-matching), then it
   downloads and builds the new one on its next start. Without `tiles.volume` and with extracts of your own nothing
   changes.
+- **The map follows the curves** (1.0.0, with map matching): the line between two matched points runs along the road
+  instead of straight, so it no longer cuts the bends (migration 1.38.0). The migration sets the points matched before
+  to waiting, the next run of the matching (within a few minutes after the start) matches them again with their roads,
+  in the meantime the map shows them at the positions of the GPS. The points take a few bytes more each.
 - **Database backups** (0.11.0, optional): `backup.enabled` dumps the whole database every night into a volume of its
   own and, with a bucket, into S3, see [Database backups](#database-backups). Off by default.
 - **Metrics** (0.11.0): the app serves metrics for Prometheus on its management port, see [Metrics](#metrics). A
