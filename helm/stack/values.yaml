@@ -11,7 +11,8 @@ global:
   authentik:
     enabled: false
   # Valhalla that snaps the GPS tracks to the roads (docs/GPS_TRACKER.md#map-matching), the app uses it by itself.
-  # Builds its tiles on the first start, for the extracts of mapMatching.extracts (Germany, Austria, Switzerland)
+  # Builds its tiles on the first start, for the extracts of mapMatching.extracts (Germany, Austria, Switzerland), or
+  # serves the ones of mapMatching.tiles.volume, built on another machine by hack/map-matching/build-tiles.sh
   mapMatching:
     enabled: false
 

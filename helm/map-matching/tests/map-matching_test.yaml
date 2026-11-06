@@ -60,6 +60,65 @@ tests:
           path: spec.template.spec.containers[0].startupProbe.failureThreshold
           value: 720
 
+  - it: only serves finished tiles of an image, without a download, a build or a volume of its own
+    template: templates/statefulset.yaml
+    set:
+      tiles.volume:
+        image:
+          reference: git.example.com/me/car-ledger-tiles:2026-11
+          pullPolicy: IfNotPresent
+      imagePullSecrets:
+        - name: regcred
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].command
+          value: [ "valhalla_service", "/tiles/valhalla.json", "2" ]
+      - notExists:
+          path: spec.template.spec.containers[0].env
+      - notExists:
+          path: spec.volumeClaimTemplates
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: tiles
+            image:
+              reference: git.example.com/me/car-ledger-tiles:2026-11
+              pullPolicy: IfNotPresent
+      - contains:
+          path: spec.template.spec.containers[0].volumeMounts
+          content:
+            name: tiles
+            mountPath: /tiles
+            readOnly: true
+      - equal:
+          path: spec.template.spec.imagePullSecrets
+          value:
+            - name: regcred
+      # loading the tiles takes seconds, not hours
+      - equal:
+          path: spec.template.spec.containers[0].startupProbe.failureThreshold
+          value: 60
+      # the same hardening
+      - equal:
+          path: spec.template.spec.containers[0].securityContext.readOnlyRootFilesystem
+          value: true
+
+  - it: takes the tiles of a directory of the volume
+    template: templates/statefulset.yaml
+    set:
+      tiles.volume:
+        persistentVolumeClaim:
+          claimName: tiles
+      tiles.subPath: dach
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].volumeMounts
+          content:
+            name: tiles
+            mountPath: /tiles
+            readOnly: true
+            subPath: dach
+
   - it: is named after the release on its own
     template: templates/service.yaml
     asserts:

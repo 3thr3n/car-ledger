@@ -35,6 +35,9 @@ render() {
     --set ingress.enabled=false --set httpRoute.enabled=true
   # the map matching on its own
   render map-matching
+  # with tiles of another machine, from an image of a private registry
+  render map-matching --set tiles.volume.image.reference=git.example.com/me/car-ledger-tiles:2026-11 \
+    --set 'imagePullSecrets[0].name=regcred'
   # the stack without, with Keycloak and with authentik
   render stack --set global.host=example.com
   render stack --set global.host=example.com --set global.keycloak.enabled=true
