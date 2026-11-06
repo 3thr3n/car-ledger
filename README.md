@@ -184,10 +184,11 @@ A [release](https://github.com/3thr3n/car-ledger/releases) (e.g. `0.11.0`) publi
 latest release.
 
 Every build of `develop` is a prerelease `<next release>-dev.<run number>`, installed with `--devel` (a version range
-needs a prerelease suffix, e.g. `>=0.12.0-0`). Leave `carLedger.image.tag` empty: each chart runs the image of its own
+needs a prerelease suffix, e.g. `>=1.0.0-0`). Leave `carLedger.image.tag` empty: each chart runs the image of its own
 build.
 
-What stays stable within 1.x is in [docs/STABILITY.md](docs/STABILITY.md).
+What changed is in [CHANGELOG.md](CHANGELOG.md) (from 1.0.0 on), what stays stable within 1.x in
+[docs/STABILITY.md](docs/STABILITY.md).
 
 ### Upgrading
 
@@ -296,9 +297,12 @@ Contributions are welcome: branch from `develop` and open the pull request again
 - `develop` gets all pull requests, its builds are published as prereleases (`<next release>-dev.<run number>`).
 - Every milestone ends with a security review (issue template *Security review of a milestone*); its findings are
   fixed before the release or moved on purpose.
+- Every pull request with a notable change adds it under **Unreleased** in [CHANGELOG.md](CHANGELOG.md); a release
+  names that section with its version and date.
 - `main` only holds released states. A release is a pull request from `develop` to `main`, merged with a merge
   commit (not squashed, so both branches keep the same history), then the tag of the version in
-  `helm/car-ledger/Chart.yaml` on `main`. Afterwards the next version is set in `Chart.yaml` on `develop`.
+  `helm/car-ledger/Chart.yaml` on `main`; the release job adds the changelog entry to the GitHub release. Afterwards
+  the next version is set in `Chart.yaml` on `develop`.
 - A hotfix branches from `main` and goes to `main` like a release, and to `develop` as a cherry-pick in its own pull
   request (`develop` keeps a linear history).
 
