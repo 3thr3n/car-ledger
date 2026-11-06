@@ -1384,6 +1384,17 @@
         "type" : "string",
         "enum" : [ "NO_DEFECTS", "MINOR_DEFECTS", "MAJOR_DEFECTS", "DANGEROUS_DEFECTS", "UNSAFE" ]
       },
+      "LegalLinks" : {
+        "type" : "object",
+        "properties" : {
+          "imprintUrl" : {
+            "type" : "string"
+          },
+          "privacyUrl" : {
+            "type" : "string"
+          }
+        }
+      },
       "LinkedBill" : {
         "type" : "object",
         "required" : [ "id", "type", "date", "total" ],
@@ -6332,6 +6343,26 @@
         },
         "summary" : "Decline Invitation",
         "tags" : [ "Car Invitation Resource" ]
+      }
+    },
+    "/api/legal" : {
+      "get" : {
+        "description" : "Impressum and privacy policy of the operator, also without a login. Both missing when not set up.",
+        "operationId" : "getLegalLinks",
+        "responses" : {
+          "200" : {
+            "description" : "The links, missing ones when not set up.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/LegalLinks"
+                }
+              }
+            }
+          }
+        },
+        "summary" : "Get Legal Links",
+        "tags" : [ "Legal Resource" ]
       }
     },
     "/api/map" : {

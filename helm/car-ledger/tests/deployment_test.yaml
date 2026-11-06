@@ -227,6 +227,35 @@ tests:
             name: CARLEDGER_MAP_SOURCES
             value: https://tiles.example.com,https://glyphs.example.com
 
+  - it: links the legal pages of the operator
+    set:
+      carLedger.legal.imprintUrl: https://example.com/impressum
+      carLedger.legal.privacyUrl: https://example.com/datenschutz
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: CARLEDGER_LEGAL_IMPRINT_URL
+            value: https://example.com/impressum
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: CARLEDGER_LEGAL_PRIVACY_URL
+            value: https://example.com/datenschutz
+
+  - it: links no legal pages without them
+    asserts:
+      - notContains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: CARLEDGER_LEGAL_IMPRINT_URL
+          any: true
+      - notContains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: CARLEDGER_LEGAL_PRIVACY_URL
+          any: true
+
   - it: snaps the tracks to the roads with a matching service
     set:
       carLedger.map.matchingUrl: http://map-matching.maps:8002

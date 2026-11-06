@@ -40,3 +40,21 @@ test('shows all features on the landing page', async ({ page }) => {
     }),
   ).toBeVisible();
 });
+
+test('links the legal pages of the operator before the login', async ({
+  page,
+}) => {
+  // set up in the dev mode of the server
+  await page.goto('/');
+
+  const legal = page
+    .locator('#LandingPage')
+    .getByRole('navigation', { name: 'Legal' });
+  await expect(legal.getByRole('link', { name: 'Imprint' })).toHaveAttribute(
+    'href',
+    'https://example.com/impressum',
+  );
+  await expect(
+    legal.getByRole('link', { name: 'Privacy policy' }),
+  ).toHaveAttribute('href', 'https://example.com/datenschutz');
+});

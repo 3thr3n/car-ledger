@@ -15,6 +15,7 @@ import Gauge from '@/components/car/Gauge';
 import { BillPaletteKey } from '@/utils/billTypes';
 import { CLUSTER_AMBER, displayFont } from '@/theme';
 import { SOURCE_URL } from '@/utils/source';
+import LegalLinks from '@/components/legal/LegalLinks';
 
 interface Feature {
   key: string;
@@ -384,6 +385,9 @@ export default function LandingPage() {
             GitHub
           </Box>
         </Typography>
+        <Box sx={{ mt: 1 }}>
+          <LegalLinks />
+        </Box>
       </Container>
     </Box>
   );

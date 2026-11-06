@@ -18,6 +18,11 @@ app:
     outdated: "This device still runs an older version of the app than the server."
     current: "The app is up to date."
 
+legal:
+  label: "Legal"
+  imprint: "Imprint"
+  privacy: "Privacy policy"
+
 theme:
   light: "Light theme"
   dark: "Dark theme"

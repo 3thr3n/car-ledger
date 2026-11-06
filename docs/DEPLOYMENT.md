@@ -193,6 +193,8 @@ with the role `user`, the roles are missing in the tokens of the client.
   [GPS_TRACKER.md](GPS_TRACKER.md#map-matching).
 - **Database backups**: a CronJob with `pg_dump` into a volume and S3, off by default, see
   [Database backups](#database-backups).
+- **Legal pages**: links to an Impressum and a privacy policy for installations other people use, see
+  [Legal pages](#legal-pages).
 - **Network policies**: only the app reaches its PostgreSQL and Infinispan, only Keycloak and authentik their
   PostgreSQL (`networkPolicy.enabled`, on by default in all charts; needs a network plugin that enforces them). Further
   sources, e.g. a backup tool: `networkPolicy.extraFrom`. The management port of Keycloak (9000: health, metrics) is
@@ -439,6 +441,30 @@ counted as `/app`; the JVM; the pool of the database `agroal_*`; Hibernate `hibe
 Keycloak of the keycloak chart serves its metrics on its own management port 9000, opened with
 `networkPolicy.managementFrom` of that chart.
 
+### Legal pages
+
+An installation that other people use (open sign-up, or users beyond friends and family) may need an Impressum (§ 5
+DDG in Germany) and a privacy policy (Art. 13 GDPR). CarLedger only links them, host the pages anywhere (e.g. the
+website of the operator):
+
+```yaml
+carLedger:            # with the stack chart under app:
+  legal:
+    imprintUrl: https://example.com/impressum
+    privacyUrl: https://example.com/datenschutz
+```
+
+The links appear on the landing page (before the login, so they are reachable without an account), at the bottom of
+the sidebar and at the end of every mail; without the values nothing is shown. Each is optional and must be an absolute
+http(s) URL, otherwise the app doesn't start (`carledger.legal.imprint-url must be an absolute http(s) URL`). The
+public `GET /api/legal` answers them.
+
+A draft of the privacy policy that lists what CarLedger processes, in English and German:
+[PRIVACY_TEMPLATE.md](PRIVACY_TEMPLATE.md), [PRIVACY_TEMPLATE.de.md](PRIVACY_TEMPLATE.de.md). Not legal advice: fill in
+your own data and setup and have it checked. No cookie banner is needed: CarLedger stores only what the service needs
+(the session of the login, and in the browser what the draft lists), no tracking, no third-party content besides the
+tiles of the map.
+
 ## Upgrading to the current version
 
 Checklist for installations running an older image of the app. Which upgrades are supported, and what stays stable
@@ -633,6 +659,9 @@ kubectl set env deployment/car-ledger QUARKUS_FLYWAY_IGNORE_FUTURE_MIGRATIONS=tr
   instead of straight, so it no longer cuts the bends (migration 1.38.0). The migration sets the points matched before
   to waiting, the next run of the matching (within a few minutes after the start) matches them again with their roads,
   in the meantime the map shows them at the positions of the GPS. The points take a few bytes more each.
+- **Legal pages** (1.0.0, optional): `carLedger.legal.imprintUrl` and `carLedger.legal.privacyUrl` link an Impressum
+  and a privacy policy on the landing page, in the sidebar and in the mails, see [Legal pages](#legal-pages). Without
+  them nothing changes.
 - **Database backups** (0.11.0, optional): `backup.enabled` dumps the whole database every night into a volume of its
   own and, with a bucket, into S3, see [Database backups](#database-backups). Off by default.
 - **Metrics** (0.11.0): the app serves metrics for Prometheus on its management port, see [Metrics](#metrics). A
