@@ -15,8 +15,8 @@ The REST API under `/api` (`openapi.json`), also used by scripts with a
 
 Clients ignore unknown fields and expect new enum values. `/api` has no version in its path.
 
-A security fix can reject input that was accepted before (e.g. a length limit) in a minor release, the release notes
-name it.
+A security fix can reject input that was accepted before (e.g. a length limit) in a minor release,
+[CHANGELOG.md](../CHANGELOG.md) names it under **Security**.
 
 ## Backup
 
@@ -39,8 +39,9 @@ changed. Back up the database first ([Upgrading](../README.md#upgrading)), excep
 ## Charts
 
 The values of the charts (`car-ledger`, `stack`, `keycloak`, `authentik`) are stable within 1.x. A renamed or removed
-value keeps working for at least one more minor release, with a warning in the chart notes. New values default to the
-existing behaviour, unless a release note says otherwise.
+value keeps working for at least one more minor release, listed under **Deprecated** in [CHANGELOG.md](../CHANGELOG.md)
+and with a warning in the chart notes. New values default to the existing behaviour, unless the changelog says
+otherwise. The API only deprecates within 1.x: a deprecated endpoint or field is listed there and stays until 2.0.
 
 ## Device API of the trackers
 
