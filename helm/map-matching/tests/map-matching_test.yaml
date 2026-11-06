@@ -17,10 +17,7 @@ tests:
           path: spec.template.spec.containers[0].env
           content:
             name: tile_urls
-            value: >-
-              https://download.geofabrik.de/europe/germany-latest.osm.pbf
-              https://download.geofabrik.de/europe/austria-latest.osm.pbf
-              https://download.geofabrik.de/europe/switzerland-latest.osm.pbf
+            value: https://download.geofabrik.de/europe/dach-latest.osm.pbf
       - contains:
           path: spec.template.spec.containers[0].env
           content:

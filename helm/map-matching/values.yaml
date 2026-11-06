@@ -30,11 +30,11 @@ tiles:
 # Valhalla and the one of tiles.volume
 imagePullSecrets: []
 
-# the extracts of OpenStreetMap the tiles are built from, e.g. of https://download.geofabrik.de
+# the extracts of OpenStreetMap the tiles are built from, e.g. of https://download.geofabrik.de: Germany, Austria and
+# Switzerland in one. Several extracts that overlap at their borders can make the build fail (Failed tile ...
+# vector::_M_range_check, exit code 1); take one that covers them all, e.g. a region of Geofabrik
 extracts:
-  - https://download.geofabrik.de/europe/germany-latest.osm.pbf
-  - https://download.geofabrik.de/europe/austria-latest.osm.pbf
-  - https://download.geofabrik.de/europe/switzerland-latest.osm.pbf
+  - https://download.geofabrik.de/europe/dach-latest.osm.pbf
 
 # threads of the build and the service
 threads: 2
@@ -44,7 +44,8 @@ persistence:
   size: 40Gi
   storageClass:
 
-# the build of the tiles needs the most, the service about the size of the tiles that are used
+# the build of the tiles needs the most, the service about the size of the tiles that are used: with tiles.volume
+# and the tiles of Germany, Austria and Switzerland about 150 MB, e.g. requests 256Mi and a limit of 1Gi
 resources:
   requests:
     cpu: 500m

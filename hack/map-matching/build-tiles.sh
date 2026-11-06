@@ -9,7 +9,9 @@
 #   PUSH=true hack/map-matching/build-tiles.sh git.example.com/me/car-ledger-tiles:2026-11 \
 #     https://download.geofabrik.de/europe/germany/bayern-latest.osm.pbf
 #
-# Without extracts: Germany, Austria and Switzerland of Geofabrik, like the chart. Environment:
+# Without extracts: Germany, Austria and Switzerland of Geofabrik in one extract, like the chart. Several extracts that
+# overlap at their borders can make the build fail (Failed tile ... vector::_M_range_check); take one that covers
+# them all (e.g. a region of Geofabrik) or merge them first (osmium merge). Environment:
 #   WORK_DIR  where the extracts and the tiles are built, about 4× the size of the extracts, deleted afterwards
 #             (./map-matching-tiles)
 #   THREADS   threads of the build (all cores)
@@ -22,11 +24,7 @@ image=${1:?"usage: $0 <image> [extract URL ...]"}
 shift
 extracts=("$@")
 if [ ${#extracts[@]} -eq 0 ]; then
-  extracts=(
-    https://download.geofabrik.de/europe/germany-latest.osm.pbf
-    https://download.geofabrik.de/europe/austria-latest.osm.pbf
-    https://download.geofabrik.de/europe/switzerland-latest.osm.pbf
-  )
+  extracts=(https://download.geofabrik.de/europe/dach-latest.osm.pbf)
 fi
 
 here=$(cd "$(dirname "$0")" && pwd)

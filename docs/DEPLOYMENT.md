@@ -622,8 +622,12 @@ kubectl set env deployment/car-ledger QUARKUS_FLYWAY_IGNORE_FUTURE_MIGRATIONS=tr
 - **Map matching with tiles of another machine** (1.0.0, optional; map-matching chart 0.2.0): `mapMatching.tiles.volume`
   serves tiles built with `hack/map-matching/build-tiles.sh`, e.g. on a development machine, from an image of a
   registry instead of building them in the cluster, see [GPS_TRACKER.md](GPS_TRACKER.md#map-matching). Switching to it
-  needs `kubectl delete statefulset car-ledger-map-matching` before the upgrade (its volumes change). Without the value
-  nothing changes.
+  needs `kubectl delete statefulset car-ledger-map-matching` before the upgrade (its volumes change). The default extract
+  is now Germany, Austria and Switzerland in one file (`dach-latest`): the three that overlap at their borders made the
+  build fail. Valhalla builds from every extract of its volume and downloads only into an empty one: on a volume that
+  still has the three, delete them and their tiles as for [new map data](GPS_TRACKER.md#map-matching), then it
+  downloads and builds the new one on its next start. Without `tiles.volume` and with extracts of your own nothing
+  changes.
 - **Database backups** (0.11.0, optional): `backup.enabled` dumps the whole database every night into a volume of its
   own and, with a bucket, into S3, see [Database backups](#database-backups). Off by default.
 - **Metrics** (0.11.0): the app serves metrics for Prometheus on its management port, see [Metrics](#metrics). A
