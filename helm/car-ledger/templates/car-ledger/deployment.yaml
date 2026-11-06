@@ -191,6 +191,16 @@ spec:
             {{- end }}
             {{- end }}
             {{- end }}
+            {{- with .Values.carLedger.legal }}
+            {{- if .imprintUrl }}
+            - name: CARLEDGER_LEGAL_IMPRINT_URL
+              value: {{ .imprintUrl | quote }}
+            {{- end }}
+            {{- if .privacyUrl }}
+            - name: CARLEDGER_LEGAL_PRIVACY_URL
+              value: {{ .privacyUrl | quote }}
+            {{- end }}
+            {{- end }}
             {{- if .Values.carLedger.tracker.firmware.volume }}
             - name: CARLEDGER_TRACKER_FIRMWARE_DIR
               value: /etc/car-ledger/tracker-firmware

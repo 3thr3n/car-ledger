@@ -528,6 +528,11 @@ export enum InspectionResult {
     UNSAFE = 'UNSAFE'
 }
 
+export type LegalLinks = {
+    imprintUrl?: string;
+    privacyUrl?: string;
+};
+
 export type LinkedBill = {
     id: number;
     type: BillType;
@@ -3197,6 +3202,22 @@ export type DeclineInvitationResponses = {
 };
 
 export type DeclineInvitationResponse = DeclineInvitationResponses[keyof DeclineInvitationResponses];
+
+export type GetLegalLinksData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/legal';
+};
+
+export type GetLegalLinksResponses = {
+    /**
+     * The links, missing ones when not set up.
+     */
+    200: LegalLinks;
+};
+
+export type GetLegalLinksResponse = GetLegalLinksResponses[keyof GetLegalLinksResponses];
 
 export type GetMapSettingsData = {
     body?: never;

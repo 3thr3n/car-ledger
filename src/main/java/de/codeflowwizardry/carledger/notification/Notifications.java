@@ -33,6 +33,7 @@ import de.codeflowwizardry.carledger.notification.push.PushConfig;
 import de.codeflowwizardry.carledger.notification.push.PushMessage;
 import de.codeflowwizardry.carledger.notification.push.PushSubscriptionEntity;
 import de.codeflowwizardry.carledger.notification.push.PushSubscriptionRepository;
+import de.codeflowwizardry.carledger.legal.Legal;
 import de.codeflowwizardry.carledger.request.CarLimitPayload;
 import de.codeflowwizardry.carledger.request.RequestEntity;
 import de.codeflowwizardry.carledger.request.RequestState;
@@ -73,12 +74,15 @@ public class Notifications
 	private final Event<OutgoingMails> outgoingMails;
 	private final Event<OutgoingPushes> outgoingPushes;
 	private final NotificationRepository inbox;
+	private final Legal legal;
 
 	@Inject
 	public Notifications(MailConfig mailConfig, PushConfig pushConfig, AccountRepository accountRepository,
 			PushSubscriptionRepository subscriptions, Engine engine, ObjectMapper mapper,
-			Event<OutgoingMails> outgoingMails, Event<OutgoingPushes> outgoingPushes, NotificationRepository inbox)
+			Event<OutgoingMails> outgoingMails, Event<OutgoingPushes> outgoingPushes, NotificationRepository inbox,
+			Legal legal)
 	{
+		this.legal = legal;
 		this.mailConfig = mailConfig;
 		this.pushConfig = pushConfig;
 		this.accountRepository = accountRepository;
@@ -295,19 +299,41 @@ public class Notifications
 	}
 
 	/**
+	 * @return the links to the Impressum and the privacy policy for the end of a
+	 *         mail, empty without them
+	 */
+	private String legalFooter(AccountEntity recipient)
+	{
+		if (legal.imprintUrl() == null && legal.privacyUrl() == null)
+		{
+			return "";
+		}
+		Map<String, Object> data = new HashMap<>();
+		data.put("imprintUrl", legal.imprintUrl());
+		data.put("privacyUrl", legal.privacyUrl());
+		return "\n" + template("mail", recipient, "legal").data(data).render().strip() + "\n";
+	}
+
+	/** of the language of the account, English without one */
+	private Template template(String channel, AccountEntity recipient, String name)
+	{
+		String language = recipient.getMailLanguage().toLowerCase(Locale.ROOT);
+		Template template = engine.getTemplate(channel + "/" + name + "." + language + ".txt");
+		if (template == null)
+		{
+			LOG.warn("No {} template {} in {}, using English", channel, name, language);
+			template = engine.getTemplate(channel + "/" + name + ".en.txt");
+		}
+		return template;
+	}
+
+	/**
 	 * @return the first line and the rest of the template in the language of the
 	 *         account, English without one
 	 */
 	private String[] render(String channel, AccountEntity recipient, String event, Map<String, Object> data)
 	{
-		String language = recipient.getMailLanguage().toLowerCase(Locale.ROOT);
-		Template template = engine.getTemplate(channel + "/" + event + "." + language + ".txt");
-		if (template == null)
-		{
-			LOG.warn("No {} template {} in {}, using English", channel, event, language);
-			template = engine.getTemplate(channel + "/" + event + ".en.txt");
-		}
-		String text = template.data(data).render().strip();
+		String text = template(channel, recipient, event).data(data).render().strip();
 		int newline = text.indexOf('\n');
 		return newline < 0
 				? new String[] {
@@ -357,7 +383,7 @@ public class Notifications
 				all.put("link", link(path));
 				all.put("settingsLink", link("/settings"));
 				String[] text = render("mail", recipient, template, all);
-				mails.add(Mail.withText(recipient.getEmail(), text[0], text[1] + "\n"));
+				mails.add(Mail.withText(recipient.getEmail(), text[0], text[1] + "\n" + legalFooter(recipient)));
 			}
 			addPushes(recipient, template, path, tag, data);
 		}

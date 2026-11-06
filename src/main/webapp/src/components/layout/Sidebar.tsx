@@ -39,6 +39,7 @@ import useMe from '@/hooks/useMe';
 import useSaveSettings from '@/hooks/useSaveSettings';
 import useOpenCarRequests from '@/hooks/useOpenCarRequests';
 import useVersion from '@/hooks/useVersion';
+import LegalLinks from '@/components/legal/LegalLinks';
 import { reloadToNewest } from '@/utils/serviceWorker';
 import { RouterListItemButton } from '@/components/ui/links';
 import CarAvatar from '@/components/layout/CarAvatar';
@@ -427,6 +428,7 @@ export default function Sidebar({
             )}
           </Stack>
         )}
+        <LegalLinks />
       </Stack>
     </Stack>
   );

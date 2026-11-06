@@ -18,6 +18,11 @@ app:
     outdated: "Auf diesem Gerät läuft noch eine ältere Version der App als auf dem Server."
     current: "Die App ist aktuell."
 
+legal:
+  label: "Rechtliches"
+  imprint: "Impressum"
+  privacy: "Datenschutz"
+
 theme:
   light: "Helles Design"
   dark: "Dunkles Design"
