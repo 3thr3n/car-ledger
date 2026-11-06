@@ -291,6 +291,39 @@ finished build, a failed one (`valhalla_build_tiles failed` in the log) is built
 stack, install `helm/map-matching` and set `carLedger.map.matchingUrl` (e.g. `http://map-matching.maps:8002`) and
 `networkPolicy.extraFrom` of the chart for the namespace of the app. Its NetworkPolicy lets only the app in.
 
+**Tiles built on another machine**: the build takes hours, several GB of memory and all cores; too much for a small
+server, where it can also fail. Build the tiles once on a machine with enough power (e.g. a development machine, with
+docker or podman and about 4× the size of the extracts free) and give the server only the finished ones: it serves
+them without a download or a build, starts in seconds and needs no volume of its own.
+
+```bash
+# Germany, Austria and Switzerland by default, or the extracts given (e.g. only the states you drive in)
+hack/map-matching/build-tiles.sh git.example.com/me/car-ledger-tiles:2026-11
+docker login git.example.com && docker push git.example.com/me/car-ledger-tiles:2026-11   # or PUSH=true
+```
+
+The script runs the image of Valhalla of the chart, builds `valhalla_tiles.tar` and its `valhalla.json` and packs both
+into an image of only these files (`THREADS`, `MEMORY` and `WORK_DIR` set the build, see the script). Any registry
+works, e.g. the one of Forgejo or Gitea; the tiles hold the data of OpenStreetMap (ODbL), no positions of the users.
+The chart mounts the image as a volume (Kubernetes 1.33+):
+
+```yaml
+mapMatching:          # in the stack; on its own the values are at the root
+  tiles:
+    volume:
+      image:
+        reference: git.example.com/me/car-ledger-tiles:2026-11
+        pullPolicy: IfNotPresent
+  imagePullSecrets:
+    - name: forgejo-registry   # kubernetes.io/dockerconfigjson, for a private registry
+```
+
+`tiles.volume` can be any other volume source as well, e.g. a PVC with the two files (`tiles.subPath` for a directory of
+it). A StatefulSet can't change its volumes: switching an installation that built its tiles itself needs `kubectl
+delete statefulset car-ledger-map-matching` before the upgrade, and the volume of the old tiles
+(`data-car-ledger-map-matching-0`) is deleted by hand. **New map data**: build again with a new tag and set it, then match
+the points again if wanted (below).
+
 **How**: the points that arrive while a service is set up wait for the matching. Every 2 minutes the app takes the
 finished drives (no point of the car for 5 minutes) and sends each, in parts of at most 2000 points, to
 `trace_attributes` with `map_snap`. The position on the road is stored next to the one of the GPS, which stays. A
@@ -311,8 +344,8 @@ kubectl exec car-ledger-postgresql-0 -- psql -U postgres car-ledger -c \
   "UPDATE track_point SET tk_match = 'P' WHERE tk_match IS NULL AND tk_ts > now() - interval '1 year'"
 ```
 
-**New map data** is loaded by hand, e.g. every few months: delete the extracts and the tiles, then the pod downloads
-and builds them again on its start (the map matching waits meanwhile), and match the points again if wanted:
+**New map data** of tiles built in the cluster is loaded by hand, e.g. every few months: delete the extracts and the
+tiles, then the pod downloads and builds them again on its start (the map matching waits meanwhile), and match the points again if wanted:
 
 ```bash
 kubectl exec car-ledger-map-matching-0 -- sh -c \

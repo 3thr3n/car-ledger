@@ -3,13 +3,32 @@
 # positions of the users stay in the cluster.
 #
 # On the first start it downloads the extracts of OpenStreetMap and builds its routing tiles into the volume: for
-# Germany, Austria and Switzerland about an hour and several GB of memory. Later starts use the tiles. Newer map data
-# is loaded by hand, see docs/GPS_TRACKER.md#map-matching.
+# Germany, Austria and Switzerland about an hour and several GB of memory, too much for a small server: then build
+# them on another machine (tiles.volume). Later starts use the tiles. Newer map data is loaded by hand, see
+# docs/GPS_TRACKER.md#map-matching.
 
 image:
   repository: ghcr.io/valhalla/valhalla-scripted
   # defaults to the appVersion of the chart
   tag: ""
+
+# Finished tiles instead of the build on the first start: built on another machine with
+# hack/map-matching/build-tiles.sh, e.g. a development machine, the server only serves them (no download, no build,
+# no volume of its own; extracts, persistence and startupProbe are not used). A volume source with valhalla_tiles.tar
+# and valhalla.json, e.g. the image of the script (Kubernetes 1.33+), from a private registry with imagePullSecrets:
+#   volume:
+#     image:
+#       reference: git.example.com/me/car-ledger-tiles:2026-11
+#       pullPolicy: IfNotPresent
+# New map data: build again and set the new tag. See docs/GPS_TRACKER.md#map-matching
+tiles:
+  volume: {}
+  # directory of the volume with the two files, its root without one
+  subPath: ""
+
+# secrets of type kubernetes.io/dockerconfigjson for private registries, e.g. [{name: regcred}]: for the image of
+# Valhalla and the one of tiles.volume
+imagePullSecrets: []
 
 # the extracts of OpenStreetMap the tiles are built from, e.g. of https://download.geofabrik.de
 extracts:
