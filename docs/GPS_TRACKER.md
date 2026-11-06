@@ -284,7 +284,8 @@ self-hosted: a public service would get the positions of the users.
 
 **Set up** with the stack chart, `global.mapMatching.enabled=true`: the chart `map-matching` runs Valhalla as
 `car-ledger-map-matching` and the app uses it by itself. On the first start Valhalla downloads the extracts of
-`mapMatching.extracts` (Germany, Austria and Switzerland of [Geofabrik](https://download.geofabrik.de) by default) and
+`mapMatching.extracts` (Germany, Austria and Switzerland of [Geofabrik](https://download.geofabrik.de) by default, in one
+extract: several that overlap at their borders can make the build fail with `vector::_M_range_check`) and
 builds its routing tiles into its volume (`mapMatching.persistence.size`, 40Gi): about an hour and up to 8 GB of
 memory (`mapMatching.resources`), the startup probe waits up to 12 hours. Later starts use the tiles of a
 finished build, a failed one (`valhalla_build_tiles failed` in the log) is built again. Outside of the
@@ -294,10 +295,11 @@ stack, install `helm/map-matching` and set `carLedger.map.matchingUrl` (e.g. `ht
 **Tiles built on another machine**: the build takes hours, several GB of memory and all cores; too much for a small
 server, where it can also fail. Build the tiles once on a machine with enough power (e.g. a development machine, with
 docker or podman and about 4× the size of the extracts free) and give the server only the finished ones: it serves
-them without a download or a build, starts in seconds and needs no volume of its own.
+them without a download or a build, starts in seconds, needs about 150 MB of memory (`mapMatching.resources` can be
+much smaller) and no volume of its own.
 
 ```bash
-# Germany, Austria and Switzerland by default, or the extracts given (e.g. only the states you drive in)
+# Germany, Austria and Switzerland by default (about 20 minutes with 8 threads, an image of 2.6 GB), or the extracts given
 hack/map-matching/build-tiles.sh git.example.com/me/car-ledger-tiles:2026-11
 docker login git.example.com && docker push git.example.com/me/car-ledger-tiles:2026-11   # or PUSH=true
 ```
