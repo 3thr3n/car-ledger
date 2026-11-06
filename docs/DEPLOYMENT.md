@@ -135,14 +135,14 @@ shorter ones), 32 or more are recommended, and all replicas need the same one.
 helm install car-ledger oci://ghcr.io/3thr3n/car-ledger/car-ledger --set ingress.host=example.com
 ```
 
-Without `--version` the latest release is installed. A release (e.g. `0.10.0`, see the
-[releases](https://github.com/3thr3n/car-ledger/releases)) publishes the image `ghcr.io/3thr3n/car-ledger:0.10.0` and the
-chart `oci://ghcr.io/3thr3n/car-ledger/car-ledger` in version `0.10.0`, which runs that image (up to 0.3.x the chart was
+Without `--version` the latest release is installed. A release (e.g. `0.11.0`, see the
+[releases](https://github.com/3thr3n/car-ledger/releases)) publishes the image `ghcr.io/3thr3n/car-ledger:0.11.0` and the
+chart `oci://ghcr.io/3thr3n/car-ledger/car-ledger` in version `0.11.0`, which runs that image (up to 0.3.x the chart was
 `oci://ghcr.io/3thr3n/car-ledger/helm`).
 
 Every build of `develop` publishes the image `ghcr.io/3thr3n/car-ledger:<run number>` and the chart as the prerelease
-`<next release>-dev.<run number>`, e.g. `0.11.0-dev.123`, which runs the image of the same build: `--version
-0.11.0-dev.123` installs build 123, `--devel` the latest build. Leave `carLedger.image.tag` empty, it would override
+`<next release>-dev.<run number>`, e.g. `1.0.0-dev.123`, which runs the image of the same build: `--version
+1.0.0-dev.123` installs build 123, `--devel` the latest build. Leave `carLedger.image.tag` empty, it would override
 the image of the chart.
 
 From the repository (`helm dependency update helm/car-ledger`, `helm install car-ledger helm/car-ledger ...`) the chart
@@ -372,7 +372,8 @@ user and the password of its secret), also an external one; `pg_dump` comes from
 has to be at least the version of the server (`backup.image` for another one). The NetworkPolicy of PostgreSQL lets the
 backup in. With a bucket, each dump is also uploaded there (`amazon/aws-cli`), use a bucket or prefix of its own, not
 the one of the attachments; old dumps in S3 are deleted by a lifecycle rule of the bucket, not by CarLedger. Without
-`backup.persistence.enabled` the dumps only go to S3. The volume is created once, before the first install or upgrade
+`backup.persistence.enabled` the dumps only go to S3. A dump holds the data of every account and is uploaded as it is:
+use a bucket with encryption at rest (SSE) and access only for the backup. The volume is created once, before the first install or upgrade
 with the backup (a hook, so `helm --wait` doesn't wait for it): with a storage class that binds on the first consumer
 it stays `Pending` until the first backup runs.
 
@@ -624,6 +625,15 @@ kubectl set env deployment/car-ledger QUARKUS_FLYWAY_IGNORE_FUTURE_MIGRATIONS=tr
   new NetworkPolicy of the app (`networkPolicy.enabled`) lets HTTP (8080) in from everywhere and closes the management
   port 9000 to other pods, the probes of the kubelet stay allowed. A tool that reached `/q/health` of the app from
   another pod needs an entry in `networkPolicy.managementFrom`.
+- **https behind the gateway** (0.11.0): the app takes the scheme from `X-Forwarded-Proto`, which ingress-nginx,
+  Cilium (Envoy) and the Gateway API implementations set. The redirects back from the login and the logout keep
+  https, and a page or file opened with http is sent to https (301) by the app itself; leave a forced https redirect
+  of the ingress off with cert-manager's HTTP-01 challenge, which is answered over http. Only reads are redirected,
+  a tracker set up with an `http://` URL keeps sending. A proxy that doesn't set the header changes nothing.
+- **Login from browsers inside apps** (0.11.0): a link opened in the browser of an app (e.g. WhatsApp) now goes to
+  the login; before, some downloaded an empty file `login`. Nothing to set up.
+- **The new look** (0.11.0): road signs in the light theme, an instrument cluster in the dark one, chosen in the
+  settings; nothing stored on the device besides before. Nothing to set up.
 - **Cross-Origin-Resource-Policy** (0.11.0): the answers of `/api` have `Cross-Origin-Resource-Policy: same-origin`,
   a page of another origin can't load them (e.g. an attachment as `<img>`). The app itself is not affected. Nothing to
   set up.
