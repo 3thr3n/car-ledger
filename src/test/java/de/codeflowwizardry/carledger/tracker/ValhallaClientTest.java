@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpServer;
 
 import de.codeflowwizardry.carledger.data.repository.TrackPointRepository.Pending;
+import de.codeflowwizardry.carledger.rest.car.track.TrackPoint;
 
 /**
  * The answer of a real Valhalla (3.9.1, Andorra) to six points of a drive, one
@@ -93,8 +94,13 @@ class ValhallaClientTest
 
 	private List<Pending> shape() throws IOException
 	{
+		return shape("/valhalla/shape.json");
+	}
+
+	private List<Pending> shape(String resource) throws IOException
+	{
 		List<Pending> points = new ArrayList<>();
-		try (InputStream in = getClass().getResourceAsStream("/valhalla/shape.json"))
+		try (InputStream in = getClass().getResourceAsStream(resource))
 		{
 			long id = 1;
 			for (JsonNode point : mapper.readTree(in))
@@ -125,6 +131,83 @@ class ValhallaClientTest
 		assertEquals("map_snap", request.get().path("shape_match").asText());
 		assertEquals(6, request.get().path("shape").size());
 		assertTrue(request.get().path("shape").get(0).has("time"));
+	}
+
+	/**
+	 * The hairpins of the Kesselberg (B11) with a point every 25 m, of the tiles
+	 * of Germany, Austria and Switzerland: the line along the vertices follows the
+	 * road, the one from point to point cuts the curves.
+	 */
+	@Test
+	void shouldFollowTheRoadAroundTheHairpins() throws Exception
+	{
+		byte[] body;
+		try (InputStream in = getClass().getResourceAsStream("/valhalla/kesselberg-trace_attributes.json"))
+		{
+			body = in.readAllBytes();
+		}
+		answer.set(body);
+
+		List<ValhallaClient.Snapped> snapped = client.match(shape("/valhalla/kesselberg-shape.json"));
+
+		assertEquals(60, snapped.size());
+		assertNull(snapped.getFirst().road());
+		// Valhalla goes 413 m between the points 3 and 4, 26 m apart in 2 s: a loop of
+		// the matching, the straight line stays
+		assertNull(snapped.get(4).road());
+		// the others on a straight piece, without a vertex between them
+		assertEquals(53, snapped.stream().filter(point -> point.road() != null).count());
+
+		List<TrackPoint> withRoad = new ArrayList<>();
+		List<TrackPoint> pointToPoint = new ArrayList<>();
+		for (ValhallaClient.Snapped point : snapped)
+		{
+			double[] vertices = Polyline.decode(point.road());
+			for (int k = 0; k < vertices.length; k += 2)
+			{
+				withRoad.add(new TrackPoint(null, vertices[k], vertices[k + 1], null));
+			}
+			withRoad.add(new TrackPoint(null, point.lat(), point.lon(), null));
+			pointToPoint.add(new TrackPoint(null, point.lat(), point.lon(), null));
+		}
+
+		// the road of Valhalla after the loop up to the last point
+		JsonNode valhalla = mapper.readTree(body);
+		double[] shape = Polyline.decode(valhalla.path("shape").asText());
+		int first = segment(valhalla, shape, 4, snapped.get(4));
+		int last = segment(valhalla, shape, snapped.size() - 1, snapped.getLast());
+		double alongTheRoad = 0;
+		double cut = 0;
+		for (int k = first + 1; k <= last; k++)
+		{
+			TrackPoint vertex = new TrackPoint(null, shape[k * 2], shape[k * 2 + 1], null);
+			alongTheRoad = Math.max(alongTheRoad, distance(vertex, withRoad));
+			cut = Math.max(cut, distance(vertex, pointToPoint));
+		}
+		assertTrue(alongTheRoad < 0.5, "along the road: " + alongTheRoad);
+		assertTrue(cut > 3, "point to point: " + cut);
+		// a few bytes per point
+		int bytes = snapped.stream().mapToInt(point -> point.road() == null ? 0 : point.road().length()).sum();
+		assertTrue(bytes < 60 * 25, "bytes: " + bytes);
+	}
+
+	/** of the shape, the piece the point lies on */
+	private static int segment(JsonNode valhalla, double[] shape, int index, ValhallaClient.Snapped point)
+	{
+		JsonNode edge = valhalla.path("edges")
+				.path(valhalla.path("matched_points").get(index).path("edge_index").asInt());
+		return ValhallaClient.segment(shape, edge, point.lat(), point.lon());
+	}
+
+	/** meters from the vertex to the line */
+	private static double distance(TrackPoint vertex, List<TrackPoint> line)
+	{
+		double nearest = Double.MAX_VALUE;
+		for (int i = 1; i < line.size(); i++)
+		{
+			nearest = Math.min(nearest, TrackSimplifier.distanceToSegment(vertex, line.get(i - 1), line.get(i)));
+		}
+		return nearest;
 	}
 
 	@Test

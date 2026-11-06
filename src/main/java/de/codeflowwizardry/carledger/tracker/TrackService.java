@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 import de.codeflowwizardry.carledger.Utils;
 import de.codeflowwizardry.carledger.data.repository.CarAccess.Action;
@@ -98,7 +99,7 @@ public class TrackService
 
 		Timer.Sample sample = Timer.start(registry);
 		SharedLine shared = new SharedLine(GAP);
-		trackPointRepository.forEach(carId, from, to, true, selection.filter(shared::add, shared::cut));
+		trackPointRepository.forEachOnRoad(carId, from, to, new Road(selection.filter(shared::add, shared::cut)));
 		Track track = collect(carId, from, to, selection, shared, gForces);
 		sample.stop(timer("track"));
 		return track;
@@ -126,7 +127,8 @@ public class TrackService
 		// the network needs all drives at once: a month is some ten thousand points
 		Timer.Sample sample = Timer.start(registry);
 		Segments segments = new Segments();
-		trackPointRepository.forEach(carId, from, to, true, selection.filter(segments::add, segments::finish));
+		trackPointRepository.forEachOnRoad(carId, from, to,
+				new Road(selection.filter(segments::add, segments::finish)));
 		segments.finish();
 		TrackFrequency frequency = StreetNetwork.frequency(segments.all, GAP, TOLERANCE);
 		sample.stop(timer("frequency"));
@@ -166,7 +168,8 @@ public class TrackService
 
 		DriveDetector detector = new DriveDetector(config.stop(), Places.MIN_DRIVE_METERS, Places.MIN_DRIVE_DURATION,
 				null);
-		trackPointRepository.forEach(carId, from, to, true, detector::add);
+		// the distance along the road, as the track
+		trackPointRepository.forEachOnRoad(carId, from, to, new Road(detector::add));
 		List<PlaceEntity> named = placeRepository.list(car);
 		List<TripEntity> trips = car.isTripLog() ? tripRepository.overlapping(car, from, to) : List.of();
 		List<TrackDrive> drives = new ArrayList<>();
@@ -236,9 +239,23 @@ public class TrackService
 			SharedLine shared, boolean gForces)
 	{
 		Collector collector = new Collector(TOLERANCE, shared, gForces);
-		// the map on the roads, the track of a trip as the GPS sent it
-		trackPointRepository.forEach(carId, from, to, shared != null,
-				selection.filter(collector::add, collector::finish));
+		Consumer<TrackPoint> selected = selection.filter(collector::add, collector::finish);
+		if (shared != null)
+		{
+			// the map on the roads; the vertices of the road aren't points of the track
+			Road road = new Road(selected);
+			trackPointRepository.forEachOnRoad(carId, from, to, (point, vertices) -> {
+				collector.count(point, selection);
+				road.accept(point, vertices);
+			});
+		} else
+		{
+			// the track of a trip as the GPS sent it
+			trackPointRepository.forEach(carId, from, to, false, point -> {
+				collector.count(point, selection);
+				selected.accept(point);
+			});
+		}
 		collector.finish();
 		return new Track(collector.segments, Math.round(collector.meters / 10) / 100.0, collector.count);
 	}
@@ -280,9 +297,17 @@ public class TrackService
 			this.gForces = gForces;
 		}
 
+		/** counts a point of the track, if selected */
+		void count(TrackPoint point, Selection selection)
+		{
+			if (selection.contains(point.ts()))
+			{
+				count++;
+			}
+		}
+
 		void add(TrackPoint point)
 		{
-			count++;
 			if (!current.isEmpty())
 			{
 				TrackPoint previous = current.getLast();

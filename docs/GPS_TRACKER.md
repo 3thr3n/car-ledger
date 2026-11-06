@@ -328,7 +328,11 @@ the points again if wanted (below).
 
 **How**: the points that arrive while a service is set up wait for the matching. Every 2 minutes the app takes the
 finished drives (no point of the car for 5 minutes) and sends each, in parts of at most 2000 points, to
-`trace_attributes` with `map_snap`. The position on the road is stored next to the one of the GPS, which stays. A
+`trace_attributes` with `map_snap`. The position on the road is stored next to the one of the GPS, which stays, and
+with it the vertices of the road from the point before (an encoded polyline, a few bytes): the map draws the line
+along them, so it follows the curves instead of cutting them, and two drives of a road lie on the same line. A road
+much longer than the straight line between its points (more than 3× plus 50 m, or faster than 270 km/h) is a jump of
+the matching, the line stays straight there. A
 point Valhalla leaves out, one more than 50 m from its road (a parking lot) and a drive without a road near it (off-road,
 a new road) keep the position of the GPS, the shared line of the map applies to them. Without a reachable service the
 points wait and are matched once it is back. `carledger_map_matching_points_total{result=matched|unmatched}` counts
