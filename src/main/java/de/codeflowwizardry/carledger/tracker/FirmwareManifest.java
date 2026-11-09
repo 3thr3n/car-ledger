@@ -74,12 +74,22 @@ public record FirmwareManifest(
 
 	/**
 	 * @return whether the app supports the spec of the manifest: the current and
-	 *         the previous version
+	 *         the previous version, and spec 1 for all of 1.x (docs/STABILITY.md)
 	 */
 	@JsonIgnore
 	public boolean isSupported()
 	{
-		return spec >= Math.max(1, SPEC - 1) && spec <= SPEC;
+		return isSupported(spec, SPEC);
+	}
+
+	/**
+	 * @param current
+	 *            the current version of the spec
+	 * @return whether a manifest of the spec is supported next to the current one
+	 */
+	static boolean isSupported(int spec, int current)
+	{
+		return spec == 1 || (spec >= current - 1 && spec <= current);
 	}
 
 	/**
