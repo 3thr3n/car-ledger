@@ -224,7 +224,8 @@ described in [values.yaml](helm/car-ledger/values.yaml), the options in [docs/DE
 A [release](https://github.com/3thr3n/car-ledger/releases) (e.g. `0.11.0`) publishes the image
 `ghcr.io/3thr3n/car-ledger:0.11.0` and the charts `car-ledger` and `stack` in the same version, which run that image.
 `keycloak` and `authentik` have their own versions, the release notes name them. Without `--version`, Helm installs the
-latest release.
+latest release. What changed in each release from 1.0.0 on is in [CHANGELOG.md](CHANGELOG.md), what stays compatible
+within 1.x in [docs/STABILITY.md](docs/STABILITY.md).
 
 Every build of `develop` is published as a prerelease, `<next release>-dev.<run number>` (e.g. `1.0.0-dev.123`): `--devel`
 installs the latest one, a version range takes them only with a prerelease suffix (`>=1.0.0-0`). Leave
@@ -394,9 +395,12 @@ Contributions are welcome! Please follow these steps to contribute:
 - Every milestone ends with a security review of the pull requests since the last release, an issue of the
   template *Security review of a milestone* (`.github/ISSUE_TEMPLATE/security-review.md`). Its findings are fixed
   before the release or moved to the next milestone on purpose.
+- Every pull request with a notable change adds it under **Unreleased** in [CHANGELOG.md](CHANGELOG.md) (Added,
+  Changed, Deprecated, Removed, Fixed, Security). The docs of a release name that section with the version and date.
 - `main` only holds released states. A release is a pull request from `develop` to `main`, merged with a merge
   commit (not squashed, so both branches keep the same history), then the tag of the version in
-  `helm/car-ledger/Chart.yaml` on `main`. Afterwards the next version is set in `Chart.yaml` on `develop`.
+  `helm/car-ledger/Chart.yaml` on `main`; the release job puts the entry of the changelog into the GitHub release.
+  Afterwards the next version is set in `Chart.yaml` on `develop`.
 - A hotfix branches from `main` and goes to `main` like a release. `develop` keeps a linear history, so the fix comes
   to `develop` as a cherry-pick in a pull request of its own.
 
