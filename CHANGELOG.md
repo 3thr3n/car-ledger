@@ -41,6 +41,11 @@ first. The changes before are in the releases [0.2.0 to 0.11.0](https://github.c
 
 ### Fixed
 
+- *Install firmware* of a tracker asks first when the partitions on the tracker are others than the ones of the
+  firmware, since the points it hasn't sent yet are lost; before only *Update firmware only* asked, and called the
+  install safer. ([#611](https://github.com/3thr3n/car-ledger/pull/611))
+- A firmware manifest of spec 1 stays supported for all of 1.x, also once a newer spec is current, as
+  [docs/STABILITY.md](docs/STABILITY.md) promises. ([#611](https://github.com/3thr3n/car-ledger/pull/611))
 - The tiles of the map matching failed to build after about 30 minutes (`vector::_M_range_check`) from the three
   extracts of Germany, Austria and Switzerland that overlap at their borders.
   ([#602](https://github.com/3thr3n/car-ledger/pull/602))
