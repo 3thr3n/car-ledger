@@ -28,8 +28,11 @@ export type FlashStep =
  */
 export type FlashMode = 'install' | 'settings' | 'firmware';
 
-/** why the partitions of the tracker may not fit the release */
-export type LayoutProblem = 'different' | 'unknown';
+/**
+ * why the partitions of the tracker may not fit the release: other ones, none
+ * that could be read or found in the release, or none on the tracker at all
+ */
+export type LayoutProblem = 'different' | 'unknown' | 'empty';
 
 export interface FlashOptions {
   manifest: FirmwareManifest;
@@ -40,7 +43,8 @@ export interface FlashOptions {
   download: (path: string) => Promise<Uint8Array>;
   /**
    * The firmware only, when the partition table on the tracker isn't the one of
-   * the release or can't be read: true to write anyway
+   * the release or can't be read; an install, when the tracker has another
+   * partition table (not on an empty one): true to write anyway
    */
   confirmLayout?: (problem: LayoutProblem) => Promise<boolean>;
   onStep: (step: FlashStep) => void;
@@ -123,13 +127,17 @@ export async function flashTracker(
         }
       }
     }
-    if (mode === 'firmware') {
+    if (mode !== 'settings') {
       onStep('checking');
       const problem = await checkLayout(loader, files);
-      if (problem && !(await options.confirmLayout?.(problem))) {
+      // an install writes the settings anew: only other partitions, where the
+      // points not sent yet may be lost, are worth asking about
+      const ask = mode === 'firmware' || problem === 'different';
+      if (problem && ask && !(await options.confirmLayout?.(problem))) {
         throw new FlashError('cancelled');
       }
-    } else {
+    }
+    if (mode !== 'firmware') {
       if (!options.config) throw new Error('No settings to write');
       files.push({ data: options.config, address: manifest.config.offset });
     }
@@ -186,11 +194,17 @@ async function checkLayout(
       PARTITION_TABLE_OFFSET,
       table.data.length,
     );
-    return sameBytes(installed, table.data) ? undefined : 'different';
+    if (sameBytes(installed, table.data)) return undefined;
+    // no table at all, e.g. a new or erased board: nothing to lose
+    return hasPartitionTable(installed) ? 'different' : 'empty';
   } catch {
     return 'unknown';
   }
 }
+
+/** the magic bytes of the first entry of an ESP32 partition table */
+const hasPartitionTable = (bytes: Uint8Array) =>
+  bytes[0] === 0xaa && bytes[1] === 0x50;
 
 export function sameBytes(a: Uint8Array, b: Uint8Array): boolean {
   return a.length === b.length && a.every((byte, i) => byte === b[i]);

@@ -492,8 +492,12 @@ tracker:
     layoutTitle: "Update the firmware anyway?"
     layoutConfirm: "Update anyway"
     layout:
-      different: "The partitions on the tracker aren't the ones of this firmware. Its settings or the points it hasn't sent yet may not be found afterwards; a full install is safer."
-      unknown: "The partitions on the tracker could not be checked. Its settings or the points it hasn't sent yet may not be found afterwards; a full install is safer."
+      different: "The partitions on the tracker aren't the ones of this firmware. Its settings may not be found afterwards, and the points it hasn't sent yet may be lost: let it upload them first."
+      unknown: "The partitions on the tracker could not be checked. Its settings may not be found afterwards, and the points it hasn't sent yet may be lost: let it upload them first."
+      empty: "There is no firmware on the tracker yet, so there are no settings to keep. Install the firmware instead."
+    installLayoutTitle: "Install the firmware anyway?"
+    installLayoutConfirm: "Install anyway"
+    installLayout: "This firmware has other partitions than the one on the tracker. Points the tracker hasn't sent yet are lost: let it upload them first, e.g. near a known WLAN."
     steps:
       checking: "Checking the partitions of the tracker…"
       reading: "Reading the settings…"

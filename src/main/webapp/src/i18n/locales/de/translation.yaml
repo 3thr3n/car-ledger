@@ -492,8 +492,12 @@ tracker:
     layoutTitle: "Firmware trotzdem aktualisieren?"
     layoutConfirm: "Trotzdem aktualisieren"
     layout:
-      different: "Die Partitionen auf dem Tracker sind nicht die dieser Firmware. Seine Einstellungen oder noch nicht gesendete Punkte werden danach vielleicht nicht gefunden; eine vollständige Installation ist sicherer."
-      unknown: "Die Partitionen auf dem Tracker konnten nicht geprüft werden. Seine Einstellungen oder noch nicht gesendete Punkte werden danach vielleicht nicht gefunden; eine vollständige Installation ist sicherer."
+      different: "Die Partitionen auf dem Tracker sind nicht die dieser Firmware. Seine Einstellungen werden danach vielleicht nicht gefunden, und noch nicht gesendete Punkte können verloren gehen: der Tracker sollte sie vorher hochladen."
+      unknown: "Die Partitionen auf dem Tracker konnten nicht geprüft werden. Seine Einstellungen werden danach vielleicht nicht gefunden, und noch nicht gesendete Punkte können verloren gehen: der Tracker sollte sie vorher hochladen."
+      empty: "Auf dem Tracker ist noch keine Firmware, es gibt also keine Einstellungen zu behalten. Installiere stattdessen die Firmware."
+    installLayoutTitle: "Firmware trotzdem installieren?"
+    installLayoutConfirm: "Trotzdem installieren"
+    installLayout: "Diese Firmware hat andere Partitionen als die auf dem Tracker. Noch nicht gesendete Punkte gehen verloren: der Tracker sollte sie vorher hochladen, z. B. in der Nähe eines bekannten WLANs."
     steps:
       checking: "Prüfe die Partitionen des Trackers…"
       reading: "Lese die Einstellungen…"
