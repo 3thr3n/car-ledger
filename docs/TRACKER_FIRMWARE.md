@@ -82,11 +82,18 @@ None of them erases the whole flash: the points the tracker hasn't sent yet stay
 
 ### The layout
 
-Before *Update firmware only*, CarLedger reads the partition table on the tracker (at `0x8000`, where the ESP32
-bootloader reads it) and compares it byte by byte with the part of the build written there (`partitions.bin`). The
-same table means the config and data partitions stay where the new firmware looks for them. Another table, or none
-that can be read or found in the build, asks the user first: the update is still possible, a full install is safer. A
-firmware that moves its partitions raises `layout` and changes `partitions.bin` with it.
+Before *Update firmware only* and *Install firmware*, CarLedger reads the partition table on the tracker (at
+`0x8000`, where the ESP32 bootloader reads it) and compares it byte by byte with the part of the build written there
+(`partitions.bin`). The same table means the config and data partitions stay where the new firmware looks for them.
+
+- *Update firmware only*: another table, none that can be read or found in the build, or none on the tracker at all
+  asks the user first. The update is still possible; the settings may not be found and the points not sent yet may
+  be lost.
+- *Install firmware*: only another table asks first, since the points not sent yet are lost when the data partitions
+  move. The settings are written anyway; a new or erased tracker, or one whose table can't be read, isn't asked about.
+
+A firmware that moves its partitions raises `layout` and changes `partitions.bin` with it. Before such an update the
+tracker should upload its points with the old firmware.
 
 ## Settings
 

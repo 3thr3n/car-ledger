@@ -92,9 +92,10 @@ const ACTIONS: [string, FlashMode][] = [
   ['settings', 'settings'],
 ];
 
-/** a layout to confirm before the firmware only is written */
+/** a layout to confirm before the firmware is written */
 interface LayoutQuestion {
   problem: LayoutProblem;
+  mode: FlashMode;
   answer: (write: boolean) => void;
 }
 
@@ -270,7 +271,7 @@ function Flasher({
             ? undefined
             : configImage(settings, manifest.config),
         confirmLayout: (problem) =>
-          new Promise((answer) => setLayout({ problem, answer })),
+          new Promise((answer) => setLayout({ problem, mode, answer })),
         download: async (path) => {
           const { data } = await getFirmwareFile({
             client: localClient,
@@ -559,9 +560,21 @@ function Flasher({
       />
       <ConfirmDialog
         open={!!layout}
-        title={t('tracker.flash.layoutTitle')}
-        text={t(`tracker.flash.layout.${layout?.problem ?? 'unknown'}`)}
-        confirmLabel={t('tracker.flash.layoutConfirm')}
+        title={t(
+          layout?.mode === 'install'
+            ? 'tracker.flash.installLayoutTitle'
+            : 'tracker.flash.layoutTitle',
+        )}
+        text={t(
+          layout?.mode === 'install'
+            ? 'tracker.flash.installLayout'
+            : `tracker.flash.layout.${layout?.problem ?? 'unknown'}`,
+        )}
+        confirmLabel={t(
+          layout?.mode === 'install'
+            ? 'tracker.flash.installLayoutConfirm'
+            : 'tracker.flash.layoutConfirm',
+        )}
         // the dialog closes before it confirms: the first answer counts
         onClose={() => queueMicrotask(() => answerLayout(false))}
         onConfirm={() => answerLayout(true)}

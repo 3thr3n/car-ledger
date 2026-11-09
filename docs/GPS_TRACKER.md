@@ -141,7 +141,8 @@ token. For an existing tracker, paste its token or issue a new one there. The fo
 manifest. The actions, as far as the manifest declares them in its
 [capabilities](TRACKER_FIRMWARE.md#capabilities):
 
-- **Install firmware** (`install`): writes the parts of the manifest and the settings.
+- **Install firmware** (`install`): writes the parts of the manifest and the settings. Over other partitions on the
+  tracker it asks first: the points it hasn't sent yet are lost, see [the layout](TRACKER_FIRMWARE.md#the-layout).
 - **Update firmware only** (`update-firmware`): writes the parts of the manifest and keeps the settings on the
   tracker, no form needed. With other partitions on the tracker than the ones of the release, it asks first, see
   [the layout](TRACKER_FIRMWARE.md#the-layout).
