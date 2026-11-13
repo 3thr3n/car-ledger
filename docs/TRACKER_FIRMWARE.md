@@ -1,9 +1,9 @@
 # Tracker firmware interface
 
-CarLedger owns the interface between itself and the firmware of a GPS tracker as a versioned spec. A firmware declares
-in its `manifest.json` which version of the spec it implements and what of it, CarLedger offers only that. The
-firmware itself is a separate project (e.g. [car-ledger-esp32](https://github.com/3thr3n/car-ledger-esp32)), how
-CarLedger serves and flashes it is in [GPS_TRACKER.md](GPS_TRACKER.md#flashing).
+The versioned interface between CarLedger and the firmware of a GPS tracker. A firmware declares in its `manifest.json`
+which spec version and which capabilities it implements, CarLedger offers only those. The firmware is a separate
+project (e.g. [car-ledger-esp32](https://github.com/3thr3n/car-ledger-esp32)); serving and flashing is in
+[GPS_TRACKER.md](GPS_TRACKER.md#flashing).
 
 This is **spec 1**. It consists of:
 
@@ -20,8 +20,7 @@ This is **spec 1**. It consists of:
 - CarLedger supports the current and the previous spec version, and spec 1 (the one of 1.0.0) for all of 1.x, see
   [STABILITY.md](STABILITY.md#device-api-of-the-trackers). A manifest of another version, an invalid one or one
   without `spec` (a firmware of before the spec) turns flashing off with a warning in the log.
-- Unknown fields and capabilities are ignored, in the manifest as in the device API. A newer firmware keeps working with
-  an older CarLedger and the other way round: what one side doesn't know is skipped and never blocks the upload of
+- Unknown fields and capabilities are ignored, in the manifest and in the device API, and never block the upload of
   points.
 - Nothing that isn't declared is assumed.
 
@@ -84,13 +83,11 @@ None of them erases the whole flash: the points the tracker hasn't sent yet stay
 
 Before *Update firmware only* and *Install firmware*, CarLedger reads the partition table on the tracker (at
 `0x8000`, where the ESP32 bootloader reads it) and compares it byte by byte with the part of the build written there
-(`partitions.bin`). The same table means the config and data partitions stay where the new firmware looks for them.
+(`partitions.bin`).
 
-- *Update firmware only*: another table, none that can be read or found in the build, or none on the tracker at all
-  asks the user first. The update is still possible; the settings may not be found and the points not sent yet may
-  be lost.
-- *Install firmware*: only another table asks first, since the points not sent yet are lost when the data partitions
-  move. The settings are written anyway; a new or erased tracker, or one whose table can't be read, isn't asked about.
+- *Update firmware only*: asks first if the tables differ or one of them is missing or unreadable; the settings and
+  the unsent points may be lost.
+- *Install firmware*: asks first only if the tables differ; the unsent points are lost.
 
 A firmware that moves its partitions raises `layout` and changes `partitions.bin` with it. Before such an update the
 tracker should upload its points with the old firmware.
@@ -121,8 +118,7 @@ The settings are a JSON object, followed by one NUL byte and padded with `0xFF` 
 
 ### Schema
 
-`config.schema` describes the settings as a subset of JSON Schema, the form in CarLedger is rendered from it. The
-manifest schema rejects what the form can't show.
+`config.schema` describes the settings as a subset of JSON Schema, CarLedger renders the form from it.
 
 ```json
 {
@@ -173,6 +169,5 @@ Other keywords are ignored. A list holds only scalars, no nested objects or list
 
 What the tracker sends is described in [`tracker-device-api.yaml`](tracker-device-api.yaml) (OpenAPI 3.1): the points,
 `POST /api/device/points` with the token of the tracker, and the status, `POST /api/device/status` (capability
-`status`), whenever its WLAN connects, also without points. It isn't part of the `openapi.json` of the app. The status
-carries the `spec` version the firmware implements; an older CarLedger answers 404 to it, which the firmware ignores,
-and a failed status never holds up the points.
+`status`), whenever its WLAN connects. An older CarLedger answers 404 to the status, the firmware ignores it; a failed
+status never holds up the points.

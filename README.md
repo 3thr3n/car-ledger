@@ -19,7 +19,6 @@ authentik or any other provider).
     - [Versions](#versions)
     - [Upgrading](#upgrading)
     - [Uninstalling](#uninstalling)
-- [Usage](#usage)
 - [CSV Format](#csv-format)
 - [Development](#development)
     - [Architecture](#architecture)
@@ -88,9 +87,8 @@ authentik or any other provider).
 
 ## Installation
 
-CarLedger is installed with the Helm charts of this repository, published at `oci://ghcr.io/3thr3n/car-ledger/<chart>`.
-This section gets an installation running; [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) has the details of every option,
-the identity providers and the upgrades.
+The Helm charts are published at `oci://ghcr.io/3thr3n/car-ledger/<chart>`. The details are in
+[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 
 ### Requirements
 
@@ -230,11 +228,7 @@ Every build of `develop` is published as a prerelease, `<next release>-dev.<run 
 installs the latest one, a version range takes them only with a prerelease suffix (`>=1.0.0-0`). Leave
 `carLedger.image.tag` empty, the chart runs the image of its own build.
 
-Up to 0.3.x the app chart was `oci://ghcr.io/3thr3n/car-ledger/helm`, since 0.4.0 it is `car-ledger`.
-
-What stays stable within 1.x (the API, backups, the CSV formats, upgrades, the values of the charts, the device API
-of the trackers)
-is written down in [docs/STABILITY.md](docs/STABILITY.md).
+What stays stable within 1.x is in [docs/STABILITY.md](docs/STABILITY.md).
 
 ### Upgrading
 
@@ -243,10 +237,9 @@ kubectl exec car-ledger-postgresql-0 -- pg_dump -U postgres car-ledger > car-led
 helm upgrade car-ledger oci://ghcr.io/3thr3n/car-ledger/stack -f my-values.yaml
 ```
 
-With the single chart, upgrade `oci://ghcr.io/3thr3n/car-ledger/car-ledger` instead. Pass your values file instead of
-`--reuse-values`, which would drop new defaults of the chart. The database is migrated
-on the first start of the new version and the migrations can not be undone, so back it up first. Read the
-[upgrade checklist](docs/DEPLOYMENT.md#upgrading-to-the-current-version) before upgrading an older installation.
+With the single chart, upgrade `oci://ghcr.io/3thr3n/car-ledger/car-ledger`. Pass your values file, not
+`--reuse-values`. The migrations can't be undone, back up first. Older installations: see the
+[upgrade steps](docs/DEPLOYMENT.md#upgrading-to-the-current-version).
 
 ### Uninstalling
 
@@ -254,31 +247,16 @@ on the first start of the new version and the migrations can not be undone, so b
 helm uninstall car-ledger
 ```
 
-The volumes of the PostgreSQL databases stay (`kubectl get pvc`), delete them to remove the data as well. The generated
-passwords are removed with the release: to install again on the kept volumes, save the secret `car-ledger-postgresql`
-before (`kubectl get secret car-ledger-postgresql -o yaml`) and apply it again first, otherwise the new release gets
-a new password that the existing database does not accept.
-
-## Usage
-
-- **Cars:** add a car with its energy type (petrol, diesel, LPG, CNG, electric, plug-in hybrid) and the details; deleting a car deletes all
-  of its entries.
-- **Entries:** refuels, charges, maintenance and other costs per car, with receipts attached. Correct or delete them
-  afterwards, the consumption is calculated again.
-- **Recurring costs:** a cost with its interval, the payments follow from it. Ending it (e.g. a cancelled insurance)
-  removes the payments from the end date on.
-- **Settings:** the default VAT country, the currency, the language, the units, the notifications and the backup are
-  stored with your account.
-- **Administration:** users with the role `admin` see the usage statistics, all accounts with their cars and entries,
-  the car limit per account and the car requests, and delete accounts.
-- **CSV export:** the lists of refuels, charges, maintenance and other costs export their entries, all or of the
-  selected year, with the field names of the import as header, ISO dates and a dot as decimal separator, so the file
-  can be imported again (existing entries are skipped). The ledger on the overview of a car exports all expenses
-  including the payments of the recurring costs as one CSV for spreadsheets; it cannot be imported again.
+The PostgreSQL volumes stay (`kubectl get pvc`), delete them to remove the data. To install again on the kept volumes,
+save the secret `car-ledger-postgresql` before and apply it again first, otherwise the password doesn't match.
 
 ## CSV Format
 
-When importing refuels via CSV, ensure your file follows this format:
+Each entry type is imported and exported as CSV. An export uses the field names of the import as header, ISO dates and
+a dot as decimal separator, so it can be imported again (existing entries are skipped). The ledger of a car exports all
+expenses including the recurring costs as one CSV for spreadsheets, it can't be imported.
+
+Refuels:
 
 | Date       | Fuel Volume (L) | Price per L (€) | Distance (km) | Car estimate (L) |
 |------------|-----------------|-----------------|---------------|------------------|
@@ -352,21 +330,19 @@ helm unittest --with-subchart=false helm/car-ledger helm/keycloak helm/authentik
 helm/validate-manifests.sh
 ```
 
-The build writes the OpenAPI spec of the backend to `src/main/webapp/public/openapi.json`, the frontend client is
-generated from it with `yarn openapi-ts`. Commit both, the CI fails if they are outdated.
+The build writes the OpenAPI spec to `src/main/webapp/public/openapi.json`, `yarn openapi-ts` generates the frontend
+client from it. Commit both, the CI fails if they are outdated.
 
 ### Architecture
 
-[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) shows how the parts fit together: the layers of the backend, the access
-check of the cars, the storages, the scheduled jobs. Each package of the backend has an overview in its Javadoc;
-`./mvnw javadoc:javadoc` builds the site to `target/reports/apidocs`, and the CI fails on broken Javadoc.
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). `./mvnw javadoc:javadoc` builds the Javadoc to
+`target/reports/apidocs`, the CI fails on broken Javadoc.
 
 ### Local cluster
 
 `hack/kind/up.sh` creates a cluster in Docker with [kind](https://kind.sigs.k8s.io) and installs the stack chart from
-the working copy: Cilium (also as ingress controller) or ingress-nginx, local-path and cert-manager with a self-signed
-CA, which nobody trusts, like in many company clusters. It needs Docker, kind, kubectl and helm and the
-ports 80 and 443.
+the working copy: Cilium or ingress-nginx, local-path and cert-manager with a self-signed CA. It needs Docker, kind,
+kubectl, helm and the ports 80 and 443.
 
 ```bash
 hack/kind/up.sh                    # Keycloak, Cilium, local-path, builds the image of the working copy
