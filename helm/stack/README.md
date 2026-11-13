@@ -1,8 +1,7 @@
 # CarLedger stack
 
-CarLedger and the charts next to it in one release: the app (`helm/car-ledger`), the identity provider
-(`helm/keycloak` or `helm/authentik`) and the map matching (`helm/map-matching`). Every part is switched on with one value, the host names, URLs and secrets
-between them are set up by the stack:
+The app (`helm/car-ledger`), the identity provider (`helm/keycloak` or `helm/authentik`) and the map matching
+(`helm/map-matching`) in one release, with the host names and secrets between them set up:
 
 | Enabled                         | Set up                                                                                                        |
 |---------------------------------|---------------------------------------------------------------------------------------------------------------|
@@ -16,7 +15,7 @@ Without an identity provider, the app uses an existing one, see `app.carLedger.a
 
 ## Install
 
-Nothing has to be set up by hand besides the users, e.g. with authentik:
+Only the users have to be added by hand:
 
 ```bash
 helm install car-ledger oci://ghcr.io/3thr3n/car-ledger/stack \
@@ -24,14 +23,10 @@ helm install car-ledger oci://ghcr.io/3thr3n/car-ledger/stack \
   --set global.authentik.enabled=true
 ```
 
-The stack has the version of the app: the release `0.11.0` runs the image `0.11.0` and contains the other charts of the
-same commit. Builds of `develop` are published as prereleases like the app chart (`--devel`).
+The stack has the version of the app, builds of `develop` are prereleases (`--devel`). Name the release `car-ledger`
+and install it once per namespace, the resource names are fixed.
 
-Name the release `car-ledger` and install it once per namespace: the names of the resources are fixed (e.g. the
-PostgreSQL of the app `car-ledger-postgresql`, the secrets `car-ledger-oidc` and `car-ledger-push`). The
-PostgreSQL of Keycloak and authentik are `car-ledger-keycloak-postgresql` and `car-ledger-authentik-postgresql`.
-
-After the install, the notes of the release name the admin passwords and the next steps:
+The notes of the release name the next steps:
 
 - **authentik**: log in as `akadmin` (`kubectl get secret authentik-bootstrap -o jsonpath='{.data.password}' | base64 -d`)
   and add the users of CarLedger to the group `user` (or `admin`).
@@ -49,11 +44,10 @@ After the install, the notes of the release name the admin passwords and the nex
 | `keycloak.*`               |         | Values of the [keycloak chart](../keycloak/values.yaml)                             |
 | `authentik.*`              |         | Values of the [authentik chart](../authentik/README.md)                             |
 
-Values set for a chart win over the ones of the stack, e.g. `authentik.hostname=login.example.com` for another host
-name. The app does not see the values of the other
-charts: with another host name or slug of authentik, set `app.carLedger.auth.url` as well.
+Values set for a chart win over the ones of the stack, e.g. `authentik.hostname=login.example.com`. The app doesn't
+see them: with another host name or slug of authentik, set `app.carLedger.auth.url` as well.
 
-A values file for the stack with cert-manager, e.g. `my-values.yaml`:
+With cert-manager:
 
 ```yaml
 global:
@@ -81,11 +75,9 @@ for chart in car-ledger keycloak authentik map-matching stack; do helm dependenc
 helm install car-ledger helm/stack --set global.host=example.com ...
 ```
 
-Installed from the repository, the app runs the image `main`, the latest release.
+From the repository, the app runs the image `main` (the latest release).
 
 ## Moving an existing installation into the stack
 
-The PostgreSQL of the app keeps its name `car-ledger-postgresql` when the stack is named `car-ledger`, but its
-resources belong to another release. Keycloak and authentik get new names in the stack (their data is not taken
-over). Moving is not supported: keep the separate charts, or start fresh with the stack and restore the backups of the
-users (*Settings → Backup*).
+Not supported: keep the separate charts, or start fresh with the stack and restore the backups of the users
+(*Settings → Backup*).

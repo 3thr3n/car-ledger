@@ -1,22 +1,18 @@
 # authentik for CarLedger
 
-An alternative to the keycloak chart. It deploys
-[authentik](https://goauthentik.io) via the [official chart](https://github.com/goauthentik/helm) with its own
-PostgreSQL (official image, the bitnami one of the authentik chart is not used), and sets up CarLedger with a
-blueprint:
+Deploys [authentik](https://goauthentik.io) via the [official chart](https://github.com/goauthentik/helm) with its own
+PostgreSQL and sets up CarLedger with a blueprint:
 
 - the OpenID provider `CarLedger` (confidential client `car-ledger`, RS256, scopes `openid`, `email`, `profile`,
   `offline_access`, grant types authorization code and refresh token)
 - the application `car-ledger`
 - the groups `user` and `admin`, the roles of CarLedger (`admin` starts with `akadmin`)
 
-The client secret and the state secret of CarLedger are generated into the secret `car-ledger-oidc`, which the
-car-ledger chart reads. Nothing has to be configured in the authentik UI.
+The client secret and the state secret are generated into the secret `car-ledger-oidc` for the car-ledger chart.
 
 ## Install
 
-Together with the app in one release, the [stack chart](../stack/README.md) sets everything up with
-`global.authentik.enabled=true`. On its own, both charts in the same namespace:
+With the [stack chart](../stack/README.md): `global.authentik.enabled=true`. On its own, in the namespace of the app:
 
 ```bash
 helm install authentik oci://ghcr.io/3thr3n/car-ledger/authentik \
@@ -30,9 +26,8 @@ helm install car-ledger oci://ghcr.io/3thr3n/car-ledger/car-ledger \
   --set carLedger.auth.existingSecret=car-ledger-oidc
 ```
 
-In separate namespaces, set `carLedger.namespace` to the one of CarLedger. The secret `car-ledger-oidc` is then
-created there as well, the pods of CarLedger can only read secrets of their own namespace. The namespace has to exist
-before:
+In its own namespace, set `carLedger.namespace` to the existing namespace of the app, `car-ledger-oidc` is created
+there:
 
 ```bash
 kubectl create namespace car-ledger
@@ -50,17 +45,16 @@ helm install car-ledger oci://ghcr.io/3thr3n/car-ledger/car-ledger -n car-ledger
 
 From the repository, run `helm dependency update helm/authentik` and install `helm/authentik` instead.
 
-The secret in the namespace of CarLedger belongs to the authentik release: uninstalling authentik deletes it, and a
-secret `car-ledger-oidc` created by hand there has to be deleted before.
+Uninstalling authentik deletes that secret; a `car-ledger-oidc` created by hand there has to be deleted before the
+install.
 
-The admin of authentik is `akadmin`, its password is generated and kept in the secret `authentik-bootstrap`:
+The admin is `akadmin`:
 
 ```bash
 kubectl get secret authentik-bootstrap -o jsonpath='{.data.password}' | base64 -d
 ```
 
-Log in at `https://authentik.example.com`, create the users of CarLedger and add them to the group `user` (or
-`admin`). Users without one of the groups can log in at authentik, but CarLedger answers with 403.
+Create the users and add them to the group `user` (or `admin`), without one CarLedger answers with 403.
 
 ## Values
 
@@ -86,8 +80,7 @@ Generated secrets, kept on upgrades:
 | `authentik-bootstrap` | `email`, `password`              | `akadmin`                                                                |
 | `car-ledger-oidc`     | `secret`, `state-secret`         | For the car-ledger chart, also in `carLedger.namespace`                  |
 
-The secret names are fixed (the authentik chart does not template its environment), so install the chart once per
-namespace.
+The secret names are fixed, install the chart once per namespace.
 
 ## Notes
 
@@ -96,5 +89,4 @@ namespace.
 - Logging out of CarLedger logs out of authentik as well (`default-invalidation-flow`), like with Keycloak.
 - Accounts of CarLedger are bound to the user name (`preferred_username`). Renaming a user in authentik starts with an
   empty account in CarLedger.
-- authentik is not lighter than Keycloak: idle, the server uses about 730 MiB and the worker about 350 MiB (measured
-  with 2026.8.3), plus the PostgreSQL. Both charts set up CarLedger by themselves.
+- Idle, the server uses about 730 MiB and the worker about 350 MiB, plus the PostgreSQL.
