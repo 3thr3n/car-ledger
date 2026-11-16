@@ -6,7 +6,7 @@ From 1.0.0 on the versions follow [docs/STABILITY.md](docs/STABILITY.md); the up
 
 ## [Unreleased]
 
-## [1.0.0] - unreleased
+## [1.0.0] - 2026-11-16
 
 The first stable release, for own installations (owner, family and friends). From here on the API, the backups, the
 CSV formats, the chart values and the device API of the trackers stay compatible within 1.x
