@@ -1,13 +1,8 @@
 # Changelog
 
 The notable changes of each release, in the format of [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
-From 1.0.0 on the versions follow the promises of [docs/STABILITY.md](docs/STABILITY.md): a breaking change needs a
-new major version, and what is deprecated is listed under **Deprecated** until it is removed. The upgrade steps of each
-release are in [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md#upgrading-to-the-current-version).
-
-The release job puts the entry of the released version at the top of its
-[GitHub release](https://github.com/3thr3n/car-ledger/releases), next to the artifacts and the list of the pull
-requests. Changes of a pull request go under **Unreleased**; the release names it with its version and date.
+From 1.0.0 on the versions follow [docs/STABILITY.md](docs/STABILITY.md); the upgrade steps are in
+[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md#upgrading-to-the-current-version).
 
 ## [Unreleased]
 
