@@ -32,7 +32,7 @@ while [ $# -gt 0 ]; do
     --ingress) ingress="$2"; shift ;;
     --image) image="$2"; build=false; shift ;;
     --no-build) build=false ;;
-    *) sed -n '2,13p' "$0" >&2; exit 1 ;;
+    *) sed -n '2,/^set /{/^#/p}' "$0" >&2; exit 1 ;;
   esac
   shift
 done
