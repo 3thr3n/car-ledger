@@ -10,7 +10,7 @@ import type { MapPoint } from './trackData';
  * low speeds, where city driving is. The scale is fixed in km/h so that tracks
  * are comparable.
  */
-export const SPEED_STOPS = [
+const SPEED_STOPS = [
   { kmh: 0, color: '#fca636' },
   { kmh: 30, color: '#e16462' },
   { kmh: 60, color: '#b12a90' },

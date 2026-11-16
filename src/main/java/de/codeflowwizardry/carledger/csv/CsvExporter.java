@@ -65,11 +65,6 @@ public class CsvExporter<E extends AbstractBillEntity>
 		return this;
 	}
 
-	public List<String> getFields()
-	{
-		return List.copyOf(columns.keySet());
-	}
-
 	public String write(List<E> bills)
 	{
 		StringWriter out = new StringWriter();

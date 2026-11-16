@@ -33,12 +33,6 @@ public class Utils
 	}
 
 	/**
-	 * @param errors
-	 *            validation errors of an input
-	 * @throws BadRequestException
-	 *             with the errors as body, if there are any
-	 */
-	/**
 	 * Adds an error if the text is longer than the limit, without the spaces
 	 * around it
 	 *
@@ -53,6 +47,12 @@ public class Utils
 		}
 	}
 
+	/**
+	 * @param errors
+	 *            validation errors of an input
+	 * @throws BadRequestException
+	 *             with the errors as body, if there are any
+	 */
 	public static void requireValid(List<String> errors)
 	{
 		if (!errors.isEmpty())

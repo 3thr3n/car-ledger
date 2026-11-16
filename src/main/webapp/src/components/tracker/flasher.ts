@@ -63,7 +63,7 @@ export interface Monitor {
 const BAUD = 115200;
 
 /** where the ESP32 bootloader reads the partition table */
-export const PARTITION_TABLE_OFFSET = 0x8000;
+const PARTITION_TABLE_OFFSET = 0x8000;
 
 interface Connection {
   transport: Transport;
@@ -206,7 +206,7 @@ async function checkLayout(
 const hasPartitionTable = (bytes: Uint8Array) =>
   bytes[0] === 0xaa && bytes[1] === 0x50;
 
-export function sameBytes(a: Uint8Array, b: Uint8Array): boolean {
+function sameBytes(a: Uint8Array, b: Uint8Array): boolean {
   return a.length === b.length && a.every((byte, i) => byte === b[i]);
 }
 

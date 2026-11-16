@@ -6,7 +6,7 @@ import useMe from '@/hooks/useMe';
 const DEFAULT_COUNTRY = 'DE';
 
 /** VAT rate in percent, as the API expects it */
-export function rateOf(country: string) {
+function rateOf(country: string) {
   const rate = countryVat(country);
   return rate === null ? undefined : Math.round(rate * 100);
 }
@@ -15,7 +15,7 @@ export function rateOf(country: string) {
  * Country for a VAT rate of an existing bill: the preferred country if it fits,
  * otherwise the first one with that rate, '' if none has it.
  */
-export function countryFor(vatRate: number, preferred: string) {
+function countryFor(vatRate: number, preferred: string) {
   if (rateOf(preferred) === vatRate) return preferred;
   return (
     Object.keys(supportedVatCountries)

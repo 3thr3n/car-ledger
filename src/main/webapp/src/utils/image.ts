@@ -1,5 +1,5 @@
 /** longest side of uploaded photos, enough to read a receipt */
-export const MAX_SIDE = 2000;
+const MAX_SIDE = 2000;
 /** smaller PNG and WebP files are kept, e.g. screenshots of a receipt */
 const KEEP_BELOW = 1.5 * 1024 * 1024;
 const JPEG_QUALITY = 0.85;
@@ -43,7 +43,7 @@ export async function prepareUpload(file: File): Promise<File> {
 }
 
 /** side of the car pictures, enough for the largest avatar on a sharp screen */
-export const PICTURE_SIDE = 512;
+const PICTURE_SIDE = 512;
 
 /**
  * @return the largest centered square of the image
