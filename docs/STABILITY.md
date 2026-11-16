@@ -25,8 +25,9 @@ fields. Backups since 0.5.0 should restore as well (`BackupTest#shouldRestoreABa
 
 ## CSV
 
-- **Import**: the formats in the [README](../README.md#csv-format) (refuels and charges, the date formats, the
-  columns) stay accepted, and so does every export of a 1.x that can be imported again (e.g. the charges).
+- **Import**: the formats in the [README](../README.md#csv-format) (refuels, charges, maintenance and
+  miscellaneous costs, the date formats, the fields) stay accepted, and so does every export of a 1.x that can be
+  imported again (e.g. the charges).
 - **Export**: a column keeps its name, its place and its meaning; new columns are added at the end.
 
 ## Upgrade
