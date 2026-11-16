@@ -141,6 +141,29 @@ class MapMatcherTest
 	}
 
 	@Test
+	void shouldFollowTheRoadBetweenThePoints()
+	{
+		// the road bends 3.6 m east between each two points
+		drive(start, 60, 50.0, 10.25);
+
+		matcher.matchAll();
+
+		// the first point has no road before it
+		assertEquals(59L, QuarkusTransaction.requiringNew().call(() -> ((Number) entityManager
+				.createNativeQuery("SELECT count(tk_match_road) FROM track_point WHERE tk_car_id = :car")
+				.setParameter("car", carId).getSingleResult()).longValue()));
+		// a zigzag beyond the 1 m of the simplification: every vertex stays, in the
+		// middle of its points in time and place
+		track().body("points", is(60))
+				.body("segments[0].points.size()", is(119))
+				.body("segments[0].points[1][0]", is((float) (10.25 + FakeValhalla.EAST)))
+				.body("segments[0].points[1][2]", is(0.5f))
+				.body("segments[0].points[2][2]", is(1.0f))
+				// 118 pieces of 6.1 m instead of 59 of 10 m
+				.body("distance", is(0.73f));
+	}
+
+	@Test
 	void shouldWaitForADriveStillOnTheRoad()
 	{
 		drive(start, 60, 50.0, 10.0);

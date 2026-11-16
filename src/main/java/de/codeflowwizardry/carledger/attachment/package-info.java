@@ -1,24 +1,21 @@
 /**
- * The files of the entries: receipts of the bills, documents of the
- * modifications, reports of the HUs, files of the recurring costs and the
- * pictures of the cars.
+ * The files of the entries, the documents of modifications and HUs, and the car
+ * pictures.
  * <p>
  * {@link de.codeflowwizardry.carledger.attachment.AttachmentService} checks the
- * access and the limits, recognizes the type by the content
+ * access, the limits and the type
  * ({@link de.codeflowwizardry.carledger.attachment.FileType}) and keeps the
- * metadata in PostgreSQL. The content goes to an
- * {@link de.codeflowwizardry.carledger.attachment.AttachmentStorage}: the
- * database or an S3 bucket, chosen by
- * {@link de.codeflowwizardry.carledger.attachment.AttachmentStorages}; each
- * attachment names its storage, so the files stay readable after a switch.
- * Photos get a small JPEG for the lists
- * ({@link de.codeflowwizardry.carledger.attachment.PreviewImage}), stored next
- * to them.
+ * metadata in PostgreSQL. The content goes to the
+ * {@link de.codeflowwizardry.carledger.attachment.AttachmentStorage} chosen by
+ * {@link de.codeflowwizardry.carledger.attachment.AttachmentStorages}, the
+ * database or S3; each attachment names its storage. Photos get a small preview
+ * ({@link de.codeflowwizardry.carledger.attachment.PreviewImage}).
  * <p>
- * Two jobs: {@link de.codeflowwizardry.carledger.attachment.AttachmentCleanup}
- * deletes the content outside the database of every deleted attachment, which a
- * trigger queues whatever deleted it (the attachment, its entry, the car or the
- * account); {@link de.codeflowwizardry.carledger.attachment.AttachmentMover}
- * moves the existing files into the configured storage when asked to.
+ * {@link de.codeflowwizardry.carledger.attachment.AttachmentCleanup} deletes
+ * the
+ * content outside the database of deleted attachments (queued by a trigger),
+ * {@link de.codeflowwizardry.carledger.attachment.AttachmentMover} moves files
+ * into
+ * the configured storage.
  */
 package de.codeflowwizardry.carledger.attachment;

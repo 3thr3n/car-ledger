@@ -234,6 +234,17 @@ jobs:
             --set global.authentik.enabled=true
           \`\`\`
           NOTES
+          # the entry of the version in CHANGELOG.md, from its heading to the next one
+          awk -v tag="$TAG" '
+            /^## \[/ { inside = index($0, "## [" tag "]") == 1; next }
+            /^\[[^]]+\]: / { next }
+            inside
+          ' CHANGELOG.md | sed -E "s#\]\((docs/|hack/|helm/)#](https://github.com/$GITHUB_REPOSITORY/blob/main/\1#g" > changelog.md
+          if grep -q '[^[:space:]]' changelog.md; then
+            { echo; echo "## Changes"; cat changelog.md; } >> artifacts.md
+          else
+            echo "::warning::CHANGELOG.md has no entry for $TAG"
+          fi
           if gh release view "$TAG" > /dev/null 2>&1; then
             gh release view "$TAG" --json body --jq .body > existing.md
             cat artifacts.md existing.md > notes.md

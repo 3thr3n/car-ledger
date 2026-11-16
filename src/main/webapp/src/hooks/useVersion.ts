@@ -4,7 +4,7 @@ import { localClient } from '@/utils/QueryClient';
 import useMe from '@/hooks/useMe';
 
 /** version of this build of the app, "dev" for local builds (like the server) */
-export const APP_VERSION = import.meta.env.VITE_APP_VERSION || 'dev';
+const APP_VERSION = import.meta.env.VITE_APP_VERSION || 'dev';
 
 /**
  * The version of the app and of the server. An installed app may still run an

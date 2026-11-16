@@ -3,26 +3,21 @@ package de.codeflowwizardry.carledger.tracker;
 import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import de.codeflowwizardry.carledger.rest.car.track.TrackPoint;
 
 /**
- * One line per street for the map: the GPS drifts by a few meters from drive to
- * drive and the two directions use different lanes, so a street driven several
- * times would show as lines next to each other. Two runs over the points in the
- * order of time: {@link #add} all of them, then {@link #apply} to each segment.
+ * One line per street for the map, as the GPS drifts from drive to drive and
+ * the
+ * two directions use different lanes. {@link #add} all points in the order of
+ * time, then {@link #apply} to each segment.
  * <p>
- * The first run samples the pieces between the points every few meters, so a
- * fast and a slow drive weigh the same per meter, and sums the samples on a
- * grid
- * of {@link #CELL} meters, per axis of the direction (both directions of a
- * street share one). The second run moves each point sideways, never along the
- * street, onto the average of the samples around it with about its direction: a
- * crossing street doesn't pull it. A street passed only once stays as it is.
- * Only for display: the raw points aren't changed.
+ * The pieces between the points are sampled every few meters on a grid of
+ * {@link #CELL} meters, per axis of the direction. Each point then moves
+ * sideways
+ * onto the average of the samples around it with about its direction. A street
+ * passed once stays as it is; the raw points aren't changed.
  */
 final class SharedLine
 {
@@ -50,12 +45,13 @@ final class SharedLine
 	private static final class Passes
 	{
 		int count;
-		OffsetDateTime last;
+		/** {@link #nanos} of the last sample, none yet */
+		long last = Long.MIN_VALUE;
 	}
 
-	private final Duration gap;
-	private final Map<Long, Cell> cells = new HashMap<>();
-	private final Map<Long, Passes> passes = new HashMap<>();
+	private final long gapNanos;
+	private final LongMap<Cell> cells = new LongMap<>();
+	private final LongMap<Passes> passes = new LongMap<>();
 	/** of the flat projection, at the first point */
 	private double lat0;
 	private double lon0;
@@ -68,7 +64,7 @@ final class SharedLine
 	 */
 	SharedLine(Duration gap)
 	{
-		this.gap = gap;
+		this.gapNanos = gap.toNanos();
 	}
 
 	/** first run: sums the samples of the piece to the point */
@@ -80,8 +76,9 @@ final class SharedLine
 			lon0 = point.lon();
 			cosLat = Math.cos(Math.toRadians(lat0));
 		}
-		if (previous != null && !longerThanGap(previous.ts(), point.ts()))
+		if (previous != null && !longerThanGap(nanos(previous.ts()), nanos(point.ts())))
 		{
+			long ts = nanos(point.ts());
 			double[] a = project(previous);
 			double[] b = project(point);
 			double length = Math.hypot(b[0] - a[0], b[1] - a[1]);
@@ -92,7 +89,7 @@ final class SharedLine
 				for (int i = 1; i <= steps; i++)
 				{
 					double f = (double) i / steps;
-					sample(a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f, axis, point.ts());
+					sample(a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f, axis, ts);
 				}
 			}
 		}
@@ -194,7 +191,7 @@ final class SharedLine
 				Math.toDegrees(mx / (TrackSimplifier.EARTH_RADIUS * cosLat)) + lon0, point.speed(), point.g());
 	}
 
-	private void sample(double x, double y, int axis, OffsetDateTime ts)
+	private void sample(double x, double y, int axis, long ts)
 	{
 		long column = cell(x);
 		long row = cell(y);
@@ -208,7 +205,7 @@ final class SharedLine
 			for (long r = row - 1; r <= row + 1; r++)
 			{
 				Passes pass = passes.computeIfAbsent(key(c, r, 0), key -> new Passes());
-				if (pass.last == null || longerThanGap(pass.last, ts))
+				if (pass.last == Long.MIN_VALUE || longerThanGap(pass.last, ts))
 				{
 					pass.count++;
 				}
@@ -217,9 +214,19 @@ final class SharedLine
 		}
 	}
 
-	private boolean longerThanGap(OffsetDateTime earlier, OffsetDateTime later)
+	/** like Duration.between(earlier, later) &gt; gap, without its objects */
+	private boolean longerThanGap(long earlier, long later)
 	{
-		return Duration.between(earlier, later).compareTo(gap) > 0;
+		return later - earlier > gapNanos;
+	}
+
+	/**
+	 * nanoseconds of the epoch, exact for the microseconds of the database (until
+	 * 2262)
+	 */
+	static long nanos(OffsetDateTime ts)
+	{
+		return ts.toEpochSecond() * 1_000_000_000L + ts.getNano();
 	}
 
 	/** meters east and north of the first point, flat like the simplification */

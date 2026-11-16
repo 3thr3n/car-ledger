@@ -3,5 +3,5 @@ name: map-matching
 description: Valhalla for CarLedger, snaps the GPS tracks to the roads of OpenStreetMap
 type: application
 
-version: 0.1.0
+version: 0.2.0
 appVersion: "3.9.1"

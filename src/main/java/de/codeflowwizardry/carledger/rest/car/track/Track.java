@@ -14,7 +14,8 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
  *            the
  *            map simplifies further by its zoom
  * @param distance
- *            km, from the raw points within the segments (not over the gaps)
+ *            km, within the segments (not over the gaps): along the road
+ *            where the points are matched, else between the points of the GPS
  * @param points
  *            amount of raw points in the range
  */

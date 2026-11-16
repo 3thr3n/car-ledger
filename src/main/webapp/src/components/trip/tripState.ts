@@ -32,7 +32,7 @@ const odometers = (entry: QueuedRequest) =>
   );
 
 /** a start of the queue as trip, with the details of its body */
-export function fromQueued(entry: QueuedRequest): TripView {
+function fromQueued(entry: QueuedRequest): TripView {
   const body = entry.body;
   return {
     id: entry.tripId!,

@@ -15,7 +15,7 @@ export const HARSH_GPS = 0.3;
  * From calm (blue) over yellow to harsh (red), by the level 0 to 1 of the
  * range of the source: different hues than the speed, red reads as harsh.
  */
-export const GFORCE_STOPS = [
+const GFORCE_STOPS = [
   { level: 0, color: '#4575b4' },
   { level: 0.25, color: '#91bfdb' },
   { level: 0.5, color: '#fee090' },

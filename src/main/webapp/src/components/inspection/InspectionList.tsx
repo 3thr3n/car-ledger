@@ -1,6 +1,5 @@
 import {
   Box,
-  Button,
   Collapse,
   Divider,
   IconButton,
@@ -8,11 +7,9 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
-import AttachFileRounded from '@mui/icons-material/AttachFileRounded';
 import DeleteOutlineRounded from '@mui/icons-material/DeleteOutlineRounded';
 import EditOutlined from '@mui/icons-material/EditOutlined';
 import EventRepeatRounded from '@mui/icons-material/EventRepeatRounded';
-import ExpandMoreRounded from '@mui/icons-material/ExpandMoreRounded';
 import dayjs from 'dayjs';
 import { Fragment, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -20,6 +17,7 @@ import { TechnicalInspection } from '@/generated';
 import { useFormat } from '@/utils/format';
 import InspectionFiles from './InspectionFiles';
 import InspectionResultChip from './InspectionResultChip';
+import DetailsButton from '@/components/ui/DetailsButton';
 
 export interface InspectionListProps {
   carId: number;
@@ -129,38 +127,13 @@ export default function InspectionList({
                 )}
               </Stack>
 
-              <Button
-                size="small"
-                color="inherit"
+              <DetailsButton
+                expanded={expanded}
                 onClick={() => setOpen(expanded ? undefined : inspection.id)}
-                aria-expanded={expanded}
-                endIcon={
-                  <ExpandMoreRounded
-                    sx={{
-                      transform: expanded ? 'rotate(180deg)' : undefined,
-                      transition: 'transform 150ms',
-                    }}
-                  />
-                }
-                sx={{ mt: 0.5, ml: -0.75, color: 'text.secondary' }}
+                documents={inspection.documents}
               >
                 {t('inspection.details')}
-                {inspection.documents > 0 && (
-                  <Stack
-                    component="span"
-                    direction="row"
-                    spacing={0.25}
-                    sx={{
-                      alignItems: 'center',
-                      ml: 1,
-                      '& svg': { fontSize: 15 },
-                    }}
-                  >
-                    <AttachFileRounded />
-                    <span>{inspection.documents}</span>
-                  </Stack>
-                )}
-              </Button>
+              </DetailsButton>
               <Collapse in={expanded} unmountOnExit>
                 <Stack
                   spacing={2}

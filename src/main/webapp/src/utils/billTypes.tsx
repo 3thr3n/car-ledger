@@ -64,7 +64,7 @@ export const billTypes: Record<BillType, BillTypeMeta> = {
   },
 };
 
-export const billTypeList = Object.values(billTypes);
+const billTypeList = Object.values(billTypes);
 
 /**
  * The entry types of a car: refuels with a tank, charges with a battery, the

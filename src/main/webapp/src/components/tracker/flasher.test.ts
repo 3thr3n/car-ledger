@@ -98,8 +98,46 @@ beforeEach(() => {
 
 describe('flashTracker', () => {
   it('installs the firmware and the settings', async () => {
-    await flash('install');
+    const confirm = vi.fn(async () => true);
+    await flash('install', confirm);
+
     expect(addresses()).toEqual([0x8000, 0x10000, 0x3f0000]);
+    expect(confirm).not.toHaveBeenCalled();
+  });
+
+  it('asks before an install over other partitions, the unsent points may be lost', async () => {
+    chip.table = new Uint8Array([0xaa, 0x50, 9, 9, 9]);
+    const confirm = vi.fn(async () => false);
+
+    await expect(flash('install', confirm)).rejects.toMatchObject({
+      code: 'cancelled',
+    });
+    expect(confirm).toHaveBeenCalledWith('different');
+    expect(chip.written).toEqual([]);
+    expect(chip.resets).toBe(1);
+  });
+
+  it('installs without asking on an empty or unreadable tracker', async () => {
+    const confirm = vi.fn(async () => true);
+    chip.table = new Uint8Array([0xff, 0xff, 0xff, 0xff, 0xff]);
+    await flash('install', confirm);
+    chip.table = undefined;
+    await flash('install', confirm);
+
+    expect(confirm).not.toHaveBeenCalled();
+    expect(addresses()).toEqual([
+      0x8000, 0x10000, 0x3f0000, 0x8000, 0x10000, 0x3f0000,
+    ]);
+  });
+
+  it('asks before the firmware only on an empty tracker', async () => {
+    chip.table = new Uint8Array([0xff, 0xff, 0xff, 0xff, 0xff]);
+    const confirm = vi.fn(async () => false);
+
+    await expect(flash('firmware', confirm)).rejects.toMatchObject({
+      code: 'cancelled',
+    });
+    expect(confirm).toHaveBeenCalledWith('empty');
   });
 
   it('writes only the settings', async () => {

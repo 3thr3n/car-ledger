@@ -46,7 +46,7 @@ export interface SortModel {
 }
 
 /** the order of the API without a sort model: newest first */
-export const DEFAULT_SORT: SortModel = { field: 'date', sort: 'desc' };
+const DEFAULT_SORT: SortModel = { field: 'date', sort: 'desc' };
 
 const listOptions = {
   all: getAllBillsOptions,

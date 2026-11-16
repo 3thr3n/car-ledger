@@ -28,7 +28,8 @@ jobs:
         distribution: 'temurin'
         cache: maven
 
-    - name: Build with Maven
+    # the formatting, see formatter-maven-plugin in the pom
+    - name: Format
       run: ./mvnw -B validate
 
     # broken references, HTML and tags in the Javadoc, see maven-javadoc-plugin in the pom

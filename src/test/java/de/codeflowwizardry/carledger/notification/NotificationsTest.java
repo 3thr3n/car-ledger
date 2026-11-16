@@ -110,6 +110,10 @@ class NotificationsTest
 		assertEquals("New car request from peter", toBob.getSubject());
 		assertTrue(toBob.getText().contains("peter requests 1 more car, the current limit is 1."), toBob.getText());
 		assertTrue(toBob.getText().contains("https://car-ledger.example.com/settings"), toBob.getText());
+		// the Impressum of the operator, no privacy policy is set up in the tests
+		assertTrue(toBob.getText().endsWith("\n\nImprint: https://example.com/impressum\n"), toBob.getText());
+		assertTrue(toAlice.getText().contains("\nImpressum: https://example.com/impressum"), toAlice.getText());
+		assertTrue(!toAlice.getText().contains("Datenschutz"), toAlice.getText());
 
 		// not to carol (turned off), dave (no address), eve (no administrator) and
 		// peter (asked)

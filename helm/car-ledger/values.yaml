@@ -98,6 +98,14 @@ carLedger:
     # stack chart set by global.mapMatching.enabled. Without it the map shows the shared line of the drives
     # (docs/GPS_TRACKER.md#map-matching)
     matchingUrl: ""
+  # the legal pages of the operator, for installations other people use (docs/DEPLOYMENT.md#legal-pages): links to an
+  # Impressum and a privacy policy on the landing page, in the sidebar and in the mails. Absolute http(s) URLs, hosted
+  # elsewhere; without them nothing is shown
+  legal:
+    # e.g. https://example.com/impressum
+    imprintUrl: ""
+    # e.g. https://example.com/datenschutz
+    privacyUrl: ""
   # GPS trackers (see docs/GPS_TRACKER.md)
   tracker:
     # release of the tracker firmware (manifest.json and the files it lists), the users flash it from the

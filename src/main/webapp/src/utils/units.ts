@@ -1,9 +1,9 @@
 import { UnitSystem } from '@/generated';
 
 /** exact by definition */
-export const KM_PER_MILE = 1.609344;
-export const LITERS_PER_US_GALLON = 3.785411784;
-export const LITERS_PER_IMPERIAL_GALLON = 4.54609;
+const KM_PER_MILE = 1.609344;
+const LITERS_PER_US_GALLON = 3.785411784;
+const LITERS_PER_IMPERIAL_GALLON = 4.54609;
 
 /** i18n context of the texts that name the distance or the volume */
 export type DistanceContext = 'miles' | undefined;

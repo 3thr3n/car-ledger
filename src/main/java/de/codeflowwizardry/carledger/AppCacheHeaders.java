@@ -7,16 +7,12 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Observes;
 
 /**
- * The browser asks again for the files of the frontend that keep their name in
- * every version: index.html (also of the pages of the app), sw.js,
- * manifest.json and the icons. The static files are served with
- * "public, immutable, max-age=86400", so a browser kept an old version for a
- * day, even on a reload. With "no-cache" it asks every time and gets a 304
- * while nothing changed. The files of the build in /assets/ have a hash in
- * their name and stay cached.
+ * Cache-Control "no-cache" for the frontend files that keep their name in every
+ * version (index.html, sw.js, manifest.json, the icons): the browser asks each
+ * time and gets a 304 while nothing changed. The hashed files in /assets/ stay
+ * cached.
  * <p>
- * Not with quarkus.http.filter: its headers are set before the static files,
- * which overwrite Cache-Control.
+ * Not with quarkus.http.filter: the static files overwrite its Cache-Control.
  */
 @ApplicationScoped
 public class AppCacheHeaders

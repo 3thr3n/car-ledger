@@ -21,12 +21,12 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 /**
- * Snaps the points of the finished drives to the roads, in the background: a
- * drive is finished when the car sent no point for {@link TrackService#GAP}.
- * The position on the road is stored next to the one of the GPS, which stays;
- * a point without a road near it keeps the one of the GPS (and the shared line
- * on the map). Without the service the points wait and are matched once it is
- * back.
+ * Snaps the points of finished drives (no point for {@link TrackService#GAP})
+ * to
+ * the roads in the background. The road position and the vertices from the
+ * point
+ * before are stored next to the GPS position; a point without a road near it
+ * keeps the GPS one. Points wait while the service is down.
  */
 @ApplicationScoped
 public class MapMatcher
@@ -161,12 +161,17 @@ public class MapMatcher
 			}
 		}
 		List<Match> matches = new ArrayList<>(points.size());
+		boolean before = false;
 		for (int i = 0; i < points.size(); i++)
 		{
 			Snapped point = snapped == null ? null : snapped.get(i);
-			matches.add(point != null && point.distance() <= config.maxDistance()
-					? new Match(points.get(i).id(), TrackPointRepository.MATCHED, point.lat(), point.lon())
-					: new Match(points.get(i).id(), TrackPointRepository.UNMATCHED, null, null));
+			boolean onRoad = point != null && point.distance() <= config.maxDistance();
+			// the road from the point before only if that one is on the road as well
+			matches.add(onRoad
+					? new Match(points.get(i).id(), TrackPointRepository.MATCHED, point.lat(), point.lon(),
+							before ? point.road() : null)
+					: new Match(points.get(i).id(), TrackPointRepository.UNMATCHED, null, null, null));
+			before = onRoad;
 		}
 		return matches;
 	}

@@ -12,7 +12,7 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
  * @param end
  *            the time it arrived, the point where it stopped
  * @param distance
- *            GPS distance in km
+ *            km, along the road where the points are matched
  * @param from
  *            name of the named place it left from, missing without one
  * @param to

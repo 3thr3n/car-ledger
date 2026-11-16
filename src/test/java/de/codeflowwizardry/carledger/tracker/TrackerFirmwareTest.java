@@ -141,6 +141,20 @@ class TrackerFirmwareTest
 	}
 
 	@Test
+	void shouldKeepSpec1NextToTheCurrentAndThePreviousSpec()
+	{
+		// e.g. once spec 3 is current: 1 (for all of 1.x), 2 and 3
+		assertTrue(FirmwareManifest.isSupported(1, 3));
+		assertTrue(FirmwareManifest.isSupported(2, 3));
+		assertTrue(FirmwareManifest.isSupported(3, 3));
+		assertFalse(FirmwareManifest.isSupported(4, 3));
+		assertFalse(FirmwareManifest.isSupported(0, 3));
+		// spec 4 current: 2 is too old, 1 stays
+		assertFalse(FirmwareManifest.isSupported(2, 4));
+		assertTrue(FirmwareManifest.isSupported(1, 4));
+	}
+
+	@Test
 	void shouldRejectAManifestWithoutTheFieldsOfTheSpec() throws IOException
 	{
 		assertFalse(accepts(manifest -> manifest.remove("capabilities")));

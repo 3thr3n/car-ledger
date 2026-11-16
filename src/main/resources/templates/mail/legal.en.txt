@@ -1,0 +1,3 @@
+{#if imprintUrl}Imprint: {imprintUrl}
+{/if}{#if privacyUrl}Privacy policy: {privacyUrl}
+{/if}

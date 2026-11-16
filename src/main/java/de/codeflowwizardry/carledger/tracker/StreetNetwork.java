@@ -20,18 +20,19 @@ import de.codeflowwizardry.carledger.rest.car.track.TrackSegment;
 
 /**
  * The streets the car drove, for the frequency: every street once, whatever
- * drives used it, so they share exactly the same line.
+ * drives
+ * used it.
  * <p>
- * The drives, moved onto their {@link SharedLine} first, are sampled every few
- * meters on a grid of {@link #CELL} meters. A cell keeps the average of its
- * samples, its position on the map, and how often the car passed it: like the
- * passes before, a sample marks its cell and the eight around, and a cell
- * counts again once the car was away from it for longer than the gap. Then each
- * drive is a path from cell to cell; where a street runs along the edge of the
- * cells, a sample goes to the cell across the street with more samples, so two
- * drives don't make a ladder of two paths. The steps of all paths are the
- * network; its pieces between junctions and ends are the streets, each with the
- * passes of most of its cells.
+ * The drives, on their {@link SharedLine}, are sampled on a grid of
+ * {@link #CELL}
+ * meters. A cell keeps the average of its samples and how often the car passed
+ * it; a sample marks its cell and the eight around, and a cell counts again
+ * after
+ * the car was away for longer than the gap. Each drive becomes a path from cell
+ * to
+ * cell; the paths form the network, and its pieces between junctions and ends
+ * are
+ * the streets, each with the passes of most of its cells.
  */
 final class StreetNetwork
 {
@@ -73,7 +74,7 @@ final class StreetNetwork
 
 	private final Duration gap;
 	private final long gapMillis;
-	private final Map<Long, Cell> cells = new HashMap<>();
+	private final LongMap<Cell> cells = new LongMap<>();
 	/**
 	 * the steps of the paths, the smaller key first, and how many drives took them
 	 */

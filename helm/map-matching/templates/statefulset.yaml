@@ -1,3 +1,8 @@
+{{- /*
+Two ways to the tiles: built from .Values.extracts into the volume on the first start, or finished ones of
+hack/map-matching/build-tiles.sh in .Values.tiles.volume, which are only served
+*/}}
+{{- $prebuilt := not (empty .Values.tiles.volume) }}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -27,6 +32,10 @@ spec:
         runAsNonRoot: true
         seccompProfile:
           type: RuntimeDefault
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: valhalla
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
@@ -38,6 +47,10 @@ spec:
           ports:
             - name: http
               containerPort: 8002
+          {{- if $prebuilt }}
+          # only the service, on the config of the tiles
+          command: [ "valhalla_service", "/tiles/valhalla.json", {{ .Values.threads | quote }} ]
+          {{- else }}
           env:
             # downloaded on the first start, when the volume has neither extracts nor tiles
             - name: tile_urls
@@ -53,12 +66,19 @@ spec:
               value: "True"
             - name: serve_tiles
               value: "True"
+          {{- end }}
           startupProbe:
             httpGet:
               path: /status
               port: http
+            {{- if $prebuilt }}
+            # loading the tiles takes seconds
+            periodSeconds: 5
+            failureThreshold: 60
+            {{- else }}
             periodSeconds: {{ .Values.startupProbe.periodSeconds }}
             failureThreshold: {{ .Values.startupProbe.failureThreshold }}
+            {{- end }}
             timeoutSeconds: 5
           readinessProbe:
             httpGet:
@@ -76,13 +96,27 @@ spec:
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
+            {{- if $prebuilt }}
+            - name: tiles
+              mountPath: /tiles
+              readOnly: true
+              {{- with .Values.tiles.subPath }}
+              subPath: {{ . }}
+              {{- end }}
+            {{- else }}
             - name: data
               mountPath: /custom_files
+            {{- end }}
             - name: tmp
               mountPath: /tmp
       volumes:
         - name: tmp
           emptyDir: { }
+        {{- if $prebuilt }}
+        - name: tiles
+          {{- toYaml .Values.tiles.volume | nindent 10 }}
+        {{- end }}
+  {{- if not $prebuilt }}
   volumeClaimTemplates:
     - metadata:
         name: data
@@ -94,3 +128,4 @@ spec:
         resources:
           requests:
             storage: {{ .Values.persistence.size }}
+  {{- end }}
