@@ -51,17 +51,19 @@ export default function useOfflineDocuments(carId: number) {
     scope: { id: `offlineDocuments-${carId}` },
     mutationFn: async () => {
       // the lists of the pages, not loaded again: they start the saving
-      const modifications = await queryClient.ensureQueryData(
-        installedOptions(carId),
-      );
-      const [latest] = await queryClient.ensureQueryData(
-        inspectionsOptions(carId),
-      );
+      const modifications = await queryClient.query({
+        ...installedOptions(carId),
+        staleTime: 'static',
+      });
+      const [latest] = await queryClient.query({
+        ...inspectionsOptions(carId),
+        staleTime: 'static',
+      });
       const documents = [];
       for (const modification of modifications) {
         if (modification.documents === 0) continue;
         documents.push(
-          ...(await queryClient.fetchQuery(
+          ...(await queryClient.query(
             getModificationDocumentsOptions({
               client: localClient,
               path: { carId, modificationId: modification.id },
@@ -71,7 +73,7 @@ export default function useOfflineDocuments(carId: number) {
       }
       const reports =
         latest && latest.documents > 0
-          ? await queryClient.fetchQuery(
+          ? await queryClient.query(
               getTechnicalInspectionFilesOptions({
                 client: localClient,
                 path: { carId, inspectionId: latest.id },
