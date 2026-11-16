@@ -7,102 +7,62 @@ costs, reminds of due dates, keeps a trip log (Fahrtenbuch) and shows the GPS tr
 It is self-hosted: CarLedger runs on Kubernetes, installed with Helm, and the users log in with OpenID Connect (Keycloak,
 authentik or any other provider).
 
-## Table of Contents
-
-- [Features](#features)
-- [Installation](#installation)
-    - [Requirements](#requirements)
-    - [Charts](#charts)
-    - [Quick start](#quick-start)
-    - [With an existing identity provider](#with-an-existing-identity-provider)
-    - [Important values](#important-values)
-    - [Versions](#versions)
-    - [Upgrading](#upgrading)
-    - [Uninstalling](#uninstalling)
-- [CSV Format](#csv-format)
-- [Development](#development)
-    - [Architecture](#architecture)
-- [Contributing](#contributing)
-- [License](#license)
-
 ## Features
 
 **Costs**
 
-- **Refuels, charges, maintenance and other costs** per car, corrected or deleted afterwards; calculated values like
-  the consumption follow.
-- **Electric and hybrid cars:** charges in kWh with the consumption in kWh/100km next to the refuels in liters.
-- **Recurring costs** (insurance, tax, leasing) with their payments and files like the contract; ending one removes the
-  payments from the end date on.
-- **Receipts:** photos and PDFs attached to the entries and the recurring costs, shown small in the lists, a picture per
-  car, details like plate, VIN and purchase price.
-- **Units:** metric, US (miles, gallons, mpg) or UK (miles, liters, mpg) per account. They are stored in km and liters,
-  the API always uses those.
-- **Statistics:** totals, averages and the consumption over time per car and for all cars.
-- **Two looks:** road signs in the light theme, an instrument cluster in the dark one: a car opens with its gauges
-  (consumption, km per month, the odometer of today estimated from the average a day), a refuel is typed into the
-  display of a pump. One of five accent colors per account; the main pages follow WCAG 2.1 AA.
-- **Modifications:** the parts of a tuned car with their ABE, Teiletypgenehmigung, Teilegutachten or Einzelabnahme, the
-  conditions, the Abnahme and the entry in the registration certificate, with the documents; removed parts stay as the
-  history of the car.
-- **HU:** the Hauptuntersuchung with its result, the defects and the report; the next due month moves the reminder of
-  the HU.
-- **Papers as PDF:** the modifications with their approvals and the HUs on the first pages, their documents and
-  reports appended; for a check the installed parts and the latest HU, for selling the whole history.
+- **Refuels, charges, maintenance and other costs** per car; the consumption follows every correction. Electric and
+  hybrid cars track kWh next to liters.
+- **Recurring costs** (insurance, tax, leasing) with their payments and contracts.
+- **Receipts:** photos and PDFs attached to every entry; a picture and details (plate, VIN, price) per car.
+- **Units:** metric, US or UK per account. Stored and sent by the API in km and liters.
+- **Statistics:** totals, averages and the consumption over time, per car and for all cars.
+- **Two looks:** road signs in the light theme, an instrument cluster in the dark one; five accent colors. The main
+  pages follow WCAG 2.1 AA.
+- **Modifications:** the parts of a tuned car with their approval (ABE, Teilegutachten, Einzelabnahme, …), conditions
+  and documents; removed parts stay in the history.
+- **HU:** the Hauptuntersuchung with result, defects and report; it sets the next HU reminder.
+- **Papers as PDF:** modifications, approvals and HUs with their documents attached, for a roadside check or for selling.
 
 **On the road**
 
-- **Installable app:** added to the home screen of the phone it starts like an app; a long press on its icon opens a
-  new refuel (or charge) of the last opened car.
-- **Offline:** refuels, charges and trips entered without a connection are sent when it is back; the documents of the
-  modifications of a car can be kept on the device, e.g. for a roadside check.
-- **Trip log (Fahrtenbuch):** start and finish trips with the odometer, enter forgotten ones, delete with a reason
-  (they stay in the log), export as PDF or CSV.
-- **GPS tracking:** a tracker in the car (e.g. an ESP32) sends its points, the app shows the tracks on a map colored
-  by speed, by the g-forces or by how often a road was driven and the track of a trip, single drives and in
-  fullscreen, names the places the car stops at often, suggests forgotten trips from the drives and adds a drive of
-  the map as a trip; optionally the tracks are snapped to the roads (a self-hosted Valhalla);
-  the owner chooses how long the points are kept, sees the status of the tracker (firmware, storage, last upload) and
-  updates only its firmware with the settings kept, see [docs/GPS_TRACKER.md](docs/GPS_TRACKER.md).
-- **Reminders and notifications:** due reminders, invitations to cars and the answers to requests in the inbox of the
-  app (*Notifications*, kept for 90 days), and by e-mail and push message for the topics you choose.
+- **Installable app** with a home screen shortcut to a new refuel of the last car.
+- **Offline:** refuels, charges and trips are sent when the connection is back; the documents of the modifications can
+  be kept on the device.
+- **Trip log (Fahrtenbuch):** trips with the odometer, deleted ones stay with a reason, export as PDF or CSV.
+- **GPS tracking:** a tracker in the car (e.g. an ESP32) sends its points. The map colors the tracks by speed, g-force
+  or frequency, names frequent stops and suggests forgotten trips; optionally snapped to the roads (Valhalla). The
+  browser flashes the tracker's firmware, see [docs/GPS_TRACKER.md](docs/GPS_TRACKER.md).
+- **Reminders and notifications** in the app, by e-mail and as push messages.
 
 **Data and integration**
 
-- **Sharing a car:** the owner invites other accounts (by user name or e-mail address) as editor, viewer or driver,
-  optionally for a period; the entries show who created them, a driver sees only the own trips and refuels. Only the
-  owner backs up a shared car.
-
-- **CSV import and export** of each entry type, and all expenses of a car in one CSV for spreadsheets.
-- **Backup:** every user downloads all of their data (settings, cars, entries, recurring costs, reminders, trips,
-  modifications and their documents, the HUs, GPS trackers and the tracks kept forever, receipts, contracts and
-  pictures) as one ZIP and restores it into an account without cars, e.g. on another installation.
-- **Car requests:** users who reached their car limit request more cars, administrators decide on the administration
-  page.
-- **Service accounts:** scripts use the API with tokens of the identity provider, e.g. to decide car requests, see
+- **Sharing a car** with other accounts as editor, viewer or driver, optionally for a period.
+- **CSV import and export** per entry type, and all expenses of a car in one CSV.
+- **Backup:** each user downloads all of their data as one ZIP and restores it into an empty account, also on another
+  installation.
+- **Administration:** usage statistics, accounts, car limits and the users' requests for more cars.
+- **Service accounts** use the API with tokens of the identity provider, see
   [Service accounts](docs/DEPLOYMENT.md#service-accounts).
-- **Administration:** usage statistics, all accounts with their cars, the car limit per account, deleting accounts.
-- **Operations:** metrics for Prometheus and nightly backups of the whole database (into a volume and S3), both
-  from the chart, see [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md#metrics).
+- **Operations:** Prometheus metrics and nightly database backups (volume and S3), see
+  [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md#metrics).
 
 ## Installation
 
-The Helm charts are published at `oci://ghcr.io/3thr3n/car-ledger/<chart>`. The details are in
+The Helm charts are published at `oci://ghcr.io/3thr3n/car-ledger/<chart>`, the details are in
 [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 
 ### Requirements
 
 - **Kubernetes** with **Helm 3.8+** (OCI charts).
-- **An ingress controller or the Gateway API**, with **HTTPS**: the login fails over plain http. The charts request the
-  certificates from cert-manager when `ingress.certManager` names a cluster issuer; otherwise provide the TLS secret
-  yourself.
-- **DNS** for the host names below the base domain: `car-ledger.<host>`, plus `keycloak.<host>` or `authentik.<host>` when
-  the charts deploy the identity provider (a wildcard record is simplest).
+- **An ingress controller or the Gateway API** with **HTTPS** (the login needs it): cert-manager via
+  `ingress.certManager`, or your own TLS secret.
+- **DNS** for `car-ledger.<host>`, and `keycloak.<host>` or `authentik.<host>` if the charts deploy one (a wildcard
+  record is simplest).
 - **A default StorageClass** for the PostgreSQL volumes (8 GiB for the app by default).
 - **Memory:** the app requests 256 MiB (limit 768 MiB), its PostgreSQL 256 MiB, plus Infinispan; Keycloak or authentik
   add about 1 GiB each.
-- **Optional:** an SMTP server for e-mails, a MapLibre style (own tile server or a provider with a key) for the map of the
-  GPS tracks.
+- **Optional:** an SMTP server for e-mails, a MapLibre style for the map of the GPS tracks.
 
 ### Charts
 
@@ -114,7 +74,7 @@ The Helm charts are published at `oci://ghcr.io/3thr3n/car-ledger/<chart>`. The 
 | `authentik`  | authentik with its PostgreSQL, CarLedger set up as application                                            | [README](helm/authentik/README.md)           |
 | `map-matching` | Valhalla, snaps the GPS tracks to the roads (optional)                                                  | [GPS_TRACKER.md](docs/GPS_TRACKER.md#map-matching) |
 
-For a new installation, use the `stack`. The single charts are for an existing identity provider, separate namespaces or
+Use the `stack` for a new installation; the single charts for an existing identity provider, separate namespaces or
 your own umbrella chart.
 
 ### Quick start
@@ -140,8 +100,7 @@ authentik:                   # values of the authentik chart
 helm install car-ledger oci://ghcr.io/3thr3n/car-ledger/stack -f my-values.yaml
 ```
 
-Name the release `car-ledger` and install it once per namespace, the names of the resources are fixed. The notes of
-the release show the next steps:
+Name the release `car-ledger`, once per namespace (the resource names are fixed). Then:
 
 1. **Log in to the identity provider** as administrator: authentik as `akadmin`
    (`kubectl get secret authentik-bootstrap -o jsonpath='{.data.password}' | base64 -d`), Keycloak as `car-ledger`
@@ -151,7 +110,7 @@ the release show the next steps:
 3. **Open `https://car-ledger.<host>`** and log in. Administrators see *Administration* in the sidebar; new accounts may
    have one car, the limit is changed there.
 
-With the Gateway API instead of an ingress, see [the stack README](helm/stack/README.md#values).
+For the Gateway API instead of an ingress, see [the stack README](helm/stack/README.md#values).
 
 ### With an existing identity provider
 
@@ -182,12 +141,12 @@ carLedger:
 helm install car-ledger oci://ghcr.io/3thr3n/car-ledger/car-ledger -f my-values.yaml
 ```
 
-The chart can also be a dependency of your own chart:
+Or as a dependency of your own chart:
 
 ```yaml
 dependencies:
   - name: car-ledger
-    version: "0.7.x"
+    version: "<release>"
     repository: oci://ghcr.io/3thr3n/car-ledger
 ```
 
@@ -224,9 +183,9 @@ A [release](https://github.com/3thr3n/car-ledger/releases) (e.g. `0.11.0`) publi
 `keycloak` and `authentik` have their own versions, the release notes name them. Without `--version`, Helm installs the
 latest release.
 
-Every build of `develop` is published as a prerelease, `<next release>-dev.<run number>` (e.g. `1.0.0-dev.123`): `--devel`
-installs the latest one, a version range takes them only with a prerelease suffix (`>=1.0.0-0`). Leave
-`carLedger.image.tag` empty, the chart runs the image of its own build.
+Every build of `develop` is a prerelease `<next release>-dev.<run number>`, installed with `--devel` (a version range
+needs a prerelease suffix, e.g. `>=0.12.0-0`). Leave `carLedger.image.tag` empty: each chart runs the image of its own
+build.
 
 What stays stable within 1.x is in [docs/STABILITY.md](docs/STABILITY.md).
 
@@ -237,9 +196,8 @@ kubectl exec car-ledger-postgresql-0 -- pg_dump -U postgres car-ledger > car-led
 helm upgrade car-ledger oci://ghcr.io/3thr3n/car-ledger/stack -f my-values.yaml
 ```
 
-With the single chart, upgrade `oci://ghcr.io/3thr3n/car-ledger/car-ledger`. Pass your values file, not
-`--reuse-values`. The migrations can't be undone, back up first. Older installations: see the
-[upgrade steps](docs/DEPLOYMENT.md#upgrading-to-the-current-version).
+The single chart is upgraded the same way. Pass your values file, not `--reuse-values`, and back up first: the
+migrations can't be undone. Older installations: [upgrade steps](docs/DEPLOYMENT.md#upgrading-to-the-current-version).
 
 ### Uninstalling
 
@@ -247,51 +205,30 @@ With the single chart, upgrade `oci://ghcr.io/3thr3n/car-ledger/car-ledger`. Pas
 helm uninstall car-ledger
 ```
 
-The PostgreSQL volumes stay (`kubectl get pvc`), delete them to remove the data. To install again on the kept volumes,
-save the secret `car-ledger-postgresql` before and apply it again first, otherwise the password doesn't match.
+The PostgreSQL volumes stay (`kubectl get pvc`); delete them to remove the data. To reinstall on them, keep the secret
+`car-ledger-postgresql` and apply it before the install, otherwise the password doesn't match.
 
 ## CSV Format
 
-Each entry type is imported and exported as CSV. An export uses the field names of the import as header, ISO dates and
-a dot as decimal separator, so it can be imported again (existing entries are skipped). The ledger of a car exports all
-expenses including the recurring costs as one CSV for spreadsheets, it can't be imported.
+Each entry type is imported and exported as CSV. The import assigns the columns of the file to the fields; dates are
+`YYYY-MM-DD`, `DD.MM.YYYY` or `MM/DD/YYYY`, values in the units chosen for the file (metric by default).
+`pricePerUnit` is in cent per liter or kWh (US: currency per gallon). Entries that exist already are skipped.
 
-Refuels:
-
-| Date       | Fuel Volume (L) | Price per L (€) | Distance (km) | Car estimate (L) |
-|------------|-----------------|-----------------|---------------|------------------|
-| YYYY-MM-DD | Float           | Float           | Float         | Float            |
-| DD.MM.YYYY | Float           | Float           | Float         | Float            |
-
-Example:
+| Type          | Required                      | Optional                                         |
+|---------------|-------------------------------|--------------------------------------------------|
+| Refuel        | `date`, `unit`, `pricePerUnit` | `total`, `vatRate`, `distance`, `estimateConsumption` |
+| Charge        | `date`, `unit`, `pricePerUnit` | `total`, `vatRate`, `distance`, `location` (`HOME`/`PUBLIC`), `stateOfCharge` |
+| Maintenance   | `date`, `total`, `workshop`    | `vatRate`, `odometer`, `laborCost`, `partsCost`, `description` |
+| Miscellaneous | `date`, `total`               | `vatRate`, `description`                         |
 
 ```csv
-Date,Fuel Volume (L),Price per L (€),Distance (km),Car estimate (L)
+date,unit,pricePerUnit,distance,estimateConsumption
 2024-10-09,40.03,171.9,551.5,8.0
-2024-10-18,38.23,171.9,494.2,8.2
-```
-
-or
-
-```
-Date,Fuel Volume (L),Price per L (€),Distance (km),Car estimate (L)
-09.10.2024,40.03,171.9,551.5,8.0
 18.10.2024,38.23,171.9,494.2,8.2
 ```
 
-### Charges
-
-Charges of electric cars and plug-in hybrids have their own import. The columns are assigned in the import, required
-are the date, the kWh and the price per kWh (in cent). The distance is the km since the last charge, the location is
-`HOME` or `PUBLIC` (in any case) and the state of charge the percent after charging, all three are optional:
-
-```csv
-date,unit,pricePerUnit,distance,location,stateOfCharge
-2026-03-01,40,30,250,HOME,80
-12.03.2026,25.5,"59,0",120,public,
-```
-
-The export of the charges writes these columns with the total and the VAT rate, it can be imported again.
+An export uses these field names as header (km, liters, ISO dates), so it can be imported again. The expenses of a car,
+including the recurring costs, export as one CSV for spreadsheets, which can't be imported.
 
 ## Development
 
@@ -319,30 +256,27 @@ yarn dev
 # frontend unit tests
 cd src/main/webapp && yarn test
 
-# end-to-end tests, start Quarkus (with dev services, needs Docker) and Vite themselves,
-# running servers are reused. Each spec starts with new accounts of alice and bob (resetAccounts in
-# e2e/helpers.ts), so one runs alone too: yarn test:e2e e2e/trips.spec.ts
+# end-to-end tests, start Quarkus (dev services, needs Docker) and Vite or reuse running ones;
+# each spec resets the accounts first, so one runs alone too: yarn test:e2e e2e/trips.spec.ts
 cd src/main/webapp && npx playwright install chromium && yarn test:e2e
 
-# charts: the template tests of helm/<chart>/tests (plugin helm-unittest) and the rendered
-# resources against the schemas of Kubernetes (kubeconform), after helm dependency update
+# charts (after helm dependency update): template tests (helm-unittest), schemas (kubeconform)
 helm unittest --with-subchart=false helm/car-ledger helm/keycloak helm/authentik helm/map-matching helm/stack
 helm/validate-manifests.sh
 ```
 
-The build writes the OpenAPI spec to `src/main/webapp/public/openapi.json`, `yarn openapi-ts` generates the frontend
-client from it. Commit both, the CI fails if they are outdated.
+The build writes the OpenAPI spec to `src/main/webapp/public/openapi.json`, `yarn openapi-ts` generates the client
+from it. Commit both; the CI fails if they are outdated.
 
 ### Architecture
 
-See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). `./mvnw javadoc:javadoc` builds the Javadoc to
-`target/reports/apidocs`, the CI fails on broken Javadoc.
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). `./mvnw javadoc:javadoc` builds the Javadoc into
+`target/reports/apidocs`; the CI fails on broken Javadoc.
 
 ### Local cluster
 
-`hack/kind/up.sh` creates a cluster in Docker with [kind](https://kind.sigs.k8s.io) and installs the stack chart from
-the working copy: Cilium or ingress-nginx, local-path and cert-manager with a self-signed CA. It needs Docker, kind,
-kubectl, helm and the ports 80 and 443.
+`hack/kind/up.sh` creates a [kind](https://kind.sigs.k8s.io) cluster and installs the stack from the working copy. It
+needs Docker, kind, kubectl, helm and the ports 80 and 443.
 
 ```bash
 hack/kind/up.sh                    # Keycloak, Cilium, local-path, builds the image of the working copy
@@ -351,30 +285,22 @@ node hack/kind/login.cjs keycloak alice alice   # logs in with a browser, the us
 hack/kind/down.sh
 ```
 
-The app is https://car-ledger.localhost, Keycloak https://keycloak.localhost and authentik https://authentik.localhost;
-the CA is in `target/kind/ca.crt`. Running `up.sh` again upgrades the stack.
+The app is https://car-ledger.localhost, the CA is in `target/kind/ca.crt`. Running `up.sh` again upgrades the stack.
 
 ## Contributing
 
-Contributions are welcome! Please follow these steps to contribute:
-
-1. Fork the repository.
-2. Create a new branch from `develop` (`git checkout -b feature/YourFeature develop`).
-3. Commit your changes (`git commit -m 'Add YourFeature'`).
-4. Push to the branch (`git push origin feature/YourFeature`).
-5. Open a Pull Request against `develop`.
+Contributions are welcome: branch from `develop` and open the pull request against `develop`.
 
 ### Branches and releases
 
 - `develop` gets all pull requests, its builds are published as prereleases (`<next release>-dev.<run number>`).
-- Every milestone ends with a security review of the pull requests since the last release, an issue of the
-  template *Security review of a milestone* (`.github/ISSUE_TEMPLATE/security-review.md`). Its findings are fixed
-  before the release or moved to the next milestone on purpose.
+- Every milestone ends with a security review (issue template *Security review of a milestone*); its findings are
+  fixed before the release or moved on purpose.
 - `main` only holds released states. A release is a pull request from `develop` to `main`, merged with a merge
   commit (not squashed, so both branches keep the same history), then the tag of the version in
   `helm/car-ledger/Chart.yaml` on `main`. Afterwards the next version is set in `Chart.yaml` on `develop`.
-- A hotfix branches from `main` and goes to `main` like a release. `develop` keeps a linear history, so the fix comes
-  to `develop` as a cherry-pick in a pull request of its own.
+- A hotfix branches from `main` and goes to `main` like a release, and to `develop` as a cherry-pick in its own pull
+  request (`develop` keeps a linear history).
 
 ## License
 
