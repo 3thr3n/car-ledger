@@ -8,19 +8,16 @@ import java.util.List;
 import de.codeflowwizardry.carledger.rest.car.track.TrackPoint;
 
 /**
- * One line per street for the map: the GPS drifts by a few meters from drive to
- * drive and the two directions use different lanes, so a street driven several
- * times would show as lines next to each other. Two runs over the points in the
- * order of time: {@link #add} all of them, then {@link #apply} to each segment.
+ * One line per street for the map, as the GPS drifts from drive to drive and
+ * the
+ * two directions use different lanes. {@link #add} all points in the order of
+ * time, then {@link #apply} to each segment.
  * <p>
- * The first run samples the pieces between the points every few meters, so a
- * fast and a slow drive weigh the same per meter, and sums the samples on a
- * grid
- * of {@link #CELL} meters, per axis of the direction (both directions of a
- * street share one). The second run moves each point sideways, never along the
- * street, onto the average of the samples around it with about its direction: a
- * crossing street doesn't pull it. A street passed only once stays as it is.
- * Only for display: the raw points aren't changed.
+ * The pieces between the points are sampled every few meters on a grid of
+ * {@link #CELL} meters, per axis of the direction. Each point then moves
+ * sideways
+ * onto the average of the samples around it with about its direction. A street
+ * passed once stays as it is; the raw points aren't changed.
  */
 final class SharedLine
 {

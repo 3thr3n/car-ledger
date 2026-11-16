@@ -10,17 +10,11 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Observes;
 
 /**
- * Against CSRF besides the cookie with <code>SameSite=Strict</code>: a request
- * of the login session that changes something needs the header
- * {@value #HEADER}, which the frontend sends with every request. SameSite
- * doesn't separate the hosts of one site, e.g. keycloak.&lt;host&gt; next to
- * car-ledger.&lt;host&gt;, and a form there posts multipart without a
- * preflight. A page of another origin can't set the header, it would need a
- * preflight, which fails without CORS.
- * <p>
- * Requests with a token (<code>Authorization</code>, service accounts and GPS
- * trackers) are not affected, also with a cookie: a form of another page
- * can't set the header either.
+ * CSRF protection next to <code>SameSite=Strict</code>, which doesn't separate
+ * the hosts of one site (e.g. keycloak.&lt;host&gt;): a change with the login
+ * session needs the header {@value #HEADER}, which another origin can't set
+ * without a CORS preflight. Requests with a token (<code>Authorization</code>)
+ * don't need it.
  */
 @ApplicationScoped
 public class RequestedWith

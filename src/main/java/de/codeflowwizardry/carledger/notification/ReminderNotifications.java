@@ -27,13 +27,10 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 /**
- * Once a day, the owner and the editors of a car get one notification with its
- * reminders that became due soon or overdue (the status of the app: 30 days or
- * 1000 km before), not the viewers and drivers: in the inbox, by mail and push
- * if they want the reminders. A reminder is
- * notified once per due date and odometer; done or changed, it is notified
- * again
- * when its new due comes.
+ * Once a day the owner and the editors of a car get one notification with its
+ * reminders that became due soon or overdue (30 days or 1000 km before), if
+ * they
+ * want the reminders. A reminder is notified once per due date and odometer.
  */
 @ApplicationScoped
 public class ReminderNotifications

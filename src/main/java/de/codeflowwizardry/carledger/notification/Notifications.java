@@ -47,17 +47,15 @@ import jakarta.inject.Inject;
 
 /**
  * Turns the events of the app into notifications: picks the recipients and
- * renders the texts in their language while the transaction is still open,
- * the {@link MailSender} and the
+ * renders the texts in their language while the transaction is open, the
+ * {@link MailSender} and the
  * {@link de.codeflowwizardry.carledger.notification.push.PushSender} send them
- * after the commit. Every recipient gets the notification in the inbox of the
- * app, always, and for the topics it chose a mail (if wanted and with an
- * address) and a push message on every browser that subscribed.
+ * after the commit. Every recipient gets it in the inbox, and for the topics it
+ * chose by mail and push.
  * <p>
- * The texts are the templates
+ * The texts are
  * src/main/resources/templates/{mail,push}/&lt;event&gt;.&lt;language&gt;.txt,
- * their first line is the subject or the title; the inbox keeps the one of the
- * push message.
+ * the first line is the subject or title.
  */
 @ApplicationScoped
 public class Notifications

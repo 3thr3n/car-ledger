@@ -17,16 +17,10 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 
 /**
- * Calculates the current odometer of cars. Readings are the odometer of the
- * car, the ones of maintenance bills and the start and end of trips. The latest
- * reading is the base, the distances of the refuels or charges after its day
- * are added.
- * <p>
- * The distance of a refuel is the one since the refuel before it, which may be
- * before the reading: only what was driven after the reading counts. The
- * odometer at the refuel before the reading comes from an earlier reading and
- * the distances up to it; without them, the part of the distance after the
- * reading by the days.
+ * Calculates the current odometer of cars: the latest reading (the car,
+ * maintenance bills, trips) plus the distances of the refuels and charges after
+ * it. Of a refuel whose distance reaches back before the reading, only the part
+ * after the reading counts.
  */
 @ApplicationScoped
 public class OdometerService

@@ -2,30 +2,26 @@
  * The GPS trackers and their tracks.
  * <p>
  * Ingest: a tracker authenticates with its token
- * ({@link de.codeflowwizardry.carledger.tracker.DeviceAuthenticationMechanism},
- * {@link de.codeflowwizardry.carledger.tracker.DeviceTokens}), limited per
- * minute ({@link de.codeflowwizardry.carledger.tracker.DeviceRateLimiter}), and
- * sends its points, which
- * {@link de.codeflowwizardry.carledger.tracker.DeviceService} stores.
+ * ({@link de.codeflowwizardry.carledger.tracker.DeviceAuthenticationMechanism}),
+ * limited per minute
+ * ({@link de.codeflowwizardry.carledger.tracker.DeviceRateLimiter}), and
+ * {@link de.codeflowwizardry.carledger.tracker.DeviceService} stores its
+ * points.
  * <p>
- * Evaluation, each over the points of a car in the order of time:
- * {@link de.codeflowwizardry.carledger.tracker.TrackService} moves the drives
- * of a street onto one line
- * ({@link de.codeflowwizardry.carledger.tracker.SharedLine}) and simplifies
- * them
- * for the map ({@link de.codeflowwizardry.carledger.tracker.TrackSimplifier}),
- * {@link de.codeflowwizardry.carledger.tracker.DriveDetector} finds the drives,
- * which {@link de.codeflowwizardry.carledger.tracker.TripSuggestions} offers as
- * forgotten trips and {@link de.codeflowwizardry.carledger.tracker.Places}
- * groups by where they end
- * ({@link de.codeflowwizardry.carledger.tracker.PlaceFinder}),
- * {@link de.codeflowwizardry.carledger.tracker.StreetNetwork} draws every
- * street once and counts how often the car drove it. GPS never writes a trip
- * itself.
+ * Evaluation over the points of a car in the order of time:
+ * {@link de.codeflowwizardry.carledger.tracker.TrackService} builds the track
+ * for
+ * the map ({@link de.codeflowwizardry.carledger.tracker.SharedLine},
+ * {@link de.codeflowwizardry.carledger.tracker.TrackSimplifier}),
+ * {@link de.codeflowwizardry.carledger.tracker.DriveDetector} finds the drives
+ * for
+ * the {@link de.codeflowwizardry.carledger.tracker.TripSuggestions} and the
+ * {@link de.codeflowwizardry.carledger.tracker.Places},
+ * {@link de.codeflowwizardry.carledger.tracker.StreetNetwork} counts how often
+ * each street was driven. GPS never writes a trip itself.
  * <p>
- * {@link de.codeflowwizardry.carledger.tracker.TrackRetention} deletes the
- * points older than the car keeps them every night;
- * {@link de.codeflowwizardry.carledger.tracker.TrackerFirmware} offers the
- * firmware the operator provides.
+ * {@link de.codeflowwizardry.carledger.tracker.TrackRetention} deletes old
+ * points
+ * every night.
  */
 package de.codeflowwizardry.carledger.tracker;
