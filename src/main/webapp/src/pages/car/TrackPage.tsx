@@ -66,7 +66,7 @@ import { visuallyHidden } from '@/components/ui/visuallyHidden';
 import { CLUSTER_AMBER, displayFont } from '@/theme';
 
 /** the server returns at most this many days */
-export const MAX_DAYS = 31;
+const MAX_DAYS = 31;
 
 type Mode = 'speed' | 'frequency' | 'gforce';
 

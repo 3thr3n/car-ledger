@@ -19,9 +19,4 @@ public class PushSubscriptionRepository implements PanacheRepository<PushSubscri
 	{
 		return find("endpoint", endpoint).firstResultOptional();
 	}
-
-	public boolean hasAny(AccountEntity account)
-	{
-		return count("account", account) > 0;
-	}
 }

@@ -8,15 +8,10 @@ import type { TrackFrequency } from '@/generated';
  * views can't be mistaken for each other. Unlike the speed the scale follows
  * the period: from once to the most passes in it.
  */
-export const FREQUENCY_COLORS = [
-  '#feb24c',
-  '#fc4e2a',
-  '#bd0026',
-  '#800026',
-] as const;
+const FREQUENCY_COLORS = ['#feb24c', '#fc4e2a', '#bd0026', '#800026'] as const;
 
 /** of the line, at once and at the most passes */
-export const FREQUENCY_WIDTH = [3, 9] as const;
+const FREQUENCY_WIDTH = [3, 9] as const;
 
 /** the top of the scale, at least 2 so that it has a range */
 export const scaleMax = (maxPasses: number) => Math.max(2, maxPasses);

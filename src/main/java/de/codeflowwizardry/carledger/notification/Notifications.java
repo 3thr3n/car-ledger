@@ -94,15 +94,6 @@ public class Notifications
 		this.inbox = inbox;
 	}
 
-	/**
-	 * @return whether the account gets notifications at all: by mail or on a
-	 *         browser
-	 */
-	public boolean canReach(AccountEntity account)
-	{
-		return wantsMail(account) || (pushConfig.enabled() && subscriptions.hasAny(account));
-	}
-
 	private boolean wantsMail(AccountEntity account)
 	{
 		return mailConfig.enabled() && account.isNotifyByMail() && account.getEmail() != null;

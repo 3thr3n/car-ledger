@@ -121,7 +121,7 @@ export function useOpenKept() {
  * @param tab opened on the click, a later one would be blocked as a popup
  * @return false if it isn't kept, the tab is closed then
  */
-export async function openKeptDocument(url: string, tab: Window | null) {
+async function openKeptDocument(url: string, tab: Window | null) {
   const response = canKeepDocuments()
     ? await caches.match(url, { cacheName: DOCUMENTS_CACHE })
     : undefined;

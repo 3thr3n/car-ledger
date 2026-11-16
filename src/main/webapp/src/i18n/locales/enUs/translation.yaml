@@ -227,7 +227,6 @@ garage:
   add: "Add car"
   emptyHint: "Start with your first car"
   limitReached: "You reached the maximum number of cars."
-  entriesLabel: "Entries"
   entries_one: "{{count}} entry"
   entries_other: "{{count}} entries"
 

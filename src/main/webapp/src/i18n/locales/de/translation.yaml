@@ -227,7 +227,6 @@ garage:
   add: "Fahrzeug hinzufügen"
   emptyHint: "Leg dein erstes Fahrzeug an"
   limitReached: "Du hast die maximale Anzahl an Fahrzeugen erreicht."
-  entriesLabel: "Einträge"
   entries_one: "{{count}} Eintrag"
   entries_other: "{{count}} Einträge"
 

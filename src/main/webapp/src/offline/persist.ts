@@ -44,7 +44,7 @@ const carOf = (query: Query) => {
 /** the account the kept queries belong to, of the restore or the first load */
 let owner: string | undefined;
 
-export const isKept = (query: Query) =>
+const isKept = (query: Query) =>
   KEPT.has(idOf(query)) && query.state.status === 'success';
 
 /** the kept queries of the last visit, before the first render */
