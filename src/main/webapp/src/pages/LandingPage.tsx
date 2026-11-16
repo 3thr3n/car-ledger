@@ -1,5 +1,5 @@
 import { Alert, Box, Button, Container, Typography } from '@mui/material';
-import { ReactNode, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import useMe from '@/hooks/useMe';
 import {
@@ -12,6 +12,7 @@ import { scaleOf } from '@/utils/gauge';
 import { RouterButton } from '@/components/ui/links';
 import { CarPlate } from '@/components/layout/CarAvatar';
 import Gauge from '@/components/car/Gauge';
+import Readout from '@/components/car/Readout';
 import { BillPaletteKey } from '@/utils/billTypes';
 import { CLUSTER_AMBER, displayFont } from '@/theme';
 import { SOURCE_URL } from '@/utils/source';
@@ -63,33 +64,6 @@ const example = {
   consumption: { value: 6.01, low: 4.97, high: 7.35, last: 4.97 },
   distance: { value: 1549, low: 1319, high: 2158, last: 1493 },
 };
-
-function Readout({ label, value }: { label: ReactNode; value: ReactNode }) {
-  return (
-    <Box sx={{ textAlign: 'center', minWidth: 0 }}>
-      <Typography
-        component="dt"
-        variant="body2"
-        sx={{ color: 'text.secondary' }}
-      >
-        {label}
-      </Typography>
-      <Typography
-        component="dd"
-        className="tabular"
-        sx={{
-          m: 0,
-          fontFamily: displayFont,
-          fontWeight: 650,
-          fontSize: '1.25rem',
-          whiteSpace: 'nowrap',
-        }}
-      >
-        {value}
-      </Typography>
-    </Box>
-  );
-}
 
 /**
  * What the page of a car looks like: the cluster of an example car, built from

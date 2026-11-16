@@ -1,6 +1,5 @@
 import {
   Box,
-  Button,
   Collapse,
   Divider,
   IconButton,
@@ -9,11 +8,9 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
-import AttachFileRounded from '@mui/icons-material/AttachFileRounded';
 import DeleteOutlineRounded from '@mui/icons-material/DeleteOutlineRounded';
 import EditOutlined from '@mui/icons-material/EditOutlined';
 import EventRounded from '@mui/icons-material/EventRounded';
-import ExpandMoreRounded from '@mui/icons-material/ExpandMoreRounded';
 import LogoutRounded from '@mui/icons-material/LogoutRounded';
 import TaskAltRounded from '@mui/icons-material/TaskAltRounded';
 import ReportProblemRounded from '@mui/icons-material/ReportProblemRounded';
@@ -25,6 +22,7 @@ import { CLUSTER_AMBER, displayFont } from '@/theme';
 import { useFormat } from '@/utils/format';
 import ModificationDocuments from './ModificationDocuments';
 import { billText, needsInspection, registrationOpen } from './approval';
+import DetailsButton from '@/components/ui/DetailsButton';
 
 export interface ModificationListProps {
   carId: number;
@@ -269,38 +267,13 @@ export default function ModificationList({
                 )}
               </Stack>
 
-              <Button
-                size="small"
-                color="inherit"
+              <DetailsButton
+                expanded={expanded}
                 onClick={() => setOpen(expanded ? undefined : modification.id)}
-                aria-expanded={expanded}
-                endIcon={
-                  <ExpandMoreRounded
-                    sx={{
-                      transform: expanded ? 'rotate(180deg)' : undefined,
-                      transition: 'transform 150ms',
-                    }}
-                  />
-                }
-                sx={{ mt: 0.5, ml: -0.75, color: 'text.secondary' }}
+                documents={modification.documents}
               >
                 {t('modification.details')}
-                {modification.documents > 0 && (
-                  <Stack
-                    component="span"
-                    direction="row"
-                    spacing={0.25}
-                    sx={{
-                      alignItems: 'center',
-                      ml: 1,
-                      '& svg': { fontSize: 15 },
-                    }}
-                  >
-                    <AttachFileRounded />
-                    <span>{modification.documents}</span>
-                  </Stack>
-                )}
-              </Button>
+              </DetailsButton>
               <Collapse in={expanded} unmountOnExit>
                 <Stack
                   spacing={2}
