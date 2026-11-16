@@ -18,14 +18,14 @@ import java.util.List;
 import java.util.stream.Stream;
 
 /**
- * Certificates to trust for outgoing HTTPS besides the public CAs of the JVM,
- * e.g. the self-signed certificate of the identity provider or a company CA.
- * <p>
- * The PEM files of a directory (one or several certificates each) are added to
- * a copy of the truststore of the JVM, which becomes the truststore of the JVM.
- * So every client trusts them: the login (OIDC), the mailer and push.
- * Runs before Quarkus starts, as the JVM reads the truststore on the first use
- * of TLS.
+ * Certificates to trust for outgoing HTTPS besides the public CAs, e.g. a
+ * self-signed identity provider or a company CA: the PEM files of a directory
+ * are
+ * added to a copy of the truststore of the JVM, used by every client (OIDC,
+ * mail,
+ * push). Runs before Quarkus starts, as the JVM reads the truststore on the
+ * first
+ * use of TLS.
  */
 public final class TrustedCertificates
 {

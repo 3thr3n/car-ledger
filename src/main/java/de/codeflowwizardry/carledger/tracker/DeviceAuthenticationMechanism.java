@@ -18,13 +18,11 @@ import jakarta.enterprise.context.ApplicationScoped;
 
 /**
  * GPS trackers authenticate on <code>/api/device/**</code> with their token in
- * <code>Authorization: Bearer</code>, never with the OIDC login. The path is
- * bound to this mechanism by the name {@value #SCHEME} in the HTTP permissions,
- * OIDC isn't asked there.
- * <p>
- * On the other paths it runs before OIDC and rejects a token of a tracker, so
- * that it doesn't work there and isn't sent to the introspection of the OIDC
- * provider. Any other request is left to OIDC.
+ * <code>Authorization: Bearer</code>; the HTTP permissions bind the path to
+ * this
+ * mechanism ({@value #SCHEME}), OIDC isn't asked there. On the other paths it
+ * rejects a tracker token, so it never reaches the OIDC introspection; other
+ * requests are left to OIDC.
  */
 @ApplicationScoped
 public class DeviceAuthenticationMechanism implements HttpAuthenticationMechanism

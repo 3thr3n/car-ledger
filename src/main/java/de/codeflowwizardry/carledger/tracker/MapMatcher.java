@@ -21,14 +21,12 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 /**
- * Snaps the points of the finished drives to the roads, in the background: a
- * drive is finished when the car sent no point for {@link TrackService#GAP}.
- * The position on the road is stored next to the one of the GPS, which stays,
- * with the vertices of the road from the point before, so the map follows the
- * curves instead of cutting them;
- * a point without a road near it keeps the one of the GPS (and the shared line
- * on the map). Without the service the points wait and are matched once it is
- * back.
+ * Snaps the points of finished drives (no point for {@link TrackService#GAP})
+ * to
+ * the roads in the background. The road position and the vertices from the
+ * point
+ * before are stored next to the GPS position; a point without a road near it
+ * keeps the GPS one. Points wait while the service is down.
  */
 @ApplicationScoped
 public class MapMatcher

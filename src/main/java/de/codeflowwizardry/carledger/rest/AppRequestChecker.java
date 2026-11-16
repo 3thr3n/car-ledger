@@ -5,17 +5,14 @@ import io.vertx.ext.web.RoutingContext;
 import jakarta.enterprise.context.ApplicationScoped;
 
 /**
- * Which requests without a session get the 499 of quarkus-oidc instead of
- * the redirect to the login: only the ones of the frontend, which sends
- * {@value RequestedWith#HEADER}: <code>JavaScript</code> and opens the login
- * itself (see QueryClient.ts).
- * <p>
- * By default quarkus-oidc also answers <code>XMLHttpRequest</code> with the
- * 499. Some browsers built into apps (e.g. of WhatsApp) send it with the
- * opening of a page: the click on "Login" then got an empty 499 without a
- * content type, which Safari saved as a file "login" of 0 KB. A navigation of
- * the browser (<code>Sec-Fetch-Mode: navigate</code>) always gets the
- * redirect.
+ * Requests without a session get the 499 of quarkus-oidc instead of the
+ * redirect
+ * to the login only when they come from the frontend
+ * ({@value RequestedWith#HEADER}: <code>JavaScript</code>), which opens the
+ * login
+ * itself. Not for <code>XMLHttpRequest</code>, which in-app browsers send with
+ * a
+ * page navigation, and never for <code>Sec-Fetch-Mode: navigate</code>.
  */
 @ApplicationScoped
 public class AppRequestChecker implements JavaScriptRequestChecker

@@ -1,7 +1,7 @@
 /**
- * The tokens of the logins, kept in Infinispan instead of the session cookie
+ * The tokens of the logins, kept in Infinispan
  * ({@link de.codeflowwizardry.carledger.state.InfinispanTokenStateManager}):
- * the cookie only holds a key, so it stays small and several instances share
- * the sessions.
+ * the
+ * session cookie only holds a key, shared by all instances.
  */
 package de.codeflowwizardry.carledger.state;
