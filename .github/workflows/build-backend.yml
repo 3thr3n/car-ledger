@@ -101,7 +101,7 @@ jobs:
       # pull requests build the image for amd64 only, to check the Dockerfile, and do not push it
       - name: Log in to the Container registry
         if: ${{ github.event_name != 'pull_request' }}
-        uses: docker/login-action@d3b9cdfa580156c018ca5e745c1bf653d8ea46b5 # v4.6.0 + 14 commits of main, before v4.7.0
+        uses: docker/login-action@d0b8297dd55199249f38268efae35fcb03f75aab # v4.6.0 + 14 commits of main, before v4.7.0
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
