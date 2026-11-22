@@ -102,7 +102,9 @@ public class ValhallaClient
 			Map<String, Object> location = new LinkedHashMap<>();
 			location.put("lat", point.lat());
 			location.put("lon", point.lon());
-			location.put("time", point.ts().toEpochSecond());
+			// with the milliseconds: points of the same second would get no time to drive
+			// between them (5 Hz)
+			location.put("time", point.ts().toInstant().toEpochMilli() / 1000.0);
 			shape.add(location);
 		}
 		Map<String, Object> body = Map.of(
