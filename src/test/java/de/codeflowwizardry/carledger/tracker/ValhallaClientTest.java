@@ -133,6 +133,23 @@ class ValhallaClientTest
 		assertTrue(request.get().path("shape").get(0).has("time"));
 	}
 
+	@Test
+	void shouldSendTheTimeWithMilliseconds() throws Exception
+	{
+		try (InputStream in = getClass().getResourceAsStream("/valhalla/trace_attributes.json"))
+		{
+			answer.set(in.readAllBytes());
+		}
+		List<Pending> points = shape().stream()
+				.map(point -> new Pending(point.id(), point.ts().plusNanos(200_000_000), point.lat(), point.lon()))
+				.toList();
+
+		client.match(points);
+
+		JsonNode first = request.get().path("shape").get(0);
+		assertEquals(points.getFirst().ts().toInstant().toEpochMilli() / 1000.0, first.path("time").asDouble());
+	}
+
 	/**
 	 * The hairpins of the Kesselberg (B11) with a point every 25 m, of the tiles
 	 * of Germany, Austria and Switzerland: the line along the vertices follows the

@@ -6,6 +6,13 @@ From 1.0.0 on the versions follow [docs/STABILITY.md](docs/STABILITY.md); the up
 
 ## [Unreleased]
 
+### Fixed
+
+- Map matching of trackers with more than one point per second (e.g. 5 Hz): the points went to Valhalla with whole
+  seconds, so points of the same second had no time to drive between them and the line zigzagged between the roads.
+  The points matched before are matched again with `UPDATE track_point SET tk_match = 'P' WHERE tk_match IN ('M', 'U')`
+  and the time of those drives.
+
 ## [1.0.0] - 2026-11-16
 
 The first stable release, for own installations (owner, family and friends). From here on the API, the backups, the
